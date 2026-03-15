@@ -1,0 +1,30 @@
+{
+  "projectName": "bill-lm",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "bun",
+  "git": true,
+  "install": true,
+  "addOnOptions": {
+    "prisma": {
+      "database": "postgres"
+    }
+  },
+  "includeExamples": true,
+  "envVarValues": {},
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": [
+    "prisma",
+    "form",
+    "tanstack-query",
+    "nitro",
+    "clerk",
+    "tRPC",
+    "compiler",
+    "t3env",
+    "eslint"
+  ]
+}
