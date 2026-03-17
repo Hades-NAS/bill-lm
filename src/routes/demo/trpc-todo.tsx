@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+
 import { useTRPC } from '#/integrations/trpc/react'
 
 export const Route = createFileRoute('/demo/trpc-todo')({
@@ -42,8 +44,8 @@ function TRPCTodos() {
         <ul className="mb-4 space-y-2">
           {data?.map((t) => (
             <li
-              key={t.id}
               className="bg-white/10 border border-white/20 rounded-lg p-3 backdrop-blur-sm shadow-md"
+              key={t.id}
             >
               <span className="text-lg text-white">{t.name}</span>
             </li>
@@ -51,6 +53,8 @@ function TRPCTodos() {
         </ul>
         <div className="flex flex-col gap-2">
           <input
+            className="w-full px-4 py-3 rounded-lg border border-white/20 bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+            placeholder="Enter a new todo..."
             type="text"
             value={todo}
             onChange={(e) => setTodo(e.target.value)}
@@ -59,13 +63,11 @@ function TRPCTodos() {
                 submitTodo()
               }
             }}
-            placeholder="Enter a new todo..."
-            className="w-full px-4 py-3 rounded-lg border border-white/20 bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
           />
           <button
+            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors"
             disabled={todo.trim().length === 0}
             onClick={submitTodo}
-            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors"
           >
             Add todo
           </button>

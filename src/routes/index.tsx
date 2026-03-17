@@ -18,16 +18,16 @@ function App() {
         </p>
         <div className="flex flex-wrap gap-3">
           <a
-            href="/about"
             className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-5 py-2.5 text-sm font-semibold text-[var(--lagoon-deep)] no-underline transition hover:-translate-y-0.5 hover:bg-[rgba(79,184,178,0.24)]"
+            href="/about"
           >
             About This Starter
           </a>
           <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
             className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-5 py-2.5 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[rgba(23,58,64,0.35)]"
+            href="https://tanstack.com/router"
+            rel="noopener noreferrer"
+            target="_blank"
           >
             Router Guide
           </a>
@@ -54,8 +54,8 @@ function App() {
           ],
         ].map(([title, desc], index) => (
           <article
-            key={title}
             className="island-shell feature-card rise-in rounded-2xl p-5"
+            key={title}
             style={{ animationDelay: `${index * 90 + 80}ms` }}
           >
             <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { useAppForm } from '#/hooks/demo.form'
+import { useAppForm } from '#/hooks/app-form'
 
 export const Route = createFileRoute('/demo/form/address')({
   component: AddressForm,
@@ -50,12 +50,12 @@ function AddressForm() {
     >
       <div className="w-full max-w-2xl p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
         <form
+          className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             form.handleSubmit()
           }}
-          className="space-y-6"
         >
           <form.AppField name="fullName">
             {(field) => <field.TextField label="Full Name" />}
@@ -151,6 +151,7 @@ function AddressForm() {
             {(field) => (
               <field.Select
                 label="Country"
+                placeholder="Select a country"
                 values={[
                   { label: 'United States', value: 'US' },
                   { label: 'Canada', value: 'CA' },
@@ -160,7 +161,6 @@ function AddressForm() {
                   { label: 'France', value: 'FR' },
                   { label: 'Japan', value: 'JP' },
                 ]}
-                placeholder="Select a country"
               />
             )}
           </form.AppField>

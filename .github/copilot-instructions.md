@@ -47,17 +47,17 @@ chore(deps): update firebase to v12
 
 ## Key Paths
 
-| What | Path |
-|------|------|
-| tRPC router | `src/integrations/trpc/router.ts` |
-| tRPC init + context | `src/integrations/trpc/init.ts` |
-| Firebase Admin | `src/integrations/firebase/firebase.server.ts` |
-| Firebase Web SDK | `src/integrations/firebase/firebase.client.ts` |
-| Logger (server) | `src/integrations/logger.server.ts` |
-| Prisma client | `src/db.ts` |
-| Env schema | `src/env.ts` |
-| Routes | `src/routes/` |
-| Components | `src/components/` |
+| What                | Path                                           |
+| ------------------- | ---------------------------------------------- |
+| tRPC router         | `src/integrations/trpc/router.ts`              |
+| tRPC init + context | `src/integrations/trpc/init.ts`                |
+| Firebase Admin      | `src/integrations/firebase/firebase.server.ts` |
+| Firebase Web SDK    | `src/integrations/firebase/firebase.client.ts` |
+| Logger (server)     | `src/integrations/logger.server.ts`            |
+| Prisma client       | `src/db.ts`                                    |
+| Env schema          | `src/env.ts`                                   |
+| Routes              | `src/routes/`                                  |
+| Components          | `src/components/`                              |
 
 ---
 

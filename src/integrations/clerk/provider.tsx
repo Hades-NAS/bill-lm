@@ -11,7 +11,7 @@ export default function AppClerkProvider({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+    <ClerkProvider afterSignOutUrl="/" publishableKey={PUBLISHABLE_KEY}>
       {children}
     </ClerkProvider>
   )

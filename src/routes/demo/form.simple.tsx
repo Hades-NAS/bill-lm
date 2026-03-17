@@ -1,7 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 
-import { useAppForm } from '#/hooks/demo.form'
+import { createFileRoute } from '@tanstack/react-router'
+
+import { useAppForm } from '#/hooks/app-form'
 
 export const Route = createFileRoute('/demo/form/simple')({
   component: SimpleForm,
@@ -38,12 +39,12 @@ function SimpleForm() {
     >
       <div className="w-full max-w-2xl p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
         <form
+          className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
             form.handleSubmit()
           }}
-          className="space-y-6"
         >
           <form.AppField name="title">
             {(field) => <field.TextField label="Title" />}

@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/demo/tanstack-query')({
   component: TanStackQueryDemo,
@@ -32,8 +32,8 @@ function TanStackQueryDemo() {
         <ul className="mb-4 space-y-2">
           {data.map((todo) => (
             <li
-              key={todo.id}
               className="bg-white/10 border border-white/20 rounded-lg p-3 backdrop-blur-sm shadow-md"
+              key={todo.id}
             >
               <span className="text-lg text-white">{todo.name}</span>
             </li>

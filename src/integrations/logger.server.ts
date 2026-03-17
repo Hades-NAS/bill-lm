@@ -1,52 +1,53 @@
-import pino from "pino"
+import pino from 'pino'
 
 // NOTE: This logger is SERVER-ONLY. Do not import in client-side (browser) files.
 // Pino uses Node.js streams and will fail in the browser.
 // For client-side logging, use console.log/warn/error directly.
 
-const isDevelopment = process.env.NODE_ENV !== "production"
+const isDevelopment = process.env.NODE_ENV !== 'production'
 
 export const logger = pino({
-  level: process.env.LOG_LEVEL || "info",
+  level: process.env.LOG_LEVEL || 'info',
   transport: isDevelopment
     ? {
-        target: "pino-pretty",
+        target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: "HH:MM:ss Z",
-          ignore: "pid,hostname",
+          translateTime: 'HH:MM:ss Z',
+          ignore: 'pid,hostname',
         },
       }
     : {
-        target: "pino-pretty",
+        target: 'pino-pretty',
         options: {
           colorize: false,
-          translateTime: "yyyy-mm-dd HH:MM:ss Z",
-          ignore: "hostname",
+          translateTime: 'yyyy-mm-dd HH:MM:ss Z',
+          ignore: 'hostname',
           crlf: true,
         },
       },
 })
 
 function parseArgs(args: Array<unknown>): string {
-  if (!args || args.length === 0) return ""
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!args || args.length === 0) return ''
 
   return args
     .map((arg) => {
-      if (typeof arg === "string") return ` ${arg}`
+      if (typeof arg === 'string') return ` ${arg}`
       try {
         return ` ${JSON.stringify(arg)}`
       } catch {
         return ` ${String(arg)}`
       }
     })
-    .join(" ")
+    .join(' ')
 }
 
 export function getServiceLogger(className: string) {
   // Converts "MyService" → "[MY_SERVICE]"
   const prefix = `[${className
-    .replace(/([A-Z])/g, "_$1")
+    .replace(/([A-Z])/g, '_$1')
     .substring(1)
     .toUpperCase()}]`
 

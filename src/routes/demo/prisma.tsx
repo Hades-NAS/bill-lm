@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+
 import { prisma } from '#/db'
 
 const getTodos = createServerFn({
@@ -73,9 +74,9 @@ function DemoPrisma() {
             <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 rounded-lg blur-lg opacity-60 group-hover:opacity-100 transition duration-500"></div>
             <div className="relative bg-gradient-to-br from-indigo-600 to-purple-600 p-3 rounded-lg">
               <img
-                src="/prisma.svg"
                 alt="Prisma Logo"
                 className="w-8 h-8 transform group-hover:scale-110 transition-transform duration-300"
+                src="/prisma.svg"
               />
             </div>
           </div>
@@ -89,8 +90,8 @@ function DemoPrisma() {
         <ul className="space-y-3 mb-6">
           {todos.map((todo) => (
             <li
-              key={todo.id}
               className="rounded-lg p-4 shadow-md border transition-all hover:scale-[1.02] cursor-pointer group"
+              key={todo.id}
               style={{
                 background:
                   'linear-gradient(135deg, rgba(93, 103, 227, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
@@ -112,25 +113,25 @@ function DemoPrisma() {
           )}
         </ul>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form className="flex gap-2" onSubmit={handleSubmit}>
           <input
-            type="text"
+            className="flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all text-white placeholder-indigo-300/50"
             name="title"
             placeholder="Add a new todo..."
-            className="flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all text-white placeholder-indigo-300/50"
             style={{
               background: 'rgba(93, 103, 227, 0.1)',
               borderColor: 'rgba(93, 103, 227, 0.3)',
               focusRing: 'rgba(93, 103, 227, 0.5)',
             }}
+            type="text"
           />
           <button
-            type="submit"
             className="px-6 py-3 font-semibold rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 active:scale-95 whitespace-nowrap"
             style={{
               background: 'linear-gradient(135deg, #5d67e3 0%, #8b5cf6 100%)',
               color: 'white',
             }}
+            type="submit"
           >
             Add Todo
           </button>
