@@ -7,8 +7,62 @@ datasource db {
   provider = "postgresql"
 }
 
-model Todo {
-  id        Int      @id @default(autoincrement())
-  title     String
-  createdAt DateTime @default(now())
+model User {
+  id             String    @id @default(uuid())
+  providerUserId String    @unique
+  
+  primaryEmail   String     @db.VarChar(255)
+  
+  createdAt      DateTime  @default(now()) @db.Timestamptz
+  updatedAt      DateTime  @updatedAt      @db.Timestamptz
+  
+  // Relaciones
+  collections    Collection[]
+
+  @@map("users")
+}
+
+model Collection {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  year        Int
+
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  lastUpdated DateTime @updatedAt      @db.Timestamptz
+  deletedAt   DateTime?
+
+  // Foreign key to User  userId      String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  // One-to-many relationship with Bill
+  bills       Bill[]
+
+  @@index([year], name: "collection_year_idx")
+  @@index([deletedAt], name: "collection_deleted_at_idx")
+  @@map("collections")
+}
+
+model Bill {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(255)
+
+  description String?  @db.VarChar(255)
+  amount      Float?   @db.DoublePrecision
+
+  percentage  Float?   @db.DoublePrecision
+  reason      String?  @db.VarChar(255)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  lastUpdated DateTime @updatedAt      @db.Timestamptz
+  deletedAt   DateTime?
+
+  // Foreign key to Collection
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id])
+
+  @@index([collectionId], name: "bill_collection_id_idx")
+  @@index([deletedAt], name: "bill_deleted_at_idx")
+  @@map("bills")
 }
