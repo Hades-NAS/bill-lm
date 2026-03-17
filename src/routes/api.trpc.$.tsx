@@ -1,7 +1,6 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFileRoute } from '@tanstack/react-start/server'
 
 import { trpcRouter } from '#/integrations/trpc/router'
 
