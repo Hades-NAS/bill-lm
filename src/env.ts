@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 export const env = createEnv({
   server: {
-    SERVER_URL: z.string().url().optional(),
+    DATABASE_URL: z.string().min(1),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
   },
 
@@ -14,6 +14,7 @@ export const env = createEnv({
   clientPrefix: 'VITE_',
 
   client: {
+    VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1),
     VITE_APP_TITLE: z.string().min(1).optional(),
     VITE_FIREBASE_API_KEY: z.string().min(1),
     VITE_FIREBASE_AUTH_DOMAIN: z.string().min(1),
