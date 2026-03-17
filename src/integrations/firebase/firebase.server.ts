@@ -1,11 +1,9 @@
 import admin from 'firebase-admin'
 
+import { env } from '#/env'
 import { logger } from '#/integrations/logger.server'
 
-// NOTE: This file is SERVER-ONLY. Do not import in client-side (browser) files.
-// Requires GOOGLE_APPLICATION_CREDENTIALS env var pointing to your service account JSON file.
-
-if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
   logger.error('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
   throw new Error(
     'GOOGLE_APPLICATION_CREDENTIALS environment variable is required to initialize Firebase Admin SDK',
@@ -13,7 +11,7 @@ if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
 }
 
 if (!admin.apps.length) {
-  const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS)
+  const serviceAccount = require(env.GOOGLE_APPLICATION_CREDENTIALS)
 
   logger.info('Initializing Firebase Admin SDK')
 

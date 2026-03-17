@@ -1,20 +1,17 @@
 import { getApps, initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 
-// NOTE: This file is CLIENT-ONLY. All vars must be VITE_ prefixed (safe to expose in browser).
-// For server-side Firebase access, use firebase.server.ts with Firebase Admin SDK instead.
+import { env } from '#/env'
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
-  messagingSenderId: import.meta.env
-    .VITE_FIREBASE_MESSAGING_SENDER_ID as string,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID,
 }
 
-// Avoid re-initializing on HMR / SSR hydration
 const clientApp =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
