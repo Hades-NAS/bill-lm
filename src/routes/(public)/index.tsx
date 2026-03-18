@@ -34,7 +34,10 @@ import {
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/(public)/')({ component: App })
+export const Route = createFileRoute('/(public)/')({
+  ssr: true,
+  component: App,
+})
 
 function App() {
   const navigate = useNavigate()
