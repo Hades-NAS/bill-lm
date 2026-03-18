@@ -129,19 +129,34 @@ function App() {
                 <Group gap={32} justify="center" mt={32}>
                   <Group gap={8}>
                     <Shield color="white" size={20} />
-                    <Text c="white" fw={500} size="sm">
+                    <Text
+                      c="white"
+                      className="hover:font-bold! transition-all duration-200 cursor-default"
+                      fw={500}
+                      size="sm"
+                    >
                       Análisis SRI Actualizado
                     </Text>
                   </Group>
                   <Group gap={8}>
                     <Clock color="white" size={20} />
-                    <Text c="white" fw={500} size="sm">
+                    <Text
+                      c="white"
+                      className="hover:font-bold! transition-all duration-200 cursor-default"
+                      fw={500}
+                      size="sm"
+                    >
                       Resultados en Minutos
                     </Text>
                   </Group>
                   <Group gap={8}>
                     <Users color="white" size={20} />
-                    <Text c="white" fw={500} size="sm">
+                    <Text
+                      c="white"
+                      className="hover:font-bold! transition-all duration-200 cursor-default"
+                      fw={500}
+                      size="sm"
+                    >
                       Para Todos los Usuarios
                     </Text>
                   </Group>
