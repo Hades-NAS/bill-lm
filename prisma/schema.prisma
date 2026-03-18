@@ -50,6 +50,7 @@ model Bill {
 
   description String?  @db.VarChar(255)
   amount      Float?   @db.DoublePrecision
+  fileType    BillType
 
   percentage  Float?   @db.DoublePrecision
   reason      String?  @db.VarChar(255)
@@ -65,4 +66,11 @@ model Bill {
   @@index([collectionId], name: "bill_collection_id_idx")
   @@index([deletedAt], name: "bill_deleted_at_idx")
   @@map("bills")
+}
+
+enum BillType {
+  XML
+  PDF
+  TEXT
+  MARKDOWN
 }
