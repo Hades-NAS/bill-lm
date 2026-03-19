@@ -21,8 +21,7 @@ export const isRefetchingQuery = (...results: Array<QueryResult>) => {
 }
 
 export const isLoadingMutation = (...results: Array<MutationResult>) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return results.some((r) => r.isPending && !r.isIdle)
+  return results.some((r) => r.isPending)
 }
 
 
@@ -35,7 +34,7 @@ export const isSuccessQuery = (...results: Array<QueryResult>) => {
 }
 
 export const isSuccessWithDataQuery = (...results: Array<QueryResult>) => {
-  return results.every((r) => r.isSuccess && r.data !== undefined && Array.isArray(r.data) ? r.data.length > 0 : true)
+  return results.every((r) => r.isSuccess && r.data !== undefined && Array.isArray(r.data) ? r.data.length > 0 : false)
 }
 
 export const isEmptyArrayQuery = (query: QueryResult | undefined) => {
