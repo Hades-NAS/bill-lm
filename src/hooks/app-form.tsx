@@ -1,9 +1,9 @@
 import { ActionIcon, Button } from '@mantine/core'
-
 import { createFormHook } from '@tanstack/react-form'
 
-import Input from '#/components/shared/input'
 import { fieldContext, formContext } from '#/hooks/form-context'
+
+import Input from '#/components/shared/input'
 
 export const { useAppForm } = createFormHook({
   fieldComponents: {
