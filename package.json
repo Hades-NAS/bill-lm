@@ -47,6 +47,7 @@
     "@trpc/client": "^11.11.0",
     "@trpc/server": "^11.11.0",
     "@trpc/tanstack-react-query": "^11.11.0",
+    "@types/luxon": "^3.7.1",
     "dayjs": "^1.11.20",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -55,6 +56,7 @@
     "firebase-admin": "^13.0.0",
     "install": "^0.13.0",
     "lucide-react": "^0.545.0",
+    "luxon": "^3.7.2",
     "nitro": "npm:nitro-nightly@latest",
     "pino": "^9.0.0",
     "pino-pretty": "^13.0.0",
@@ -74,7 +76,6 @@
     "@commitlint/config-conventional": "^20.4.4",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/devtools-vite": "latest",
-    "eslint": "^9.0.0",
     "@tanstack/eslint-config": "latest",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
@@ -84,6 +85,7 @@
     "@vitejs/plugin-react": "^5.1.4",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv-cli": "^11.0.0",
+    "eslint": "^9.0.0",
     "husky": "^9.1.7",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.1",
@@ -91,7 +93,8 @@
     "typescript": "^5.7.2",
     "vite": "^7.3.1",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "zod-prisma-types": "^3.3.11"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
