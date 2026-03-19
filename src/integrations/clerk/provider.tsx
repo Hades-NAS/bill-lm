@@ -11,8 +11,18 @@ export default function AppClerkProvider({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider afterSignOutUrl="/" publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider
+      afterSignOutUrl="/"
+      afterSignUpUrl="/collections"
+      publishableKey={PUBLISHABLE_KEY}
+      signInFallbackRedirectUrl="/collections"
+      signInUrl="/collections"
+      signUpFallbackRedirectUrl="/collections"
+      signUpUrl="/collections"
+    >
       {children}
     </ClerkProvider>
   )
 }
+
+// afterSignUpUrl="/collections"
