@@ -1,7 +1,5 @@
 import { SignUp } from '@clerk/clerk-react'
-
 import { Box, Center, Container, Paper } from '@mantine/core'
-
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/(public)/sign-up')({

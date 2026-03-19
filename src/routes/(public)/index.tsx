@@ -1,19 +1,3 @@
-'use client'
-
-import { useSignUp } from '@clerk/clerk-react'
-import {
-  FileText,
-  Database,
-  CheckCircle2,
-  BarChart3,
-  Clock,
-  Shield,
-  Users,
-  ArrowRight,
-  Sparkles,
-} from 'lucide-react'
-import { useEffect, useState } from 'react'
-
 import {
   Container,
   Title,
@@ -31,8 +15,21 @@ import {
   List,
   Grid,
 } from '@mantine/core'
-
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  FileText,
+  Database,
+  CheckCircle2,
+  BarChart3,
+  Clock,
+  Shield,
+  Users,
+  ArrowRight,
+  Sparkles,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+
+
 
 export const Route = createFileRoute('/(public)/')({
   ssr: true,
@@ -41,26 +38,12 @@ export const Route = createFileRoute('/(public)/')({
 
 function App() {
   const navigate = useNavigate()
-  const { signUp } = useSignUp()
+
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
-
-  const handleGetStarted = async () => {
-    if (signUp) {
-      try {
-        await signUp.create({
-          emailAddress: '',
-          password: '',
-        })
-        navigate({ to: '/collections' })
-      } catch (error) {
-        navigate({ to: '/sign-up' })
-      }
-    }
-  }
 
   return (
     <Box bg="violet.9" min-h="100vh">
@@ -111,7 +94,9 @@ function App() {
                     rightSection={<ArrowRight size={18} />}
                     size="lg"
                     variant="white"
-                    onClick={handleGetStarted}
+                    onClick={() => {
+                      navigate({ to: '/sign-up' })
+                    }}
                   >
                     Comenzar Gratis
                   </Button>
@@ -574,7 +559,9 @@ function App() {
                 rightSection={<ArrowRight size={18} />}
                 size="lg"
                 variant="filled"
-                onClick={handleGetStarted}
+                onClick={() => {
+                  navigate({ to: '/sign-up' })
+                }}
               >
                 Crear Cuenta Gratis
               </Button>
