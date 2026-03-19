@@ -6,9 +6,8 @@ export const useUserAuth = (): AuthType => {
   const { user } = useUser()
   const { userId } = useAuth()
 
-  if (!user || !userId) {
-    throw new Error('User is not authenticated')
+  return {
+    userId: userId || '',
+    primaryEmail: user?.primaryEmailAddress?.emailAddress || '',
   }
-
-  return { userId, primaryEmail: user.primaryEmailAddress?.emailAddress || '' }
 }

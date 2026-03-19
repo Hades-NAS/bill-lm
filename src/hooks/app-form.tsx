@@ -5,6 +5,8 @@ import { fieldContext, formContext } from '#/hooks/form-context'
 
 import Input from '#/components/shared/input'
 
+import type { ButtonProps } from '@mantine/core'
+
 export const { useAppForm } = createFormHook({
   fieldComponents: {
     Input,
@@ -12,8 +14,8 @@ export const { useAppForm } = createFormHook({
     ActionIcon,
   },
   formComponents: {
-    SubmitButton: (props) => (
-      <Button loaderProps={{ type: 'dots' }} {...props} type="submit" />
+    SubmitButton: (props: ButtonProps) => (
+      <Button {...props} loaderProps={{ type: 'dots' }} type="submit" />
     ),
     CancelButton: Button,
   },
