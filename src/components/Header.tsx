@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router'
 
+import ClerkHeader from '#/integrations/clerk/header-user.tsx'
+
 import ThemeToggle from './ThemeToggle'
 
-import ClerkHeader from '#/integrations/clerk/header-user.tsx'
 
 export default function Header() {
   return (
