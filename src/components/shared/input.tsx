@@ -14,13 +14,6 @@ import {
 } from '@mantine/core'
 import { DatePickerInput, DateTimePicker } from '@mantine/dates'
 
-import { capitalize } from '@/utils/string'
-import { cn } from '@/utils/styles'
-
-import { useField } from '@/hooks/form-context'
-
-import { UI } from '@/constants/app'
-
 import type {
   AutocompleteProps,
   CheckboxProps,
@@ -33,6 +26,14 @@ import type {
   TextareaProps,
 } from '@mantine/core'
 import type { DatePickerInputProps, DateTimePickerProps } from '@mantine/dates'
+
+import { UI } from '@/constants/app'
+import { useField } from '@/hooks/form-context'
+import { capitalize } from '@/utils/string'
+import { cn } from '@/utils/styles'
+
+
+
 
 // Load the Spanish locale for date pickers
 // This will be executed on the client side
