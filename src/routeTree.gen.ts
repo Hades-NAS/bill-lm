@@ -18,7 +18,6 @@ import { Route as privateCollectionsIndexRouteImport } from './routes/(private)/
 import { Route as DemoFormAddressRouteImport } from './routes/demo/form.address'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 import { Route as privateCollectionsIdRouteImport } from './routes/(private)/collections/$id'
-import { Route as privateCollectionsFormIdRouteImport } from './routes/(private)/collections/form/$id'
 
 const privateRouteRoute = privateRouteRouteImport.update({
   id: '/(private)',
@@ -64,12 +63,6 @@ const privateCollectionsIdRoute = privateCollectionsIdRouteImport.update({
   path: '/collections/$id',
   getParentRoute: () => privateRouteRoute,
 } as any)
-const privateCollectionsFormIdRoute =
-  privateCollectionsFormIdRouteImport.update({
-    id: '/collections/form/$id',
-    path: '/collections/form/$id',
-    getParentRoute: () => privateRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/user': typeof privateUserRoute
@@ -80,7 +73,6 @@ export interface FileRoutesByFullPath {
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/collections/': typeof privateCollectionsIndexRoute
-  '/collections/form/$id': typeof privateCollectionsFormIdRoute
 }
 export interface FileRoutesByTo {
   '/user': typeof privateUserRoute
@@ -91,7 +83,6 @@ export interface FileRoutesByTo {
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/collections': typeof privateCollectionsIndexRoute
-  '/collections/form/$id': typeof privateCollectionsFormIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,7 +95,6 @@ export interface FileRoutesById {
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/(private)/collections/': typeof privateCollectionsIndexRoute
-  '/(private)/collections/form/$id': typeof privateCollectionsFormIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,7 +107,6 @@ export interface FileRouteTypes {
     | '/api/trpc/$'
     | '/demo/form/address'
     | '/collections/'
-    | '/collections/form/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/user'
@@ -128,7 +117,6 @@ export interface FileRouteTypes {
     | '/api/trpc/$'
     | '/demo/form/address'
     | '/collections'
-    | '/collections/form/$id'
   id:
     | '__root__'
     | '/(private)'
@@ -140,7 +128,6 @@ export interface FileRouteTypes {
     | '/api/trpc/$'
     | '/demo/form/address'
     | '/(private)/collections/'
-    | '/(private)/collections/form/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -217,13 +204,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof privateCollectionsIdRouteImport
       parentRoute: typeof privateRouteRoute
     }
-    '/(private)/collections/form/$id': {
-      id: '/(private)/collections/form/$id'
-      path: '/collections/form/$id'
-      fullPath: '/collections/form/$id'
-      preLoaderRoute: typeof privateCollectionsFormIdRouteImport
-      parentRoute: typeof privateRouteRoute
-    }
   }
 }
 
@@ -231,14 +211,12 @@ interface privateRouteRouteChildren {
   privateUserRoute: typeof privateUserRoute
   privateCollectionsIdRoute: typeof privateCollectionsIdRoute
   privateCollectionsIndexRoute: typeof privateCollectionsIndexRoute
-  privateCollectionsFormIdRoute: typeof privateCollectionsFormIdRoute
 }
 
 const privateRouteRouteChildren: privateRouteRouteChildren = {
   privateUserRoute: privateUserRoute,
   privateCollectionsIdRoute: privateCollectionsIdRoute,
   privateCollectionsIndexRoute: privateCollectionsIndexRoute,
-  privateCollectionsFormIdRoute: privateCollectionsFormIdRoute,
 }
 
 const privateRouteRouteWithChildren = privateRouteRoute._addFileChildren(
