@@ -1,7 +1,8 @@
 import admin from 'firebase-admin'
 
-import { env } from '#/env'
 import { logger } from '#/integrations/logger.server'
+
+import { env } from '#/env'
 
 if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
   logger.error('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
