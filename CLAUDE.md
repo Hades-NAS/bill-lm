@@ -36,7 +36,6 @@ A web app for managing and analyzing invoice collections. Users can upload XML/P
 5. **Env vars**: server vars in `process.env`, client vars must be `VITE_` prefixed and accessed via `import.meta.env`.
 6. **File name conventions**: follow `demo-example.tsx` pattern for components, `example.router.ts` for tRPC routers, etc. use `-` instead of camelCase or snake_case for file names.
 
-
 ### tRPC is the ONLY API layer
 
 - All data fetching and mutations go through tRPC.

@@ -1,4 +1,4 @@
-//  @ts-check
+//  #ts-check
 
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactPlugin from 'eslint-plugin-react'
@@ -29,8 +29,8 @@ export default [
       'import/no-cycle': 'off',
       'sort-imports': 'off',
       'import/order': 'off',
-      '@typescript-eslint/array-type': 'off',
-      '@typescript-eslint/require-await': 'off',
+      '#typescript-eslint/array-type': 'off',
+      '#typescript-eslint/require-await': 'off',
       'pnpm/json-enforce-catalog': 'off',
       'react/jsx-sort-props': [
         'warn',
@@ -54,67 +54,67 @@ export default [
           ],
           pathGroups: [
             {
-              pattern: '@mantine/**',
+              pattern: '#mantine/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@prisma/client',
+              pattern: '#prisma/client',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@trpc/**',
+              pattern: '#trpc/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@tanstack/**',
+              pattern: '#tanstack/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/types/**',
+              pattern: '#/schema/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/integrations/**',
+              pattern: '#/integrations/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/store/**',
+              pattern: '#/store/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/lib/**',
+              pattern: '#/lib/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/utils/**',
+              pattern: '#/utils/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/hooks/**',
+              pattern: '#/hooks/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/constants/**',
+              pattern: '#/constants/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/assets/**',
+              pattern: '#/assets/**',
               group: 'internal',
               position: 'before',
             },
             {
-              pattern: '@/components/**',
+              pattern: '#/components/**',
               group: 'internal',
               position: 'before',
             },
