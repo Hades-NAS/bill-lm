@@ -1,4 +1,4 @@
-import { Box, Center, Loader } from '@mantine/core'
+import { Loader, Stack, Text } from '@mantine/core'
 import React from 'react'
 
 type Props = {
@@ -7,15 +7,15 @@ type Props = {
 
 export const LoaderText = (props: Props) => {
   return (
-    <Center>
+    <Stack align="center" gap={8}>
       <Loader size="xl" type="dots" />
 
       {props.children &&
         (React.isValidElement(props.children) ? (
           props.children
         ) : (
-          <Box>{props.children}</Box>
+          <Text c="gray.6">{props.children}</Text>
         ))}
-    </Center>
+    </Stack>
   )
 }

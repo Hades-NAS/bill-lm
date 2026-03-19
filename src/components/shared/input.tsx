@@ -32,9 +32,6 @@ import { useField } from '@/hooks/form-context'
 import { capitalize } from '@/utils/string'
 import { cn } from '@/utils/styles'
 
-
-
-
 // Load the Spanish locale for date pickers
 // This will be executed on the client side
 if (typeof window !== 'undefined') {
@@ -132,7 +129,9 @@ const Input = (props: InputProps) => {
     onBlur: props.onBlur || dataContext.field?.handleBlur,
     onChange: props.onChange || dataContext.field?.handleChange,
     value:
-      props.value !== null ? props.value : dataContext.field?.state.value || '',
+      props.value !== null && props.value !== undefined
+        ? props.value
+        : dataContext.field?.state.value || '',
     error: errorContext || (props as any).error,
   } as any
 
