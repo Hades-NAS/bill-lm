@@ -1,5 +1,4 @@
 import {
-  Container,
   Title,
   Text,
   Stack,
@@ -10,9 +9,10 @@ import {
   SimpleGrid,
   Center,
 } from '@mantine/core'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
+import { notify } from '#/utils/notifications'
 import {
   isEmptyArrayQuery,
   isErrorQuery,
@@ -20,17 +20,22 @@ import {
   isSuccessWithDataQuery,
 } from '#/utils/query'
 
+import { useModal } from '#/hooks/modal'
 import { useGetCollectionsQuery } from '#/hooks/query/collection'
 
+import CollectionForm from '#/components/collection/form'
 import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
+
+import type { CollectionBaseType } from '#/integrations/trpc/procedures/collections'
 
 export const Route = createFileRoute('/(private)/collections/')({
   component: CollectionsListPage,
 })
 
 function CollectionsListPage() {
-  const navigate = useNavigate()
+  const [modalCollectionForm, setCollectionForm] =
+    useModal<CollectionBaseType>()
 
   const collectionQuery = useGetCollectionsQuery({
     search: {},
@@ -59,7 +64,9 @@ function CollectionsListPage() {
           {isSuccessWithData && (
             <Button
               leftSection={<Plus size={18} />}
-              onClick={handleCreateCollection}
+              onClick={() => {
+                setCollectionForm({ opened: true })
+              }}
             >
               Nueva Colección
             </Button>
@@ -134,7 +141,9 @@ function CollectionsListPage() {
                 <Button
                   leftSection={<Plus size={18} />}
                   mt={16}
-                  onClick={handleCreateCollection}
+                  onClick={() => {
+                    setCollectionForm({ opened: true })
+                  }}
                 >
                   Nueva Colección
                 </Button>
@@ -143,13 +152,17 @@ function CollectionsListPage() {
           </EmptyState>
         )}
       </Stack>
+
+      <CollectionForm
+        modal
+        state={modalCollectionForm}
+        onClose={() => {
+          setCollectionForm({ opened: false })
+        }}
+        onSubmitted={() => {
+          setCollectionForm({ opened: false })
+        }}
+      />
     </Box>
   )
-
-  function handleCreateCollection() {
-    navigate({
-      to: '/collections/form/$id',
-      params: { id: 'new' },
-    })
-  }
 }
