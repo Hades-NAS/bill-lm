@@ -8,11 +8,11 @@ type QueryResult = UseQueryResult<unknown, TRPCClientErrorLike<any>>
 
 type MutationResult = UseMutationResult<any, TRPCClientErrorLike<any>, any, any>
 
-export const isLoadingQuery = (...results: Array<QueryResult>) => {
+export const isLoadingQuery = (...results: Array<QueryResult> | Array<UseQueryResult>) => {
   return results.some((r) => r.isLoading)
 }
 
-export const isLoadingOrRefetchQuery = (...results: Array<UseQueryResult>) => {
+export const isLoadingOrRefetchQuery = (...results: Array<UseQueryResult> | Array<QueryResult>) => {
   return results.some((r) => r.isFetching || r.isLoading)
 }
 
