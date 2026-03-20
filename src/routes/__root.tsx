@@ -17,6 +17,8 @@ import AppClerkProvider from '#/integrations/clerk/provider'
 import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools'
 import TanStackQueryProvider from '#/integrations/tanstack-query/root-provider'
 
+import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
+
 import appCss from '../styles.css?url'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
@@ -95,6 +97,15 @@ const theme = createTheme({
   },
 })
 
+/**
+ * Initialize global job subscriptions
+ * This component ensures the subscription manager hook runs at root level
+ */
+function JobsSubscriptionProvider({ children }: { children: React.ReactNode }) {
+  useJobsSubscriptionManager()
+  return <>{children}</>
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" {...mantineHtmlProps}>
@@ -108,19 +119,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <MantineProvider defaultColorScheme="light" theme={theme}>
             <Notifications position="top-right" />
             <AppClerkProvider>
-              {children}
-              <TanStackDevtools
-                config={{
-                  position: 'bottom-right',
-                }}
-                plugins={[
-                  {
-                    name: 'Tanstack Router',
-                    render: <TanStackRouterDevtoolsPanel />,
-                  },
-                  TanStackQueryDevtools,
-                ]}
-              />
+              <JobsSubscriptionProvider>
+                {children}
+                <TanStackDevtools
+                  config={{
+                    position: 'bottom-right',
+                  }}
+                  plugins={[
+                    {
+                      name: 'Tanstack Router',
+                      render: <TanStackRouterDevtoolsPanel />,
+                    },
+                    TanStackQueryDevtools,
+                  ]}
+                />
+              </JobsSubscriptionProvider>
             </AppClerkProvider>
           </MantineProvider>
         </TanStackQueryProvider>
