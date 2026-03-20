@@ -42,6 +42,7 @@ export type BillMinAggregateOutputType = {
   description: string | null
   amount: number | null
   fileType: $Enums.BillType | null
+  storagePath: string | null
   percentage: number | null
   reason: string | null
   createdAt: Date | null
@@ -56,6 +57,7 @@ export type BillMaxAggregateOutputType = {
   description: string | null
   amount: number | null
   fileType: $Enums.BillType | null
+  storagePath: string | null
   percentage: number | null
   reason: string | null
   createdAt: Date | null
@@ -70,6 +72,7 @@ export type BillCountAggregateOutputType = {
   description: number
   amount: number
   fileType: number
+  storagePath: number
   percentage: number
   reason: number
   createdAt: number
@@ -96,6 +99,7 @@ export type BillMinAggregateInputType = {
   description?: true
   amount?: true
   fileType?: true
+  storagePath?: true
   percentage?: true
   reason?: true
   createdAt?: true
@@ -110,6 +114,7 @@ export type BillMaxAggregateInputType = {
   description?: true
   amount?: true
   fileType?: true
+  storagePath?: true
   percentage?: true
   reason?: true
   createdAt?: true
@@ -124,6 +129,7 @@ export type BillCountAggregateInputType = {
   description?: true
   amount?: true
   fileType?: true
+  storagePath?: true
   percentage?: true
   reason?: true
   createdAt?: true
@@ -225,6 +231,7 @@ export type BillGroupByOutputType = {
   description: string | null
   amount: number | null
   fileType: $Enums.BillType
+  storagePath: string
   percentage: number | null
   reason: string | null
   createdAt: Date
@@ -262,6 +269,7 @@ export type BillWhereInput = {
   description?: Prisma.StringNullableFilter<"Bill"> | string | null
   amount?: Prisma.FloatNullableFilter<"Bill"> | number | null
   fileType?: Prisma.EnumBillTypeFilter<"Bill"> | $Enums.BillType
+  storagePath?: Prisma.StringFilter<"Bill"> | string
   percentage?: Prisma.FloatNullableFilter<"Bill"> | number | null
   reason?: Prisma.StringNullableFilter<"Bill"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Bill"> | Date | string
@@ -277,6 +285,7 @@ export type BillOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   amount?: Prisma.SortOrderInput | Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  storagePath?: Prisma.SortOrder
   percentage?: Prisma.SortOrderInput | Prisma.SortOrder
   reason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -295,6 +304,7 @@ export type BillWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Bill"> | string | null
   amount?: Prisma.FloatNullableFilter<"Bill"> | number | null
   fileType?: Prisma.EnumBillTypeFilter<"Bill"> | $Enums.BillType
+  storagePath?: Prisma.StringFilter<"Bill"> | string
   percentage?: Prisma.FloatNullableFilter<"Bill"> | number | null
   reason?: Prisma.StringNullableFilter<"Bill"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Bill"> | Date | string
@@ -310,6 +320,7 @@ export type BillOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   amount?: Prisma.SortOrderInput | Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  storagePath?: Prisma.SortOrder
   percentage?: Prisma.SortOrderInput | Prisma.SortOrder
   reason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -332,6 +343,7 @@ export type BillScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Bill"> | string | null
   amount?: Prisma.FloatNullableWithAggregatesFilter<"Bill"> | number | null
   fileType?: Prisma.EnumBillTypeWithAggregatesFilter<"Bill"> | $Enums.BillType
+  storagePath?: Prisma.StringWithAggregatesFilter<"Bill"> | string
   percentage?: Prisma.FloatNullableWithAggregatesFilter<"Bill"> | number | null
   reason?: Prisma.StringNullableWithAggregatesFilter<"Bill"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Bill"> | Date | string
@@ -346,6 +358,7 @@ export type BillCreateInput = {
   description?: string | null
   amount?: number | null
   fileType: $Enums.BillType
+  storagePath: string
   percentage?: number | null
   reason?: string | null
   createdAt?: Date | string
@@ -360,6 +373,7 @@ export type BillUncheckedCreateInput = {
   description?: string | null
   amount?: number | null
   fileType: $Enums.BillType
+  storagePath: string
   percentage?: number | null
   reason?: string | null
   createdAt?: Date | string
@@ -374,6 +388,7 @@ export type BillUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   fileType?: Prisma.EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
   percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -388,6 +403,7 @@ export type BillUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   fileType?: Prisma.EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
   percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -402,6 +418,7 @@ export type BillCreateManyInput = {
   description?: string | null
   amount?: number | null
   fileType: $Enums.BillType
+  storagePath: string
   percentage?: number | null
   reason?: string | null
   createdAt?: Date | string
@@ -416,6 +433,7 @@ export type BillUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   fileType?: Prisma.EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
   percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -429,6 +447,7 @@ export type BillUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   fileType?: Prisma.EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
   percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -453,6 +472,7 @@ export type BillCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  storagePath?: Prisma.SortOrder
   percentage?: Prisma.SortOrder
   reason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -472,6 +492,7 @@ export type BillMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  storagePath?: Prisma.SortOrder
   percentage?: Prisma.SortOrder
   reason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -486,6 +507,7 @@ export type BillMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  storagePath?: Prisma.SortOrder
   percentage?: Prisma.SortOrder
   reason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -559,6 +581,7 @@ export type BillCreateWithoutCollectionInput = {
   description?: string | null
   amount?: number | null
   fileType: $Enums.BillType
+  storagePath: string
   percentage?: number | null
   reason?: string | null
   createdAt?: Date | string
@@ -572,6 +595,7 @@ export type BillUncheckedCreateWithoutCollectionInput = {
   description?: string | null
   amount?: number | null
   fileType: $Enums.BillType
+  storagePath: string
   percentage?: number | null
   reason?: string | null
   createdAt?: Date | string
@@ -614,6 +638,7 @@ export type BillScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"Bill"> | string | null
   amount?: Prisma.FloatNullableFilter<"Bill"> | number | null
   fileType?: Prisma.EnumBillTypeFilter<"Bill"> | $Enums.BillType
+  storagePath?: Prisma.StringFilter<"Bill"> | string
   percentage?: Prisma.FloatNullableFilter<"Bill"> | number | null
   reason?: Prisma.StringNullableFilter<"Bill"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Bill"> | Date | string
@@ -628,6 +653,7 @@ export type BillCreateManyCollectionInput = {
   description?: string | null
   amount?: number | null
   fileType: $Enums.BillType
+  storagePath: string
   percentage?: number | null
   reason?: string | null
   createdAt?: Date | string
@@ -641,6 +667,7 @@ export type BillUpdateWithoutCollectionInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   fileType?: Prisma.EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
   percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -654,6 +681,7 @@ export type BillUncheckedUpdateWithoutCollectionInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   fileType?: Prisma.EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
   percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -667,6 +695,7 @@ export type BillUncheckedUpdateManyWithoutCollectionInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   fileType?: Prisma.EnumBillTypeFieldUpdateOperationsInput | $Enums.BillType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
   percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -682,6 +711,7 @@ export type BillSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   description?: boolean
   amount?: boolean
   fileType?: boolean
+  storagePath?: boolean
   percentage?: boolean
   reason?: boolean
   createdAt?: boolean
@@ -697,6 +727,7 @@ export type BillSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   description?: boolean
   amount?: boolean
   fileType?: boolean
+  storagePath?: boolean
   percentage?: boolean
   reason?: boolean
   createdAt?: boolean
@@ -712,6 +743,7 @@ export type BillSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   description?: boolean
   amount?: boolean
   fileType?: boolean
+  storagePath?: boolean
   percentage?: boolean
   reason?: boolean
   createdAt?: boolean
@@ -727,6 +759,7 @@ export type BillSelectScalar = {
   description?: boolean
   amount?: boolean
   fileType?: boolean
+  storagePath?: boolean
   percentage?: boolean
   reason?: boolean
   createdAt?: boolean
@@ -735,7 +768,7 @@ export type BillSelectScalar = {
   collectionId?: boolean
 }
 
-export type BillOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "amount" | "fileType" | "percentage" | "reason" | "createdAt" | "updatedAt" | "deletedAt" | "collectionId", ExtArgs["result"]["bill"]>
+export type BillOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "amount" | "fileType" | "storagePath" | "percentage" | "reason" | "createdAt" | "updatedAt" | "deletedAt" | "collectionId", ExtArgs["result"]["bill"]>
 export type BillInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   collection?: boolean | Prisma.CollectionDefaultArgs<ExtArgs>
 }
@@ -757,6 +790,7 @@ export type $BillPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     description: string | null
     amount: number | null
     fileType: $Enums.BillType
+    storagePath: string
     percentage: number | null
     reason: string | null
     createdAt: Date
@@ -1192,6 +1226,7 @@ export interface BillFieldRefs {
   readonly description: Prisma.FieldRef<"Bill", 'String'>
   readonly amount: Prisma.FieldRef<"Bill", 'Float'>
   readonly fileType: Prisma.FieldRef<"Bill", 'BillType'>
+  readonly storagePath: Prisma.FieldRef<"Bill", 'String'>
   readonly percentage: Prisma.FieldRef<"Bill", 'Float'>
   readonly reason: Prisma.FieldRef<"Bill", 'String'>
   readonly createdAt: Prisma.FieldRef<"Bill", 'DateTime'>

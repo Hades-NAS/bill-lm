@@ -697,6 +697,7 @@ export const BillScalarFieldEnum = {
   description: 'description',
   amount: 'amount',
   fileType: 'fileType',
+  storagePath: 'storagePath',
   percentage: 'percentage',
   reason: 'reason',
   createdAt: 'createdAt',
