@@ -1,15 +1,21 @@
 import { TRPCError } from '@trpc/server'
+import { DateTime } from 'luxon'
 
 import { WithAuthSchema } from '#/schema/auth'
 import { AnalyzeCollectionRequestSchema, CreateCollectionSchema, GetCollectionByIdRequestSchema, GetCollectionsRequestSchema, UpdateCollectionSchema } from '#/schema/collections'
 
+
+import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
+import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
 import { publicProcedure } from '#/integrations/trpc/init'
 
-import type { BillModel } from '#/generated/prisma/models'
+import { FireCollections } from '#/constants/firebase'
+
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import type { AuthType } from '#/schema/auth';
+import type { AnalyzeJobData } from '#/schema/collections';
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server';
 
 const logger = getServiceLogger('Collections')
@@ -327,7 +333,33 @@ export const collectionsRouter = {
         })
       }
 
-      return { success: true }
+      const payload: AnalyzeJobData = {
+        jobId: crypto.randomUUID(),
+        data: {
+          collectionId: data.collectionId,
+          type,
+          billIds: billsToAnalyze.map(bill => bill.id),
+        },
+        percentage: 0,
+        status: 'pending',
+        createdAt: DateTime.now().toJSDate(),
+        updatedAt: DateTime.now().toJSDate(),
+      }
+
+      const jobName = `analyze-${data.collectionId}-${payload.jobId}`
+
+      await AnalyzeQueue.add(jobName, payload)
+
+      await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(payload.jobId).set(payload)
+
+      logger.info('Added analyze job to queue', {
+        userId: auth.userId,
+        collectionId: data.collectionId,
+        jobId: payload.jobId,
+        billCount: billsToAnalyze.length,
+      })
+
+      return { jobId: payload.jobId, collectionId: data.collectionId }
     })
 } satisfies TRPCRouterRecord
 

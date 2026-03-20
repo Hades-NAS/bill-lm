@@ -1,4 +1,6 @@
 import admin from 'firebase-admin'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import { logger } from '#/integrations/logger.server'
 
@@ -12,7 +14,9 @@ if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
 }
 
 if (!admin.apps.length) {
-  const serviceAccount = require(env.GOOGLE_APPLICATION_CREDENTIALS)
+  const serviceAccount = JSON.parse(
+    readFileSync(resolve(env.GOOGLE_APPLICATION_CREDENTIALS), 'utf-8')
+  )
 
   logger.info('Initializing Firebase Admin SDK')
 
