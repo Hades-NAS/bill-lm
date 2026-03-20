@@ -53,6 +53,23 @@ export const AnalyzeCollectionRequestSchema = z.object({
 
 export type AnalyzeCollectionRequest = z.infer<typeof AnalyzeCollectionRequestSchema>
 
+export const AnalyzeJobDataSchema = z.object({
+  data: AnalyzeCollectionRequestSchema,
+  jobId: z.string(),
+  percentage: z.number().min(0).max(100),
+  status: z.enum(['pending', 'in-progress', 'completed', 'failed']),
+  error: z.string().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
+
+export type AnalyzeJobData = z.infer<typeof AnalyzeJobDataSchema>
+
+export const UpdateAnalyzeJobDataSchema = AnalyzeJobDataSchema.partial().extend({
+  jobId: AnalyzeJobDataSchema.shape.jobId,
+})
+
+export type UpdateAnalyzeJobData = z.infer<typeof UpdateAnalyzeJobDataSchema>
 
 // MODELS
 export const CreateCollectionSchema = CollectionSchema.pick({
