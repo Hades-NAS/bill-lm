@@ -24,8 +24,8 @@ export const useCollectionCreateMutation = (options: MutationOptions<CreateColle
 
   return useMutation(trpc.collections.create.mutationOptions({
     ...options,
-    onSuccess: async (data) => {
-      await invalidateQueriesByKeys(
+    onSuccess: (data) => {
+      invalidateQueriesByKeys(
         queryClient,
         CREATE_COLLECTION_INVALIDATION_KEYS()
       );
@@ -56,8 +56,8 @@ export const useCollectionUpdateMutation = (options: MutationOptions<UpdateColle
 
   return useMutation(trpc.collections.update.mutationOptions({
     ...options,
-    onSuccess: async (data) => {
-      await invalidateQueriesByKeys(
+    onSuccess: (data) => {
+      invalidateQueriesByKeys(
         queryClient,
         UPDATE_COLLECTION_INVALIDATION_KEYS(data.id)
       );
@@ -72,6 +72,34 @@ export const useCollectionUpdateMutation = (options: MutationOptions<UpdateColle
       notify.error({
         title: 'Error al guardar colección',
         message: 'Ocurrió un error al guardar tu colección. Por favor, intenta de nuevo.',
+      })
+    }
+  }));
+}
+
+export const useAnalyzeCollectionMutation = (options: MutationOptions<{ jobId: string, collectionId: string }> = {}) => {
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
+  return useMutation(trpc.collections.analyze.mutationOptions({
+    ...options,
+    onSuccess: (data) => {
+      // implement logic to subscribe to job updates using data.jobId
+      invalidateQueriesByKeys(
+        queryClient,
+        UPDATE_COLLECTION_INVALIDATION_KEYS(data.collectionId)
+      );
+      options.onSuccess?.(data);
+      notify.success({
+        title: 'Análisis iniciado',
+        message: 'El análisis de tu colección ha sido iniciado. Recibirás una notificación cuando esté completo.',
+      })
+    },
+    onError: (error) => {
+      options.onError?.(error);
+      notify.error({
+        title: 'Error al iniciar análisis',
+        message: 'Ocurrió un error al iniciar el análisis de tu colección. Por favor, intenta de nuevo.',
       })
     }
   }));
