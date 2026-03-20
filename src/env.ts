@@ -9,6 +9,12 @@ export const env = createEnv({
     MINIO_ACCESS_KEY: z.string().min(1),
     MINIO_SECRET_KEY: z.string().min(1),
     MINIO_BUCKET_NAME: z.string().min(1),
+    ANALYZE_QUEUE_NAME: z.string().min(1),
+    REDIS_HOST: z.string().min(1),
+    REDIS_PORT: z.string().min(1).optional(),
+    LLM_BASE_URL: z.string().min(1),
+    MODEL_KEY: z.string().optional(),
+    FAKE_ANALYZE: z.string().optional(),
   },
 
   /**
@@ -40,6 +46,12 @@ export const env = createEnv({
     MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY,
     MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY,
     MINIO_BUCKET_NAME: process.env.MINIO_BUCKET_NAME,
+    ANALYZE_QUEUE_NAME: process.env.ANALYZE_QUEUE_NAME,
+    REDIS_HOST: process.env.REDIS_HOST,
+    REDIS_PORT: process.env.REDIS_PORT,
+    LLM_BASE_URL: process.env.LLM_BASE_URL,
+    MODEL_KEY: process.env.MODEL_KEY,
+    FAKE_ANALYZE: process.env.FAKE_ANALYZE,
 
     // Client vars
     VITE_CLERK_PUBLISHABLE_KEY: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
