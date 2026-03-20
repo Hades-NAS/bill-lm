@@ -97,7 +97,7 @@ export abstract class AgentEngine {
       if (env.FAKE_ANALYZE === "true") {
         this.logger.warn("FAKE_ANALYZE is enabled, returning dummy output for AgentEngine.process")
 
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000))
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 20000 + 1000))
 
         return {
           output: {

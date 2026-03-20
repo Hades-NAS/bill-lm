@@ -74,6 +74,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         jobId,
         percentage: roundToDecimals((billsResults.length / billIds.length) * 100),
         status: billsResults.length === billIds.length ? 'completed' : 'in-progress',
+        updatedAt: DateTime.now().toJSDate(),
       }
 
       logger.info(`Updating job id: ${job.id} with percentage: ${dataJob.percentage}% and status: ${dataJob.status}`)
