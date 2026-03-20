@@ -4,6 +4,7 @@ import {
   createTheme,
   mantineHtmlProps,
 } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import {
   HeadContent,
@@ -98,6 +99,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
         <TanStackQueryProvider>
           <MantineProvider defaultColorScheme="light" theme={theme}>
+            <Notifications position="top-right" />
             <AppClerkProvider>
               {children}
               <TanStackDevtools
