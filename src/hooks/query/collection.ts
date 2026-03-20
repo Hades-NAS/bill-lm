@@ -16,3 +16,15 @@ export const useGetCollectionsQuery = (data: GetCollectionsRequest) => {
     data
   }));
 }
+
+export const useGetCollectionByIdQuery = (id: string) => {
+  const auth = useUserAuth();
+  const trpc = useTRPC();
+
+  return useQuery(trpc.collections.detail.queryOptions({
+    auth,
+    data: { id }
+  }, {
+    enabled: !!id
+  }));
+}
