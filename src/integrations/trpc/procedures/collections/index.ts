@@ -1,12 +1,13 @@
 import { TRPCError } from '@trpc/server'
 
 import { WithAuthSchema } from '#/schema/auth'
-import { CreateCollectionSchema, GetCollectionByIdRequestSchema, GetCollectionsRequestSchema, UpdateCollectionSchema } from '#/schema/collections'
+import { AnalyzeCollectionRequestSchema, CreateCollectionSchema, GetCollectionByIdRequestSchema, GetCollectionsRequestSchema, UpdateCollectionSchema } from '#/schema/collections'
 
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
 import { publicProcedure } from '#/integrations/trpc/init'
 
+import type { BillModel } from '#/generated/prisma/models'
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import type { AuthType } from '#/schema/auth';
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server';
@@ -236,6 +237,98 @@ export const collectionsRouter = {
 
       return collection
     }),
+  analyze: publicProcedure
+    .input(WithAuthSchema(AnalyzeCollectionRequestSchema))
+    .mutation(async ({ input }) => {
+      const { auth, data } = input
+
+      if (!auth.userId) {
+        logger.warn('Unauthorized access attempt to analyze collection', {
+          auth,
+        })
+
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'User ID is required for collections procedures',
+        })
+      }
+
+      logger.info('Analyzing collection for user', {
+        userId: auth.userId,
+        collectionId: data.collectionId,
+      })
+
+      const { type, billIds } = data
+
+      let billsToAnalyze: Array<{ id: string }> = []
+
+      if (type === 'all') {
+        const bills = await prisma.bill.findMany({
+          where: {
+            collectionId: data.collectionId,
+          },
+          select: {
+            id: true,
+          }
+        })
+        billsToAnalyze = bills
+      } else if (type === 'missing') {
+        const bills = await prisma.bill.findMany({
+          where: {
+            collectionId: data.collectionId,
+            AND: [
+              { percentage: null },
+              { reason: null },
+            ],
+          },
+          select: {
+            id: true,
+          }
+        })
+        billsToAnalyze = bills
+      } else if (type === 'analyzed') {
+        const bills = await prisma.bill.findMany({
+          where: {
+            collectionId: data.collectionId,
+            OR: [
+              { percentage: { not: null } },
+              { reason: { not: null } },
+            ],
+          },
+          select: {
+            id: true,
+          }
+        })
+        billsToAnalyze = bills
+      } else {
+        const bills = await prisma.bill.findMany({
+          where: {
+            collectionId: data.collectionId,
+            id: {
+              in: billIds,
+            },
+          },
+          select: {
+            id: true,
+          }
+        })
+        billsToAnalyze = bills
+      }
+
+      if (billsToAnalyze.length === 0) {
+        logger.info('No bills to analyze for collection', {
+          userId: auth.userId,
+          collectionId: data.collectionId,
+        })
+
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No bills to analyze for the specified collection and criteria',
+        })
+      }
+
+      return { success: true }
+    })
 } satisfies TRPCRouterRecord
 
 export type TRPCRouterOutputs = inferRouterOutputs<TRPCRouter>
