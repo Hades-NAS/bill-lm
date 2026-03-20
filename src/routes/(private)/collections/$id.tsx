@@ -15,6 +15,7 @@ import {
   Checkbox,
   Flex,
   List,
+  Modal,
 } from '@mantine/core'
 import { useListState } from '@mantine/hooks'
 import { useQuery } from '@tanstack/react-query'
@@ -23,7 +24,7 @@ import { Calendar, ChevronLeft, Trash2, Upload } from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
 
-import { getColorBillType } from '#/utils/bill'
+import { getColorBillType, getColorPercentage } from '#/utils/bill'
 import {
   isLoadingMutation,
   isLoadingOrRefetchQuery,
@@ -33,12 +34,15 @@ import {
 import { useUserAuth } from '#/hooks/auth'
 import { useModal } from '#/hooks/modal'
 import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
+import { useAnalyzeCollectionMutation } from '#/hooks/mutation/collection'
 import { useGetCollectionByIdQuery } from '#/hooks/query/collection'
 import { billsKeys } from '#/hooks/query-keys'
 
 import BillAddForm from '#/components/collection/form/bill-form'
 import ConfModal from '#/components/shared/conf-modal'
 import TextWithIcon from '#/components/shared/text-icon'
+
+import type { AnalyzeCollectionRequest } from '#/schema/collections'
 
 export const Route = createFileRoute('/(private)/collections/$id')({
   component: CollectionDetailPage,
@@ -53,9 +57,13 @@ function CollectionDetailPage() {
 
   const [billDeleteModal, setBillDeleteModal] = React.useState(false)
 
+  const [analyzeModal, setAnalyzeModal] = useModal<AnalyzeCollectionRequest>()
+
   const [selectedRows, handlerSelectRows] = useListState<string>([])
 
   const collectionQuery = useGetCollectionByIdQuery(collectionId)
+
+  const analyzeCollectionMutation = useAnalyzeCollectionMutation()
 
   const billsCalcQuery = useQuery({
     enabled: !!collectionQuery.data,
@@ -71,7 +79,13 @@ function CollectionDetailPage() {
           pending++
         }
       })
-      return { analyzed, pending }
+
+      const fullAnalyzed = collectionQuery.data?.bills.length === analyzed
+      const partialAnalyzed =
+        analyzed > 0 && collectionQuery.data?.bills.length !== analyzed
+      const notAnalyzed = analyzed === 0
+
+      return { analyzed, pending, fullAnalyzed, partialAnalyzed, notAnalyzed }
     },
     refetchOnMount: true,
   })
@@ -90,6 +104,8 @@ function CollectionDetailPage() {
   const isLoadingCalc = isLoadingOrRefetchQuery(billsCalcQuery)
 
   const isLoadingDelete = isLoadingMutation(deleteBillsMutation)
+
+  const isAnalyzing = isLoadingMutation(analyzeCollectionMutation)
 
   const rowsMemo = React.useMemo(
     () => renderRows(),
@@ -143,6 +159,120 @@ function CollectionDetailPage() {
           </Box>
         )}
       </ConfModal>
+
+      <Modal
+        centered
+        opened={!!analyzeModal.opened}
+        size="lg"
+        title={
+          <Text fw={500} size="lg">
+            Analizar colección
+          </Text>
+        }
+        onClose={() => {
+          setAnalyzeModal({ opened: false })
+        }}
+      >
+        {billsCalcQuery.data && billsCalcQuery.data.fullAnalyzed && (
+          <Text>
+            Esta colección tiene{' '}
+            <Text component="span" fw="bold">
+              todas sus facturas analizadas
+            </Text>
+            . ¿Estás seguro de que deseas volver a analizarlas?
+          </Text>
+        )}
+        {billsCalcQuery.data && billsCalcQuery.data.partialAnalyzed && (
+          <Text>
+            Esta colección tiene
+            {''}
+            <Text component="span" fw="bold">
+              {billsCalcQuery.data.analyzed} facturas analizadas y{' '}
+              {billsCalcQuery.data.pending} pendientes
+            </Text>
+            . ¿Estás seguro de que deseas volver a analizarlas?
+          </Text>
+        )}
+        {billsCalcQuery.data && billsCalcQuery.data.notAnalyzed && (
+          <Text>
+            Esta colección tiene{' '}
+            <Text component="span" fw="bold">
+              {billsCalcQuery.data.pending} facturas pendientes de analizar
+            </Text>
+            . ¿Estás seguro de que deseas analizarlas?
+          </Text>
+        )}
+        <Group justify="flex-end" mt={24}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setAnalyzeModal({ opened: false })
+            }}
+          >
+            Cancelar
+          </Button>
+          {billsCalcQuery.data && billsCalcQuery.data.notAnalyzed && (
+            <Button
+              color="violet"
+              loading={isAnalyzing}
+              onClick={() => {
+                setAnalyzeModal({ opened: false })
+                analyzeCollectionMutation.mutate({
+                  auth,
+                  data: {
+                    collectionId,
+                    type: 'missing',
+                    billIds: [],
+                  },
+                })
+              }}
+            >
+              Analizar
+            </Button>
+          )}
+          {billsCalcQuery.data && billsCalcQuery.data.partialAnalyzed && (
+            <Button
+              color="violet"
+              loading={isAnalyzing}
+              variant={billsCalcQuery.data.fullAnalyzed ? 'light' : 'filled'}
+              onClick={() => {
+                setAnalyzeModal({ opened: false })
+                analyzeCollectionMutation.mutate({
+                  auth,
+                  data: {
+                    collectionId,
+                    type: 'missing',
+                    billIds: [],
+                  },
+                })
+              }}
+            >
+              Analizar pendientes
+            </Button>
+          )}
+          {billsCalcQuery.data &&
+            (billsCalcQuery.data.fullAnalyzed ||
+              billsCalcQuery.data.partialAnalyzed) && (
+              <Button
+                color="violet"
+                loading={isAnalyzing}
+                onClick={() => {
+                  setAnalyzeModal({ opened: false })
+                  analyzeCollectionMutation.mutate({
+                    auth,
+                    data: {
+                      collectionId,
+                      type: 'all',
+                      billIds: [],
+                    },
+                  })
+                }}
+              >
+                Re-analizar todo
+              </Button>
+            )}
+        </Group>
+      </Modal>
 
       <Box py={40}>
         <Stack gap={32}>
@@ -198,7 +328,11 @@ function CollectionDetailPage() {
                   >
                     Subir Facturas
                   </Button>
-                  <Button color="violet" variant="light">
+                  <Button
+                    color="violet"
+                    variant="light"
+                    onClick={() => setAnalyzeModal({ opened: true })}
+                  >
                     Analizar Colección
                   </Button>
                 </Group>
@@ -335,7 +469,12 @@ function CollectionDetailPage() {
         </Table.Td>
         <Table.Td>
           {invoice.percentage !== null ? (
-            <Badge color="green">{invoice.percentage}%</Badge>
+            <Badge
+              color={getColorPercentage(invoice.percentage)}
+              variant="filled"
+            >
+              {invoice.percentage}%
+            </Badge>
           ) : (
             <Badge color="gray">Pendiente</Badge>
           )}

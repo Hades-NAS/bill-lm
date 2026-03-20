@@ -86,6 +86,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 const theme = createTheme({
   primaryColor: 'violet',
+  components: {
+    Button: {
+      defaultProps: {
+        loaderProps: { type: 'dots' },
+      },
+    },
+  },
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
