@@ -55,6 +55,7 @@ model Bill {
   description String?  @db.VarChar(255)
   amount      Float?   @db.DoublePrecision
   fileType    BillType
+  storagePath String   @db.VarChar(255)
 
   percentage  Float?   @db.DoublePrecision
   reason      String?  @db.VarChar(255)
