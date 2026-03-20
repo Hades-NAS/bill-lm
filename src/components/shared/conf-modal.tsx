@@ -1,4 +1,4 @@
-import { Button, Group, Modal } from '@mantine/core'
+import { Button, Group, Modal, Text } from '@mantine/core'
 
 type ConfModalProps = {
   title: string
@@ -27,9 +27,20 @@ const ConfModal = (props: ConfModalProps) => {
     onCancel,
   } = props
   return (
-    <Modal centered opened={opened} size="lg" title={title} onClose={onCancel}>
+    <Modal
+      centered
+      opened={opened}
+      size="lg"
+      title={
+        <Text fw="bold" size="lg">
+          {title}
+        </Text>
+      }
+      onClose={onCancel}
+    >
       <div className="cd-mb-[1rem]">{children}</div>
-      <Group justify="flex-end">
+
+      <Group justify="flex-end" mt="lg">
         <Button color={cancelColor ?? 'gray'} onClick={onCancel}>
           {cancelText ?? 'Cancelar'}
         </Button>
