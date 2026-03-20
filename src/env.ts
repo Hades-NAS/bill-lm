@@ -5,6 +5,10 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
+    MINIO_ENDPOINT: z.string().min(1),
+    MINIO_ACCESS_KEY: z.string().min(1),
+    MINIO_SECRET_KEY: z.string().min(1),
+    MINIO_BUCKET_NAME: z.string().min(1),
   },
 
   /**
@@ -28,7 +32,25 @@ export const env = createEnv({
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: import.meta.env,
+  runtimeEnv: {
+    // Server vars
+    DATABASE_URL: process.env.DATABASE_URL,
+    GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    MINIO_ENDPOINT: process.env.MINIO_ENDPOINT,
+    MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY,
+    MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY,
+    MINIO_BUCKET_NAME: process.env.MINIO_BUCKET_NAME,
+
+    // Client vars
+    VITE_CLERK_PUBLISHABLE_KEY: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+    VITE_APP_TITLE: import.meta.env.VITE_APP_TITLE,
+    VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY,
+    VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    VITE_FIREBASE_STORAGE_BUCKET: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    VITE_FIREBASE_MESSAGING_SENDER_ID: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    VITE_FIREBASE_APP_ID: import.meta.env.VITE_FIREBASE_APP_ID,
+  },
 
   /**
    * By default, this library will feed the environment variables directly to

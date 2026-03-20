@@ -15,3 +15,8 @@ body,
 #app {
   min-height: 100%;
 }
+
+ol,
+ul {
+  list-style: initial;
+}
