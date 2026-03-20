@@ -11,3 +11,14 @@ export const getColorBillType = (type: BillType) => {
     return 'cyan'
   }
 }
+export const getColorPercentage = (percentage: number | null) => {
+  if (percentage === null) {
+    return 'gray'
+  } else if (percentage < 50) {
+    return 'red'
+  } else if (percentage < 100) {
+    return 'yellow'
+  } else {
+    return 'green'
+  }
+}
