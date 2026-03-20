@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useJobsStore } from "#/integrations/jobs/jobs.store";
 import { getContext } from "#/integrations/tanstack-query/root-provider";
 import { useTRPC } from "#/integrations/trpc/react";
 
@@ -80,11 +81,25 @@ export const useCollectionUpdateMutation = (options: MutationOptions<UpdateColle
 export const useAnalyzeCollectionMutation = (options: MutationOptions<{ jobId: string, collectionId: string }> = {}) => {
   const queryClient = useQueryClient();
   const trpc = useTRPC();
+  const addJob = useJobsStore((state) => state.addJob);
 
   return useMutation(trpc.collections.analyze.mutationOptions({
     ...options,
     onSuccess: (data) => {
-      // implement logic to subscribe to job updates using data.jobId
+      // Add job to global store - subscription manager will handle Firestore subscription
+      addJob({
+        jobId: data.jobId,
+        data: {
+          collectionId: data.collectionId,
+          type: 'all', // Default - will be updated by Firestore
+          billIds: [],
+        },
+        percentage: 0,
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
       invalidateQueriesByKeys(
         queryClient,
         UPDATE_COLLECTION_INVALIDATION_KEYS(data.collectionId)
