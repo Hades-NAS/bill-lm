@@ -1,6 +1,4 @@
-
 import {
-  Container,
   Title,
   Text,
   Stack,
@@ -12,152 +10,372 @@ import {
   Badge,
   ActionIcon,
   Tooltip,
+  Center,
+  Skeleton,
+  Checkbox,
+  Flex,
+  List,
 } from '@mantine/core'
+import { useListState } from '@mantine/hooks'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { ChevronLeft, Trash2, Upload } from 'lucide-react'
+import { Calendar, ChevronLeft, Trash2, Upload } from 'lucide-react'
+import { DateTime } from 'luxon'
+import React from 'react'
+
+import { getColorBillType } from '#/utils/bill'
+import {
+  isLoadingMutation,
+  isLoadingOrRefetchQuery,
+  isLoadingQuery,
+} from '#/utils/query'
+
+import { useUserAuth } from '#/hooks/auth'
+import { useModal } from '#/hooks/modal'
+import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
+import { useGetCollectionByIdQuery } from '#/hooks/query/collection'
+import { billsKeys } from '#/hooks/query-keys'
+
+import BillAddForm from '#/components/collection/form/bill-form'
+import ConfModal from '#/components/shared/conf-modal'
+import TextWithIcon from '#/components/shared/text-icon'
 
 export const Route = createFileRoute('/(private)/collections/$id')({
   component: CollectionDetailPage,
 })
 
 function CollectionDetailPage() {
-  const params = Route.useParams()
-  const collectionId = params.id
+  const { id: collectionId } = Route.useParams()
 
-  const invoices = [
-    {
-      id: 1,
-      filename: 'factura-001.xml',
-      fileType: 'xml',
-      createdAt: '2024-01-15',
-      percentage: 85.5,
-      analyze: 'Gasto deducible según normativa SRI',
-    },
-    {
-      id: 2,
-      filename: 'factura-002.pdf',
-      fileType: 'pdf',
-      createdAt: '2024-01-16',
-      percentage: 60.0,
-      analyze: 'Parcialmente deducible',
-    },
-    {
-      id: 3,
-      filename: 'factura-003.xml',
-      fileType: 'xml',
-      createdAt: '2024-01-17',
-      percentage: null,
-      analyze: null,
-    },
-  ]
+  const auth = useUserAuth()
 
-  const rows = invoices.map((invoice) => (
-    <Table.Tr key={invoice.id}>
-      <Table.Td>{invoice.filename}</Table.Td>
-      <Table.Td>
-        <Badge size="sm" variant="light">
-          {invoice.fileType.toUpperCase()}
-        </Badge>
-      </Table.Td>
-      <Table.Td>{invoice.createdAt}</Table.Td>
-      <Table.Td>
-        {invoice.percentage !== null ? (
-          <Badge color="green">{invoice.percentage}%</Badge>
-        ) : (
-          <Badge color="gray">Pendiente</Badge>
-        )}
-      </Table.Td>
-      <Table.Td>
-        {invoice.analyze ? (
-          <Text size="sm">{invoice.analyze}</Text>
-        ) : (
-          <Text c="dimmed" size="sm">
-            -
-          </Text>
-        )}
-      </Table.Td>
-      <Table.Td>
-        <Tooltip label="Eliminar">
-          <ActionIcon color="red" size="sm" variant="subtle">
-            <Trash2 size={16} />
-          </ActionIcon>
-        </Tooltip>
-      </Table.Td>
-    </Table.Tr>
-  ))
+  const [billModal, setBillModal] = useModal<string>(collectionId)
+
+  const [billDeleteModal, setBillDeleteModal] = React.useState(false)
+
+  const [selectedRows, handlerSelectRows] = useListState<string>([])
+
+  const collectionQuery = useGetCollectionByIdQuery(collectionId)
+
+  const billsCalcQuery = useQuery({
+    enabled: !!collectionQuery.data,
+    queryKey: billsKeys.calc(collectionId, collectionQuery.data?.bills || []),
+    queryFn: () => {
+      let analyzed = 0
+      let pending = 0
+
+      collectionQuery.data?.bills.forEach((bill) => {
+        if (bill.percentage !== null) {
+          analyzed++
+        } else {
+          pending++
+        }
+      })
+      return { analyzed, pending }
+    },
+    refetchOnMount: true,
+  })
+
+  const deleteBillsMutation = useDeleteBillsMutation({
+    onSuccess: () => {
+      handlerSelectRows.setState([])
+      setBillDeleteModal(false)
+    },
+  })
+
+  const isLoading = isLoadingQuery(collectionQuery)
+
+  const isLoadingOrRefetch = isLoadingOrRefetchQuery(collectionQuery)
+
+  const isLoadingCalc = isLoadingOrRefetchQuery(billsCalcQuery)
+
+  const isLoadingDelete = isLoadingMutation(deleteBillsMutation)
+
+  const rowsMemo = React.useMemo(
+    () => renderRows(),
+    [collectionQuery.data?.bills, selectedRows],
+  )
 
   return (
-    <Box py={40}>
-      <Container size="lg">
+    <React.Fragment>
+      <BillAddForm
+        modal
+        size="xl"
+        state={billModal}
+        onClose={() => {
+          setBillModal({ opened: false })
+        }}
+        onSubmitted={() => {
+          setBillModal({ opened: false })
+        }}
+      />
+
+      <ConfModal
+        loading={isLoadingDelete}
+        opened={billDeleteModal}
+        title={
+          selectedRows.length === 1 ? 'Eliminar factura' : 'Eliminar facturas'
+        }
+        onCancel={() => setBillDeleteModal(false)}
+        onConfirm={() => {
+          deleteBillsMutation.mutate({
+            auth,
+            data: { collectionId, billIds: selectedRows },
+          })
+        }}
+      >
+        {selectedRows.length === 1 && (
+          <Box>
+            <Text>¿Estás seguro de que deseas eliminar esta factura?</Text>
+            <List withPadding mt={16} size="sm" spacing="xs" type="ordered">
+              <List.Item>
+                <Text>{getBillName(selectedRows[0])}</Text>
+              </List.Item>
+            </List>
+          </Box>
+        )}
+        {selectedRows.length > 1 && (
+          <Box>
+            <Text>
+              ¿Estás seguro de que deseas eliminar estas {selectedRows.length}{' '}
+              facturas?
+            </Text>
+          </Box>
+        )}
+      </ConfModal>
+
+      <Box py={40}>
         <Stack gap={32}>
           <Group>
             <Button
               component="a"
               href="/collections"
-              leftSection={<ChevronLeft size={18} />}
+              leftSection={<ChevronLeft size={20} />}
               variant="subtle"
             >
               Volver a Colecciones
             </Button>
           </Group>
 
-          <Card padding="lg" radius="md" shadow="sm">
+          <Card withBorder padding="lg" radius="md" shadow="sm">
             <Stack gap={12}>
-              <div>
-                <Title mb={8} order={1}>
-                  Gastos {collectionId}
-                </Title>
-                <Text c="dimmed" mb={16}>
-                  Colección de facturas del año fiscal
-                </Text>
-              </div>
+              <Skeleton visible={isLoading}>
+                <Box>
+                  <Title mb={8} order={2}>
+                    Gastos
+                  </Title>
+                  <TextWithIcon>
+                    <TextWithIcon.Icon size="xs">
+                      <Calendar />
+                    </TextWithIcon.Icon>
+                    <TextWithIcon.Text c="gray.7" size="md">
+                      2024
+                    </TextWithIcon.Text>
+                  </TextWithIcon>
+                  <Text c="dimmed">Colección de facturas del año fiscal</Text>
+                </Box>
+              </Skeleton>
 
-              <Group>
-                <Badge>Año: 2024</Badge>
-                <Badge color="violet">
-                  {invoices.filter((inv) => inv.percentage !== null).length}{' '}
-                  analizadas
-                </Badge>
-                <Badge color="gray">
-                  {invoices.filter((inv) => inv.percentage === null).length}{' '}
-                  pendientes
-                </Badge>
-              </Group>
+              <Skeleton visible={isLoadingCalc || isLoading}>
+                <Group>
+                  <Badge color="violet">
+                    {billsCalcQuery.data?.analyzed || 0} analizadas
+                  </Badge>
+                  <Badge color="gray">
+                    {billsCalcQuery.data?.pending || 0} pendientes
+                  </Badge>
+                </Group>
+              </Skeleton>
 
-              <Group mt={12}>
-                <Button color="violet" leftSection={<Upload size={18} />}>
-                  Subir Facturas
-                </Button>
-                <Button color="violet" variant="light">
-                  Analizar Colección
-                </Button>
-              </Group>
+              <Skeleton visible={isLoading}>
+                <Group mt={12}>
+                  <Button
+                    color="violet"
+                    leftSection={<Upload size={18} />}
+                    onClick={() => {
+                      setBillModal({ opened: true, data: collectionId })
+                    }}
+                  >
+                    Subir Facturas
+                  </Button>
+                  <Button color="violet" variant="light">
+                    Analizar Colección
+                  </Button>
+                </Group>
+              </Skeleton>
             </Stack>
           </Card>
 
-          <div>
-            <Title mb={16} order={2}>
-              Facturas
-            </Title>
+          <Box>
+            <Flex
+              direction={{
+                md: 'row',
+                xs: 'column',
+              }}
+              justify={{
+                xs: 'center',
+                md: 'space-between',
+              }}
+              mih={52}
+            >
+              <Title mb={16} order={2}>
+                Facturas
+              </Title>
 
-            <Card padding="lg" radius="md" shadow="sm">
-              <Table highlightOnHover striped>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Archivo</Table.Th>
-                    <Table.Th>Tipo</Table.Th>
-                    <Table.Th>Fecha</Table.Th>
-                    <Table.Th>Deducibilidad</Table.Th>
-                    <Table.Th>Razonamiento</Table.Th>
-                    <Table.Th />
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>{rows}</Table.Tbody>
-              </Table>
+              {selectedRows.length > 0 && (
+                <Group mb={16}>
+                  <Button
+                    color="red"
+                    disabled={selectedRows.length === 0}
+                    leftSection={<Trash2 size={16} />}
+                    variant="light"
+                    onClick={() => {
+                      if (selectedRows.length === 0) return
+                      setBillDeleteModal(true)
+                    }}
+                  >
+                    Eliminar
+                  </Button>
+                </Group>
+              )}
+            </Flex>
+
+            <Card withBorder padding="md" radius="md" shadow="sm">
+              <Box mb="xs">
+                {selectedRows.length > 0 && (
+                  <Text c="dimmed">
+                    {selectedRows.length} factura(s) seleccionada(s)
+                  </Text>
+                )}
+                {selectedRows.length === 0 &&
+                  collectionQuery.data?.bills &&
+                  collectionQuery.data.bills.length > 0 && (
+                    <Text c="dimmed">
+                      Selecciona una factura para ver opciones adicionales
+                    </Text>
+                  )}
+              </Box>
+
+              <Skeleton visible={isLoading || isLoadingOrRefetch}>
+                <Table.ScrollContainer maxHeight={200} minWidth={700}>
+                  <Table highlightOnHover striped>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th />
+                        <Table.Th w="25%">Archivo</Table.Th>
+                        <Table.Th w="6%">Tipo</Table.Th>
+                        <Table.Th w="10%">Fecha</Table.Th>
+                        <Table.Th w="10%">Deducibilidad</Table.Th>
+                        <Table.Th w="39%">Razonamiento</Table.Th>
+                        <Table.Th />
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>{rowsMemo}</Table.Tbody>
+                  </Table>
+                </Table.ScrollContainer>
+              </Skeleton>
             </Card>
-          </div>
+          </Box>
         </Stack>
-      </Container>
-    </Box>
+      </Box>
+    </React.Fragment>
   )
+
+  function renderRows() {
+    const bills = collectionQuery.data?.bills || []
+
+    if (bills.length === 0) {
+      return (
+        <Table.Tr>
+          <Table.Td colSpan={7}>
+            <Center my="lg">
+              <Text c="dimmed">
+                No hay facturas en esta colección. Sube tus facturas para
+                analizarlas y organizarlas.
+              </Text>
+            </Center>
+          </Table.Td>
+        </Table.Tr>
+      )
+    }
+    const rows = bills.map((invoice) => (
+      <Table.Tr key={invoice.id}>
+        <Table.Td>
+          <Checkbox
+            aria-label="Select row"
+            checked={selectedRows.includes(invoice.id)}
+            onChange={(event) => {
+              const checked = event.currentTarget.checked
+
+              if (checked) {
+                handlerSelectRows.append(invoice.id)
+              } else {
+                const index = selectedRows.indexOf(invoice.id)
+                handlerSelectRows.remove(index)
+              }
+            }}
+          />
+        </Table.Td>
+        <Table.Td>
+          <Text inherit>{invoice.name}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Badge
+            color={getColorBillType(invoice.fileType)}
+            size="md"
+            variant="filled"
+          >
+            {invoice.fileType.toUpperCase()}
+          </Badge>
+        </Table.Td>
+        <Table.Td>
+          {DateTime.fromJSDate(invoice.createdAt).toLocaleString(
+            DateTime.DATE_MED,
+          )}
+        </Table.Td>
+        <Table.Td>
+          {invoice.percentage !== null ? (
+            <Badge color="green">{invoice.percentage}%</Badge>
+          ) : (
+            <Badge color="gray">Pendiente</Badge>
+          )}
+        </Table.Td>
+        <Table.Td>
+          {invoice.reason ? (
+            <Tooltip multiline label={invoice.reason}>
+              <Text lineClamp={4} size="sm">
+                {invoice.reason}
+              </Text>
+            </Tooltip>
+          ) : (
+            <Text c="dimmed" size="sm">
+              -
+            </Text>
+          )}
+        </Table.Td>
+        <Table.Td>
+          <Tooltip label="Eliminar">
+            <ActionIcon
+              color="red"
+              disabled={selectedRows.length > 0}
+              size="sm"
+              variant="subtle"
+              onClick={() => {
+                handlerSelectRows.setState([invoice.id])
+                setBillDeleteModal(true)
+              }}
+            >
+              <Trash2 size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Table.Td>
+      </Table.Tr>
+    ))
+    return rows
+  }
+
+  function getBillName(id: string) {
+    const bill = collectionQuery.data?.bills.find((b) => b.id === id)
+    return bill?.name || 'Factura'
+  }
 }

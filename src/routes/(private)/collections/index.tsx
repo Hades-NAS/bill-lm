@@ -5,14 +5,12 @@ import {
   Box,
   Button,
   Group,
-  Card,
   SimpleGrid,
   Center,
 } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
-import { notify } from '#/utils/notifications'
 import {
   isEmptyArrayQuery,
   isErrorQuery,
@@ -23,6 +21,7 @@ import {
 import { useModal } from '#/hooks/modal'
 import { useGetCollectionsQuery } from '#/hooks/query/collection'
 
+import { CollectionCard } from '#/components/collection/collection-card'
 import CollectionForm from '#/components/collection/form'
 import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
@@ -36,6 +35,8 @@ export const Route = createFileRoute('/(private)/collections/')({
 function CollectionsListPage() {
   const [modalCollectionForm, setCollectionForm] =
     useModal<CollectionBaseType>()
+
+  console.log('modalCollectionForm', modalCollectionForm)
 
   const collectionQuery = useGetCollectionsQuery({
     search: {},
@@ -85,46 +86,7 @@ function CollectionsListPage() {
         {isSuccessWithData && collectionQuery.isSuccess && (
           <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
             {collectionQuery.data.map((collection) => (
-              <Card
-                className="cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg"
-                key={collection.id}
-                padding="lg"
-                radius="md"
-                shadow="sm"
-              >
-                <Stack gap={12}>
-                  <div>
-                    <Title mb={4} order={3} size={18}>
-                      {collection.name}
-                    </Title>
-                    <Text c="dimmed" size="sm">
-                      {collection.description}
-                    </Text>
-                  </div>
-
-                  <Group justify="space-between" mt={12}>
-                    <div>
-                      <Text fw={500} size="sm">
-                        Año: {collection.year}
-                      </Text>
-                      <Text c="dimmed" size="sm">
-                        {collection._count.bills} facturas
-                      </Text>
-                    </div>
-                  </Group>
-
-                  <Button
-                    fullWidth
-                    color="violet"
-                    component="a"
-                    href={`/collections/${collection.id}`}
-                    mt={8}
-                    variant="light"
-                  >
-                    Ver Detalle
-                  </Button>
-                </Stack>
-              </Card>
+              <CollectionCard data={collection} key={collection.id} />
             ))}
           </SimpleGrid>
         )}
