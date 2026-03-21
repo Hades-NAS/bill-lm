@@ -47,6 +47,7 @@ export type DeleteBillsRequest = z.infer<typeof DeleteBillsRequestSchema>
 
 export const AnalyzeCollectionRequestSchema = z.object({
   collectionId: z.string(),
+  collectionName: z.string(),
   type: z.enum(['all', 'missing', 'analyzed', 'specific']),
   billIds: z.array(z.string()),
 })
@@ -56,6 +57,7 @@ export type AnalyzeCollectionRequest = z.infer<typeof AnalyzeCollectionRequestSc
 export const AnalyzeJobDataSchema = z.object({
   data: AnalyzeCollectionRequestSchema,
   jobId: z.string(),
+  userId: z.string(),
   percentage: z.number().min(0).max(100),
   status: z.enum(['pending', 'in-progress', 'completed', 'failed']),
   error: z.string().optional(),
