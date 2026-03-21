@@ -5,18 +5,159 @@ import {
   Group,
   Indicator,
   Modal,
+  Paper,
   Popover,
   Progress,
   Stack,
   Text,
   Tooltip,
 } from '@mantine/core'
-import { useDisclosure, useMediaQuery } from '@mantine/hooks'
+import { useDisclosure } from '@mantine/hooks'
 import { useNavigate } from '@tanstack/react-router'
-import { Clock } from 'lucide-react'
+import { BrushCleaning, Clock } from 'lucide-react'
 import { DateTime } from 'luxon'
 
-import { useJobsStore } from '#/integrations/jobs/jobs.store'
+import { useJobsStore } from '#/integrations/store/jobs.store'
+
+import { useIsMobile } from '#/utils/mobile'
+
+import type { JobStatusItem } from '#/integrations/store/jobs.store'
+
+/**
+ * Job card component - renders a single job with appropriate styling based on status
+ * Handles both in-progress and completed states
+ */
+interface JobCardProps {
+  job: JobStatusItem
+  onCollectionClick: (collectionId: string) => void
+}
+
+function JobCard({ job, onCollectionClick }: JobCardProps) {
+  const isActive = job.status === 'pending' || job.status === 'in-progress'
+  const isCompleted = job.status === 'completed'
+
+  return (
+    <Paper
+      withBorder
+      bd={
+        isActive
+          ? '1px solid var(--mantine-color-blue-1)'
+          : '1px solid var(--mantine-color-gray-2)'
+      }
+      bg={isActive ? 'blue.0' : undefined}
+      key={job.jobId}
+      opacity={isActive ? 1 : 0.75}
+      p="sm"
+    >
+      {/* Job header with status */}
+      <Group justify="space-between" mb="xs">
+        <Text size="xs">{getTypeJobLabel(job.data.type)}</Text>
+        <Badge
+          color={
+            isActive
+              ? job.status === 'pending'
+                ? 'gray'
+                : 'blue'
+              : isCompleted
+                ? 'green'
+                : 'red'
+          }
+          size="sm"
+          variant="light"
+        >
+          {job.status === 'pending'
+            ? 'Pendiente'
+            : job.status === 'in-progress'
+              ? 'En progreso'
+              : job.status === 'completed'
+                ? 'Completado'
+                : 'Error'}
+        </Badge>
+      </Group>
+
+      {/* Collection link */}
+      <Box mb="sm">
+        <Text
+          c={getColorByStatus(job.status)}
+          component="button"
+          fw={500}
+          lineClamp={1}
+          size="sm"
+          style={{
+            cursor: 'pointer',
+            textDecoration: 'underline',
+          }}
+          onClick={() => onCollectionClick(job.data.collectionId)}
+        >
+          {job.data.collectionName}
+        </Text>
+
+        <Text c="dimmed" mt={2} size="xs">
+          {job.data.billIds.length} factura(s)
+        </Text>
+      </Box>
+
+      {/* Progress bar - only show for active jobs */}
+      {isActive && (
+        <>
+          <Group justify="space-between" mb="xs">
+            <Text c="dimmed" size="xs">
+              Progreso
+            </Text>
+            <Text fw={500} size="xs">
+              {Math.round(job.percentage)}%
+            </Text>
+          </Group>
+          <Progress
+            color="blue"
+            mb="xs"
+            radius="md"
+            size="sm"
+            value={job.percentage}
+          />
+        </>
+      )}
+
+      {/* Error message - only show for failed jobs */}
+      {job.status === 'failed' && (
+        <Text c="red.8" mb="xs" size="xs">
+          Error: {job.error}
+        </Text>
+      )}
+
+      {/* Timestamps */}
+      <Text c="dimmed" size="xs">
+        {DateTime.fromJSDate(
+          isActive ? job.createdAt : job.updatedAt,
+        ).toLocaleString(DateTime.DATETIME_SHORT)}
+      </Text>
+    </Paper>
+  )
+
+  function getColorByStatus(status: JobStatusItem['status']) {
+    if (status === 'pending') {
+      return 'gray'
+    } else if (status === 'in-progress') {
+      return 'blue.8'
+    } else if (status === 'completed') {
+      return 'green.8'
+    } else {
+      return 'red.8'
+    }
+  }
+
+  function getTypeJobLabel(type: JobStatusItem['data']['type']) {
+    if (type === 'all') {
+      return 'Análisis completo'
+    } else if (type === 'missing') {
+      return 'Análisis de faltantes'
+    } else if (type === 'analyzed') {
+      return 'Re-análisis de analizados'
+    } else {
+      return 'Análisis específico'
+    }
+  }
+}
 
 /**
  * Navbar indicator for background jobs
@@ -25,11 +166,12 @@ import { useJobsStore } from '#/integrations/jobs/jobs.store'
  */
 export function NavbarJobsIndicator() {
   const navigate = useNavigate()
-  const isMobile = useMediaQuery('(max-width: 768px)')
+  const isMobile = useIsMobile()
 
   const [opened, { close, toggle }] = useDisclosure(false)
 
   const activeJobs = useJobsStore((state) => state.activeJobs)
+  const clearJobs = useJobsStore((state) => state.clearJobs)
   const hasJobs = activeJobs.length > 0
 
   // Separate jobs into in-progress and completed
@@ -56,9 +198,11 @@ export function NavbarJobsIndicator() {
         <Text fw={500} size="sm">
           {activeJobs.length} análisis
         </Text>
-        <Text c="dimmed" size="xs">
-          ({inProgressJobs.length} activos)
-        </Text>
+        <Tooltip withArrow label="Limpiar lista" position="bottom">
+          <ActionIcon size={'md'} variant="light" onClick={() => clearJobs()}>
+            <BrushCleaning size={16} />
+          </ActionIcon>
+        </Tooltip>
       </Group>
 
       <Stack gap="md">
@@ -71,75 +215,11 @@ export function NavbarJobsIndicator() {
               </Text>
               <Stack gap="sm">
                 {inProgressJobs.map((job) => (
-                  <Box
+                  <JobCard
+                    job={job}
                     key={job.jobId}
-                    p="sm"
-                    style={{
-                      border: '1px solid var(--mantine-color-blue-1)',
-                      backgroundColor: 'var(--mantine-color-blue-0)',
-                      borderRadius: 'var(--mantine-radius-md)',
-                    }}
-                  >
-                    {/* Job header with status */}
-                    <Group justify="space-between" mb="xs">
-                      <Text c="dimmed" size="xs">
-                        {job.jobId.slice(0, 8)}...
-                      </Text>
-                      <Badge
-                        color={job.status === 'pending' ? 'gray' : 'blue'}
-                        size="sm"
-                        variant="light"
-                      >
-                        {job.status === 'pending' ? 'Pendiente' : 'En progreso'}
-                      </Badge>
-                    </Group>
-
-                    {/* Collection link */}
-                    <Group mb="xs">
-                      <Text c="dimmed" size="xs">
-                        Colección:
-                      </Text>
-                      <Text
-                        truncate
-                        c="violet"
-                        component="button"
-                        fw={500}
-                        size="xs"
-                        style={{
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                        }}
-                        onClick={() =>
-                          handleViewCollection(job.data.collectionId)
-                        }
-                      >
-                        {job.data.collectionId}
-                      </Text>
-                    </Group>
-
-                    {/* Progress bar */}
-                    <Group justify="space-between" mb="xs">
-                      <Text c="dimmed" size="xs">
-                        Progreso
-                      </Text>
-                      <Text fw={500} size="xs">
-                        {Math.round(job.percentage)}%
-                      </Text>
-                    </Group>
-                    <Progress
-                      mb="xs"
-                      radius="md"
-                      size="sm"
-                      value={job.percentage}
-                    />
-
-                    {/* Timestamps */}
-                    <Text c="dimmed" size="xs">
-                      {DateTime.fromJSDate(job.createdAt).toLocaleString(
-                        DateTime.DATETIME_SHORT,
-                      )}
-                    </Text>
-                  </Box>
+                    onCollectionClick={handleViewCollection}
+                  />
                 ))}
               </Stack>
             </Box>
@@ -155,66 +235,11 @@ export function NavbarJobsIndicator() {
               </Text>
               <Stack gap="sm">
                 {completedJobs.map((job) => (
-                  <Box
+                  <JobCard
+                    job={job}
                     key={job.jobId}
-                    opacity={0.75}
-                    p="sm"
-                    style={{
-                      border: '1px solid var(--mantine-color-gray-2)',
-                      borderRadius: 'var(--mantine-radius-md)',
-                    }}
-                  >
-                    {/* Job header with status */}
-                    <Group justify="space-between" mb="xs">
-                      <Text c="dimmed" size="xs">
-                        {job.jobId.slice(0, 8)}...
-                      </Text>
-                      <Badge
-                        color={job.status === 'completed' ? 'green' : 'red'}
-                        size="sm"
-                        variant="light"
-                      >
-                        {job.status === 'completed' ? 'Completado' : 'Error'}
-                      </Badge>
-                    </Group>
-
-                    {/* Collection link */}
-                    <Group mb="xs">
-                      <Text c="dimmed" size="xs">
-                        Colección:
-                      </Text>
-                      <Text
-                        truncate
-                        c="violet"
-                        component="button"
-                        fw={500}
-                        size="xs"
-                        style={{
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                        }}
-                        onClick={() =>
-                          handleViewCollection(job.data.collectionId)
-                        }
-                      >
-                        {job.data.collectionId}
-                      </Text>
-                    </Group>
-
-                    {/* Error message */}
-                    {job.status === 'failed' && job.error && (
-                      <Text c="red" mb="xs" size="xs">
-                        Error: {job.error}
-                      </Text>
-                    )}
-
-                    {/* Timestamps */}
-                    <Text c="dimmed" size="xs">
-                      {DateTime.fromJSDate(job.updatedAt).toLocaleString(
-                        DateTime.DATETIME_SHORT,
-                      )}
-                    </Text>
-                  </Box>
+                    onCollectionClick={handleViewCollection}
+                  />
                 ))}
               </Stack>
             </Box>
@@ -238,6 +263,7 @@ export function NavbarJobsIndicator() {
     return (
       <Popover
         withArrow
+        offset={0}
         opened={opened}
         position="bottom-end"
         shadow="md"
@@ -263,9 +289,8 @@ export function NavbarJobsIndicator() {
               onClick={toggle}
             >
               <Indicator
-                color={
-                  hasActiveJobs ? 'violet' : hasJobs ? 'gray' : 'transparent'
-                }
+                color="violet"
+                disabled={!inProgressJobs.length}
                 offset={0}
                 processing={hasActiveJobs}
                 size={10}
@@ -275,7 +300,9 @@ export function NavbarJobsIndicator() {
             </ActionIcon>
           </Tooltip>
         </Popover.Target>
-        <Popover.Dropdown>{content}</Popover.Dropdown>
+        <Popover.Dropdown bd="1px solid var(--mantine-color-gray-4)">
+          {content}
+        </Popover.Dropdown>
       </Popover>
     )
   }
@@ -302,10 +329,11 @@ export function NavbarJobsIndicator() {
           onClick={toggle}
         >
           <Indicator
-            color={hasActiveJobs ? 'violet' : hasJobs ? 'gray' : 'transparent'}
+            color="violet"
+            disabled={!inProgressJobs.length}
             offset={10}
             processing={hasActiveJobs}
-            size={8}
+            size={10}
           >
             <Clock size={20} />
           </Indicator>
