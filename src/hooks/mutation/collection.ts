@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useJobsStore } from "#/integrations/jobs/jobs.store";
+import { useJobsStore } from "#/integrations/store/jobs.store";
 import { getContext } from "#/integrations/tanstack-query/root-provider";
 import { useTRPC } from "#/integrations/trpc/react";
 
 import { notify } from "#/utils/notifications";
 
+import { useUserAuth } from "../auth";
 import { invalidateQueriesByKeys } from "../invalidate-utils";
 
 import type { CreateCollectionType, UpdateCollectionType } from "#/schema/collections";
@@ -81,6 +82,7 @@ export const useCollectionUpdateMutation = (options: MutationOptions<UpdateColle
 export const useAnalyzeCollectionMutation = (options: MutationOptions<{ jobId: string, collectionId: string }> = {}) => {
   const queryClient = useQueryClient();
   const trpc = useTRPC();
+  const auth = useUserAuth();
   const addJob = useJobsStore((state) => state.addJob);
 
   return useMutation(trpc.collections.analyze.mutationOptions({
@@ -89,7 +91,9 @@ export const useAnalyzeCollectionMutation = (options: MutationOptions<{ jobId: s
       // Add job to global store - subscription manager will handle Firestore subscription
       addJob({
         jobId: data.jobId,
+        userId: auth.userId,
         data: {
+          collectionName: data.collectionName,
           collectionId: data.collectionId,
           type: 'all', // Default - will be updated by Firestore
           billIds: [],
@@ -111,6 +115,7 @@ export const useAnalyzeCollectionMutation = (options: MutationOptions<{ jobId: s
       })
     },
     onError: (error) => {
+      console.error('Error starting analysis:', error);
       options.onError?.(error);
       notify.error({
         title: 'Error al iniciar análisis',

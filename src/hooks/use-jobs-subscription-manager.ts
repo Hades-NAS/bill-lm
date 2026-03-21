@@ -2,7 +2,7 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { useEffect, useRef } from 'react'
 
 import { db } from '#/integrations/firebase/firebase.client'
-import { useJobsStore } from '#/integrations/jobs/jobs.store'
+import { useJobsStore } from '#/integrations/store/jobs.store'
 
 import { FireCollections } from '#/constants/firebase'
 
