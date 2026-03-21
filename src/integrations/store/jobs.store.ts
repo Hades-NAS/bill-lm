@@ -14,7 +14,8 @@ interface JobsStore {
   removeJob: (jobId: string) => void
   getJobById: (jobId: string) => JobStatusItem | undefined
   hasActiveJobs: () => boolean
-  getActiveJobsCount: () => number
+  getActiveJobsCount: () => number,
+  clearJobs: () => void
 }
 
 export const useJobsStore = create<JobsStore>()(
@@ -38,6 +39,12 @@ export const useJobsStore = create<JobsStore>()(
             activeJobs: newJobs,
           }
         })
+      },
+
+      clearJobs: () => {
+        set(() => ({
+          activeJobs: [],
+        }))
       },
 
       updateJob: (jobId: string, updates: Partial<JobStatusItem>) => {
@@ -68,7 +75,7 @@ export const useJobsStore = create<JobsStore>()(
       },
     }),
     {
-      name: 'jobs-storage',
+      name: 'jobs-storage-v1',
     }
   )
 )

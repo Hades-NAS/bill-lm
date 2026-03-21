@@ -266,6 +266,25 @@ export const collectionsRouter = {
 
       const { type, billIds } = data
 
+      const collection = await prisma.collection.findUnique({
+        where: {
+          id: data.collectionId,
+          userId: auth.userId,
+        },
+      })
+
+      if (!collection) {
+        logger.warn('Collection not found for analysis', {
+          userId: auth.userId,
+          collectionId: data.collectionId,
+        })
+
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Collection not found',
+        })
+      }
+
       let billsToAnalyze: Array<{ id: string }> = []
 
       if (type === 'all') {
@@ -335,8 +354,10 @@ export const collectionsRouter = {
 
       const payload: AnalyzeJobData = {
         jobId: crypto.randomUUID(),
+        userId: auth.userId,
         data: {
           collectionId: data.collectionId,
+          collectionName: collection.name,
           type,
           billIds: billsToAnalyze.map(bill => bill.id),
         },
@@ -359,7 +380,7 @@ export const collectionsRouter = {
         billCount: billsToAnalyze.length,
       })
 
-      return { jobId: payload.jobId, collectionId: data.collectionId }
+      return { jobId: payload.jobId, collectionId: data.collectionId, collectionName: collection.name }
     })
 } satisfies TRPCRouterRecord
 
