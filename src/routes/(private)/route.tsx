@@ -1,4 +1,4 @@
-import { AppShell, Burger, Container, Group } from '@mantine/core'
+import { AppShell, Burger, Container, Group, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
@@ -41,7 +41,12 @@ function RouteComponent() {
               visibleFrom="sm"
               onClick={toggleDesktop}
             />
-            The burger icon is always visible
+            <Text fw="bolder" size="xl">
+              Bill-
+              <Text inherit span c="violet" fw="bolder">
+                LM
+              </Text>
+            </Text>
           </Group>
 
           <Group gap="xs">
@@ -51,7 +56,7 @@ function RouteComponent() {
       </AppShell.Header>
       <AppShell.Navbar p="md"></AppShell.Navbar>
       <AppShell.Main>
-        <Container fluid={isMobile} px={0} py={40} size="xl">
+        <Container fluid={isMobile} px={0} py="md" size="xl">
           <Outlet />
         </Container>
       </AppShell.Main>

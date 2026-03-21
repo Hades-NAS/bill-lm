@@ -36,8 +36,6 @@ function CollectionsListPage() {
   const [modalCollectionForm, setCollectionForm] =
     useModal<CollectionBaseType>()
 
-  console.log('modalCollectionForm', modalCollectionForm)
-
   const collectionQuery = useGetCollectionsQuery({
     search: {},
     sort: {},

@@ -19,7 +19,7 @@ import {
 } from '@mantine/core'
 import { useListState } from '@mantine/hooks'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Calendar, ChevronLeft, Trash2, Upload } from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
@@ -87,7 +87,6 @@ function CollectionDetailPage() {
 
       return { analyzed, pending, fullAnalyzed, partialAnalyzed, notAnalyzed }
     },
-    refetchOnMount: true,
   })
 
   const deleteBillsMutation = useDeleteBillsMutation({
@@ -215,17 +214,7 @@ function CollectionDetailPage() {
             <Button
               color="violet"
               loading={isAnalyzing}
-              onClick={() => {
-                setAnalyzeModal({ opened: false })
-                analyzeCollectionMutation.mutate({
-                  auth,
-                  data: {
-                    collectionId,
-                    type: 'missing',
-                    billIds: [],
-                  },
-                })
-              }}
+              onClick={analyzeByType.bind(null, 'all')}
             >
               Analizar
             </Button>
@@ -235,17 +224,7 @@ function CollectionDetailPage() {
               color="violet"
               loading={isAnalyzing}
               variant={billsCalcQuery.data.fullAnalyzed ? 'light' : 'filled'}
-              onClick={() => {
-                setAnalyzeModal({ opened: false })
-                analyzeCollectionMutation.mutate({
-                  auth,
-                  data: {
-                    collectionId,
-                    type: 'missing',
-                    billIds: [],
-                  },
-                })
-              }}
+              onClick={analyzeByType.bind(null, 'missing')}
             >
               Analizar pendientes
             </Button>
@@ -256,17 +235,7 @@ function CollectionDetailPage() {
               <Button
                 color="violet"
                 loading={isAnalyzing}
-                onClick={() => {
-                  setAnalyzeModal({ opened: false })
-                  analyzeCollectionMutation.mutate({
-                    auth,
-                    data: {
-                      collectionId,
-                      type: 'all',
-                      billIds: [],
-                    },
-                  })
-                }}
+                onClick={analyzeByType.bind(null, 'all')}
               >
                 Re-analizar todo
               </Button>
@@ -274,17 +243,14 @@ function CollectionDetailPage() {
         </Group>
       </Modal>
 
-      <Box py={40}>
-        <Stack gap={32}>
+      <Box>
+        <Stack gap="md">
           <Group>
-            <Button
-              component="a"
-              href="/collections"
-              leftSection={<ChevronLeft size={20} />}
-              variant="subtle"
-            >
-              Volver a Colecciones
-            </Button>
+            <Link to="/collections">
+              <Button leftSection={<ChevronLeft size={20} />} variant="subtle">
+                Volver a Colecciones
+              </Button>
+            </Link>
           </Group>
 
           <Card withBorder padding="lg" radius="md" shadow="sm">
@@ -292,17 +258,21 @@ function CollectionDetailPage() {
               <Skeleton visible={isLoading}>
                 <Box>
                   <Title mb={8} order={2}>
-                    Gastos
+                    {collectionQuery.data?.name || 'Colección'}
                   </Title>
                   <TextWithIcon>
                     <TextWithIcon.Icon size="xs">
                       <Calendar />
                     </TextWithIcon.Icon>
                     <TextWithIcon.Text c="gray.7" size="md">
-                      2024
+                      {DateTime.fromJSDate(
+                        collectionQuery.data?.createdAt || new Date(),
+                      ).toLocaleString(DateTime.DATE_MED)}
                     </TextWithIcon.Text>
                   </TextWithIcon>
-                  <Text c="dimmed">Colección de facturas del año fiscal</Text>
+                  <Text c="dimmed" mt={4}>
+                    {collectionQuery.data?.description || 'Sin descripción'}
+                  </Text>
                 </Box>
               </Skeleton>
 
@@ -414,6 +384,19 @@ function CollectionDetailPage() {
       </Box>
     </React.Fragment>
   )
+
+  function analyzeByType(type: 'missing' | 'all') {
+    setAnalyzeModal({ opened: false })
+    analyzeCollectionMutation.mutate({
+      auth,
+      data: {
+        collectionId,
+        collectionName: collectionQuery.data?.name || 'Colección',
+        type,
+        billIds: [],
+      },
+    })
+  }
 
   function renderRows() {
     const bills = collectionQuery.data?.bills || []
