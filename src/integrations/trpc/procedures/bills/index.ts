@@ -6,7 +6,7 @@ import { DeleteBillsRequestSchema, UploadBillsRequestSchema } from '#/schema/col
 import { getServiceLogger } from '#/integrations/logger.server'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
-import { publicProcedure } from '#/integrations/trpc/init'
+import { privateProcedure } from '#/integrations/trpc/init'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
@@ -19,7 +19,7 @@ const TypeMimes = {
 } as const
 
 export const billsRouter = {
-  uploadBills: publicProcedure
+  uploadBills: privateProcedure
     .input(WithAuthSchema(UploadBillsRequestSchema))
     .mutation(async ({ input }) => {
       const { auth, data } = input
@@ -108,7 +108,7 @@ export const billsRouter = {
       return { collectionId }
 
     }),
-  deleteBills: publicProcedure
+  deleteBills: privateProcedure
     .input(WithAuthSchema(DeleteBillsRequestSchema))
     .mutation(async ({ input }) => {
       const { auth, data } = input

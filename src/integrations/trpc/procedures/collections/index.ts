@@ -9,61 +9,23 @@ import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
 import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
-import { publicProcedure } from '#/integrations/trpc/init'
+// import { publicProcedure } from '#/integrations/trpc/init'
 
 import { FireCollections } from '#/constants/firebase'
 
+import { privateProcedure } from '../../init'
+import { checkAndCreateUser } from '../../middleware/auth'
+
 import type { TRPCRouter } from '#/integrations/trpc/router'
-import type { AuthType } from '#/schema/auth';
 import type { AnalyzeJobData } from '#/schema/collections';
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server';
 
 const logger = getServiceLogger('Collections')
 
-const checkAndCreateUser = async (auth: AuthType) => {
-  if (!auth.userId) {
-    logger.warn('Unauthorized access attempt to collections procedure', {
-      auth,
-    })
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'User ID is required for collections procedures',
-    })
-  }
-
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      id: auth.userId,
-    },
-  })
-
-  if (!existingUser) {
-    logger.info('Creating user for authenticated request', {
-      userId: auth.userId,
-      email: auth.primaryEmail,
-    })
-
-    await prisma.user.create({
-      data: {
-        id: auth.userId,
-        primaryEmail: auth.primaryEmail,
-      },
-    })
-  }
-
-  return true
-}
-
 export const collectionsRouter = {
-  list: publicProcedure
+  list: privateProcedure
     .input(WithAuthSchema(GetCollectionsRequestSchema))
-    .use(async ({ input, next }) => {
-      const { auth } = input
-
-      await checkAndCreateUser(auth)
-
-      return next({ input })
-    })
+    .use(({ input, next }) => checkAndCreateUser({ auth: input.auth, next }))
     .query(async ({ input }) => {
       const { auth, data } = input
 
@@ -122,7 +84,7 @@ export const collectionsRouter = {
 
       return collections
     }),
-  create: publicProcedure
+  create: privateProcedure
     .input(WithAuthSchema(CreateCollectionSchema))
     .mutation(async ({ input }) => {
       const { auth, data } = input
@@ -159,7 +121,7 @@ export const collectionsRouter = {
 
       return collection
     }),
-  update: publicProcedure
+  update: privateProcedure
     .input(WithAuthSchema(UpdateCollectionSchema))
     .mutation(async ({ input }) => {
       const { auth, data } = input
@@ -196,7 +158,7 @@ export const collectionsRouter = {
 
       return collection
     }),
-  detail: publicProcedure
+  detail: privateProcedure
     .input(WithAuthSchema(GetCollectionByIdRequestSchema))
     .query(async ({ input }) => {
       const { auth, data } = input
@@ -243,7 +205,7 @@ export const collectionsRouter = {
 
       return collection
     }),
-  analyze: publicProcedure
+  analyze: privateProcedure
     .input(WithAuthSchema(AnalyzeCollectionRequestSchema))
     .mutation(async ({ input }) => {
       const { auth, data } = input
