@@ -3,6 +3,8 @@ import { z } from 'zod'
 export const AuthSchema = z.object({
   userId: z.string(),
   primaryEmail: z.email(),
+  isLoaded: z.boolean().optional(),
+  isSignedIn: z.boolean().optional(),
 })
 
 export type AuthType = z.infer<typeof AuthSchema>
