@@ -29,7 +29,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-
+import { useUserAuth } from '#/hooks/auth'
 
 export const Route = createFileRoute('/(public)/')({
   ssr: true,
@@ -37,6 +37,7 @@ export const Route = createFileRoute('/(public)/')({
 })
 
 function App() {
+  const { isSignedIn } = useUserAuth()
   const navigate = useNavigate()
 
   const [isVisible, setIsVisible] = useState(false)
@@ -95,7 +96,7 @@ function App() {
                     size="lg"
                     variant="white"
                     onClick={() => {
-                      navigate({ to: '/sign-up' })
+                      navigate({ to: isSignedIn ? '/collections' : '/sign-up' })
                     }}
                   >
                     Comenzar Gratis
@@ -560,7 +561,7 @@ function App() {
                 size="lg"
                 variant="filled"
                 onClick={() => {
-                  navigate({ to: '/sign-up' })
+                  navigate({ to: isSignedIn ? '/collections' : '/sign-up' })
                 }}
               >
                 Crear Cuenta Gratis
