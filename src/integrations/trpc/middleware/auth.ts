@@ -1,11 +1,10 @@
 import { TRPCError } from "@trpc/server"
-import { TRPC_ERROR_CODES_BY_KEY } from "@trpc/server/unstable-core-do-not-import"
 
 import { getServiceLogger } from "#/integrations/logger.server"
 import { prisma } from "#/integrations/prisma"
 
 import type { AuthType } from "#/schema/auth"
-import type { MiddlewareResult } from "@trpc/server/unstable-core-do-not-import";
+import type { MiddlewareResult } from "@trpc/server/unstable-core-do-not-import"
 
 const logger = getServiceLogger('AuthMiddleware')
 
@@ -14,39 +13,38 @@ type AuthMiddlewareParam = {
   next: () => Promise<MiddlewareResult<object>>,
 }
 
-export const checkAndCreateUser = async ({ auth, next }: AuthMiddlewareParam): Promise<MiddlewareResult<object>> => {
+export const checkAndCreateUser = async ({ auth, next }: AuthMiddlewareParam) => {
 
-  if (auth) {
+  if (!auth || !auth.userId) {
+    logger.warn('Unauthorized access attempt to collections procedure', {
+      auth,
+    })
+
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'User ID is required for collections procedures',
+    })
   }
-  logger.warn('Unauthorized access attempt to collections procedure', {
-    auth,
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: auth.userId,
+    },
   })
 
-  throw new TRPCError({
-    code: 'UNAUTHORIZED',
-    message: 'User ID is required for collections procedures',
-  })
-  return next()
+  if (!existingUser) {
+    logger.info('Creating user for authenticated request', {
+      userId: auth.userId,
+      email: auth.primaryEmail,
+    })
 
-  // const existingUser = await prisma.user.findUnique({
-  //   where: {
-  //     id: auth.userId,
-  //   },
-  // })
-
-  // if (!existingUser) {
-  //   logger.info('Creating user for authenticated request', {
-  //     userId: auth.userId,
-  //     email: auth.primaryEmail,
-  //   })
-
-  //   await prisma.user.create({
-  //     data: {
-  //       id: auth.userId,
-  //       primaryEmail: auth.primaryEmail,
-  //     },
-  //   })
-  // }
+    await prisma.user.create({
+      data: {
+        id: auth.userId,
+        primaryEmail: auth.primaryEmail,
+      },
+    })
+  }
 
   return next()
 }
