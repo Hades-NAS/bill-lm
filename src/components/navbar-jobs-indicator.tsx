@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   Badge,
   Box,
   Group,
@@ -13,7 +14,7 @@ import {
   Tooltip,
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { BrushCleaning, Clock } from 'lucide-react'
 import { DateTime } from 'luxon'
 
@@ -195,9 +196,14 @@ export function NavbarJobsIndicator() {
   const content = hasJobs ? (
     <Stack gap="sm" w={isMobile ? '100%' : 320}>
       <Group justify="space-between">
-        <Text fw={500} size="sm">
-          {activeJobs.length} análisis
-        </Text>
+        <Box>
+          <Text fw={500} size="sm">
+            {activeJobs.length} análisis
+          </Text>
+          <Link style={{ textDecoration: 'none' }} to="/jobs">
+            <Anchor size="xs">Ver todos</Anchor>
+          </Link>
+        </Box>
         <Tooltip withArrow label="Limpiar lista" position="bottom">
           <ActionIcon size={'md'} variant="light" onClick={() => clearJobs()}>
             <BrushCleaning size={16} />
@@ -250,10 +256,18 @@ export function NavbarJobsIndicator() {
   ) : (
     <Stack gap="sm" w={isMobile ? '100%' : 320}>
       <Text c="dimmed" fw={500} size="sm">
-        No hay análisis
+        No hay análisis en progreso
       </Text>
       <Text c="dimmed" size="xs">
-        Inicia un análisis en una colección para ver el progreso aquí.
+        Inicia un análisis en una colección para ver el progreso aquí
+      </Text>
+      <Text c="dimmed" size="xs">
+        O revisa análisis anteriores completados{' '}
+        <Link style={{ textDecoration: 'underline' }} to="/jobs">
+          <Text c="violet" component="span" size="xs">
+            en la página de trabajos
+          </Text>
+        </Link>
       </Text>
     </Stack>
   )
