@@ -1,15 +1,21 @@
 import { TRPCError } from '@trpc/server'
 
 import { WithAuthSchema } from '#/schema/auth'
-import { DeleteBillsRequestSchema, UploadBillsRequestSchema } from '#/schema/collections'
+import { DeleteBillsRequestSchema, GetBillDetailRequestSchema, UploadBillsRequestSchema } from '#/schema/collections'
 
 import { getServiceLogger } from '#/integrations/logger.server'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
 import { privateProcedure } from '#/integrations/trpc/init'
+import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
+import { getBillAmounts, getBillType } from '#/utils/bill'
+import { roundToDecimals } from '#/utils/math'
+
+import type { BillDetailCreateManyInput, BillHeaderCreateManyInput } from '#/generated/prisma/models'
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
+
 
 const logger = getServiceLogger('Bills')
 
@@ -54,11 +60,60 @@ export const billsRouter = {
         const ext = StorageHelper.getExtensionFromContentType(bill.mimeType)
         const uiName = crypto.randomUUID().slice(0, 8) + '.' + ext
 
-        return {
+        const billParsed = parseAndValidateInvoiceXML(Buffer.from(bill.base64, 'base64'))
+
+        logger.info('Parsed invoice XML for bill upload', {
+          billParsed,
+        })
+
+        if (!billParsed.success) {
+          logger.warn('Failed to parse and validate invoice XML for bill upload', {
+            collectionId,
+            userId: auth.userId,
+            error: billParsed.error,
+          })
+
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Failed to parse and validate invoice XML: ${billParsed.error}`,
+          })
+        }
+
+        const { infoFactura, infoTributaria } = billParsed.data.factura
+
+        const billAmounts = getBillAmounts(infoFactura)
+        const billTargetType = getBillType(infoFactura.identificacionComprador)
+
+        const billId = crypto.randomUUID()
+
+        const header: BillHeaderCreateManyInput = {
+          ...billAmounts,
+          id: billId,
+          number: infoTributaria.secuencial,
+          billType: billTargetType,
           collectionId,
+          buyerName: infoFactura.razonSocialComprador,
+          idBuyer: infoFactura.identificacionComprador,
+          comercialName: infoTributaria.nombreComercial,
+          socialName: infoTributaria.razonSocial,
+          idSeller: infoTributaria.ruc,
+          addressMatriz: infoTributaria.dirMatriz,
           name: bill.name,
           fileType: TypeMimes[bill.mimeType],
           storagePath: `collections/${collectionId}/bills/${uiName}`,
+        }
+
+        const billDetails: Array<BillDetailCreateManyInput> = billParsed.data.factura.detalles.detalle.map((detalle) => ({
+          description: detalle.descripcion,
+          billId,
+          quantity: roundToDecimals(detalle.cantidad, 0),
+          unitPrice: roundToDecimals(detalle.precioUnitario),
+          discount: roundToDecimals(detalle.descuento),
+        }))
+
+        return {
+          header,
+          details: billDetails,
         }
       })
 
@@ -71,7 +126,7 @@ export const billsRouter = {
       await prisma.$transaction(async (tx) => {
         await Promise.all(
           bills.map((bill, index) => {
-            const { storagePath } = billData[index]
+            const { storagePath } = billData[index].header
             const buffer = Buffer.from(bill.base64, 'base64')
 
             return StorageHelper.putObject(
@@ -88,8 +143,14 @@ export const billsRouter = {
           billCount: bills.length,
         })
 
-        await tx.bill.createMany({
-          data: billData,
+        await tx.billHeader.createMany({
+          data: billData.map((bill) => bill.header),
+          skipDuplicates: true,
+        })
+
+        await tx.billDetail.createMany({
+          data: billData.flatMap((bill) => bill.details),
+          skipDuplicates: true,
         })
 
         logger.info('Bill metadata saved to database successfully', {
@@ -139,7 +200,7 @@ export const billsRouter = {
         })
       }
 
-      const bills = await prisma.bill.findMany({
+      const bills = await prisma.billHeader.findMany({
         where: {
           id: { in: billIds },
           collectionId,
@@ -159,7 +220,7 @@ export const billsRouter = {
           billIds,
         })
 
-        await tx.bill.deleteMany({
+        await tx.billHeader.deleteMany({
           where: {
             id: { in: billIds },
             collectionId,
@@ -180,6 +241,63 @@ export const billsRouter = {
       })
 
       return { collectionId }
+    }),
+  getBillDetailById: privateProcedure
+    .input(WithAuthSchema(GetBillDetailRequestSchema))
+    .query(async ({ input }) => {
+      const { auth, data } = input
+
+
+      if (!auth.userId) {
+        logger.warn('Unauthorized request to get bill details', {
+          billId: data.billId,
+        })
+
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to view bill details',
+        })
+      }
+
+      const { billId } = data
+
+      logger.info('Received request to get bill details', {
+        billId,
+        userId: auth.userId,
+      })
+
+      const bill = await prisma.billHeader.findFirst({
+        where: {
+          id: billId,
+          collection: {
+            userId: auth.userId,
+          },
+        },
+        include: {
+          details: {
+            orderBy: [{ unitPrice: 'desc' }, { quantity: 'desc' }]
+          }
+        },
+      })
+
+      if (!bill) {
+        logger.warn('Bill not found for get details request', {
+          billId,
+          userId: auth.userId,
+        })
+
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Bill not found',
+        })
+      }
+
+      logger.info('Bill details retrieved successfully', {
+        billId,
+        userId: auth.userId,
+      })
+
+      return bill
     }),
 } satisfies TRPCRouterRecord
 

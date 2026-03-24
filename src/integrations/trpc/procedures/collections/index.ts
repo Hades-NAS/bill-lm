@@ -66,6 +66,7 @@ export const collectionsRouter = {
           id: true,
           name: true,
           description: true,
+          instructions: true,
           year: true,
           createdAt: true,
           updatedAt: true,
@@ -131,7 +132,10 @@ export const collectionsRouter = {
           auth,
         })
 
-        throw new Error('Unauthorized')
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'User ID is required for collections procedures',
+        })
       }
 
       logger.info('Updating collection for user', {
@@ -144,11 +148,7 @@ export const collectionsRouter = {
           id: data.id,
           userId: auth.userId,
         },
-        data: {
-          name: data.name,
-          description: data.description,
-          year: data.year,
-        },
+        data,
       })
 
       logger.info('Updated collection', {
@@ -168,7 +168,10 @@ export const collectionsRouter = {
           auth,
         })
 
-        throw new Error('Unauthorized')
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'User ID is required for collections procedures',
+        })
       }
 
       logger.info('Fetching collection detail for user', {
@@ -176,34 +179,49 @@ export const collectionsRouter = {
         collectionId: data.id,
       })
 
-      const collection = await prisma.collection.findUnique({
-        where: {
-          id: data.id,
-          userId: auth.userId,
-        },
-        include: {
-          bills: true,
-        },
-      })
+      try {
+        const collection = await prisma.collection.findUnique({
+          where: {
+            id: data.id,
+            userId: auth.userId,
+          },
+          include: {
+            bills: {
+              orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
+            }
+          },
+        })
+        if (!collection) {
+          logger.warn('Collection not found', {
+            userId: auth.userId,
+            collectionId: data.id,
+          })
 
-      if (!collection) {
-        logger.warn('Collection not found', {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Collection not found',
+          })
+        }
+
+        logger.info('Fetched collection detail', {
+          userId: auth.userId,
+          collectionId: data.id,
+        })
+
+        return collection
+      } catch (error) {
+        logger.error(`Failed to fetch collection detail from database ${error}`, {
           userId: auth.userId,
           collectionId: data.id,
         })
 
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Collection not found',
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch collection detail',
         })
       }
 
-      logger.info('Fetched collection detail', {
-        userId: auth.userId,
-        collectionId: data.id,
-      })
 
-      return collection
     }),
   analyze: privateProcedure
     .input(WithAuthSchema(AnalyzeCollectionRequestSchema))
@@ -250,7 +268,7 @@ export const collectionsRouter = {
       let billsToAnalyze: Array<{ id: string }> = []
 
       if (type === 'all') {
-        const bills = await prisma.bill.findMany({
+        const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
           },
@@ -260,7 +278,7 @@ export const collectionsRouter = {
         })
         billsToAnalyze = bills
       } else if (type === 'missing') {
-        const bills = await prisma.bill.findMany({
+        const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
             AND: [
@@ -274,7 +292,7 @@ export const collectionsRouter = {
         })
         billsToAnalyze = bills
       } else if (type === 'analyzed') {
-        const bills = await prisma.bill.findMany({
+        const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
             OR: [
@@ -288,7 +306,7 @@ export const collectionsRouter = {
         })
         billsToAnalyze = bills
       } else {
-        const bills = await prisma.bill.findMany({
+        const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
             id: {
@@ -320,6 +338,7 @@ export const collectionsRouter = {
         data: {
           collectionId: data.collectionId,
           collectionName: collection.name,
+          instructions: data.instructions,
           type,
           billIds: billsToAnalyze.map(bill => bill.id),
         },

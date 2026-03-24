@@ -13,7 +13,12 @@ export function QueryErrorHandler() {
       // Verificar si la query tiene un error en su state
       if (event.query.state.status === 'error') {
         const error = event.query.state.error
-        console.error('Query error:', error?.shape?.data?.code)
+        console.error(
+          'Query error:',
+          error?.shape?.data?.code,
+          error?.shape?.data,
+          event.query.queryKey,
+        )
 
         if (error?.shape?.data?.code === 'UNAUTHORIZED') {
           console.warn('Unauthorized! Redirecting...')

@@ -69,6 +69,27 @@ export abstract class StorageHelper {
   }
 
   /**
+   * Obtiene un objeto de Minio como Buffer
+   * @param bucket - Nombre del bucket
+   * @param key - Clave/ruta del objeto a obtener
+   * @returns Contenido del objeto como Buffer
+   */
+  static async getObject(key: string): Promise<Buffer> {
+    try {
+      const stream = await minioClient.getObject(this.BUCKET_NAME, key)
+
+      const chunks: Array<Buffer> = []
+      for await (const chunk of stream) {
+        chunks.push(chunk)
+      }
+
+      return Buffer.concat(chunks)
+    } catch (error) {
+      throw new Error(`Failed to get object from ${this.BUCKET_NAME}/${key}: ${error}`)
+    }
+  }
+
+  /**
    * Elimina un objeto de Minio
    * @param bucket - Nombre del bucket
    * @param key - Clave/ruta del objeto a eliminar
