@@ -3,15 +3,19 @@ import { OpenAI } from 'openai'
 
 import { roundToDecimals } from '#/utils/math'
 
+
 import { AnalyzeBillOutputSchema } from './outputs'
 
-
+import { CircuitBreaker } from '../errors/error-handler'
 import { LMStudio } from '../lm-studio'
 import { getServiceLogger } from '../logger.server'
+import { createTelemetryService } from '../services/telemetry.service'
 
+import type { LLMClientConfig, LLMPreset } from '#/config/llm-config'
 import type { GpuStatusType } from '#/schema/lm-studio'
 import type { AnalyzeBillOutput } from './outputs';
 
+import { getLLMClientConfig } from '#/config/llm-config'
 import { env } from '#/env'
 
 
@@ -37,29 +41,39 @@ Recuerda que el porcentaje de deducibilidad debe basarse en las NORMATIVAS VIGEN
 Si la factura no tiene información suficiente para determinar su deducibilidad, asigna un porcentaje bajo y explica claramente la razón en el campo "reason".
 `
 
+type ContextProcess = { jobId: string; billId: string; promptVersion: string }
+
 setTracingDisabled(true)
 
 export abstract class AgentEngine {
 
   static logger = getServiceLogger("AgentEngine")
 
-  static _agent: Agent<unknown, typeof AnalyzeBillOutputSchema> | null = null
+  static config: LLMClientConfig | null = null
 
-  static getAgent() {
+  private static telemetryService = createTelemetryService()
+
+  static _agent: Agent<unknown, typeof AnalyzeBillOutputSchema> | null = null
+  static circuitBreaker = new CircuitBreaker(5, 60_000) // 5 failures, 60s timeout
+
+  static getAgent(preset: LLMPreset = 'balanced') {
     if (!this._agent) {
+      const config = getLLMClientConfig(preset)
       const customClient = new OpenAI({
-        baseURL: `${env.LLM_BASE_URL}:1234/v1`,
-        apiKey: 'dummy',
+        baseURL: config.baseURL,
+        apiKey: config.apiKey,
       })
+
+      this.config = config
 
       setDefaultOpenAIClient(customClient)
 
       this._agent = new Agent({
-        name: "Budgetfy Email",
-        model: 'openai/gpt-oss-20b',
+        name: "Bill Analysis Agent",
+        model: config.model,
         instructions: AgentInstructions,
         outputType: AnalyzeBillOutputSchema,
-        modelSettings: { temperature: 0.1 },
+        modelSettings: { temperature: config.temperature },
       })
     }
     return this._agent
@@ -108,7 +122,9 @@ export abstract class AgentEngine {
     }
   }
 
-  static async process(message: string): Promise<AnalyzeBillOutput | null> {
+  static async process(message: string, preset: LLMPreset = 'balanced', context?: ContextProcess): Promise<AnalyzeBillOutput | null> {
+    const startTime = performance.now()
+    let attempts = 0
     try {
       if (env.FAKE_ANALYZE === "true") {
         this.logger.warn("FAKE_ANALYZE is enabled, returning dummy output for AgentEngine.process")
@@ -121,35 +137,104 @@ export abstract class AgentEngine {
         } satisfies AnalyzeBillOutput
       }
 
-      this.logger.info('Processing message with AgentEngine')
+      this.logger.info('Processing message with AgentEngine', { preset })
 
-      const agent = AgentEngine.getAgent()
 
-      const result = await run(
-        agent,
-        message,
-        {
-          maxTurns: 6,
-          stream: false,
-        }
+      // Execute with circuit breaker protection
+      const response = await this.circuitBreaker.execute(
+        async () => {
+          attempts++
+
+          const agent = AgentEngine.getAgent(preset)
+          const result = await run(
+            agent,
+            message,
+            {
+              maxTurns: 6,
+              stream: false,
+            }
+          )
+
+          const validate = AnalyzeBillOutputSchema.safeParse(result.finalOutput)
+
+          if (!validate.success) {
+            this.logger.error('AgentEngine final output validation failed', {
+              finalOutput: result.finalOutput,
+              errors: validate.error
+            })
+            throw new Error('AgentEngine final output validation failed')
+          }
+
+          this.logger.info('AgentEngine processing completed', { preset })
+
+          return {
+            data: validate.data,
+            usage: result.state.usage,
+          }
+        },
+        `AgentEngine.process (preset: ${preset})`
       )
 
-      const validate = AnalyzeBillOutputSchema.safeParse(result.finalOutput)
+      const duration = performance.now() - startTime
 
-      if (!validate.success) {
-        this.logger.error('AgentEngine final output validation failed', {
-          finalOutput: result.finalOutput,
-          errors: validate.error
+      if (context) {
+        await this.telemetryService.recordAgentCall({
+          jobId: context.jobId,
+          billId: context.billId,
+          tokensInput: response.usage.inputTokens,
+          tokensOutput: response.usage.outputTokens,
+          tokensTotal: response.usage.inputTokens + response.usage.outputTokens,
+          model: this.config?.model || 'unknown',
+          preset,
+          temperature: this.config?.temperature || 0,
+          duration: Math.round(duration),
+          attempts,
+          status: 'success',
+          promptVersion: context.promptVersion,
+          timestamp: new Date(),
         })
-        throw new Error('AgentEngine final output validation failed')
       }
 
-      this.logger.info('AgentEngine processing completed')
-
-      return validate.data
+      return response.data
     } catch (error) {
-      this.logger.error(`AgentEngine failed to process message: ${error}`, { message })
+      this.logger.error(`AgentEngine failed to process message: ${error}`, { message, preset })
+
+      const duration = performance.now() - startTime
+
+      if (context) {
+        await this.telemetryService.recordAgentCall({
+          jobId: context.jobId,
+          billId: context.billId,
+          tokensInput: 0,
+          tokensOutput: 0,
+          tokensTotal: 0,
+          model: 'unknown',
+          preset,
+          temperature: 0,
+          duration: Math.round(duration),
+          attempts,
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          promptVersion: context.promptVersion,
+          timestamp: new Date(),
+        })
+      }
+
       return null
     }
+  }
+
+  /**
+   * Get circuit breaker status for monitoring
+   */
+  static getCircuitBreakerStatus(): 'closed' | 'open' | 'half-open' {
+    return this.circuitBreaker.getState()
+  }
+
+  /**
+   * Reset circuit breaker (manual recovery)
+   */
+  static resetCircuitBreaker(): void {
+    this.circuitBreaker.reset()
   }
 }
