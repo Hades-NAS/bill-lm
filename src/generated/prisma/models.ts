@@ -10,5 +10,6 @@
  */
 export type * from './models/User.ts'
 export type * from './models/Collection.ts'
-export type * from './models/Bill.ts'
+export type * from './models/BillHeader.ts'
+export type * from './models/BillDetail.ts'
 export type * from './commonInputTypes.ts'

@@ -53,7 +53,8 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Collection: 'Collection',
-  Bill: 'Bill'
+  BillHeader: 'BillHeader',
+  BillDetail: 'BillDetail'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -86,6 +87,7 @@ export const CollectionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
+  instructions: 'instructions',
   year: 'year',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -96,12 +98,22 @@ export const CollectionScalarFieldEnum = {
 export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]
 
 
-export const BillScalarFieldEnum = {
+export const BillHeaderScalarFieldEnum = {
   id: 'id',
+  number: 'number',
   name: 'name',
   description: 'description',
-  amount: 'amount',
+  buyerName: 'buyerName',
+  idBuyer: 'idBuyer',
+  totalWithoutTaxes: 'totalWithoutTaxes',
+  taxes: 'taxes',
+  totalAmount: 'totalAmount',
+  comercialName: 'comercialName',
+  socialName: 'socialName',
+  idSeller: 'idSeller',
+  addressMatriz: 'addressMatriz',
   fileType: 'fileType',
+  billType: 'billType',
   storagePath: 'storagePath',
   percentage: 'percentage',
   reason: 'reason',
@@ -111,7 +123,22 @@ export const BillScalarFieldEnum = {
   collectionId: 'collectionId'
 } as const
 
-export type BillScalarFieldEnum = (typeof BillScalarFieldEnum)[keyof typeof BillScalarFieldEnum]
+export type BillHeaderScalarFieldEnum = (typeof BillHeaderScalarFieldEnum)[keyof typeof BillHeaderScalarFieldEnum]
+
+
+export const BillDetailScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  discount: 'discount',
+  billId: 'billId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type BillDetailScalarFieldEnum = (typeof BillDetailScalarFieldEnum)[keyof typeof BillDetailScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -52,7 +52,12 @@ export type User = Prisma.UserModel
  */
 export type Collection = Prisma.CollectionModel
 /**
- * Model Bill
+ * Model BillHeader
  * 
  */
-export type Bill = Prisma.BillModel
+export type BillHeader = Prisma.BillHeaderModel
+/**
+ * Model BillDetail
+ * 
+ */
+export type BillDetail = Prisma.BillDetailModel

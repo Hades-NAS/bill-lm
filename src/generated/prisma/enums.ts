@@ -9,11 +9,20 @@
 * 🟢 You can import this file directly.
 */
 
-export const BillType = {
+export const BillFileType = {
   XML: 'XML',
   PDF: 'PDF',
   TEXT: 'TEXT',
   MARKDOWN: 'MARKDOWN'
 } as const
 
-export type BillType = (typeof BillType)[keyof typeof BillType]
+export type BillFileType = (typeof BillFileType)[keyof typeof BillFileType]
+
+
+export const BillTargetType = {
+  PERSONAL: 'PERSONAL',
+  PROFESSIONAL: 'PROFESSIONAL',
+  OTHER: 'OTHER'
+} as const
+
+export type BillTargetType = (typeof BillTargetType)[keyof typeof BillTargetType]

@@ -386,7 +386,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Collection: 'Collection',
-  Bill: 'Bill'
+  BillHeader: 'BillHeader',
+  BillDetail: 'BillDetail'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -402,7 +403,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "collection" | "bill"
+    modelProps: "user" | "collection" | "billHeader" | "billDetail"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -554,77 +555,151 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    Bill: {
-      payload: Prisma.$BillPayload<ExtArgs>
-      fields: Prisma.BillFieldRefs
+    BillHeader: {
+      payload: Prisma.$BillHeaderPayload<ExtArgs>
+      fields: Prisma.BillHeaderFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.BillFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload> | null
+          args: Prisma.BillHeaderFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.BillFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>
+          args: Prisma.BillHeaderFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>
         }
         findFirst: {
-          args: Prisma.BillFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload> | null
+          args: Prisma.BillHeaderFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.BillFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>
+          args: Prisma.BillHeaderFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>
         }
         findMany: {
-          args: Prisma.BillFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>[]
+          args: Prisma.BillHeaderFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>[]
         }
         create: {
-          args: Prisma.BillCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>
+          args: Prisma.BillHeaderCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>
         }
         createMany: {
-          args: Prisma.BillCreateManyArgs<ExtArgs>
+          args: Prisma.BillHeaderCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.BillCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>[]
+          args: Prisma.BillHeaderCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>[]
         }
         delete: {
-          args: Prisma.BillDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>
+          args: Prisma.BillHeaderDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>
         }
         update: {
-          args: Prisma.BillUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>
+          args: Prisma.BillHeaderUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>
         }
         deleteMany: {
-          args: Prisma.BillDeleteManyArgs<ExtArgs>
+          args: Prisma.BillHeaderDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.BillUpdateManyArgs<ExtArgs>
+          args: Prisma.BillHeaderUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.BillUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>[]
+          args: Prisma.BillHeaderUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>[]
         }
         upsert: {
-          args: Prisma.BillUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillPayload>
+          args: Prisma.BillHeaderUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillHeaderPayload>
         }
         aggregate: {
-          args: Prisma.BillAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateBill>
+          args: Prisma.BillHeaderAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBillHeader>
         }
         groupBy: {
-          args: Prisma.BillGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.BillGroupByOutputType>[]
+          args: Prisma.BillHeaderGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillHeaderGroupByOutputType>[]
         }
         count: {
-          args: Prisma.BillCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.BillCountAggregateOutputType> | number
+          args: Prisma.BillHeaderCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillHeaderCountAggregateOutputType> | number
+        }
+      }
+    }
+    BillDetail: {
+      payload: Prisma.$BillDetailPayload<ExtArgs>
+      fields: Prisma.BillDetailFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BillDetailFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BillDetailFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>
+        }
+        findFirst: {
+          args: Prisma.BillDetailFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BillDetailFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>
+        }
+        findMany: {
+          args: Prisma.BillDetailFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>[]
+        }
+        create: {
+          args: Prisma.BillDetailCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>
+        }
+        createMany: {
+          args: Prisma.BillDetailCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BillDetailCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>[]
+        }
+        delete: {
+          args: Prisma.BillDetailDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>
+        }
+        update: {
+          args: Prisma.BillDetailUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>
+        }
+        deleteMany: {
+          args: Prisma.BillDetailDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BillDetailUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BillDetailUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>[]
+        }
+        upsert: {
+          args: Prisma.BillDetailUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillDetailPayload>
+        }
+        aggregate: {
+          args: Prisma.BillDetailAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBillDetail>
+        }
+        groupBy: {
+          args: Prisma.BillDetailGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillDetailGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BillDetailCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillDetailCountAggregateOutputType> | number
         }
       }
     }
@@ -681,6 +756,7 @@ export const CollectionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
+  instructions: 'instructions',
   year: 'year',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -691,12 +767,22 @@ export const CollectionScalarFieldEnum = {
 export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]
 
 
-export const BillScalarFieldEnum = {
+export const BillHeaderScalarFieldEnum = {
   id: 'id',
+  number: 'number',
   name: 'name',
   description: 'description',
-  amount: 'amount',
+  buyerName: 'buyerName',
+  idBuyer: 'idBuyer',
+  totalWithoutTaxes: 'totalWithoutTaxes',
+  taxes: 'taxes',
+  totalAmount: 'totalAmount',
+  comercialName: 'comercialName',
+  socialName: 'socialName',
+  idSeller: 'idSeller',
+  addressMatriz: 'addressMatriz',
   fileType: 'fileType',
+  billType: 'billType',
   storagePath: 'storagePath',
   percentage: 'percentage',
   reason: 'reason',
@@ -706,7 +792,22 @@ export const BillScalarFieldEnum = {
   collectionId: 'collectionId'
 } as const
 
-export type BillScalarFieldEnum = (typeof BillScalarFieldEnum)[keyof typeof BillScalarFieldEnum]
+export type BillHeaderScalarFieldEnum = (typeof BillHeaderScalarFieldEnum)[keyof typeof BillHeaderScalarFieldEnum]
+
+
+export const BillDetailScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  discount: 'discount',
+  billId: 'billId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type BillDetailScalarFieldEnum = (typeof BillDetailScalarFieldEnum)[keyof typeof BillDetailScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -796,16 +897,30 @@ export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMode
 
 
 /**
- * Reference to a field of type 'BillType'
+ * Reference to a field of type 'BillFileType'
  */
-export type EnumBillTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillType'>
+export type EnumBillFileTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillFileType'>
     
 
 
 /**
- * Reference to a field of type 'BillType[]'
+ * Reference to a field of type 'BillFileType[]'
  */
-export type ListEnumBillTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillType[]'>
+export type ListEnumBillFileTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillFileType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BillTargetType'
+ */
+export type EnumBillTargetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillTargetType'>
+    
+
+
+/**
+ * Reference to a field of type 'BillTargetType[]'
+ */
+export type ListEnumBillTargetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillTargetType[]'>
     
 
 /**
@@ -905,7 +1020,8 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   collection?: Prisma.CollectionOmit
-  bill?: Prisma.BillOmit
+  billHeader?: Prisma.BillHeaderOmit
+  billDetail?: Prisma.BillDetailOmit
 }
 
 /* Types for Logging */
