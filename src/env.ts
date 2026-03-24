@@ -5,16 +5,22 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
+
     MINIO_ENDPOINT: z.string().min(1),
     MINIO_ACCESS_KEY: z.string().min(1),
     MINIO_SECRET_KEY: z.string().min(1),
     MINIO_BUCKET_NAME: z.string().min(1),
+
     ANALYZE_QUEUE_NAME: z.string().min(1),
     REDIS_HOST: z.string().min(1),
     REDIS_PORT: z.string().min(1).optional(),
-    LLM_BASE_URL: z.string().min(1),
-    MODEL_KEY: z.string().optional(),
+
     FAKE_ANALYZE: z.string().optional(),
+    MODEL_KEY: z.string().optional(),
+    LLM_BASE_URL: z.string().min(1),
+    LLM_TEMPERATURE: z.string().optional(),
+    LLM_MAX_TOKENS: z.string().optional(),
+    LLM_TIMEOUT_MS: z.string().optional(),
   },
 
   /**
