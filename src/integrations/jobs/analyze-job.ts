@@ -1,6 +1,7 @@
 import { Worker } from "bullmq"
 import { DateTime } from "luxon"
 
+import { buildUserPrompt } from "#/utils/bill"
 import { roundToDecimals } from "#/utils/math"
 
 import { FireCollections } from "#/constants/firebase"
@@ -9,10 +10,12 @@ import { AgentEngine } from "../agents"
 import { adminDb } from "../firebase/firebase.server"
 import { LMStudio } from "../lm-studio"
 import { getServiceLogger } from "../logger.server"
+import { StorageHelper } from "../minio/helper"
 import { prisma } from "../prisma"
 import { redisConnection } from "../redis"
+import { parseAndValidateInvoiceXML } from "../xml"
 
-
+import type { XmlBillContent } from "#/schema/bill"
 import type { AnalyzeJobData, UpdateAnalyzeJobData } from "#/schema/collections"
 import type { AnalyzeBillOutput } from "../agents/outputs"
 import type { Job } from "bullmq";
@@ -25,14 +28,15 @@ logger.info(`Starting Analyze Worker connecting to Redis at ${redisConnection.ho
 
 export const jobHandler = async (job: Job<AnalyzeJobData>) => {
   try {
-    logger.info(`Received job id: ${job.id} with email subject: ${job.data.jobId}`)
+    logger.info(`Received job id: ${job.id}`)
 
     const { data, jobId } = job.data
-
 
     const { billIds } = data
 
     const hasModelLoaded = await LMStudio.hasModelLoaded(LMStudio.MODEL_KEY)
+
+    logger.debug(`Model ${LMStudio.MODEL_KEY} loaded in LM Studio: ${hasModelLoaded}`)
 
     const billsResults: Array<{ billId: string, result: AnalyzeBillOutput }> = []
 
@@ -43,30 +47,77 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         flash_attention: true,
       })
 
+      logger.debug(`Load model response from LM Studio for model ${LMStudio.MODEL_KEY}`, { response })
+
       if (!response) {
         logger.error(`Failed to load model ${LMStudio.MODEL_KEY} in LM Studio`)
         return null
       }
     }
 
-    for (const billId of billIds) {
+    const billsToAnalyze = await prisma.billHeader.findMany({
+      where: {
+        id: {
+          in: billIds,
+        },
+      },
+      select: {
+        id: true,
+        billType: true,
+        storagePath: true,
+      }
+    })
 
-      const dataMessage = {
-        jobId,
-        billId,
+    logger.info(`Fetched ${billsToAnalyze.length} bills to analyze for job id: ${job.id}`)
+
+    const billsXmlContents = await Promise.all(
+      billsToAnalyze.map(async (bill) => {
+        const content = await StorageHelper.getObject(bill.storagePath)
+
+        const result = parseAndValidateInvoiceXML(content)
+
+        return {
+          billId: bill.id,
+          billType: bill.billType,
+          xml: result.success ? result.data : null,
+        }
+      })
+    )
+
+    logger.info(`Fetched and parsed XML content for bills in job id: ${job.id}`)
+
+    if (!billsXmlContents || billsXmlContents.length === 0 || billsXmlContents.some(bill => !bill.xml)) {
+      logger.error(`Failed to fetch or parse XML content for bills in job id: ${job.id}`)
+      return null
+    }
+
+    const billsXmlMap = billsXmlContents.reduce((acc, bill) => {
+      acc[bill.billId] = bill.xml
+      return acc
+    }, {} as Record<string, XmlBillContent | null>)
+
+    for (const bill of billsToAnalyze) {
+
+      const xmlContent = billsXmlMap[bill.id]
+
+      if (!xmlContent) {
+        logger.error(`Missing XML content for bill id: ${bill.id} in job id: ${job.id}`)
+        continue
       }
 
-      const { output } = await AgentEngine.process(JSON.stringify(dataMessage))
+      const prompt = buildUserPrompt(job.data, bill.billType, xmlContent)
+
+      const output = await AgentEngine.process(prompt)
 
       if (!output) {
         logger.error(`AgentEngine failed to process job id: ${job.id}`)
         continue
       }
 
-      logger.info(`Job id: ${job.id} processed successfully with output`, { output })
+      logger.info(`Bill id: ${bill.id} analyzed with percentage: ${output.percentage}% for job id: ${job.id}`)
 
       billsResults.push({
-        billId,
+        billId: bill.id,
         result: output,
       })
 
@@ -82,14 +133,16 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(jobId).update(dataJob)
     }
 
+    const updatedAt = DateTime.now().toJSDate()
+
     await prisma.$transaction(
       billsResults.map(({ billId, result }) =>
-        prisma.bill.update({
+        prisma.billHeader.update({
           where: { id: billId },
           data: {
-            percentage: roundToDecimals(result.percentage),
+            percentage: roundToDecimals(result.percentage, 0),
             reason: result.reason,
-            updatedAt: DateTime.now().toJSDate(),
+            updatedAt,
           }
         })
       )
@@ -124,6 +177,6 @@ async function controlLoop() {
 
 setInterval(() => {
   void controlLoop()
-}, 24_000)
+}, 3_000)
 
 logger.info("Analyze Worker started and listening for jobs...")
