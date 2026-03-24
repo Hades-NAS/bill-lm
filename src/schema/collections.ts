@@ -2,7 +2,7 @@ import z from 'zod'
 
 import type { FileWithPath } from '@mantine/dropzone'
 
-import { BillTargetTypeSchema, CollectionSchema } from '#/generated/zod'
+import { CollectionSchema } from '#/generated/zod'
 
 // COLLECTION CRUD
 
@@ -45,11 +45,15 @@ export const DeleteBillsRequestSchema = z.object({
 
 export type DeleteBillsRequest = z.infer<typeof DeleteBillsRequestSchema>
 
+export const PresetTypeSchema = z.enum(['strict', 'balanced', 'creative'])
+
+export type PresetType = z.infer<typeof PresetTypeSchema>
+
 export const AnalyzeCollectionRequestSchema = z.object({
   collectionId: z.string(),
   collectionName: z.string(),
   instructions: z.string().optional(),
-  preset: z.enum(['strict', 'balanced', 'creative']).default('balanced').optional(),
+  preset: PresetTypeSchema.default('balanced').optional(),
   type: z.enum(['all', 'missing', 'analyzed', 'specific']),
   billIds: z.array(z.string()),
 })

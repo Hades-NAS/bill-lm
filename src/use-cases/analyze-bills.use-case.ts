@@ -11,7 +11,7 @@ import { FireCollections } from '#/constants/firebase'
 
 
 import type { AnalysisResult } from '#/integrations/services/bill-analysis.service'
-import type { AnalyzeJobData } from '#/schema/collections'
+import type { AnalyzeJobData, PresetType } from '#/schema/collections'
 
 const logger = getServiceLogger('AnalyzeBillsUseCase')
 
@@ -38,7 +38,7 @@ export class AnalyzeBillsUseCase {
    * @param preset - LLM preset (strict, balanced, creative)
    * @returns Array of analysis results
    */
-  async execute(billIds: Array<string>, jobData: AnalyzeJobData, preset: 'strict' | 'balanced' | 'creative' = 'balanced'): Promise<Array<AnalysisResult>> {
+  async execute(billIds: Array<string>, jobData: AnalyzeJobData, preset: PresetType = 'balanced'): Promise<Array<AnalysisResult>> {
     const { jobId, userId, data: jobDataPayload } = jobData
     const { collectionId, collectionName } = jobDataPayload
 

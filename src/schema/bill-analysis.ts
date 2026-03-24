@@ -162,8 +162,8 @@ export function enrichAnalysisMetadata(
 // ============================================================================
 
 export const AnalysisContextSchema = z.object({
-  jobId: z.string().uuid(),
-  billId: z.string().uuid(),
+  jobId: z.string(),
+  billId: z.string(),
   userId: z.string(),
   collectionId: z.string(),
   collectionName: z.string(),
