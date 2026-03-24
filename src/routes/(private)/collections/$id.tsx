@@ -53,9 +53,12 @@ import BillDetailPage from '#/components/bill/bill-detail'
 import BillAddForm from '#/components/bill/form'
 import CollectionForm from '#/components/collection/form'
 import ConfModal from '#/components/shared/conf-modal'
+import { EmptyState } from '#/components/shared/empty-state'
+import Input from '#/components/shared/input'
 import { NumberDisplay } from '#/components/shared/number-display'
 import TextWithIcon from '#/components/shared/text-icon'
 
+import type { LLMPreset } from '#/config/llm-config'
 import type { CollectionBaseType } from '#/integrations/trpc/procedures/bills'
 import type { AnalyzeCollectionRequest } from '#/schema/collections'
 
@@ -71,6 +74,8 @@ function CollectionDetailPage() {
   const auth = useUserAuth()
 
   const [billModal, setBillModal] = useModal<string>(collectionId)
+
+  const [preset, setPreset] = React.useState<LLMPreset>('balanced')
 
   const [billDeleteModal, setBillDeleteModal] = React.useState(false)
 
@@ -243,6 +248,20 @@ function CollectionDetailPage() {
             . ¿Estás seguro de que deseas analizarlas?
           </Text>
         )}
+
+        <Input
+          data={[
+            { value: 'strict', label: 'Estricto' },
+            { value: 'balanced', label: 'Equilibrado' },
+            { value: 'creative', label: 'Flexible' },
+          ]}
+          label="Preset de análisis (opcional)"
+          mt="sm"
+          typeInput="select"
+          value={preset}
+          onChange={(value) => setPreset(value as LLMPreset)}
+        />
+
         <Group justify="flex-end" mt={24}>
           <Button
             variant="outline"
@@ -295,179 +314,188 @@ function CollectionDetailPage() {
             </Link>
           </Group>
 
-          <Card withBorder padding="lg" radius="md" shadow="sm">
-            <Stack gap={12}>
-              <Skeleton visible={isLoading}>
-                <Box>
-                  <Flex align="center" justify="space-between">
-                    <Title mb={8} order={2}>
-                      {collectionQuery.data?.name || 'Colección'}
-                    </Title>
+          {collectionQuery.isError && (
+            <EmptyState>
+              <Text c="red" size="lg">
+                Error al cargar la colección. Intenta recargar la página.
+              </Text>
+            </EmptyState>
+          )}
 
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      onClick={() => {
-                        if (!collectionQuery.data) return
+          {!collectionQuery.isError && (
+            <React.Fragment>
+              <Card withBorder padding="lg" radius="md" shadow="sm">
+                <Stack gap={12}>
+                  <Skeleton visible={isLoading}>
+                    <Box>
+                      <Flex align="center" justify="space-between">
+                        <Title mb={8} order={2}>
+                          {collectionQuery.data?.name}
+                        </Title>
 
-                        setCollectionForm({
-                          opened: true,
-                          data: {
-                            _count: {
-                              bills: collectionQuery.data.bills.length || 0,
-                            },
-                            ...collectionQuery.data,
-                          },
-                        })
-                      }}
-                    >
-                      <Tooltip label="Editar colección">
-                        <Edit />
-                      </Tooltip>
-                    </ActionIcon>
+                        <ActionIcon
+                          size="sm"
+                          variant="subtle"
+                          onClick={() => {
+                            if (!collectionQuery.data) return
+
+                            setCollectionForm({
+                              opened: true,
+                              data: {
+                                _count: {
+                                  bills: collectionQuery.data.bills.length || 0,
+                                },
+                                ...collectionQuery.data,
+                              },
+                            })
+                          }}
+                        >
+                          <Tooltip label="Editar colección">
+                            <Edit />
+                          </Tooltip>
+                        </ActionIcon>
+                      </Flex>
+
+                      <Text c="dimmed">
+                        {collectionQuery.data?.description || 'Sin descripción'}
+                      </Text>
+
+                      <TextWithIcon>
+                        <TextWithIcon.Icon c="violet.3" size="xs">
+                          <Calendar />
+                        </TextWithIcon.Icon>
+                        <TextWithIcon.Text c="dimmed" size="md">
+                          {DateTime.fromJSDate(
+                            collectionQuery.data?.createdAt || new Date(),
+                          ).toLocaleString(DateTime.DATE_MED)}
+                        </TextWithIcon.Text>
+                      </TextWithIcon>
+                    </Box>
+                  </Skeleton>
+
+                  <Skeleton visible={isLoadingCalc || isLoading}>
+                    <Group>
+                      <Badge color="violet">
+                        {billsCalcQuery.data?.analyzed || 0} analizadas
+                      </Badge>
+                      <Badge color="gray">
+                        {billsCalcQuery.data?.pending || 0} pendientes
+                      </Badge>
+                    </Group>
+                  </Skeleton>
+
+                  <Skeleton visible={isLoading}>
+                    <Group mt={12}>
+                      <Button
+                        color="violet"
+                        leftSection={<Upload size={18} />}
+                        onClick={() => {
+                          setBillModal({ opened: true, data: collectionId })
+                        }}
+                      >
+                        Subir Facturas
+                      </Button>
+                      <Button
+                        color="violet"
+                        disabled={
+                          !collectionQuery.data ||
+                          collectionQuery.data.bills.length === 0
+                        }
+                        leftSection={<Sparkles size={18} />}
+                        variant="light"
+                        onClick={() => setAnalyzeModal({ opened: true })}
+                      >
+                        Analizar Colección
+                      </Button>
+                      <Button
+                        leftSection={<EyeIcon size={18} />}
+                        variant="subtle"
+                        onClick={() => seeInstructions()}
+                      >
+                        Ver Instrucciones
+                      </Button>
+                    </Group>
+                  </Skeleton>
+                </Stack>
+              </Card>
+
+              <Box>
+                <Card withBorder padding="md" radius="md" shadow="sm">
+                  <Flex
+                    direction={{
+                      md: 'row',
+                      xs: 'column',
+                    }}
+                    justify={{
+                      xs: 'center',
+                      md: 'space-between',
+                    }}
+                    mih={52}
+                  >
+                    <Title order={2}>Facturas</Title>
+                    {selectedRows.length > 0 && (
+                      <Group>
+                        <Button
+                          color="red"
+                          disabled={selectedRows.length === 0}
+                          leftSection={<Trash2 size={16} />}
+                          variant="light"
+                          onClick={() => {
+                            if (selectedRows.length === 0) return
+                            setBillDeleteModal(true)
+                          }}
+                        >
+                          Eliminar
+                        </Button>
+                      </Group>
+                    )}
                   </Flex>
 
-                  <Text c="dimmed">
-                    {collectionQuery.data?.description || 'Sin descripción'}
-                  </Text>
+                  <Box mb="xs">
+                    {selectedRows.length > 0 && (
+                      <Text c="dimmed">
+                        {selectedRows.length} factura(s) seleccionada(s)
+                      </Text>
+                    )}
+                    {selectedRows.length === 0 &&
+                      collectionQuery.data?.bills &&
+                      collectionQuery.data.bills.length > 0 && (
+                        <Text c="dimmed">
+                          Selecciona una factura para ver opciones adicionales
+                        </Text>
+                      )}
+                  </Box>
 
-                  <TextWithIcon>
-                    <TextWithIcon.Icon c="violet.3" size="xs">
-                      <Calendar />
-                    </TextWithIcon.Icon>
-                    <TextWithIcon.Text c="dimmed" size="md">
-                      {DateTime.fromJSDate(
-                        collectionQuery.data?.createdAt || new Date(),
-                      ).toLocaleString(DateTime.DATE_MED)}
-                    </TextWithIcon.Text>
-                  </TextWithIcon>
-                </Box>
-              </Skeleton>
-
-              <Skeleton visible={isLoadingCalc || isLoading}>
-                <Group>
-                  <Badge color="violet">
-                    {billsCalcQuery.data?.analyzed || 0} analizadas
-                  </Badge>
-                  <Badge color="gray">
-                    {billsCalcQuery.data?.pending || 0} pendientes
-                  </Badge>
-                </Group>
-              </Skeleton>
-
-              <Skeleton visible={isLoading}>
-                <Group mt={12}>
-                  <Button
-                    color="violet"
-                    leftSection={<Upload size={18} />}
-                    onClick={() => {
-                      setBillModal({ opened: true, data: collectionId })
-                    }}
-                  >
-                    Subir Facturas
-                  </Button>
-                  <Button
-                    color="violet"
-                    disabled={
-                      !collectionQuery.data ||
-                      collectionQuery.data.bills.length === 0
-                    }
-                    leftSection={<Sparkles size={18} />}
-                    variant="light"
-                    onClick={() => setAnalyzeModal({ opened: true })}
-                  >
-                    Analizar Colección
-                  </Button>
-                  <Button
-                    leftSection={<EyeIcon size={18} />}
-                    variant="subtle"
-                    onClick={() => seeInstructions()}
-                  >
-                    Ver Instrucciones
-                  </Button>
-                </Group>
-              </Skeleton>
-            </Stack>
-          </Card>
-
-          <Box>
-            <Flex
-              direction={{
-                md: 'row',
-                xs: 'column',
-              }}
-              justify={{
-                xs: 'center',
-                md: 'space-between',
-              }}
-              mih={52}
-            >
-              <Title mb={16} order={2}>
-                Facturas
-              </Title>
-
-              {selectedRows.length > 0 && (
-                <Group mb={16}>
-                  <Button
-                    color="red"
-                    disabled={selectedRows.length === 0}
-                    leftSection={<Trash2 size={16} />}
-                    variant="light"
-                    onClick={() => {
-                      if (selectedRows.length === 0) return
-                      setBillDeleteModal(true)
-                    }}
-                  >
-                    Eliminar
-                  </Button>
-                </Group>
-              )}
-            </Flex>
-
-            <Card withBorder padding="md" radius="md" shadow="sm">
-              <Box mb="xs">
-                {selectedRows.length > 0 && (
-                  <Text c="dimmed">
-                    {selectedRows.length} factura(s) seleccionada(s)
-                  </Text>
-                )}
-                {selectedRows.length === 0 &&
-                  collectionQuery.data?.bills &&
-                  collectionQuery.data.bills.length > 0 && (
-                    <Text c="dimmed">
-                      Selecciona una factura para ver opciones adicionales
-                    </Text>
-                  )}
+                  <Skeleton visible={isLoading || isLoadingOrRefetch}>
+                    <Table.ScrollContainer
+                      maxHeight={height * 0.5}
+                      minWidth={700}
+                      px={0}
+                    >
+                      <Table highlightOnHover striped px={0}>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Th w="3%" />
+                            <Table.Th w="12%">Archivo</Table.Th>
+                            <Table.Th w="10%">Secuencial</Table.Th>
+                            <Table.Th w="11%">Tipo</Table.Th>
+                            <Table.Th w="10%">Fecha</Table.Th>
+                            <Table.Th w="8%">Subtotal</Table.Th>
+                            <Table.Th w="8%">Impuestos</Table.Th>
+                            <Table.Th w="8%">Total</Table.Th>
+                            <Table.Th w="10%">Deducibilidad</Table.Th>
+                            <Table.Th>Razonamiento</Table.Th>
+                            <Table.Th w="8%" />
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>{rowsMemo}</Table.Tbody>
+                      </Table>
+                    </Table.ScrollContainer>
+                  </Skeleton>
+                </Card>
               </Box>
-
-              <Skeleton visible={isLoading || isLoadingOrRefetch}>
-                <Table.ScrollContainer
-                  maxHeight={height * 0.5}
-                  minWidth={700}
-                  px={0}
-                >
-                  <Table highlightOnHover striped px={0}>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th w="3%" />
-                        <Table.Th w="12%">Archivo</Table.Th>
-                        <Table.Th w="10%">Secuencial</Table.Th>
-                        <Table.Th w="11%">Tipo</Table.Th>
-                        <Table.Th w="10%">Fecha</Table.Th>
-                        <Table.Th w="8%">Subtotal</Table.Th>
-                        <Table.Th w="8%">Impuestos</Table.Th>
-                        <Table.Th w="8%">Total</Table.Th>
-                        <Table.Th w="10%">Deducibilidad</Table.Th>
-                        <Table.Th>Razonamiento</Table.Th>
-                        <Table.Th w="8%" />
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>{rowsMemo}</Table.Tbody>
-                  </Table>
-                </Table.ScrollContainer>
-              </Skeleton>
-            </Card>
-          </Box>
+            </React.Fragment>
+          )}
         </Stack>
       </Box>
     </React.Fragment>
@@ -483,6 +511,7 @@ function CollectionDetailPage() {
         instructions: collectionQuery.data?.instructions || '',
         type,
         billIds: [],
+        preset,
       },
     })
   }
