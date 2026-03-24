@@ -26,6 +26,7 @@ import type { ModalPageProps } from '#/schema/page'
 const defaultValues: CreateCollectionType = {
   name: '',
   description: '',
+  instructions: '',
   year: DateTime.now().year,
 }
 
@@ -138,6 +139,20 @@ const CollectionForm = (
             name="year"
           />
 
+          <form.AppField
+            children={(field) => (
+              <field.Input
+                autosize
+                label="Instrucciones"
+                minRows={4}
+                placeholder="Agrega instrucciones para el análisis de esta colección"
+                typeInput="textarea"
+                onChange={(e) => field.handleChange(e.target.value)}
+              />
+            )}
+            name="instructions"
+          />
+
           <form.AppForm>
             <form.SubmitButton loading={isLoading} mt="md">
               {data ? 'Actualizar colección' : 'Crear colección'}
@@ -148,6 +163,19 @@ const CollectionForm = (
     ),
     [data, isLoading],
   )
+
+  React.useEffect(() => {
+    if (data) {
+      form.reset({
+        name: data.name,
+        description: data.description || '',
+        instructions: data.instructions || '',
+        year: data.year,
+      })
+    } else {
+      form.reset()
+    }
+  }, [data, form])
 
   if (modal) {
     return (
