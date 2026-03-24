@@ -102,6 +102,8 @@ export const useAnalyzeCollectionMutation = (options: MutationOptions<{ jobId: s
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),
+        callCount: 0,
+        totalTokens: 0,
       });
 
       invalidateQueriesByKeys(
