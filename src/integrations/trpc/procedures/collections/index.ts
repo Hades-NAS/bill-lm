@@ -337,9 +337,10 @@ export const collectionsRouter = {
         jobId: crypto.randomUUID(),
         userId: auth.userId,
         data: {
-          collectionId: data.collectionId,
+          collectionId: collection.id,
           collectionName: collection.name,
-          instructions: data.instructions,
+          instructions: collection.instructions || data.instructions,
+          preset: data.preset || 'balanced',
           type,
           billIds: billsToAnalyze.map(bill => bill.id),
         },
@@ -347,6 +348,8 @@ export const collectionsRouter = {
         status: 'pending',
         createdAt: DateTime.now().toJSDate(),
         updatedAt: DateTime.now().toJSDate(),
+        callCount: 0,
+        totalTokens: 0,
       }
 
       const jobName = `analyze-${data.collectionId}-${payload.jobId}`
