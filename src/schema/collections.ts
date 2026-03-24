@@ -49,6 +49,7 @@ export const AnalyzeCollectionRequestSchema = z.object({
   collectionId: z.string(),
   collectionName: z.string(),
   instructions: z.string().optional(),
+  preset: z.enum(['strict', 'balanced', 'creative']).default('balanced').optional(),
   type: z.enum(['all', 'missing', 'analyzed', 'specific']),
   billIds: z.array(z.string()),
 })
@@ -64,6 +65,9 @@ export const AnalyzeJobDataSchema = z.object({
   error: z.string().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  // telemetry:
+  totalTokens: z.number(),
+  callCount: z.number(),
 })
 
 export type AnalyzeJobData = z.infer<typeof AnalyzeJobDataSchema>
