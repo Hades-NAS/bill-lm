@@ -10,7 +10,6 @@ import { invalidateQueriesByKeys } from "../invalidate-utils";
 import type { MutationOptions } from "#/schema/network";
 
 
-
 export const UPDATE_BILLS_INVALIDATION_KEYS = (id: string) => {
   const { trpc } = getContext();
   return [
@@ -57,7 +56,7 @@ export const useDeleteBillsMutation = (options: MutationOptions<string> = {}) =>
       );
       options.onSuccess?.(data.collectionId);
       notify.success({
-        title: 'Facturas eliminadas',
+        title: 'Facturas eliminada(s)',
         message: 'Las facturas han sido eliminadas exitosamente.',
       })
     },
