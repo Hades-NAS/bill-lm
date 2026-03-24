@@ -27,7 +27,6 @@ import {
   ChevronLeft,
   Edit,
   EyeIcon,
-  File,
   NotepadText,
   Sparkles,
   Trash2,
@@ -382,7 +381,7 @@ function CollectionDetailPage() {
                   <Button
                     leftSection={<EyeIcon size={18} />}
                     variant="subtle"
-                    onClick={seeInstructions}
+                    onClick={() => seeInstructions()}
                   >
                     Ver Instrucciones
                   </Button>

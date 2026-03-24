@@ -14,6 +14,8 @@ export const useGetCollectionsQuery = (data: GetCollectionsRequest) => {
   return useQuery(trpc.collections.list.queryOptions({
     auth,
     data
+  }, {
+    enabled: !!auth.isSignedIn && auth.isLoaded,
   }));
 }
 
@@ -25,6 +27,6 @@ export const useGetCollectionByIdQuery = (id: string) => {
     auth,
     data: { id }
   }, {
-    enabled: !!id
+    enabled: !!id && !!auth.isSignedIn && auth.isLoaded,
   }));
 }

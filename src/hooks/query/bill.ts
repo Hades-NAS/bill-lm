@@ -12,6 +12,6 @@ export const useGetBillDetailQuery = (billId?: string | null) => {
     auth,
     data: { billId: billId! }
   }, {
-    enabled: !!billId
+    enabled: !!billId && !!auth.isSignedIn && auth.isLoaded,
   }));
 }

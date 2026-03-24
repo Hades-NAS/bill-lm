@@ -111,6 +111,7 @@ export const collectionsRouter = {
           userId: auth.userId,
           name: data.name,
           description: data.description,
+          instructions: data.instructions,
           year: data.year,
         },
       })
