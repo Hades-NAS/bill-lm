@@ -10,7 +10,7 @@ import { env } from "#/env"
 
 export abstract class LMStudio {
 
-  static logger = getServiceLogger("LMStudio")
+  static logger = getServiceLogger("LmStudio")
 
   static readonly URL_BASE = `${env.LLM_BASE_URL}:1234/api/v1`
 
@@ -28,7 +28,7 @@ export abstract class LMStudio {
 
       return data.models || []
     } catch (error) {
-      this.logger.error(`Failed to list models from LM Studio: ${error}`)
+      this.logger.error(`Failed to list models from LM Studio: ${error} `, { url: `${this.URL_BASE}/models` })
       return []
     }
   }
@@ -94,7 +94,7 @@ export abstract class LMStudio {
 
       return hasInstancesLoaded > 0
     } catch (error) {
-      this.logger.error(`Failed to check if model is loaded in LM Studio: ${error}`)
+      this.logger.error(`Failed to check if model is loaded in LM Studio: ${error} `, { modelKey })
       return false
     }
   }
