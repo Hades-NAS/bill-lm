@@ -2,7 +2,7 @@ import z from 'zod'
 
 import type { FileWithPath } from '@mantine/dropzone'
 
-import { CollectionSchema } from '#/generated/zod'
+import { BillTargetTypeSchema, CollectionSchema } from '#/generated/zod'
 
 // COLLECTION CRUD
 
@@ -48,6 +48,7 @@ export type DeleteBillsRequest = z.infer<typeof DeleteBillsRequestSchema>
 export const AnalyzeCollectionRequestSchema = z.object({
   collectionId: z.string(),
   collectionName: z.string(),
+  instructions: z.string().optional(),
   type: z.enum(['all', 'missing', 'analyzed', 'specific']),
   billIds: z.array(z.string()),
 })
@@ -73,10 +74,17 @@ export const UpdateAnalyzeJobDataSchema = AnalyzeJobDataSchema.partial().extend(
 
 export type UpdateAnalyzeJobData = z.infer<typeof UpdateAnalyzeJobDataSchema>
 
+export const GetBillDetailRequestSchema = z.object({
+  billId: z.string(),
+})
+
+export type GetBillDetailRequest = z.infer<typeof GetBillDetailRequestSchema>
+
 // MODELS
 export const CreateCollectionSchema = CollectionSchema.pick({
   name: true,
   description: true,
+  instructions: true,
   year: true,
 }).extend({
   name: CollectionSchema.shape.name.min(1, 'El nombre es requerido'),
