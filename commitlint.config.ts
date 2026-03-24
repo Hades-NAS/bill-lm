@@ -5,6 +5,7 @@ const config: UserConfig = {
   rules: {
     // scope es obligatorio siempre
     'scope-empty': [2, 'never'],
+    'header-max-length': [2, 'always', 300],
     // tipos permitidos
     'type-enum': [
       2,
