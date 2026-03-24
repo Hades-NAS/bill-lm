@@ -1,19 +1,20 @@
 import { Agent, run, setDefaultOpenAIClient, setTracingDisabled } from '@openai/agents'
 import { OpenAI } from 'openai'
 
+import { AnalyzeBillOutputSchema } from '#/integrations/agents/outputs'
+import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
+import { LMStudio } from '#/integrations/lm-studio'
+import { getServiceLogger } from '#/integrations/logger.server'
+import { createTelemetryService } from '#/integrations/services/telemetry.service'
+
 import { roundToDecimals } from '#/utils/math'
 
 
-import { AnalyzeBillOutputSchema } from './outputs'
 
-import { CircuitBreaker } from '../errors/error-handler'
-import { LMStudio } from '../lm-studio'
-import { getServiceLogger } from '../logger.server'
-import { createTelemetryService } from '../services/telemetry.service'
 
 import type { LLMClientConfig, LLMPreset } from '#/config/llm-config'
+import type { AnalyzeBillOutput } from '#/integrations/agents/outputs';
 import type { GpuStatusType } from '#/schema/lm-studio'
-import type { AnalyzeBillOutput } from './outputs';
 
 import { getLLMClientConfig } from '#/config/llm-config'
 import { env } from '#/env'
@@ -213,8 +214,8 @@ export abstract class AgentEngine {
           temperature: 0,
           duration: Math.round(duration),
           attempts,
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          status: error instanceof AppError ? 'circuit_open' : 'error',
+          error: (error as Error).message || 'Unknown error',
           promptVersion: context.promptVersion,
           timestamp: new Date(),
         })

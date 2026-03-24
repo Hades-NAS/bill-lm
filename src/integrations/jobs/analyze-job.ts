@@ -1,12 +1,13 @@
 import { Worker } from "bullmq"
 import { DateTime } from "luxon"
 
+import { AgentEngine } from "#/integrations/agents"
+import { adminDb } from "#/integrations/firebase/firebase.server"
+import { getServiceLogger } from "#/integrations/logger.server"
+import { redisConnection } from "#/integrations/redis"
+
 import { FireCollections } from "#/constants/firebase"
 
-import { AgentEngine } from "../agents"
-import { adminDb } from "../firebase/firebase.server"
-import { getServiceLogger } from "../logger.server"
-import { redisConnection } from "../redis"
 
 import type { AnalyzeJobData } from "#/schema/collections"
 import type { Job } from "bullmq"
@@ -52,7 +53,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 
     // Update final status in Firestore
     await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(jobId).update({
-      status: failureCount === 0 ? 'completed' : 'completed',
+      status: failureCount === 0 ? 'completed' : 'failed',
       percentage: 100,
       updatedAt: DateTime.now().toJSDate(),
     })

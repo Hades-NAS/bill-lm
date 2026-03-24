@@ -7,19 +7,21 @@ import {
 } from '#/schema/bill-analysis'
 
 
+
+
+import { AgentEngine } from '#/integrations/agents'
+import { AppError, ErrorType, withRetry, CircuitBreaker } from '#/integrations/errors/error-handler'
+import { adminDb } from '#/integrations/firebase/firebase.server'
+import { LMStudio } from '#/integrations/lm-studio'
+import { getServiceLogger } from '#/integrations/logger.server'
+import { StorageHelper } from '#/integrations/minio/helper'
+import { prisma } from '#/integrations/prisma'
+import { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
+import { parseAndValidateInvoiceXML } from '#/integrations/xml'
+
 import { roundToDecimals } from '#/utils/math'
 
 import { FireCollections } from '#/constants/firebase'
-
-import { AgentEngine } from '../agents'
-import { AppError, ErrorType, withRetry, CircuitBreaker } from '../errors/error-handler'
-import { adminDb } from '../firebase/firebase.server'
-import { LMStudio } from '../lm-studio'
-import { getServiceLogger } from '../logger.server'
-import { StorageHelper } from '../minio/helper'
-import { prisma } from '../prisma'
-import { BillPromptBuilder } from '../prompts/bill-prompt-builder'
-import { parseAndValidateInvoiceXML } from '../xml'
 
 import type {
   AnalyzedBill,
@@ -92,6 +94,7 @@ export class BillAnalysisService {
 
       // Step 2: Fetch bills from DB
       const bills = await this.fetchBillsForAnalysis(billIds)
+
       if (bills.length === 0) {
         throw new AppError(ErrorType.DATABASE, 'No bills found to analyze', { billIds })
       }

@@ -354,9 +354,9 @@ export const collectionsRouter = {
 
       const jobName = `analyze-${data.collectionId}-${payload.jobId}`
 
-      await AnalyzeQueue.add(jobName, payload)
-
       await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(payload.jobId).set(payload)
+
+      await AnalyzeQueue.add(jobName, payload)
 
       logger.info('Added analyze job to queue', {
         userId: auth.userId,
