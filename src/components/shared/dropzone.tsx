@@ -51,10 +51,11 @@ export function DropzoneInput(props: Props) {
 
           <div>
             <Text inline c="gray.7" size="xl">
-              Drag images here or click to select files
+              Suelta tus archivos XML aquí o haz click para seleccionar
             </Text>
             <Text inline c="dimmed" mt={7} size="sm">
-              Attach as many files as you like, each file should not exceed 5mb
+              Adjunta tantos archivos como quieras, cada archivo no debe exceder
+              los 5mb
             </Text>
           </div>
         </Group>
