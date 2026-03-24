@@ -16,15 +16,27 @@ import {
   Flex,
   List,
   Modal,
+  ThemeIcon,
 } from '@mantine/core'
-import { useListState } from '@mantine/hooks'
+import { useListState, useViewportSize } from '@mantine/hooks'
+import { modals } from '@mantine/modals'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Calendar, ChevronLeft, Trash2, Upload } from 'lucide-react'
+import {
+  Calendar,
+  ChevronLeft,
+  Edit,
+  EyeIcon,
+  File,
+  NotepadText,
+  Sparkles,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
 
-import { getColorBillType, getColorPercentage } from '#/utils/bill'
+import { getColorBillTargetType, getColorPercentage } from '#/utils/bill'
 import {
   isLoadingMutation,
   isLoadingOrRefetchQuery,
@@ -38,10 +50,14 @@ import { useAnalyzeCollectionMutation } from '#/hooks/mutation/collection'
 import { useGetCollectionByIdQuery } from '#/hooks/query/collection'
 import { billsKeys } from '#/hooks/query-keys'
 
-import BillAddForm from '#/components/collection/form/bill-form'
+import BillDetailPage from '#/components/bill/bill-detail'
+import BillAddForm from '#/components/bill/form'
+import CollectionForm from '#/components/collection/form'
 import ConfModal from '#/components/shared/conf-modal'
+import { NumberDisplay } from '#/components/shared/number-display'
 import TextWithIcon from '#/components/shared/text-icon'
 
+import type { CollectionBaseType } from '#/integrations/trpc/procedures/bills'
 import type { AnalyzeCollectionRequest } from '#/schema/collections'
 
 export const Route = createFileRoute('/(private)/collections/$id')({
@@ -51,6 +67,8 @@ export const Route = createFileRoute('/(private)/collections/$id')({
 function CollectionDetailPage() {
   const { id: collectionId } = Route.useParams()
 
+  const modalInstId = React.useRef(`collection-detail-${collectionId}`)
+
   const auth = useUserAuth()
 
   const [billModal, setBillModal] = useModal<string>(collectionId)
@@ -58,6 +76,11 @@ function CollectionDetailPage() {
   const [billDeleteModal, setBillDeleteModal] = React.useState(false)
 
   const [analyzeModal, setAnalyzeModal] = useModal<AnalyzeCollectionRequest>()
+
+  const [billDetailModal, setBillDetailModal] = useModal<string>()
+
+  const [modalCollectionForm, setCollectionForm] =
+    useModal<CollectionBaseType>()
 
   const [selectedRows, handlerSelectRows] = useListState<string>([])
 
@@ -106,6 +129,8 @@ function CollectionDetailPage() {
 
   const isAnalyzing = isLoadingMutation(analyzeCollectionMutation)
 
+  const { height } = useViewportSize()
+
   const rowsMemo = React.useMemo(
     () => renderRows(),
     [collectionQuery.data?.bills, selectedRows],
@@ -113,6 +138,24 @@ function CollectionDetailPage() {
 
   return (
     <React.Fragment>
+      <BillDetailPage
+        modal
+        size="xl"
+        state={billDetailModal}
+        onClose={() => setBillDetailModal({ opened: false })}
+      />
+
+      <CollectionForm
+        modal
+        state={modalCollectionForm}
+        onClose={() => {
+          setCollectionForm({ opened: false })
+        }}
+        onSubmitted={() => {
+          setCollectionForm({ opened: false })
+        }}
+      />
+
       <BillAddForm
         modal
         size="xl"
@@ -257,22 +300,48 @@ function CollectionDetailPage() {
             <Stack gap={12}>
               <Skeleton visible={isLoading}>
                 <Box>
-                  <Title mb={8} order={2}>
-                    {collectionQuery.data?.name || 'Colección'}
-                  </Title>
+                  <Flex align="center" justify="space-between">
+                    <Title mb={8} order={2}>
+                      {collectionQuery.data?.name || 'Colección'}
+                    </Title>
+
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      onClick={() => {
+                        if (!collectionQuery.data) return
+
+                        setCollectionForm({
+                          opened: true,
+                          data: {
+                            _count: {
+                              bills: collectionQuery.data.bills.length || 0,
+                            },
+                            ...collectionQuery.data,
+                          },
+                        })
+                      }}
+                    >
+                      <Tooltip label="Editar colección">
+                        <Edit />
+                      </Tooltip>
+                    </ActionIcon>
+                  </Flex>
+
+                  <Text c="dimmed">
+                    {collectionQuery.data?.description || 'Sin descripción'}
+                  </Text>
+
                   <TextWithIcon>
-                    <TextWithIcon.Icon size="xs">
+                    <TextWithIcon.Icon c="violet.3" size="xs">
                       <Calendar />
                     </TextWithIcon.Icon>
-                    <TextWithIcon.Text c="gray.7" size="md">
+                    <TextWithIcon.Text c="dimmed" size="md">
                       {DateTime.fromJSDate(
                         collectionQuery.data?.createdAt || new Date(),
                       ).toLocaleString(DateTime.DATE_MED)}
                     </TextWithIcon.Text>
                   </TextWithIcon>
-                  <Text c="dimmed" mt={4}>
-                    {collectionQuery.data?.description || 'Sin descripción'}
-                  </Text>
                 </Box>
               </Skeleton>
 
@@ -300,10 +369,22 @@ function CollectionDetailPage() {
                   </Button>
                   <Button
                     color="violet"
+                    disabled={
+                      !collectionQuery.data ||
+                      collectionQuery.data.bills.length === 0
+                    }
+                    leftSection={<Sparkles size={18} />}
                     variant="light"
                     onClick={() => setAnalyzeModal({ opened: true })}
                   >
                     Analizar Colección
+                  </Button>
+                  <Button
+                    leftSection={<EyeIcon size={18} />}
+                    variant="subtle"
+                    onClick={seeInstructions}
+                  >
+                    Ver Instrucciones
                   </Button>
                 </Group>
               </Skeleton>
@@ -361,17 +442,25 @@ function CollectionDetailPage() {
               </Box>
 
               <Skeleton visible={isLoading || isLoadingOrRefetch}>
-                <Table.ScrollContainer maxHeight={200} minWidth={700}>
-                  <Table highlightOnHover striped>
+                <Table.ScrollContainer
+                  maxHeight={height * 0.5}
+                  minWidth={700}
+                  px={0}
+                >
+                  <Table highlightOnHover striped px={0}>
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th />
-                        <Table.Th w="25%">Archivo</Table.Th>
-                        <Table.Th w="6%">Tipo</Table.Th>
+                        <Table.Th w="3%" />
+                        <Table.Th w="12%">Archivo</Table.Th>
+                        <Table.Th w="10%">Secuencial</Table.Th>
+                        <Table.Th w="11%">Tipo</Table.Th>
                         <Table.Th w="10%">Fecha</Table.Th>
+                        <Table.Th w="8%">Subtotal</Table.Th>
+                        <Table.Th w="8%">Impuestos</Table.Th>
+                        <Table.Th w="8%">Total</Table.Th>
                         <Table.Th w="10%">Deducibilidad</Table.Th>
-                        <Table.Th w="39%">Razonamiento</Table.Th>
-                        <Table.Th />
+                        <Table.Th>Razonamiento</Table.Th>
+                        <Table.Th w="8%" />
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>{rowsMemo}</Table.Tbody>
@@ -392,6 +481,7 @@ function CollectionDetailPage() {
       data: {
         collectionId,
         collectionName: collectionQuery.data?.name || 'Colección',
+        instructions: collectionQuery.data?.instructions || '',
         type,
         billIds: [],
       },
@@ -404,7 +494,7 @@ function CollectionDetailPage() {
     if (bills.length === 0) {
       return (
         <Table.Tr>
-          <Table.Td colSpan={7}>
+          <Table.Td colSpan={11}>
             <Center my="lg">
               <Text c="dimmed">
                 No hay facturas en esta colección. Sube tus facturas para
@@ -415,59 +505,80 @@ function CollectionDetailPage() {
         </Table.Tr>
       )
     }
-    const rows = bills.map((invoice) => (
-      <Table.Tr key={invoice.id}>
+    const rows = bills.map((bill) => (
+      <Table.Tr key={bill.id}>
         <Table.Td>
           <Checkbox
             aria-label="Select row"
-            checked={selectedRows.includes(invoice.id)}
+            checked={selectedRows.includes(bill.id)}
             onChange={(event) => {
               const checked = event.currentTarget.checked
 
               if (checked) {
-                handlerSelectRows.append(invoice.id)
+                handlerSelectRows.append(bill.id)
               } else {
-                const index = selectedRows.indexOf(invoice.id)
+                const index = selectedRows.indexOf(bill.id)
                 handlerSelectRows.remove(index)
               }
             }}
           />
         </Table.Td>
         <Table.Td>
-          <Text inherit>{invoice.name}</Text>
+          <Text inherit lineClamp={1}>
+            {bill.name}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          <Text inherit lineClamp={1}>
+            {bill.number}
+          </Text>
         </Table.Td>
         <Table.Td>
           <Badge
-            color={getColorBillType(invoice.fileType)}
+            color={getColorBillTargetType(bill.billType)}
             size="md"
             variant="filled"
           >
-            {invoice.fileType.toUpperCase()}
+            {bill.billType.toUpperCase()}
           </Badge>
         </Table.Td>
         <Table.Td>
-          {DateTime.fromJSDate(invoice.createdAt).toLocaleString(
+          {DateTime.fromJSDate(bill.createdAt).toLocaleString(
             DateTime.DATE_MED,
           )}
         </Table.Td>
         <Table.Td>
-          {invoice.percentage !== null ? (
-            <Badge
-              color={getColorPercentage(invoice.percentage)}
-              variant="filled"
-            >
-              {invoice.percentage}%
+          <NumberDisplay
+            thousandSeparator
+            prefix="$ "
+            value={bill.totalWithoutTaxes}
+          />
+        </Table.Td>
+        <Table.Td>
+          <NumberDisplay thousandSeparator prefix="$ " value={bill.taxes} />
+        </Table.Td>
+        <Table.Td>
+          <NumberDisplay
+            thousandSeparator
+            prefix="$ "
+            value={bill.totalAmount}
+          />
+        </Table.Td>
+        <Table.Td>
+          {bill.percentage !== null ? (
+            <Badge color={getColorPercentage(bill.percentage)} variant="filled">
+              {bill.percentage}%
             </Badge>
           ) : (
             <Badge color="gray">Pendiente</Badge>
           )}
         </Table.Td>
         <Table.Td>
-          {invoice.reason ? (
-            <Tooltip multiline label={invoice.reason}>
-              <Text lineClamp={4} size="sm">
-                {invoice.reason}
-              </Text>
+          {bill.reason ? (
+            <Tooltip multiline label={bill.reason} maw={500}>
+              <ThemeIcon color="violet" size="sm" variant="subtle">
+                <NotepadText size={16} />
+              </ThemeIcon>
             </Tooltip>
           ) : (
             <Text c="dimmed" size="sm">
@@ -476,20 +587,34 @@ function CollectionDetailPage() {
           )}
         </Table.Td>
         <Table.Td>
-          <Tooltip label="Eliminar">
-            <ActionIcon
-              color="red"
-              disabled={selectedRows.length > 0}
-              size="sm"
-              variant="subtle"
-              onClick={() => {
-                handlerSelectRows.setState([invoice.id])
-                setBillDeleteModal(true)
-              }}
-            >
-              <Trash2 size={16} />
-            </ActionIcon>
-          </Tooltip>
+          <Group gap={4}>
+            <Tooltip label="Ver detalles">
+              <ActionIcon
+                size="md"
+                variant="subtle"
+                onClick={() => {
+                  setBillDetailModal({ opened: true, data: bill.id })
+                }}
+              >
+                <EyeIcon size={16} />
+              </ActionIcon>
+            </Tooltip>
+
+            <Tooltip label="Eliminar">
+              <ActionIcon
+                color="red"
+                disabled={selectedRows.length > 0}
+                size="md"
+                variant="subtle"
+                onClick={() => {
+                  handlerSelectRows.setState([bill.id])
+                  setBillDeleteModal(true)
+                }}
+              >
+                <Trash2 size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         </Table.Td>
       </Table.Tr>
     ))
@@ -499,5 +624,19 @@ function CollectionDetailPage() {
   function getBillName(id: string) {
     const bill = collectionQuery.data?.bills.find((b) => b.id === id)
     return bill?.name || 'Factura'
+  }
+
+  function seeInstructions() {
+    modals.open({
+      id: modalInstId.current,
+      centered: true,
+      title: <Text size="lg">Instrucciones de la colección</Text>,
+      children: (
+        <Text size="sm">
+          {collectionQuery.data?.instructions ||
+            'No hay instrucciones para esta colección.'}
+        </Text>
+      ),
+    })
   }
 }

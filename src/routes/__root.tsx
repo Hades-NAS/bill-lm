@@ -4,6 +4,7 @@ import {
   createTheme,
   mantineHtmlProps,
 } from '@mantine/core'
+import { ModalsProvider } from '@mantine/modals'
 import { Notifications } from '@mantine/notifications'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import {
@@ -117,24 +118,26 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
         <TanStackQueryProvider>
           <MantineProvider defaultColorScheme="light" theme={theme}>
-            <Notifications position="top-right" />
-            <AppClerkProvider>
-              <JobsSubscriptionProvider>
-                {children}
-                <TanStackDevtools
-                  config={{
-                    position: 'bottom-right',
-                  }}
-                  plugins={[
-                    {
-                      name: 'Tanstack Router',
-                      render: <TanStackRouterDevtoolsPanel />,
-                    },
-                    TanStackQueryDevtools,
-                  ]}
-                />
-              </JobsSubscriptionProvider>
-            </AppClerkProvider>
+            <ModalsProvider>
+              <Notifications position="bottom-right" />
+              <AppClerkProvider>
+                <JobsSubscriptionProvider>
+                  {children}
+                  <TanStackDevtools
+                    config={{
+                      position: 'bottom-right',
+                    }}
+                    plugins={[
+                      {
+                        name: 'Tanstack Router',
+                        render: <TanStackRouterDevtoolsPanel />,
+                      },
+                      TanStackQueryDevtools,
+                    ]}
+                  />
+                </JobsSubscriptionProvider>
+              </AppClerkProvider>
+            </ModalsProvider>
           </MantineProvider>
         </TanStackQueryProvider>
         <Scripts />
