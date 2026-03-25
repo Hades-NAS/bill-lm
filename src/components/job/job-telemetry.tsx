@@ -128,11 +128,9 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
                 Última Actualización
               </Text>
               <Text size="xs">
-                {stats.updatedAt
-                  ? DateTime.fromJSDate(stats.updatedAt).toLocaleString(
-                      DateTime.DATETIME_SHORT,
-                    )
-                  : 'N/A'}
+                {DateTime.fromJSDate(stats.updatedAt).toLocaleString(
+                  DateTime.DATETIME_SHORT,
+                )}
               </Text>
             </Flex>
           </Paper>
@@ -329,7 +327,11 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
         opened={Boolean(opened)}
         scrollAreaComponent={ScrollArea.Autosize}
         size={size}
-        title={<Text size="lg">Telemetría del Job</Text>}
+        title={
+          <Text fw="bolder" size="lg">
+            Telemetría del Job
+          </Text>
+        }
         onClose={() => outerOnClose?.()}
       >
         {Content}
