@@ -1,7 +1,7 @@
 import { Worker } from "bullmq"
 import { DateTime } from "luxon"
 
-import { AgentEngine } from "#/integrations/agents"
+import { AgentEngine } from "#/integrations/agent"
 import { adminDb } from "#/integrations/firebase/firebase.server"
 import { getServiceLogger } from "#/integrations/logger.server"
 import { redisConnection } from "#/integrations/redis"
