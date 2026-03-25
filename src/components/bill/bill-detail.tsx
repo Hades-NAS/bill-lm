@@ -1,6 +1,5 @@
 import {
   Badge,
-  Box,
   Fieldset,
   Flex,
   Modal,
@@ -11,7 +10,7 @@ import {
   Tabs,
   Text,
 } from '@mantine/core'
-import { BoxIcon, ShoppingBagIcon, Sparkles } from 'lucide-react'
+import { ShoppingBagIcon, Sparkles } from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
 
@@ -19,8 +18,8 @@ import { getColorBillTargetType, getColorPercentage } from '#/utils/bill'
 import { useIsMobile } from '#/utils/mobile'
 import { isLoadingQuery } from '#/utils/query'
 
-import { useUserAuth } from '#/hooks/auth'
-import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
+// import { useUserAuth } from '#/hooks/auth'
+// import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
 import { useGetBillDetailQuery } from '#/hooks/query/bill'
 
 import { EmptyState } from '#/components/shared/empty-state'
@@ -34,7 +33,7 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
     state: { opened, data: billId },
     modal,
     size = 'lg',
-    onSubmitted,
+    // onSubmitted,
     onClose: outerOnClose,
   } = props
 
@@ -44,14 +43,14 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
 
   const isMobile = useIsMobile()
 
-  const auth = useUserAuth()
+  // const auth = useUserAuth()
 
-  const deleteBillsMutation = useDeleteBillsMutation({
-    onSuccess: () => {
-      onSubmitted?.()
-      outerOnClose?.()
-    },
-  })
+  // const deleteBillsMutation = useDeleteBillsMutation({
+  //   onSuccess: () => {
+  //     onSubmitted?.()
+  //     outerOnClose?.()
+  //   },
+  // })
 
   const Content = React.useMemo(() => {
     if (isLoading) {
@@ -256,7 +255,11 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
         opened={Boolean(opened)}
         scrollAreaComponent={ScrollArea.Autosize}
         size={size}
-        title={<Text size="lg">Detalle de factura</Text>}
+        title={
+          <Text fw="bolder" size="lg">
+            Detalle de factura
+          </Text>
+        }
         onClose={() => outerOnClose?.()}
       >
         {Content}

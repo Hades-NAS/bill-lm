@@ -26,6 +26,8 @@ const defaultValues: AddBillToCollectionType = {
   bills: [],
 }
 
+const MAX_BILLS = 10
+
 const BillAddForm = (props: ModalPageProps<string>) => {
   const {
     state: { opened, data: collectionId },
@@ -111,7 +113,9 @@ const BillAddForm = (props: ModalPageProps<string>) => {
               children={(field) => (
                 <DropzoneInput
                   accept={['text/xml']}
+                  disabled={isLoading || field.state.value.length >= MAX_BILLS}
                   files={field.state.value}
+                  maxFiles={MAX_BILLS}
                   onDrop={(files) => {
                     field.setValue([...field.state.value, ...files])
                   }}
@@ -146,7 +150,11 @@ const BillAddForm = (props: ModalPageProps<string>) => {
         fullScreen={isMobile}
         opened={Boolean(opened)}
         size={size}
-        title={<Text size="lg">Agregar facturas</Text>}
+        title={
+          <Text fw="bolder" size="lg">
+            Agregar facturas
+          </Text>
+        }
         onClose={() => {
           if (form.state.isDirty) {
             setConfirmExit(true)
