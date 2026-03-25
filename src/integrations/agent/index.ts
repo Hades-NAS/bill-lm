@@ -1,7 +1,7 @@
 import { Agent, run, setDefaultOpenAIClient, setTracingDisabled } from '@openai/agents'
 import { OpenAI } from 'openai'
 
-import { AnalyzeBillOutputSchema } from '#/integrations/agents/outputs'
+import { AnalyzeBillOutputSchema } from '#/integrations/agent/outputs'
 import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { LMStudio } from '#/integrations/lm-studio'
 import { getServiceLogger } from '#/integrations/logger.server'
@@ -13,7 +13,7 @@ import { roundToDecimals } from '#/utils/math'
 
 
 import type { LLMClientConfig, LLMPreset } from '#/config/llm-config'
-import type { AnalyzeBillOutput } from '#/integrations/agents/outputs';
+import type { AnalyzeBillOutput } from '#/integrations/agent/outputs';
 import type { GpuStatusType } from '#/schema/lm-studio'
 
 import { getLLMClientConfig } from '#/config/llm-config'
