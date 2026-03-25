@@ -359,11 +359,13 @@ export function NavbarJobsIndicator() {
         opened={opened}
         size="md"
         title={
-          hasActiveJobs
-            ? 'Análisis en progreso'
-            : hasJobs
-              ? 'Análisis completados'
-              : 'Sin análisis'
+          <Text fw="bolder" size="lg">
+            {hasActiveJobs
+              ? 'Análisis en progreso'
+              : hasJobs
+                ? 'Análisis completados'
+                : 'Sin análisis'}
+          </Text>
         }
         onClose={close}
       >
