@@ -1,6 +1,6 @@
-import { AppShell, Burger, Container, Group, Text } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { AppShell, Container, Group, Text } from '@mantine/core'
+// import { useDisclosure } from '@mantine/hooks'
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 
 import { useIsMobile } from '#/utils/mobile'
 
@@ -11,8 +11,8 @@ export const Route = createFileRoute('/(private)')({
 })
 
 function RouteComponent() {
-  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
-  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
+  // const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
+  // const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
 
   const isMobile = useIsMobile()
 
@@ -22,14 +22,15 @@ function RouteComponent() {
       navbar={{
         width: 300,
         breakpoint: 'sm',
-        collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
+        collapsed: { mobile: true, desktop: true },
+        // collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
       }}
       padding="md"
     >
       <AppShell.Header>
         <Group h="100%" justify="space-between" px="md">
           <Group>
-            <Burger
+            {/* <Burger
               hiddenFrom="sm"
               opened={mobileOpened}
               size="sm"
@@ -40,13 +41,15 @@ function RouteComponent() {
               size="sm"
               visibleFrom="sm"
               onClick={toggleDesktop}
-            />
-            <Text fw="bolder" size="xl">
-              Bill-
-              <Text inherit span c="violet" fw="bolder">
-                LM
+            /> */}
+            <Link to="/collections">
+              <Text fw="bolder" size="xl">
+                Bill-
+                <Text inherit span c="violet" fw="bolder">
+                  LM
+                </Text>
               </Text>
-            </Text>
+            </Link>
           </Group>
 
           <Group gap="xs">

@@ -17,6 +17,7 @@ import {
   List,
   Modal,
   ThemeIcon,
+  Textarea,
 } from '@mantine/core'
 import { useListState, useViewportSize } from '@mantine/hooks'
 import { modals } from '@mantine/modals'
@@ -75,7 +76,7 @@ function CollectionDetailPage() {
 
   const [billModal, setBillModal] = useModal<string>(collectionId)
 
-  const [preset, setPreset] = React.useState<LLMPreset>('balanced')
+  const [preset, setPreset] = React.useState<LLMPreset>('strict')
 
   const [billDeleteModal, setBillDeleteModal] = React.useState(false)
 
@@ -211,7 +212,7 @@ function CollectionDetailPage() {
         opened={!!analyzeModal.opened}
         size="lg"
         title={
-          <Text fw={500} size="lg">
+          <Text fw="bolder" size="lg">
             Analizar colección
           </Text>
         }
@@ -255,8 +256,8 @@ function CollectionDetailPage() {
             { value: 'balanced', label: 'Equilibrado' },
             { value: 'creative', label: 'Flexible' },
           ]}
-          label="Preset de análisis (opcional)"
-          mt="sm"
+          label="Preset de análisis"
+          mt="md"
           typeInput="select"
           value={preset}
           onChange={(value) => setPreset(value as LLMPreset)}
@@ -388,15 +389,6 @@ function CollectionDetailPage() {
                     <Group mt={12}>
                       <Button
                         color="violet"
-                        leftSection={<Upload size={18} />}
-                        onClick={() => {
-                          setBillModal({ opened: true, data: collectionId })
-                        }}
-                      >
-                        Subir Facturas
-                      </Button>
-                      <Button
-                        color="violet"
                         disabled={
                           !collectionQuery.data ||
                           collectionQuery.data.bills.length === 0
@@ -433,8 +425,8 @@ function CollectionDetailPage() {
                     mih={52}
                   >
                     <Title order={2}>Facturas</Title>
-                    {selectedRows.length > 0 && (
-                      <Group>
+                    <Group>
+                      {selectedRows.length > 0 && (
                         <Button
                           color="red"
                           disabled={selectedRows.length === 0}
@@ -447,8 +439,19 @@ function CollectionDetailPage() {
                         >
                           Eliminar
                         </Button>
-                      </Group>
-                    )}
+                      )}
+                      {selectedRows.length === 0 && (
+                        <Button
+                          color="violet"
+                          leftSection={<Upload size={18} />}
+                          onClick={() => {
+                            setBillModal({ opened: true, data: collectionId })
+                          }}
+                        >
+                          Subir Facturas
+                        </Button>
+                      )}
+                    </Group>
                   </Flex>
 
                   <Box mb="xs">
@@ -475,7 +478,38 @@ function CollectionDetailPage() {
                       <Table highlightOnHover striped px={0}>
                         <Table.Thead>
                           <Table.Tr>
-                            <Table.Th w="3%" />
+                            <Table.Th w="3%">
+                              <Checkbox
+                                aria-label="Select all rows"
+                                checked={
+                                  collectionQuery.data &&
+                                  collectionQuery.data.bills.length > 0 &&
+                                  selectedRows.length ===
+                                    collectionQuery.data.bills.length
+                                }
+                                indeterminate={
+                                  selectedRows.length > 0 &&
+                                  collectionQuery.data &&
+                                  selectedRows.length <
+                                    collectionQuery.data.bills.length
+                                }
+                                onChange={(event) => {
+                                  if (!collectionQuery.data) return
+
+                                  const checked = event.currentTarget.checked
+
+                                  if (checked) {
+                                    handlerSelectRows.setState(
+                                      collectionQuery.data.bills.map(
+                                        (b) => b.id,
+                                      ),
+                                    )
+                                  } else {
+                                    handlerSelectRows.setState([])
+                                  }
+                                }}
+                              />
+                            </Table.Th>
                             <Table.Th w="12%">Archivo</Table.Th>
                             <Table.Th w="10%">Secuencial</Table.Th>
                             <Table.Th w="11%">Tipo</Table.Th>
@@ -656,14 +690,49 @@ function CollectionDetailPage() {
 
   function seeInstructions() {
     modals.open({
-      id: modalInstId.current,
+      modalId: modalInstId.current,
       centered: true,
-      title: <Text size="lg">Instrucciones de la colección</Text>,
-      children: (
-        <Text size="sm">
-          {collectionQuery.data?.instructions ||
-            'No hay instrucciones para esta colección.'}
+      size: 'lg',
+      title: (
+        <Text fw="bolder" size="lg">
+          Instrucciones de la colección
         </Text>
+      ),
+      children: (
+        <Flex direction="column" gap="md">
+          <Text c="gray.7" size="md">
+            Estas son las instrucciones que el agente, en conjunto con las
+            últimas normativas fiscales, utiliza para analizar tus facturas.
+            Puedes editarlas para agregar información adicional que consideres
+            relevante para el análisis de tus facturas, como por ejemplo, el
+            tipo de actividad económica de tu empresa.
+          </Text>
+          <Textarea autosize readOnly maxRows={100} size="md" variant="filled">
+            {collectionQuery.data?.instructions ||
+              'No hay instrucciones para esta colección.'}
+          </Textarea>
+          <Button
+            fullWidth
+            mt="md"
+            variant="outline"
+            onClick={() => {
+              if (!collectionQuery.data) return
+
+              modals.close(modalInstId.current)
+              setCollectionForm({
+                opened: true,
+                data: {
+                  _count: {
+                    bills: collectionQuery.data.bills.length || 0,
+                  },
+                  ...collectionQuery.data,
+                },
+              })
+            }}
+          >
+            Editar Instrucciones
+          </Button>
+        </Flex>
       ),
     })
   }
