@@ -4,11 +4,14 @@ import React from 'react'
 import type { TextProps, ThemeIconProps } from '@mantine/core'
 
 type Props = {
+  iconPosition?: 'left' | 'right'
   children: React.ReactNode | Array<React.ReactNode>
 }
 
 export const TextWithIcon = (props: Props) => {
   const childrenArray = React.Children.toArray(props.children)
+
+  const iconPosition = props.iconPosition || 'left'
 
   const textChild = childrenArray.find((child) => {
     return (
@@ -27,9 +30,9 @@ export const TextWithIcon = (props: Props) => {
 
   if (textChild && iconChild) {
     return (
-      <Flex align="center" direction="row" justify="flex-start">
-        {iconChild}
-        {textChild}
+      <Flex align="center" direction="row" gap={6} justify="flex-start">
+        {iconPosition === 'left' ? iconChild : textChild}
+        {iconPosition === 'left' ? textChild : iconChild}
       </Flex>
     )
   }

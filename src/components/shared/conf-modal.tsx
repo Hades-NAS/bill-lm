@@ -32,7 +32,7 @@ const ConfModal = (props: ConfModalProps) => {
       opened={opened}
       size="lg"
       title={
-        <Text fw="bold" size="lg">
+        <Text fw="bolder" size="lg">
           {title}
         </Text>
       }

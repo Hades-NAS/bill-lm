@@ -6,6 +6,7 @@ import {
   Paper,
   SimpleGrid,
   Text,
+  ThemeIcon,
 } from '@mantine/core'
 import { Dropzone } from '@mantine/dropzone'
 import { File, Image, Upload, X } from 'lucide-react'
@@ -26,12 +27,18 @@ export function DropzoneInput(props: Props) {
   return (
     <Box>
       <Dropzone
+        {...rest}
+        className={rest.disabled ? 'cursor-not-allowed!' : ''}
+        maxFiles={
+          rest.maxFiles && files.length
+            ? rest.maxFiles - files.length
+            : rest.maxFiles
+        }
         maxSize={5 * 1024 ** 2}
         onDrop={(fs) => {
           onDrop(fs)
         }}
         onReject={(fs) => console.log('rejected files', fs)}
-        {...rest}
       >
         <Group
           gap="xl"
@@ -40,13 +47,26 @@ export function DropzoneInput(props: Props) {
           style={{ pointerEvents: 'none' }}
         >
           <Dropzone.Accept>
-            <Upload color="var(--mantine-color-violet-6)" size={52} />
+            <ThemeIcon color="violet.5" size={52} variant="transparent">
+              <Upload size={52} />
+            </ThemeIcon>
           </Dropzone.Accept>
           <Dropzone.Reject>
-            <X color="var(--mantine-color-red-6)" size={52} />
+            <ThemeIcon color="red.5" size={52} variant="transparent">
+              <X size={52} />
+            </ThemeIcon>
           </Dropzone.Reject>
           <Dropzone.Idle>
-            <Image color="var(--mantine-color-dimmed)" size={52} />
+            {rest.disabled && (
+              <ThemeIcon color="gray.5" size={52} variant="transparent">
+                <X size={52} />
+              </ThemeIcon>
+            )}
+            {!rest.disabled && (
+              <ThemeIcon color="gray.5" size={52} variant="transparent">
+                <Image size={52} />
+              </ThemeIcon>
+            )}
           </Dropzone.Idle>
 
           <div>
@@ -57,12 +77,16 @@ export function DropzoneInput(props: Props) {
               Adjunta tantos archivos como quieras, cada archivo no debe exceder
               los 5mb
             </Text>
+            <Text inline c="dimmed" mt={7} size="sm">
+              El número máximo de archivos que puedes subir es{' '}
+              {rest.maxFiles || 'ilimitado'}
+            </Text>
           </div>
         </Group>
       </Dropzone>
       <Box mt="lg">
         <Text mb="xs" size="sm">
-          Selected files ({files.length})
+          Archivos adjuntos ({files.length})
         </Text>
         <SimpleGrid cols={4}>
           {files.map((file, index) => (
