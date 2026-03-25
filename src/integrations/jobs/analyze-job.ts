@@ -8,7 +8,6 @@ import { redisConnection } from "#/integrations/redis"
 
 import { FireCollections } from "#/constants/firebase"
 
-
 import type { AnalyzeJobData } from "#/schema/collections"
 import type { Job } from "bullmq"
 
