@@ -9,7 +9,7 @@ import {
 
 
 
-import { AgentEngine } from '#/integrations/agents'
+import { AgentEngine } from '#/integrations/agent'
 import { AppError, ErrorType, withRetry, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { LMStudio } from '#/integrations/lm-studio'
