@@ -185,7 +185,9 @@ const CollectionForm = (
         opened={Boolean(opened)}
         size={size}
         title={
-          <Text size="lg">{data ? 'Editar colección' : 'Crear colección'}</Text>
+          <Text fw="bolder" size="lg">
+            {data ? 'Editar colección' : 'Crear colección'}
+          </Text>
         }
         onClose={() => {
           if (form.state.isDirty) {
