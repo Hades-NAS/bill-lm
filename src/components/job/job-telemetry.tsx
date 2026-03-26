@@ -5,7 +5,6 @@ import {
   Flex,
   Modal,
   Paper,
-  ScrollArea,
   SimpleGrid,
   Table,
   Tabs,
@@ -163,7 +162,7 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
                         <Table.Th>Tokens</Table.Th>
                         <Table.Th>Duración</Table.Th>
                         <Table.Th>Preset</Table.Th>
-                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Estado</Table.Th>
                         <Table.Th>Timestamp</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
@@ -325,7 +324,6 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
         centered
         fullScreen={isMobile}
         opened={Boolean(opened)}
-        scrollAreaComponent={ScrollArea.Autosize}
         size={size}
         title={
           <Text fw="bolder" size="lg">
