@@ -147,55 +147,6 @@ export class LMStudioProvider implements ILLMProvider {
     let attempts = 0
     const temperature = this.getTemperatureForPreset(preset)
 
-    // try {
-    //   return await this.circuitBreaker.execute(
-    //     async () => {
-    //       attempts++
-
-    //       this.logger.debug(`Processing prompt with LMStudioProvider (preset: ${preset})`)
-
-    //       // Delegate to AgentEngine (which internally uses OpenAI SDK with LM Studio baseURL)
-    //       const result = await AgentEngine.process(prompt, preset, {
-    //         jobId: context?.jobId || 'unknown',
-    //         billId: context?.billId || 'unknown',
-    //         promptVersion: context?.promptVersion || 'unknown',
-    //       })
-
-    //       return result
-    //     },
-    //     `LMStudioProvider.process (preset: ${preset})`
-    //   )
-    // } catch (error) {
-    //   const duration = Math.round(performance.now() - startTime)
-
-    //   // Only log telemetry if error occurred (AgentEngine already logged on success)
-    //   if (context) {
-    //     await this.telemetryService.recordAgentCall({
-    //       jobId: context.jobId,
-    //       billId: context.billId,
-    //       tokensInput: 0,
-    //       tokensOutput: 0,
-    //       tokensTotal: 0,
-    //       model: this.config.modelId,
-    //       preset,
-    //       temperature: this.config.temperature,
-    //       duration,
-    //       attempts,
-    //       status: this.circuitBreaker.getState() === 'open' ? 'circuit_open' : 'error',
-    //       error: error instanceof Error ? error.message : 'Unknown error',
-    //       promptVersion: context.promptVersion,
-    //       timestamp: DateTime.now().toJSDate(),
-    //     })
-    //   }
-
-    //   this.logger.error('LMStudioProvider.process failed', {
-    //     error: error instanceof Error ? error.message : String(error),
-    //     billId: context?.billId,
-    //   })
-
-    //   return null
-    // }
-
     try {
       if (env.FAKE_ANALYZE === 'true') {
         this.logger.warn(
@@ -254,7 +205,7 @@ export class LMStudioProvider implements ILLMProvider {
           tokensTotal: response.usage.inputTokens + response.usage.outputTokens,
           model: this.config.modelId || 'unknown',
           preset,
-          temperature, 
+          temperature,
           duration: Math.round(duration),
           attempts,
           status: 'success',
@@ -314,11 +265,11 @@ export class LMStudioProvider implements ILLMProvider {
 
   getTemperatureForPreset(preset: LLMPreset): number {
     if (preset === 'strict') {
-      return 0.1
+      return 0.35
     } else if (preset === 'balanced') {
-      return 0.5
+      return 0.65
     } else {
-      return 0.7
+      return 0.95
     }
   }
 
