@@ -15,7 +15,7 @@ if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
 
 if (!admin.apps.length) {
   const serviceAccount = JSON.parse(
-    readFileSync(resolve(env.GOOGLE_APPLICATION_CREDENTIALS), 'utf-8')
+    readFileSync(resolve(env.GOOGLE_APPLICATION_CREDENTIALS), 'utf-8'),
   )
 
   logger.info('Initializing Firebase Admin SDK')
