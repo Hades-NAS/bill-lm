@@ -13,16 +13,16 @@ export const formatList = (
   return ListFormatter.format(items)
 }
 
-// export const capitalize = (s: string, onlyFirst = false) => {
-//   if (onlyFirst) {
-//     return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().trim()
-//   }
-//   return s
-//     .split(' ')
-//     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-//     .join(' ')
-//     .trim()
-// }
+export const isEmptyObject = (obj?: Record<string, any>) => {
+  if (!obj || Object.keys(obj).length === 0) return true
+
+  return Object.values(obj).every(
+    (value) =>
+      value === undefined ||
+      value === null ||
+      (typeof value === 'string' && value.trim() === ''),
+  )
+}
 
 export const capitalize = (text: string, onlyFirst = false) => {
   text = text.toLowerCase()
