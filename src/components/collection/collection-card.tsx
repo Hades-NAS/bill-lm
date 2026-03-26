@@ -88,7 +88,7 @@ export const CollectionCard = (props: Props) => {
             <TextWithIcon.Icon size="xs">
               <Calendar />
             </TextWithIcon.Icon>
-            <TextWithIcon.Text c="gray.7" size="md">
+            <TextWithIcon.Text c="gray" size="md">
               {data.year}
             </TextWithIcon.Text>
           </TextWithIcon>
@@ -97,7 +97,7 @@ export const CollectionCard = (props: Props) => {
             <TextWithIcon.Icon size="xs">
               <Files />
             </TextWithIcon.Icon>
-            <TextWithIcon.Text c="gray.7" size="md">
+            <TextWithIcon.Text c="gray" size="md">
               {data._count.bills > 0
                 ? `${data._count.bills} factura${data._count.bills > 1 ? 's' : ''}`
                 : 'Sin facturas'}
