@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Anchor,
   Badge,
   Box,
   Group,
@@ -200,8 +199,10 @@ export function NavbarJobsIndicator() {
           <Text fw={500} size="sm">
             {activeJobs.length} análisis
           </Text>
-          <Link style={{ textDecoration: 'none' }} to="/jobs">
-            <Anchor size="xs">Ver todos</Anchor>
+          <Link to="/jobs">
+            <Text size="xs" style={{ textDecoration: 'underline' }}>
+              Ver todos
+            </Text>
           </Link>
         </Box>
         <Tooltip withArrow label="Limpiar lista" position="bottom">

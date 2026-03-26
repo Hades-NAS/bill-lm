@@ -5,6 +5,7 @@ import {
   Button,
   Stack,
   RangeSlider,
+  NumberInput,
 } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
 import { CalendarIcon } from 'lucide-react'
@@ -26,14 +27,18 @@ interface BaseFilterField {
   name: string
   label: string
   type: FilterFieldType
+  defaultValue?: any
+  placeholder?: string
 }
 
 interface TextFilterField extends BaseFilterField {
   type: 'text'
+  defaultValue?: string
 }
 
 interface NumberFilterField extends BaseFilterField {
   type: 'number'
+  defaultValue?: number
 }
 
 interface NumberRangeFilterField extends BaseFilterField {
@@ -41,10 +46,12 @@ interface NumberRangeFilterField extends BaseFilterField {
   min?: number
   max?: number
   step?: number
+  defaultValue?: [number, number]
 }
 
 interface DateRangeFilterField extends BaseFilterField {
   type: 'dateRange'
+  defaultValue?: [Date, Date]
 }
 
 interface ThresholdFilterField extends BaseFilterField {
@@ -52,6 +59,7 @@ interface ThresholdFilterField extends BaseFilterField {
   min?: number
   max?: number
   step?: number
+  defaultValue?: { condition: ConditionOperator; value: number }
 }
 
 export type FilterField =
@@ -101,6 +109,7 @@ export type FilterValue =
   | ThresholdFilterValue
 
 interface QuickFilterProps {
+  filter?: FilterValue | null
   fields: Array<FilterField>
   onSearch: (filter: FilterValue) => void
   children: React.ReactNode
@@ -110,13 +119,17 @@ function NumberRangeInput({
   field,
   value,
   onChange,
+  defaultValue,
 }: {
   field: NumberRangeFilterField
   value: [number, number]
   onChange: (val: [number, number]) => void
+  defaultValue?: [number, number]
+  placeholder?: string
 }) {
   return (
     <RangeSlider
+      defaultValue={defaultValue}
       label={(val) => `${val}`}
       marks={
         field.max
@@ -142,13 +155,19 @@ function NumberRangeInput({
 function DateRangeInput({
   value,
   onChange,
+  defaultValue,
+  placeholder,
 }: {
   value: [Date | null, Date | null]
   onChange: (val: [Date | null, Date | null]) => void
+  defaultValue?: [Date, Date]
+  placeholder?: string
 }) {
   return (
     <DatePickerInput
-      placeholder="Selecciona un rango de fechas"
+      clearable
+      defaultValue={defaultValue}
+      placeholder={placeholder || 'Selecciona un rango de fechas'}
       rightSection={<CalendarIcon size={16} />}
       type="range"
       value={value}
@@ -209,14 +228,19 @@ function ThresholdInput({
   )
 }
 
-export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
+export function QuickFilter({
+  filter,
+  fields,
+  onSearch,
+  children,
+}: QuickFilterProps) {
   const [selectedFieldName, setSelectedFieldName] = React.useState<
     string | null
   >(fields[0]?.name ?? null)
 
   const [textValue, setTextValue] = React.useState('')
 
-  const [numberValue, setNumberValue] = React.useState(0)
+  const [numberValue, setNumberValue] = React.useState<number | null>(null)
 
   const [numberRangeValue, setNumberRangeValue] = React.useState<
     [number, number]
@@ -232,6 +256,35 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
     React.useState<ConditionOperator>('>=')
 
   const selectedField = fields.find((f) => f.name === selectedFieldName)
+
+  React.useLayoutEffect(() => {
+    if (!filter) return
+
+    setSelectedFieldName(filter.field)
+
+    switch (filter.type) {
+      case 'text':
+        setTextValue(filter.value)
+        break
+
+      case 'number':
+        setNumberValue(filter.value)
+        break
+
+      case 'numberRange':
+        setNumberRangeValue(filter.value)
+        break
+
+      case 'dateRange':
+        setDateRangeValue(filter.value)
+        break
+
+      case 'threshold':
+        setThresholdValue(filter.value)
+        setThresholdCondition(filter.condition)
+        break
+    }
+  }, [filter])
 
   return (
     <Stack gap={16}>
@@ -264,7 +317,6 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
             type: 'text',
             value: textValue,
           } as TextFilterValue)
-          setTextValue('')
           break
 
         case 'number':
@@ -273,7 +325,6 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
             type: 'number',
             value: numberValue,
           } as NumberFilterValue)
-          setNumberValue(0)
           break
 
         case 'numberRange':
@@ -291,7 +342,6 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
               type: 'dateRange',
               value: dateRangeValue as [Date, Date],
             } as DateRangeFilterValue)
-            setDateRangeValue([null, null])
           }
           break
 
@@ -302,8 +352,6 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
             condition: thresholdCondition,
             value: thresholdValue,
           } as ThresholdFilterValue)
-          setThresholdValue(0)
-          setThresholdCondition('>=')
           break
       }
     } catch (error) {
@@ -318,8 +366,9 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
       case 'text':
         return (
           <TextInput
+            defaultValue={selectedField.defaultValue}
             flex={1}
-            placeholder="Escribe aquí..."
+            placeholder={selectedField.placeholder || 'Escriba un texto...'}
             value={textValue}
             onChange={(e) => setTextValue(e.currentTarget.value)}
           />
@@ -327,14 +376,12 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
 
       case 'number':
         return (
-          <TextInput
+          <NumberInput
+            defaultValue={selectedField.defaultValue}
             flex={1}
-            placeholder="Número..."
-            type="number"
-            value={numberValue}
-            onChange={(e) =>
-              setNumberValue(parseFloat(e.currentTarget.value) || 0)
-            }
+            placeholder={selectedField.placeholder || 'Escriba un número...'}
+            value={numberValue || undefined}
+            onChange={(value) => setNumberValue(Number(value))}
           />
         )
 
@@ -349,7 +396,14 @@ export function QuickFilter({ fields, onSearch, children }: QuickFilterProps) {
 
       case 'dateRange':
         return (
-          <DateRangeInput value={dateRangeValue} onChange={setDateRangeValue} />
+          <DateRangeInput
+            defaultValue={selectedField.defaultValue}
+            placeholder={
+              selectedField.placeholder || 'Selecciona un rango de fechas'
+            }
+            value={dateRangeValue}
+            onChange={setDateRangeValue}
+          />
         )
 
       case 'threshold':
