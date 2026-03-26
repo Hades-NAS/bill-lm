@@ -1,20 +1,22 @@
-import z from "zod"
+import z from 'zod'
 
 export const ModelResponseSchema = z.object({
   type: z.string(),
   key: z.string(),
   display_name: z.string(),
   description: z.string(),
-  loaded_instances: z.array(z.object({
-    id: z.string(),
-    config: z.object({
-      context_length: z.number(),
-      eval_batch_size: z.number(),
-      flash_attention: z.boolean(),
-      num_experts: z.number(),
-      offload_kv_cache_to_gpu: z.boolean(),
+  loaded_instances: z.array(
+    z.object({
+      id: z.string(),
+      config: z.object({
+        context_length: z.number(),
+        eval_batch_size: z.number(),
+        flash_attention: z.boolean(),
+        num_experts: z.number(),
+        offload_kv_cache_to_gpu: z.boolean(),
+      }),
     }),
-  })),
+  ),
   capabilities: z.object({
     vision: z.boolean(),
     trained_for_tool_use: z.boolean(),
@@ -43,11 +45,11 @@ export const LoadModelResponseSchema = z.object({
 export type LoadModelResponse = z.infer<typeof LoadModelResponseSchema>
 
 // Unload model request
-export const UnloadModelRequestSchema = z.object({ instance_id: z.string(), })
+export const UnloadModelRequestSchema = z.object({ instance_id: z.string() })
 
 export type UnloadModelRequest = z.infer<typeof UnloadModelRequestSchema>
 
-export const UnloadModelResponseSchema = z.object({ instance_id: z.string(), })
+export const UnloadModelResponseSchema = z.object({ instance_id: z.string() })
 
 export type UnloadModelResponse = z.infer<typeof UnloadModelResponseSchema>
 

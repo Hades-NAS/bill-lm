@@ -9,18 +9,25 @@ import { CollectionSchema } from '#/generated/zod'
 export const QueryCollectionsRequestSchema = z.object({
   name: z.string().optional(),
   year: z.number().optional(),
-  createdAt: z.object({
-    from: z.date().optional(),
-    to: z.date().optional(),
-  }).optional(),
+  createdAt: z
+    .object({
+      from: z.date().optional(),
+      to: z.date().optional(),
+    })
+    .optional(),
 })
 
-export type QueryCollectionsRequest = z.infer<typeof QueryCollectionsRequestSchema>
+export type QueryCollectionsRequest = z.infer<
+  typeof QueryCollectionsRequestSchema
+>
 
 export const GetCollectionsRequestSchema = z.object({
   search: QueryCollectionsRequestSchema,
   sort: z.object({
-    field: z.enum(['name', 'year', 'createdAt']).default('createdAt').optional(),
+    field: z
+      .enum(['name', 'year', 'createdAt'])
+      .default('createdAt')
+      .optional(),
     direction: z.enum(['asc', 'desc']).default('desc').optional(),
   }),
 })
@@ -31,17 +38,21 @@ export const GetCollectionByIdRequestSchema = z.object({
   id: z.string(),
 })
 
-export type GetCollectionByIdRequest = z.infer<typeof GetCollectionByIdRequestSchema>
+export type GetCollectionByIdRequest = z.infer<
+  typeof GetCollectionByIdRequestSchema
+>
 
 // BILL CRUD
 
 export const UploadBillsRequestSchema = z.object({
   collectionId: z.string(),
-  bills: z.array(z.object({
-    name: z.string(),
-    base64: z.string(),
-    mimeType: z.enum(['application/pdf', 'text/xml']),
-  })),
+  bills: z.array(
+    z.object({
+      name: z.string(),
+      base64: z.string(),
+      mimeType: z.enum(['application/pdf', 'text/xml']),
+    }),
+  ),
 })
 
 export type UploadBillsRequest = z.infer<typeof UploadBillsRequestSchema>
@@ -66,7 +77,9 @@ export const AnalyzeCollectionRequestSchema = z.object({
   billIds: z.array(z.string()),
 })
 
-export type AnalyzeCollectionRequest = z.infer<typeof AnalyzeCollectionRequestSchema>
+export type AnalyzeCollectionRequest = z.infer<
+  typeof AnalyzeCollectionRequestSchema
+>
 
 export const AnalyzeJobDataSchema = z.object({
   data: AnalyzeCollectionRequestSchema,
@@ -84,9 +97,11 @@ export const AnalyzeJobDataSchema = z.object({
 
 export type AnalyzeJobData = z.infer<typeof AnalyzeJobDataSchema>
 
-export const UpdateAnalyzeJobDataSchema = AnalyzeJobDataSchema.partial().extend({
-  jobId: AnalyzeJobDataSchema.shape.jobId,
-})
+export const UpdateAnalyzeJobDataSchema = AnalyzeJobDataSchema.partial().extend(
+  {
+    jobId: AnalyzeJobDataSchema.shape.jobId,
+  },
+)
 
 export type UpdateAnalyzeJobData = z.infer<typeof UpdateAnalyzeJobDataSchema>
 
@@ -104,13 +119,18 @@ export const CreateCollectionSchema = CollectionSchema.pick({
   year: true,
 }).extend({
   name: CollectionSchema.shape.name.min(1, 'El nombre es requerido'),
-  year: CollectionSchema.shape.year.int().min(0, 'El año debe ser un número positivo'),
+  year: CollectionSchema.shape.year
+    .int()
+    .min(0, 'El año debe ser un número positivo'),
 })
 
 export type CreateCollectionType = z.infer<typeof CreateCollectionSchema>
 
 export const UpdateCollectionSchema = CreateCollectionSchema.extend({
-  id: CollectionSchema.shape.id.min(1, 'El ID es requerido para actualizar una colección'),
+  id: CollectionSchema.shape.id.min(
+    1,
+    'El ID es requerido para actualizar una colección',
+  ),
 })
 
 export type UpdateCollectionType = z.infer<typeof UpdateCollectionSchema>

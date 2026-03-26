@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 // src/schema/telemetry.ts
 export const AgentTelemetrySchema = z.object({
@@ -16,8 +16,8 @@ export const AgentTelemetrySchema = z.object({
   temperature: z.number(),
 
   // Ejecución
-  duration: z.number(),  // ms
-  attempts: z.number(),  // intentos antes de éxito
+  duration: z.number(), // ms
+  attempts: z.number(), // intentos antes de éxito
   status: z.enum(['success', 'error', 'timeout', 'circuit_open']),
   error: z.string().optional(),
 
