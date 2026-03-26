@@ -1,6 +1,9 @@
 import { createEnv } from '@t3-oss/env-core'
 import { z } from 'zod'
 
+export const LLMProviderEnum = z.enum(['lm-studio', 'openai', 'claude'])
+export type LLMProvider = z.infer<typeof LLMProviderEnum>
+
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
@@ -16,9 +19,25 @@ export const env = createEnv({
     REDIS_PORT: z.string().min(1).optional(),
 
     FAKE_ANALYZE: z.string().optional(),
+
+    // LLM Provider selection
+    LLM_PROVIDER: LLMProviderEnum.default('lm-studio'),
+
+    // LM Studio (when LLM_PROVIDER=lm-studio)
+    LLM_BASE_URL: z.string().optional(),
     MODEL_KEY: z.string().optional(),
-    LLM_BASE_URL: z.string().min(1),
-    LLM_TEMPERATURE: z.string().optional(),
+
+    // OpenAI (when LLM_PROVIDER=openai)
+    OPENAI_MODEL_ID: z.string().optional(),
+    OPENAI_PROJECT_ID: z.string().optional(),
+    OPENAI_ORGANIZATION: z.string().optional(),
+    OPENAI_API_KEY: z.string().optional(),
+
+    // Claude (when LLM_PROVIDER=claude)
+    CLAUDE_MODEL_ID: z.string().optional(),
+    CLAUDE_API_KEY: z.string().optional(),
+
+    // Shared LLM settings
     LLM_MAX_TOKENS: z.string().optional(),
     LLM_TIMEOUT_MS: z.string().optional(),
   },
@@ -55,9 +74,27 @@ export const env = createEnv({
     ANALYZE_QUEUE_NAME: process.env.ANALYZE_QUEUE_NAME,
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PORT: process.env.REDIS_PORT,
+    FAKE_ANALYZE: process.env.FAKE_ANALYZE,
+
+    // LLM Provider
+    LLM_PROVIDER: process.env.LLM_PROVIDER,
+
+    // LM Studio
     LLM_BASE_URL: process.env.LLM_BASE_URL,
     MODEL_KEY: process.env.MODEL_KEY,
-    FAKE_ANALYZE: process.env.FAKE_ANALYZE,
+
+    // OpenAI
+    OPENAI_MODEL_ID: process.env.OPENAI_MODEL_ID,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+
+    // Claude
+    CLAUDE_MODEL_ID: process.env.CLAUDE_MODEL_ID,
+    CLAUDE_API_KEY: process.env.CLAUDE_API_KEY,
+
+    // Shared LLM
+    LLM_TEMPERATURE: process.env.LLM_TEMPERATURE,
+    LLM_MAX_TOKENS: process.env.LLM_MAX_TOKENS,
+    LLM_TIMEOUT_MS: process.env.LLM_TIMEOUT_MS,
 
     // Client vars
     VITE_CLERK_PUBLISHABLE_KEY: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
@@ -66,7 +103,8 @@ export const env = createEnv({
     VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
     VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID,
     VITE_FIREBASE_STORAGE_BUCKET: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    VITE_FIREBASE_MESSAGING_SENDER_ID: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    VITE_FIREBASE_MESSAGING_SENDER_ID: import.meta.env
+      .VITE_FIREBASE_MESSAGING_SENDER_ID,
     VITE_FIREBASE_APP_ID: import.meta.env.VITE_FIREBASE_APP_ID,
   },
 
