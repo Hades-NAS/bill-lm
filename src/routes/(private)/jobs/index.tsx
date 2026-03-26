@@ -134,20 +134,16 @@ function JobsListPage() {
                       </Table.Td>
                       <Table.Td>
                         <Text size="xs">
-                          {job.createdAt
-                            ? DateTime.fromJSDate(job.createdAt).toLocaleString(
-                                DateTime.DATETIME_SHORT,
-                              )
-                            : 'N/A'}
+                          {DateTime.fromJSDate(job.createdAt).toLocaleString(
+                            DateTime.DATETIME_SHORT,
+                          )}
                         </Text>
                       </Table.Td>
                       <Table.Td>
                         <Text size="xs">
-                          {job.updatedAt
-                            ? DateTime.fromJSDate(job.updatedAt).toLocaleString(
-                                DateTime.DATETIME_SHORT,
-                              )
-                            : 'N/A'}
+                          {DateTime.fromJSDate(job.updatedAt).toLocaleString(
+                            DateTime.DATETIME_SHORT,
+                          )}
                         </Text>
                       </Table.Td>
                       <Table.Td>

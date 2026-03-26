@@ -6,16 +6,16 @@ import {
 } from '@mantine/core'
 import { ModalsProvider } from '@mantine/modals'
 import { Notifications } from '@mantine/notifications'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+// import { TanStackDevtools } from '@tanstack/react-devtools'
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+// import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import AppClerkProvider from '#/integrations/clerk/provider'
-import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools'
+// import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools'
 import TanStackQueryProvider from '#/integrations/tanstack-query/root-provider'
 
 import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
