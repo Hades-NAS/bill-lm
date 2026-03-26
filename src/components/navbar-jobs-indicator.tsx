@@ -40,9 +40,8 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
   return (
     <Paper
       withBorder
-      bg={isActive ? 'blue.0' : undefined}
+      bd={isActive ? '1px solid var(--mantine-color-blue-5)' : undefined}
       key={job.jobId}
-      opacity={isActive ? 1 : 0.75}
       p="sm"
     >
       {/* Job header with status */}

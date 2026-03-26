@@ -98,17 +98,6 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
           <Paper withBorder p="md" radius="md">
             <Flex direction="column" gap={8}>
               <Text c="dimmed" fw={500} size="xs">
-                Llamadas
-              </Text>
-              <Text fw={700} size="xl">
-                {stats.callCount || 0}
-              </Text>
-            </Flex>
-          </Paper>
-
-          <Paper withBorder p="md" radius="md">
-            <Flex direction="column" gap={8}>
-              <Text c="dimmed" fw={500} size="xs">
                 Duración Promedio
               </Text>
               <Text fw={700} size="xl">
@@ -124,9 +113,20 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
           <Paper withBorder p="md" radius="md">
             <Flex direction="column" gap={8}>
               <Text c="dimmed" fw={500} size="xs">
+                Llamadas
+              </Text>
+              <Text fw={700} size="xl">
+                {stats.callCount || 0}
+              </Text>
+            </Flex>
+          </Paper>
+
+          <Paper withBorder p="md" radius="md">
+            <Flex direction="column" gap={8}>
+              <Text c="dimmed" fw={500} size="xs">
                 Última Actualización
               </Text>
-              <Text size="xs">
+              <Text size="sm">
                 {DateTime.fromJSDate(stats.updatedAt).toLocaleString(
                   DateTime.DATETIME_SHORT,
                 )}
@@ -257,6 +257,25 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
                           stats.callCount
                             ? Math.round(
                                 (stats.totalTokens || 0) / stats.callCount,
+                              )
+                            : 0
+                        }
+                      />
+                    </Text>
+                  </Flex>
+                  <Flex justify="space-between">
+                    <Text size="sm">Tokens por segundo:</Text>
+                    <Text fw={600}>
+                      <NumberDisplay
+                        thousandSeparator
+                        prefix=""
+                        suffix=" tk/s"
+                        value={
+                          agentCalls?.avgDuration
+                            ? Math.round(
+                                (stats.totalTokens || 0) /
+                                  stats.callCount /
+                                  (agentCalls.avgDuration / 1000),
                               )
                             : 0
                         }
