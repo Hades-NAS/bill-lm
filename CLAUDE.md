@@ -44,7 +44,7 @@ For parsing and validating XML invoice files:
 
 ```typescript
 // src/integrations/xml/invoice-schema.ts (server-only)
-import { z } from "zod";
+import { z } from 'zod'
 
 export const InvoiceXMLSchema = z.object({
   invoice: z.object({
@@ -60,58 +60,60 @@ export const InvoiceXMLSchema = z.object({
         description: z.string(),
         quantity: z.string().pipe(z.coerce.number()),
         unitPrice: z.string().pipe(z.coerce.number()),
-      })
+      }),
     ),
   }),
-});
+})
 
-export type InvoiceXML = z.infer<typeof InvoiceXMLSchema>;
+export type InvoiceXML = z.infer<typeof InvoiceXMLSchema>
 ```
 
 ```typescript
 // src/integrations/xml/parse-invoice.server.ts (server-only)
-import { XMLParser } from "fast-xml-parser";
-import { InvoiceXMLSchema } from "./invoice-schema";
-import { logger } from "../logger.server";
+import { XMLParser } from 'fast-xml-parser'
+import { InvoiceXMLSchema } from './invoice-schema'
+import { logger } from '../logger.server'
 
 export async function parseAndValidateInvoiceXML(
-  xmlBuffer: Buffer
+  xmlBuffer: Buffer,
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    const xmlString = xmlBuffer.toString("utf-8");
+    const xmlString = xmlBuffer.toString('utf-8')
     const parser = new XMLParser({
       ignoreAttributes: false, // include XML attributes
       parseAttributeValue: true, // auto-convert numeric attributes
-    });
-    const rawData = parser.parse(xmlString);
+    })
+    const rawData = parser.parse(xmlString)
 
     // Validate against schema
-    const validatedData = InvoiceXMLSchema.parse(rawData);
-    return { success: true, data: validatedData };
+    const validatedData = InvoiceXMLSchema.parse(rawData)
+    return { success: true, data: validatedData }
   } catch (error) {
-    logger.error({ error }, "XML parsing/validation failed");
+    logger.error({ error }, 'XML parsing/validation failed')
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
 }
 ```
 
 **Use in tRPC router:**
+
 ```typescript
 // In your invoices.router.ts
 export const invoicesRouter = router({
   analyzeInvoice: protectedProcedure
     .input(z.object({ invoiceId: z.number() }))
     .mutation(async ({ input }) => {
-      const xmlBuffer = await fetchFromMinio(/* ... */);
-      const { success, data, error } = await parseAndValidateInvoiceXML(xmlBuffer);
-      if (!success) throw new Error(error);
+      const xmlBuffer = await fetchFromMinio(/* ... */)
+      const { success, data, error } =
+        await parseAndValidateInvoiceXML(xmlBuffer)
+      if (!success) throw new Error(error)
       // data is now typed as InvoiceXML
-      return { percentage: 85, analyze: "Valid invoice" };
+      return { percentage: 85, analyze: 'Valid invoice' }
     }),
-});
+})
 ```
 
 ---

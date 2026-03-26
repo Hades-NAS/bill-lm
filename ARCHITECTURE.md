@@ -248,17 +248,20 @@ Telemetría → Firestore (telemetry collection)
 **Responsabilidad:** Punto de entrada del worker async
 
 **Qué hace:**
+
 - Recibe job desde BullMQ
 - Instancia AnalyzeBillsUseCase
 - Llama `useCase.execute(billIds, jobData, preset)`
 - Actualiza Firestore con resultado final
 
 **Qué NO hace:**
+
 - ❌ Fetch bills (lo hace el servicio)
 - ❌ Parse XML (lo hace el servicio)
 - ❌ Llamadas al LLM (lo hace el agent)
 
 **Por qué existe:**
+
 - Separación: Job handler ≠ lógica de negocio
 - Facilita testeo: puedes mockear job data
 - Reutilizable: mismo use case desde otros contextos (CLI, scheduled tasks, etc.)
@@ -270,14 +273,21 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 
   try {
     const useCase = createAnalyzeBillsUseCase()
-    const results = await useCase.execute(billIds, job.data, preset || 'balanced')
+    const results = await useCase.execute(
+      billIds,
+      job.data,
+      preset || 'balanced',
+    )
 
     // Actualiza Firestore con resultado
-    await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(jobId).update({
-      status: 'completed',
-      percentage: 100,
-      updatedAt: DateTime.now().toJSDate(),
-    })
+    await adminDb
+      .collection(FireCollections.ANALYZE_COLLECTION)
+      .doc(jobId)
+      .update({
+        status: 'completed',
+        percentage: 100,
+        updatedAt: DateTime.now().toJSDate(),
+      })
     return true
   } catch (error) {
     // Manejo de error
@@ -295,6 +305,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 **Responsabilidad:** Orquestar la lógica de negocio
 
 **Qué hace:**
+
 1. Valida input con Zod
 2. Crea AnalysisContext (jobId, userId, preset, instructions, retryCount)
 3. Instancia BillAnalysisService
@@ -303,18 +314,21 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 6. Retorna AnalysisResult[]
 
 **Qué NO hace:**
+
 - ❌ Fetch bills
 - ❌ Parse XML
 - ❌ Llamadas al LLM
 - ❌ Updates a DB directamente
 
 **Por qué existe:**
+
 - **Separación de preocupaciones:** Lógica de negocio ≠ detalles técnicos
 - **Reutilizable:** Mismo use case desde job handler, API endpoints, CLI, etc.
 - **Testeable:** Mock el servicio, no necesitas BD ni LLM
 - **DDD (Domain-Driven Design):** El use case es el "caso de uso" del negocio
 
 **Contexto creado:**
+
 ```typescript
 {
   jobId: "uuid",
@@ -366,17 +380,20 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 ```
 
 **Qué NO hace:**
+
 - ❌ Validar input (lo hace el use case)
 - ❌ Llamadas al LLM directamente (lo hace el agent)
 - ❌ Decidir si reintentar (lo hace CircuitBreaker)
 
 **Por qué existe:**
+
 - **Orquestación técnica:** Coordina múltiples dependencias (Minio, Prisma, Firestore, Agent)
 - **Implementación clara:** Cada paso es responsable de una tarea
 - **Progreso en tiempo real:** Actualiza Firestore después de cada bill
 - **Manejo de errores:** Continúa analizando bills aunque uno falle (partial success)
 
 **Características importantes:**
+
 - **CircuitBreaker:** Protege contra fallos en cascada del LLM
 - **Progreso incremental:** Actualiza Firestore per-bill (no espera a terminar todos)
 - **Partial analysis:** Si un bill falla, continúa con los siguientes
@@ -391,6 +408,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 **Responsabilidad:** Proteger llamadas al LLM
 
 **Qué hace:**
+
 1. Carga configuración del preset (temperatura, modelo, timeout)
 2. Crea cliente OpenAI/LM Studio
 3. Ejecuta con CircuitBreaker (protección contra fallos)
@@ -399,17 +417,20 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 6. Retorna análisis text
 
 **Qué NO hace:**
+
 - ❌ Construir prompt (lo hace el servicio)
 - ❌ Parsear respuesta (lo hace el servicio)
 - ❌ Retry lógico (lo hace CircuitBreaker)
 
 **Por qué existe:**
+
 - **Centralización:** Un único lugar donde ocurren LLM calls
 - **Protección:** CircuitBreaker evita cascadas de fallos
 - **Configurabilidad:** Presets para diferentes niveles de creatividad
 - **Observabilidad:** Telemetría completa de cada call
 
 **Presets Disponibles:**
+
 ```
 strict:   temperature = 0.1  (determinístico, perfecto para datos exactos)
 balanced: temperature = 0.4  (defecto, equilibrio entre precisión y creatividad)
@@ -417,6 +438,7 @@ creative: temperature = 0.7  (variado, mejor para análisis subjetivos)
 ```
 
 **CircuitBreaker Pattern:**
+
 ```
 CLOSED (normal)
   ↓ (5 fallos consecutivos)
@@ -443,6 +465,7 @@ OPEN (rechaza calls)
 ### Datos Registrados
 
 **Agent Calls (Firestore: telemetry/agent_calls)**
+
 ```
 {
   jobId:           "uuid",
@@ -463,6 +486,7 @@ OPEN (rechaza calls)
 ```
 
 **Job Stats (Firestore: telemetry/job_stats/{jobId})**
+
 ```
 {
   totalTokens:     3500,
@@ -485,7 +509,7 @@ jobStats = {
   totalTokens: 3500,
   callCount: 10,
   avgDuration: 2300,
-  successRate: 95.5
+  successRate: 95.5,
 }
 ```
 
@@ -510,7 +534,7 @@ Cada capa:
 export class BillAnalysisService {
   constructor(
     private circuitBreaker = new CircuitBreaker(),
-    private promptBuilder = new BillPromptBuilder()
+    private promptBuilder = new BillPromptBuilder(),
   ) {}
 }
 
@@ -525,7 +549,7 @@ const service = new BillAnalysisService()
 const AnalysisContextSchema = z.object({
   jobId: z.string().uuid(),
   userId: z.string(),
-  preset: z.enum(['strict', 'balanced', 'creative'])
+  preset: z.enum(['strict', 'balanced', 'creative']),
 })
 
 // Parse + validate
@@ -536,11 +560,11 @@ const context = AnalysisContextSchema.parse(data)
 
 ```typescript
 enum ErrorType {
-  VALIDATION = "validation",
-  STORAGE = "storage",
-  AI_ENGINE = "ai_engine",
-  DATABASE = "database",
-  NETWORK = "network"
+  VALIDATION = 'validation',
+  STORAGE = 'storage',
+  AI_ENGINE = 'ai_engine',
+  DATABASE = 'database',
+  NETWORK = 'network',
 }
 
 class AppError extends Error {
@@ -548,7 +572,7 @@ class AppError extends Error {
     public type: ErrorType,
     public message: string,
     public context?: Record<string, any>,
-    public retryable: boolean = false
+    public retryable: boolean = false,
   ) {}
 }
 ```

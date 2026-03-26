@@ -135,6 +135,16 @@ export default [
     },
   },
   {
-    ignores: ['eslint.config.js', 'prettier.config.js', 'prisma/seed.ts'],
+    ignores: [
+      'eslint.config.js',
+      'prettier.config.js',
+      'prisma/seed.ts',
+      '.claude',
+      '.output',
+      '.tanstack',
+      'dist',
+      'build',
+      'node_modules',
+    ],
   },
 ]
