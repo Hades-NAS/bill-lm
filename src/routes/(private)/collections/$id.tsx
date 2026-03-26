@@ -357,15 +357,15 @@ function CollectionDetailPage() {
                         </ActionIcon>
                       </Flex>
 
-                      <Text c="dimmed">
+                      <Text c="gray">
                         {collectionQuery.data?.description || 'Sin descripción'}
                       </Text>
 
                       <TextWithIcon>
-                        <TextWithIcon.Icon c="violet.3" size="xs">
+                        <TextWithIcon.Icon c="violet.5" size="xs">
                           <Calendar />
                         </TextWithIcon.Icon>
-                        <TextWithIcon.Text c="dimmed" size="md">
+                        <TextWithIcon.Text c="gray" size="md">
                           {DateTime.fromJSDate(
                             collectionQuery.data?.createdAt || new Date(),
                           ).toLocaleString(DateTime.DATE_MED)}

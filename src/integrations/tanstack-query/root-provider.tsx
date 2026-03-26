@@ -73,7 +73,6 @@ export default function TanStackQueryProvider({
   return (
     <QueryClientProvider client={queryClient}>
       <TRPCProvider queryClient={queryClient} trpcClient={trpcClient}>
-        {/* <QueryErrorHandler /> */}
         {children}
       </TRPCProvider>
     </QueryClientProvider>

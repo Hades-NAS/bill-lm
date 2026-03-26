@@ -115,26 +115,28 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ColorSchemeScript defaultColorScheme="auto" />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
+      <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(128,79,184,0.24)]">
         <TanStackQueryProvider>
-          <MantineProvider defaultColorScheme="light" theme={theme}>
+          <MantineProvider defaultColorScheme="auto" theme={theme}>
             <ModalsProvider>
               <Notifications position="bottom-right" />
               <AppClerkProvider>
                 <JobsSubscriptionProvider>
                   {children}
-                  <TanStackDevtools
+                  {/* <TanStackDevtools
                     config={{
                       position: 'bottom-right',
                     }}
-                    plugins={[
-                      {
-                        name: 'Tanstack Router',
-                        render: <TanStackRouterDevtoolsPanel />,
-                      },
-                      TanStackQueryDevtools,
-                    ]}
-                  />
+                    plugins={
+                      [
+                        {
+                          name: 'Tanstack Router',
+                          render: <TanStackRouterDevtoolsPanel />,
+                        },
+                        TanStackQueryDevtools,
+                      ]
+                    }
+                  /> */}
                 </JobsSubscriptionProvider>
               </AppClerkProvider>
             </ModalsProvider>
