@@ -8,8 +8,6 @@ import { createBillAnalysisService } from '#/integrations/services/bill-analysis
 
 import { FireCollections } from '#/constants/firebase'
 
-
-
 import type { AnalysisResult } from '#/integrations/services/bill-analysis.service'
 import type { AnalyzeJobData, PresetType } from '#/schema/collections'
 
@@ -38,7 +36,11 @@ export class AnalyzeBillsUseCase {
    * @param preset - LLM preset (strict, balanced, creative)
    * @returns Array of analysis results
    */
-  async execute(billIds: Array<string>, jobData: AnalyzeJobData, preset: PresetType = 'balanced'): Promise<Array<AnalysisResult>> {
+  async execute(
+    billIds: Array<string>,
+    jobData: AnalyzeJobData,
+    preset: PresetType = 'balanced',
+  ): Promise<Array<AnalysisResult>> {
     const { jobId, userId, data: jobDataPayload } = jobData
     const { collectionId, collectionName } = jobDataPayload
 
@@ -66,7 +68,11 @@ export class AnalyzeBillsUseCase {
       const analysisService = createBillAnalysisService()
 
       // Execute analysis
-      const results = await analysisService.analyzeBills(billIds, jobData, context)
+      const results = await analysisService.analyzeBills(
+        billIds,
+        jobData,
+        context,
+      )
 
       this.logger.info('AnalyzeBillsUseCase: analysis completed', {
         jobId,
@@ -84,15 +90,21 @@ export class AnalyzeBillsUseCase {
 
       // Update Firestore with error status
       try {
-        await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(jobId).update({
-          status: 'failed',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          updatedAt: DateTime.now().toJSDate(),
-        })
+        await adminDb
+          .collection(FireCollections.ANALYZE_COLLECTION)
+          .doc(jobId)
+          .update({
+            status: 'failed',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            updatedAt: DateTime.now().toJSDate(),
+          })
       } catch (updateError) {
         this.logger.error('Failed to update Firestore with error status', {
           jobId,
-          error: updateError instanceof Error ? updateError.message : String(updateError),
+          error:
+            updateError instanceof Error
+              ? updateError.message
+              : String(updateError),
         })
       }
 
@@ -107,16 +119,24 @@ export class AnalyzeBillsUseCase {
   async executeWithErrorHandling(
     billIds: Array<string>,
     jobData: AnalyzeJobData,
-    preset: 'strict' | 'balanced' | 'creative' = 'balanced'
-  ): Promise<{ success: boolean; results?: Array<AnalysisResult>; error?: string }> {
+    preset: 'strict' | 'balanced' | 'creative' = 'balanced',
+  ): Promise<{
+    success: boolean
+    results?: Array<AnalysisResult>
+    error?: string
+  }> {
     try {
       const results = await this.execute(billIds, jobData, preset)
       return { success: true, results }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      this.logger.error('AnalyzeBillsUseCase: caught error in executeWithErrorHandling', {
-        error: errorMessage,
-      })
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      this.logger.error(
+        'AnalyzeBillsUseCase: caught error in executeWithErrorHandling',
+        {
+          error: errorMessage,
+        },
+      )
       return { success: false, error: errorMessage }
     }
   }
