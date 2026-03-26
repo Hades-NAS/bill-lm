@@ -1,22 +1,22 @@
 // src/integrations/trpc/routers/telemetry.router.ts (nuevo)
 
-import { DateTime } from "luxon"
-import z from "zod"
+import { DateTime } from 'luxon'
+import z from 'zod'
 
-import { WithAuthSchema } from "#/schema/auth"
+import { WithAuthSchema } from '#/schema/auth'
 
-import { adminDb } from "#/integrations/firebase/firebase.server"
-import { getServiceLogger } from "#/integrations/logger.server"
+import { adminDb } from '#/integrations/firebase/firebase.server'
+import { getServiceLogger } from '#/integrations/logger.server'
 
-import { toDate } from "#/utils/firestore-date"
-import { roundToDecimals } from "#/utils/math"
+import { toDate } from '#/utils/firestore-date'
+import { roundToDecimals } from '#/utils/math'
 
-import { FireCollections } from "#/constants/firebase"
+import { FireCollections } from '#/constants/firebase'
 
-import { privateProcedure } from "../../init"
+import { privateProcedure } from '../../init'
 
-import type { AnalyzeJobData } from "#/schema/collections"
-import type { AgentTelemetry } from "#/schema/telemetry"
+import type { AnalyzeJobData } from '#/schema/collections'
+import type { AgentTelemetry } from '#/schema/telemetry'
 
 const logger = getServiceLogger('TelemetryRouter')
 
@@ -60,7 +60,7 @@ export const telemetryRouter = {
           .limit(input.limit)
           .get()
 
-        const callsArray = calls.docs.map(doc => {
+        const callsArray = calls.docs.map((doc) => {
           const rawData = doc.data()
           return {
             ...rawData,
@@ -69,7 +69,9 @@ export const telemetryRouter = {
           } as AgentTelemetry
         })
 
-        const avgDuration = roundToDecimals(callsArray.reduce((sum, call) => sum + (call.duration), 0) / callsArray.length,
+        const avgDuration = roundToDecimals(
+          callsArray.reduce((sum, call) => sum + call.duration, 0) /
+            callsArray.length,
         )
 
         return {
@@ -77,7 +79,10 @@ export const telemetryRouter = {
           avgDuration,
         }
       } catch (error) {
-        logger.error('Error fetching agent calls for jobId ' + input.jobId, error)
+        logger.error(
+          'Error fetching agent calls for jobId ' + input.jobId,
+          error,
+        )
         throw error
       }
     }),
@@ -99,15 +104,19 @@ export const telemetryRouter = {
           return sum + (doc.data().tokensTotal ?? 0)
         }, 0)
 
-        const avgDuration = calls.docs.reduce((sum, doc) => {
-          return sum + (doc.data().duration ?? 0)
-        }, 0) / calls.docs.length
+        const avgDuration =
+          calls.docs.reduce((sum, doc) => {
+            return sum + (doc.data().duration ?? 0)
+          }, 0) / calls.docs.length
 
         return {
           totalCalls: calls.docs.length,
           totalTokens,
           avgDuration: Math.round(avgDuration),
-          successRate: (calls.docs.filter(d => d.data().status === 'success').length / calls.docs.length) * 100,
+          successRate:
+            (calls.docs.filter((d) => d.data().status === 'success').length /
+              calls.docs.length) *
+            100,
         }
       } catch (error) {
         logger.error('Error fetching user metrics:', error)
@@ -126,7 +135,7 @@ export const telemetryRouter = {
           .limit(input.data.limit)
           .get()
 
-        return jobs.docs.map(doc => {
+        return jobs.docs.map((doc) => {
           const rawData = doc.data() as AnalyzeJobData
           return {
             ...rawData,

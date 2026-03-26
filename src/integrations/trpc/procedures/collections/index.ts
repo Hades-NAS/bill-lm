@@ -2,8 +2,13 @@ import { TRPCError } from '@trpc/server'
 import { DateTime } from 'luxon'
 
 import { WithAuthSchema } from '#/schema/auth'
-import { AnalyzeCollectionRequestSchema, CreateCollectionSchema, GetCollectionByIdRequestSchema, GetCollectionsRequestSchema, UpdateCollectionSchema } from '#/schema/collections'
-
+import {
+  AnalyzeCollectionRequestSchema,
+  CreateCollectionSchema,
+  GetCollectionByIdRequestSchema,
+  GetCollectionsRequestSchema,
+  UpdateCollectionSchema,
+} from '#/schema/collections'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
@@ -16,8 +21,8 @@ import { privateProcedure } from '../../init'
 import { checkAndCreateUser } from '../../middleware/auth'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
-import type { AnalyzeJobData } from '#/schema/collections';
-import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server';
+import type { AnalyzeJobData } from '#/schema/collections'
+import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
 
 const logger = getServiceLogger('Collections')
 
@@ -57,12 +62,16 @@ export const collectionsRouter = {
       const collections = await prisma.collection.findMany({
         where: {
           userId: auth.userId,
-          name: search.name ? { contains: search.name, mode: 'insensitive' } : undefined,
+          name: search.name
+            ? { contains: search.name, mode: 'insensitive' }
+            : undefined,
           year: search.year ? search.year : undefined,
-          createdAt: search.createdAt ? {
-            gte: search.createdAt.from,
-            lte: search.createdAt.to,
-          } : undefined,
+          createdAt: search.createdAt
+            ? {
+                gte: search.createdAt.from,
+                lte: search.createdAt.to,
+              }
+            : undefined,
         },
         orderBy,
         select: {
@@ -192,7 +201,7 @@ export const collectionsRouter = {
           include: {
             bills: {
               orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-            }
+            },
           },
         })
         if (!collection) {
@@ -214,18 +223,19 @@ export const collectionsRouter = {
 
         return collection
       } catch (error) {
-        logger.error(`Failed to fetch collection detail from database ${error}`, {
-          userId: auth.userId,
-          collectionId: data.id,
-        })
+        logger.error(
+          `Failed to fetch collection detail from database ${error}`,
+          {
+            userId: auth.userId,
+            collectionId: data.id,
+          },
+        )
 
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to fetch collection detail',
         })
       }
-
-
     }),
   analyze: privateProcedure
     .input(WithAuthSchema(AnalyzeCollectionRequestSchema))
@@ -278,35 +288,29 @@ export const collectionsRouter = {
           },
           select: {
             id: true,
-          }
+          },
         })
         billsToAnalyze = bills
       } else if (type === 'missing') {
         const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
-            AND: [
-              { percentage: null },
-              { reason: null },
-            ],
+            AND: [{ percentage: null }, { reason: null }],
           },
           select: {
             id: true,
-          }
+          },
         })
         billsToAnalyze = bills
       } else if (type === 'analyzed') {
         const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
-            OR: [
-              { percentage: { not: null } },
-              { reason: { not: null } },
-            ],
+            OR: [{ percentage: { not: null } }, { reason: { not: null } }],
           },
           select: {
             id: true,
-          }
+          },
         })
         billsToAnalyze = bills
       } else {
@@ -319,7 +323,7 @@ export const collectionsRouter = {
           },
           select: {
             id: true,
-          }
+          },
         })
         billsToAnalyze = bills
       }
@@ -332,7 +336,8 @@ export const collectionsRouter = {
 
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'No bills to analyze for the specified collection and criteria',
+          message:
+            'No bills to analyze for the specified collection and criteria',
         })
       }
 
@@ -345,7 +350,7 @@ export const collectionsRouter = {
           instructions: collection.instructions || data.instructions,
           preset: data.preset || 'balanced',
           type,
-          billIds: billsToAnalyze.map(bill => bill.id),
+          billIds: billsToAnalyze.map((bill) => bill.id),
         },
         percentage: 0,
         status: 'pending',
@@ -357,7 +362,10 @@ export const collectionsRouter = {
 
       const jobName = `analyze-${data.collectionId}-${payload.jobId}`
 
-      await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(payload.jobId).set(payload)
+      await adminDb
+        .collection(FireCollections.ANALYZE_COLLECTION)
+        .doc(payload.jobId)
+        .set(payload)
 
       await AnalyzeQueue.add(jobName, payload)
 
@@ -368,10 +376,15 @@ export const collectionsRouter = {
         billCount: billsToAnalyze.length,
       })
 
-      return { jobId: payload.jobId, collectionId: data.collectionId, collectionName: collection.name }
-    })
+      return {
+        jobId: payload.jobId,
+        collectionId: data.collectionId,
+        collectionName: collection.name,
+      }
+    }),
 } satisfies TRPCRouterRecord
 
 export type TRPCRouterOutputs = inferRouterOutputs<TRPCRouter>
 
-export type CollectionBaseType = TRPCRouterOutputs['collections']['list'][number]
+export type CollectionBaseType =
+  TRPCRouterOutputs['collections']['list'][number]

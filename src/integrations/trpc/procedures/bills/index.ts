@@ -1,7 +1,11 @@
 import { TRPCError } from '@trpc/server'
 
 import { WithAuthSchema } from '#/schema/auth'
-import { DeleteBillsRequestSchema, GetBillDetailRequestSchema, UploadBillsRequestSchema } from '#/schema/collections'
+import {
+  DeleteBillsRequestSchema,
+  GetBillDetailRequestSchema,
+  UploadBillsRequestSchema,
+} from '#/schema/collections'
 
 import { getServiceLogger } from '#/integrations/logger.server'
 import { StorageHelper } from '#/integrations/minio/helper'
@@ -12,10 +16,12 @@ import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 import { getBillAmounts, getBillType } from '#/utils/bill'
 import { roundToDecimals } from '#/utils/math'
 
-import type { BillDetailCreateManyInput, BillHeaderCreateManyInput } from '#/generated/prisma/models'
+import type {
+  BillDetailCreateManyInput,
+  BillHeaderCreateManyInput,
+} from '#/generated/prisma/models'
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
-
 
 const logger = getServiceLogger('Bills')
 
@@ -60,18 +66,23 @@ export const billsRouter = {
         const ext = StorageHelper.getExtensionFromContentType(bill.mimeType)
         const uiName = crypto.randomUUID().slice(0, 8) + '.' + ext
 
-        const billParsed = parseAndValidateInvoiceXML(Buffer.from(bill.base64, 'base64'))
+        const billParsed = parseAndValidateInvoiceXML(
+          Buffer.from(bill.base64, 'base64'),
+        )
 
         logger.info('Parsed invoice XML for bill upload', {
           billParsed,
         })
 
         if (!billParsed.success) {
-          logger.warn('Failed to parse and validate invoice XML for bill upload', {
-            collectionId,
-            userId: auth.userId,
-            error: billParsed.error,
-          })
+          logger.warn(
+            'Failed to parse and validate invoice XML for bill upload',
+            {
+              collectionId,
+              userId: auth.userId,
+              error: billParsed.error,
+            },
+          )
 
           throw new TRPCError({
             code: 'BAD_REQUEST',
@@ -103,13 +114,14 @@ export const billsRouter = {
           storagePath: `collections/${collectionId}/bills/${uiName}`,
         }
 
-        const billDetails: Array<BillDetailCreateManyInput> = billParsed.data.factura.detalles.detalle.map((detalle) => ({
-          description: detalle.descripcion,
-          billId,
-          quantity: roundToDecimals(detalle.cantidad, 0),
-          unitPrice: roundToDecimals(detalle.precioUnitario),
-          discount: roundToDecimals(detalle.descuento),
-        }))
+        const billDetails: Array<BillDetailCreateManyInput> =
+          billParsed.data.factura.detalles.detalle.map((detalle) => ({
+            description: detalle.descripcion,
+            billId,
+            quantity: roundToDecimals(detalle.cantidad, 0),
+            unitPrice: roundToDecimals(detalle.precioUnitario),
+            discount: roundToDecimals(detalle.descuento),
+          }))
 
         return {
           header,
@@ -129,19 +141,18 @@ export const billsRouter = {
             const { storagePath } = billData[index].header
             const buffer = Buffer.from(bill.base64, 'base64')
 
-            return StorageHelper.putObject(
-              storagePath,
-              buffer,
-              bill.mimeType,
-            )
+            return StorageHelper.putObject(storagePath, buffer, bill.mimeType)
           }),
         )
 
-        logger.info('Bills uploaded to storage, now saving metadata to database', {
-          collectionId,
-          userId: auth.userId,
-          billCount: bills.length,
-        })
+        logger.info(
+          'Bills uploaded to storage, now saving metadata to database',
+          {
+            collectionId,
+            userId: auth.userId,
+            billCount: bills.length,
+          },
+        )
 
         await tx.billHeader.createMany({
           data: billData.map((bill) => bill.header),
@@ -167,7 +178,6 @@ export const billsRouter = {
       })
 
       return { collectionId }
-
     }),
   deleteBills: privateProcedure
     .input(WithAuthSchema(DeleteBillsRequestSchema))
@@ -209,16 +219,17 @@ export const billsRouter = {
 
       await prisma.$transaction(async (tx) => {
         await Promise.all(
-          bills.map((bill) =>
-            StorageHelper.deleteObject(bill.storagePath),
-          ),
+          bills.map((bill) => StorageHelper.deleteObject(bill.storagePath)),
         )
 
-        logger.info('Bills deleted from storage, now deleting metadata from database', {
-          collectionId,
-          userId: auth.userId,
-          billIds,
-        })
+        logger.info(
+          'Bills deleted from storage, now deleting metadata from database',
+          {
+            collectionId,
+            userId: auth.userId,
+            billIds,
+          },
+        )
 
         await tx.billHeader.deleteMany({
           where: {
@@ -247,7 +258,6 @@ export const billsRouter = {
     .query(async ({ input }) => {
       const { auth, data } = input
 
-
       if (!auth.userId) {
         logger.warn('Unauthorized request to get bill details', {
           billId: data.billId,
@@ -275,8 +285,8 @@ export const billsRouter = {
         },
         include: {
           details: {
-            orderBy: [{ unitPrice: 'desc' }, { quantity: 'desc' }]
-          }
+            orderBy: [{ unitPrice: 'desc' }, { quantity: 'desc' }],
+          },
         },
       })
 
