@@ -6,13 +6,21 @@ import { CollectionSchema } from '#/generated/zod'
 
 // COLLECTION CRUD
 
+export const QueryCollectionsRequestSchema = z.object({
+  name: z.string().optional(),
+  year: z.number().optional(),
+  createdAt: z.object({
+    from: z.date().optional(),
+    to: z.date().optional(),
+  }).optional(),
+})
+
+export type QueryCollectionsRequest = z.infer<typeof QueryCollectionsRequestSchema>
+
 export const GetCollectionsRequestSchema = z.object({
-  search: z.object({
-    query: z.string().optional(),
-    year: z.number().optional(),
-  }),
+  search: QueryCollectionsRequestSchema,
   sort: z.object({
-    field: z.enum(['name', 'year', 'createdAt', 'updatedAt']).default('createdAt').optional(),
+    field: z.enum(['name', 'year', 'createdAt']).default('createdAt').optional(),
     direction: z.enum(['asc', 'desc']).default('desc').optional(),
   }),
 })
