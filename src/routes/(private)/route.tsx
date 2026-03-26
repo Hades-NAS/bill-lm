@@ -5,6 +5,8 @@ import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { useIsMobile } from '#/utils/mobile'
 
 import { NavbarJobsIndicator } from '#/components/navbar-jobs-indicator'
+import NavbarThemeIcon from '#/components/navbar-theme-icon'
+import NavbarUserIcon from '#/components/user/navbar-icon'
 
 export const Route = createFileRoute('/(private)')({
   component: RouteComponent,
@@ -53,7 +55,9 @@ function RouteComponent() {
           </Group>
 
           <Group gap="xs">
+            <NavbarThemeIcon />
             <NavbarJobsIndicator />
+            <NavbarUserIcon />
           </Group>
         </Group>
       </AppShell.Header>

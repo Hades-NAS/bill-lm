@@ -11,12 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as privateRouteRouteImport } from './routes/(private)/route'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
-import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
 import { Route as publicSignUpRouteImport } from './routes/(public)/sign-up'
 import { Route as privateUserRouteImport } from './routes/(private)/user'
 import { Route as privateJobsIndexRouteImport } from './routes/(private)/jobs/index'
 import { Route as privateCollectionsIndexRouteImport } from './routes/(private)/collections/index'
-import { Route as DemoFormAddressRouteImport } from './routes/demo/form.address'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 import { Route as privateCollectionsIdRouteImport } from './routes/(private)/collections/$id'
 
@@ -27,11 +25,6 @@ const privateRouteRoute = privateRouteRouteImport.update({
 const publicIndexRoute = publicIndexRouteImport.update({
   id: '/(public)/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoClerkRoute = DemoClerkRouteImport.update({
-  id: '/demo/clerk',
-  path: '/demo/clerk',
   getParentRoute: () => rootRouteImport,
 } as any)
 const publicSignUpRoute = publicSignUpRouteImport.update({
@@ -54,11 +47,6 @@ const privateCollectionsIndexRoute = privateCollectionsIndexRouteImport.update({
   path: '/collections/',
   getParentRoute: () => privateRouteRoute,
 } as any)
-const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
-  id: '/demo/form/address',
-  path: '/demo/form/address',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
   path: '/api/trpc/$',
@@ -73,22 +61,18 @@ const privateCollectionsIdRoute = privateCollectionsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/user': typeof privateUserRoute
   '/sign-up': typeof publicSignUpRoute
-  '/demo/clerk': typeof DemoClerkRoute
   '/': typeof publicIndexRoute
   '/collections/$id': typeof privateCollectionsIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
   '/collections/': typeof privateCollectionsIndexRoute
   '/jobs/': typeof privateJobsIndexRoute
 }
 export interface FileRoutesByTo {
   '/user': typeof privateUserRoute
   '/sign-up': typeof publicSignUpRoute
-  '/demo/clerk': typeof DemoClerkRoute
   '/': typeof publicIndexRoute
   '/collections/$id': typeof privateCollectionsIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
   '/collections': typeof privateCollectionsIndexRoute
   '/jobs': typeof privateJobsIndexRoute
 }
@@ -97,11 +81,9 @@ export interface FileRoutesById {
   '/(private)': typeof privateRouteRouteWithChildren
   '/(private)/user': typeof privateUserRoute
   '/(public)/sign-up': typeof publicSignUpRoute
-  '/demo/clerk': typeof DemoClerkRoute
   '/(public)/': typeof publicIndexRoute
   '/(private)/collections/$id': typeof privateCollectionsIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
   '/(private)/collections/': typeof privateCollectionsIndexRoute
   '/(private)/jobs/': typeof privateJobsIndexRoute
 }
@@ -110,22 +92,18 @@ export interface FileRouteTypes {
   fullPaths:
     | '/user'
     | '/sign-up'
-    | '/demo/clerk'
     | '/'
     | '/collections/$id'
     | '/api/trpc/$'
-    | '/demo/form/address'
     | '/collections/'
     | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/user'
     | '/sign-up'
-    | '/demo/clerk'
     | '/'
     | '/collections/$id'
     | '/api/trpc/$'
-    | '/demo/form/address'
     | '/collections'
     | '/jobs'
   id:
@@ -133,11 +111,9 @@ export interface FileRouteTypes {
     | '/(private)'
     | '/(private)/user'
     | '/(public)/sign-up'
-    | '/demo/clerk'
     | '/(public)/'
     | '/(private)/collections/$id'
     | '/api/trpc/$'
-    | '/demo/form/address'
     | '/(private)/collections/'
     | '/(private)/jobs/'
   fileRoutesById: FileRoutesById
@@ -145,10 +121,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   privateRouteRoute: typeof privateRouteRouteWithChildren
   publicSignUpRoute: typeof publicSignUpRoute
-  DemoClerkRoute: typeof DemoClerkRoute
   publicIndexRoute: typeof publicIndexRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
-  DemoFormAddressRoute: typeof DemoFormAddressRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,13 +139,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof publicIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/clerk': {
-      id: '/demo/clerk'
-      path: '/demo/clerk'
-      fullPath: '/demo/clerk'
-      preLoaderRoute: typeof DemoClerkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(public)/sign-up': {
@@ -201,13 +168,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/collections/'
       preLoaderRoute: typeof privateCollectionsIndexRouteImport
       parentRoute: typeof privateRouteRoute
-    }
-    '/demo/form/address': {
-      id: '/demo/form/address'
-      path: '/demo/form/address'
-      fullPath: '/demo/form/address'
-      preLoaderRoute: typeof DemoFormAddressRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/api/trpc/$': {
       id: '/api/trpc/$'
@@ -247,10 +207,8 @@ const privateRouteRouteWithChildren = privateRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   privateRouteRoute: privateRouteRouteWithChildren,
   publicSignUpRoute: publicSignUpRoute,
-  DemoClerkRoute: DemoClerkRoute,
   publicIndexRoute: publicIndexRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
-  DemoFormAddressRoute: DemoFormAddressRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
