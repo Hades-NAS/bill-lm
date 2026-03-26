@@ -111,36 +111,33 @@ function JobsListPage() {
                   {jobsQuery.data.map((job) => (
                     <Table.Tr key={job.jobId}>
                       <Table.Td>
-                        <Text truncate size="xs" title={job.jobId}>
-                          {job.jobId}
+                        <Text truncate title={job.jobId}>
+                          {job.jobId.slice(0, 6)}...{job.jobId.slice(-6)}
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">
-                          {job.data.collectionName || 'N/A'}
-                        </Text>
+                        <Text>{job.data.collectionName || 'N/A'}</Text>
                       </Table.Td>
                       <Table.Td>
                         <Badge
                           color={getStatusColor(job.status)}
-                          size="sm"
                           variant="filled"
                         >
                           {getStatusLabel(job.status)}
                         </Badge>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="sm">{job.percentage || 0}%</Text>
+                        <Text>{job.percentage || 0}%</Text>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="xs">
+                        <Text>
                           {DateTime.fromJSDate(job.createdAt).toLocaleString(
                             DateTime.DATETIME_SHORT,
                           )}
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        <Text size="xs">
+                        <Text>
                           {DateTime.fromJSDate(job.updatedAt).toLocaleString(
                             DateTime.DATETIME_SHORT,
                           )}
@@ -150,7 +147,6 @@ function JobsListPage() {
                         <Group gap={0}>
                           <Tooltip label="Ver telemetría">
                             <ActionIcon
-                              size="sm"
                               variant="subtle"
                               onClick={() => handleViewTelemetry(job.jobId)}
                             >
