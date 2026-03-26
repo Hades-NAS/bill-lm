@@ -22,7 +22,9 @@ export async function ensureBucketsExist() {
         logger.info(`✅ Bucket creado: ${bucket}`)
       }
     } catch (error) {
-      logger.error(`❌ Error al verificar/crear bucket ${bucket}: ${error instanceof Error ? error.message : String(error)}`)
+      logger.error(
+        `❌ Error al verificar/crear bucket ${bucket}: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 }

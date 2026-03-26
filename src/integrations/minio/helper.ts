@@ -4,7 +4,6 @@ import type Stream from 'node:stream'
 
 import { env } from '#/env'
 
-
 export const mimeTypes: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -19,9 +18,7 @@ export const mimeTypes: Record<string, string> = {
 
 export const allowedMimeTypes = Object.keys(mimeTypes)
 
-
 export abstract class StorageHelper {
-
   static readonly BUCKET_NAME = env.MINIO_BUCKET_NAME
 
   static getExtensionFromContentType(contentType: string): string {
@@ -33,9 +30,15 @@ export abstract class StorageHelper {
     expiresIn: number = 7 * 24 * 60 * 60, // 7 días
   ): Promise<string> {
     try {
-      return await minioClient.presignedGetObject(this.BUCKET_NAME, key, expiresIn)
+      return await minioClient.presignedGetObject(
+        this.BUCKET_NAME,
+        key,
+        expiresIn,
+      )
     } catch (error) {
-      throw new Error(`Failed to generate object URL for ${this.BUCKET_NAME}/${key}: ${error}`)
+      throw new Error(
+        `Failed to generate object URL for ${this.BUCKET_NAME}/${key}: ${error}`,
+      )
     }
   }
 
@@ -54,17 +57,15 @@ export abstract class StorageHelper {
     contentType: string,
   ): Promise<string> {
     try {
-      await minioClient.putObject(
-        this.BUCKET_NAME,
-        key,
-        data,
-        undefined,
-        { 'Content-Type': contentType }
-      )
+      await minioClient.putObject(this.BUCKET_NAME, key, data, undefined, {
+        'Content-Type': contentType,
+      })
 
       return key
     } catch (error) {
-      throw new Error(`Failed to upload object to ${this.BUCKET_NAME}/${key}: ${error}`)
+      throw new Error(
+        `Failed to upload object to ${this.BUCKET_NAME}/${key}: ${error}`,
+      )
     }
   }
 
@@ -85,7 +86,9 @@ export abstract class StorageHelper {
 
       return Buffer.concat(chunks)
     } catch (error) {
-      throw new Error(`Failed to get object from ${this.BUCKET_NAME}/${key}: ${error}`)
+      throw new Error(
+        `Failed to get object from ${this.BUCKET_NAME}/${key}: ${error}`,
+      )
     }
   }
 
@@ -101,8 +104,9 @@ export abstract class StorageHelper {
 
       return true
     } catch (error) {
-      throw new Error(`Failed to delete object from ${this.BUCKET_NAME}/${key}: ${error}`)
+      throw new Error(
+        `Failed to delete object from ${this.BUCKET_NAME}/${key}: ${error}`,
+      )
     }
   }
-
 }
