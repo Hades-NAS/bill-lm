@@ -25,8 +25,35 @@ import { CollectionCard } from '#/components/collection/collection-card'
 import CollectionForm from '#/components/collection/form'
 import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
+import { QuickFilter } from '#/components/shared/quick-filter'
 
+import type { FilterField, FilterValue } from '#/components/shared/quick-filter'
 import type { CollectionBaseType } from '#/integrations/trpc/procedures/collections'
+
+const filterFields: Array<FilterField> = [
+  { name: 'name', label: 'Nombre', type: 'text' },
+  { name: 'description', label: 'Descripción', type: 'text' },
+  { name: 'year', label: 'Año', type: 'number' },
+  {
+    name: 'createdAt',
+    label: 'Fecha de creación',
+    type: 'dateRange',
+  },
+  {
+    name: 'invoiceCount',
+    label: 'Cantidad de facturas',
+    type: 'numberRange',
+    min: 0,
+    max: 1000,
+  },
+  {
+    name: 'confidence',
+    label: 'Confianza de análisis',
+    type: 'threshold',
+    min: 0,
+    max: 100,
+  },
+]
 
 export const Route = createFileRoute('/(private)/collections/')({
   component: CollectionsListPage,
@@ -81,13 +108,15 @@ function CollectionsListPage() {
 
         {isLoading && <LoaderText>Cargando colecciones</LoaderText>}
 
-        {isSuccessWithData && collectionQuery.isSuccess && (
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
-            {collectionQuery.data.map((collection) => (
-              <CollectionCard data={collection} key={collection.id} />
-            ))}
-          </SimpleGrid>
-        )}
+        <QuickFilter fields={filterFields} onSearch={handleSearch}>
+          {isSuccessWithData && collectionQuery.isSuccess && (
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+              {collectionQuery.data.map((collection) => (
+                <CollectionCard data={collection} key={collection.id} />
+              ))}
+            </SimpleGrid>
+          )}
+        </QuickFilter>
 
         {isEmpty && (
           <EmptyState>
@@ -125,4 +154,8 @@ function CollectionsListPage() {
       />
     </Box>
   )
+
+  function handleSearch(filter: FilterValue) {
+    console.log('searching...', filter)
+  }
 }
