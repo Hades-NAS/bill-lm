@@ -111,8 +111,6 @@ export const useJobsStore = create<JobsStore>()(
               .map((j) => j.data?.collectionId)
               .filter(Boolean) as Array<string>
 
-            console.log('[JobsStore] Invalidating collections due to job updates:', affectedCollectionIds)
-
             const { queryClient } = getContext();
             invalidateQueriesByKeys(
               queryClient,

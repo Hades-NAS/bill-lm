@@ -9,7 +9,6 @@ import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
 import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
-// import { publicProcedure } from '#/integrations/trpc/init'
 
 import { FireCollections } from '#/constants/firebase'
 
@@ -58,8 +57,12 @@ export const collectionsRouter = {
       const collections = await prisma.collection.findMany({
         where: {
           userId: auth.userId,
-          name: search.query ? { contains: search.query } : undefined,
-          year: search.year,
+          name: search.name ? { contains: search.name, mode: 'insensitive' } : undefined,
+          year: search.year ? search.year : undefined,
+          createdAt: search.createdAt ? {
+            gte: search.createdAt.from,
+            lte: search.createdAt.to,
+          } : undefined,
         },
         orderBy,
         select: {
