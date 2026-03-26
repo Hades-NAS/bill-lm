@@ -1,9 +1,14 @@
-import React from "react"
+import React from 'react'
 
-import type { ModalFormType } from "#/schema/page"
+import type { ModalFormType } from '#/schema/page'
 
-export const useModal = <TData,>(initialData: TData | undefined | void | null = null) => {
-  const hook = React.useState<ModalFormType<TData>>({ opened: false, data: initialData })
+export const useModal = <TData>(
+  initialData: TData | undefined | void | null = null,
+) => {
+  const hook = React.useState<ModalFormType<TData>>({
+    opened: false,
+    data: initialData,
+  })
 
   React.useEffect(() => {
     if (initialData !== undefined) {

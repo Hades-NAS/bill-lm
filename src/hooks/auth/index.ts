@@ -1,6 +1,6 @@
-import { useAuth, useUser } from "@clerk/clerk-react"
+import { useAuth, useUser } from '@clerk/clerk-react'
 
-import type { AuthType } from "#/schema/auth"
+import type { AuthType } from '#/schema/auth'
 
 export const useUserAuth = (): AuthType => {
   const { user, isLoaded, isSignedIn } = useUser()

@@ -1,5 +1,4 @@
-
-import type { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query'
 
 export const invalidateQueriesByKeys = async (
   queryClient: QueryClient,
@@ -7,13 +6,12 @@ export const invalidateQueriesByKeys = async (
 ) => {
   return Promise.all(
     arrayKeys.map(async (key) => {
-
       return await queryClient.invalidateQueries({
         queryKey: key,
         refetchType: 'all',
         exact: false,
         type: 'all',
-      });
+      })
     }),
-  );
-};
+  )
+}

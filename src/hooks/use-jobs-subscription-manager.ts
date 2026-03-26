@@ -10,7 +10,6 @@ import { FireCollections } from '#/constants/firebase'
 
 import { useUserAuth } from './auth'
 
-
 /**
  * Global subscription manager hook (Optimized)
  * Lives at root level (__root.tsx) to maintain subscriptions across route navigation
@@ -42,7 +41,7 @@ export function useJobsSubscriptionManager() {
     const jobsCollectionQuery = query(
       collection(db, FireCollections.ANALYZE_COLLECTION),
       where('userId', '==', auth.userId),
-      where('status', 'in', ['pending', 'in-progress', 'completed', 'failed'])
+      where('status', 'in', ['pending', 'in-progress', 'completed', 'failed']),
     )
 
     // ONE subscription for all active jobs
@@ -64,7 +63,7 @@ export function useJobsSubscriptionManager() {
               updatedAt: toDate(data.updatedAt),
             }
           })
-          .sort((a, b) => (b.updatedAt.getTime()) - (a.updatedAt.getTime()))
+          .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 
         // Batch update store with all jobs at once
         updateJobs(jobs)
@@ -72,7 +71,7 @@ export function useJobsSubscriptionManager() {
       (error) => {
         console.error('[Jobs] Error subscribing to jobs collection:', error)
         // Subscription error, but we'll try again on next mount
-      }
+      },
     )
 
     // Store unsubscribe function
