@@ -15,7 +15,7 @@ export class AppError extends Error {
     public type: ErrorType,
     message: string,
     public context?: Record<string, unknown>,
-    public retryable: boolean = false
+    public retryable: boolean = false,
   ) {
     super(message)
     this.name = 'AppError'
@@ -50,11 +50,12 @@ function calculateBackoff(
   attempt: number,
   type: 'exponential' | 'linear',
   initialDelay = 1000,
-  maxDelay = 30000
+  maxDelay = 30000,
 ): number {
-  const delayNumber = type === 'exponential'
-    ? Math.min(initialDelay * Math.pow(2, attempt), maxDelay)
-    : Math.min(initialDelay + initialDelay * attempt, maxDelay)
+  const delayNumber =
+    type === 'exponential'
+      ? Math.min(initialDelay * Math.pow(2, attempt), maxDelay)
+      : Math.min(initialDelay + initialDelay * attempt, maxDelay)
 
   // Add jitter: ±10% of delay
   const jitter = delayNumber * 0.1 * (Math.random() - 0.5)
@@ -68,9 +69,14 @@ function delay(ms: number): Promise<void> {
 export async function withRetry<T>(
   fn: () => Promise<T>,
   options: RetryOptions,
-  operationName: string = 'Operation'
+  operationName: string = 'Operation',
 ): Promise<T> {
-  const { maxRetries, backoff, initialDelayMs = 1000, maxDelayMs = 30000 } = options
+  const {
+    maxRetries,
+    backoff,
+    initialDelayMs = 1000,
+    maxDelayMs = 30000,
+  } = options
   let lastError: Error | null = null
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -83,16 +89,26 @@ export async function withRetry<T>(
       if (attempt < maxRetries) {
         const isRetryable = AppError.isRetryable(error) || attempt < maxRetries
         if (!isRetryable) {
-          logger.error(`${operationName}: not retryable, throwing`, { error: lastError.message })
+          logger.error(`${operationName}: not retryable, throwing`, {
+            error: lastError.message,
+          })
           throw lastError
         }
 
-        const backoffMs = calculateBackoff(attempt, backoff, initialDelayMs, maxDelayMs)
-        logger.warn(`${operationName}: attempt ${attempt + 1} failed, retrying in ${backoffMs}ms`, {
-          error: lastError.message,
-          attempt: attempt + 1,
-          maxRetries,
-        })
+        const backoffMs = calculateBackoff(
+          attempt,
+          backoff,
+          initialDelayMs,
+          maxDelayMs,
+        )
+        logger.warn(
+          `${operationName}: attempt ${attempt + 1} failed, retrying in ${backoffMs}ms`,
+          {
+            error: lastError.message,
+            attempt: attempt + 1,
+            maxRetries,
+          },
+        )
 
         await delay(backoffMs)
       }
@@ -103,7 +119,10 @@ export async function withRetry<T>(
     error: lastError?.message,
   })
 
-  throw lastError || new Error(`${operationName} failed after ${maxRetries + 1} attempts`)
+  throw (
+    lastError ||
+    new Error(`${operationName} failed after ${maxRetries + 1} attempts`)
+  )
 }
 
 export class CircuitBreaker {
@@ -113,19 +132,24 @@ export class CircuitBreaker {
 
   constructor(
     private failureThreshold: number = 5,
-    private resetTimeoutMs: number = 60_000
-  ) { }
+    private resetTimeoutMs: number = 60_000,
+  ) {}
 
-  async execute<T>(fn: () => Promise<T>, operationName: string = 'Operation'): Promise<T> {
+  async execute<T>(
+    fn: () => Promise<T>,
+    operationName: string = 'Operation',
+  ): Promise<T> {
     this.checkState()
 
     if (this.state === 'open') {
-      logger.warn(`${operationName}: circuit breaker is OPEN, rejecting request`)
+      logger.warn(
+        `${operationName}: circuit breaker is OPEN, rejecting request`,
+      )
       throw new AppError(
         ErrorType.AI_ENGINE,
         `${operationName}: circuit breaker is open due to repeated failures`,
         { state: this.state },
-        true // retryable
+        true, // retryable
       )
     }
 
@@ -162,13 +186,18 @@ export class CircuitBreaker {
     this.failureCount++
     this.lastFailureTime = Date.now()
 
-    logger.warn(`CircuitBreaker: failure count ${this.failureCount}/${this.failureThreshold}`, {
-      failureCount: this.failureCount,
-      threshold: this.failureThreshold,
-    })
+    logger.warn(
+      `CircuitBreaker: failure count ${this.failureCount}/${this.failureThreshold}`,
+      {
+        failureCount: this.failureCount,
+        threshold: this.failureThreshold,
+      },
+    )
 
     if (this.failureCount >= this.failureThreshold) {
-      logger.error('CircuitBreaker: transitioning to OPEN due to failure threshold')
+      logger.error(
+        'CircuitBreaker: transitioning to OPEN due to failure threshold',
+      )
       this.state = 'open'
     }
   }
