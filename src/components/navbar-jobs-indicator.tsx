@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Badge,
   Box,
+  Divider,
   Group,
   Indicator,
   Modal,
@@ -39,11 +40,6 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
   return (
     <Paper
       withBorder
-      bd={
-        isActive
-          ? '1px solid var(--mantine-color-blue-1)'
-          : '1px solid var(--mantine-color-gray-2)'
-      }
       bg={isActive ? 'blue.0' : undefined}
       key={job.jobId}
       opacity={isActive ? 1 : 0.75}
@@ -159,11 +155,6 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
   }
 }
 
-/**
- * Navbar indicator for background jobs
- * Shows a pulsing indicator with badge when jobs are in progress
- * Click to view job details in popover (desktop) or modal (mobile)
- */
 export function NavbarJobsIndicator() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
@@ -212,8 +203,9 @@ export function NavbarJobsIndicator() {
         </Tooltip>
       </Group>
 
+      <Divider />
+
       <Stack gap="md">
-        {/* In-progress section */}
         {inProgressJobs.length > 0 && (
           <>
             <Box>
@@ -230,10 +222,10 @@ export function NavbarJobsIndicator() {
                 ))}
               </Stack>
             </Box>
+            {completedJobs.length > 0 && <Divider />}
           </>
         )}
 
-        {/* Completed section */}
         {completedJobs.length > 0 && (
           <>
             <Box>
@@ -315,9 +307,7 @@ export function NavbarJobsIndicator() {
             </ActionIcon>
           </Tooltip>
         </Popover.Target>
-        <Popover.Dropdown bd="1px solid var(--mantine-color-gray-4)">
-          {content}
-        </Popover.Dropdown>
+        <Popover.Dropdown>{content}</Popover.Dropdown>
       </Popover>
     )
   }
