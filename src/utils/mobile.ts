@@ -1,4 +1,4 @@
-import { useOs } from "@mantine/hooks"
+import { useOs } from '@mantine/hooks'
 
 export const useIsMobile = () => {
   const os = useOs()

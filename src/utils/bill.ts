@@ -1,7 +1,7 @@
-import { roundToDecimals } from "./math";
+import { roundToDecimals } from './math'
 
-import type { BillFileType, BillTargetType } from "#/generated/prisma/enums";
-import type { InfoFactura } from "#/schema/bill";
+import type { BillFileType, BillTargetType } from '#/generated/prisma/enums'
+import type { InfoFactura } from '#/schema/bill'
 
 export const getColorBillFileType = (type: BillFileType) => {
   if (type === 'PDF') {
@@ -37,7 +37,9 @@ export const getColorPercentage = (percentage: number | null) => {
   }
 }
 
-export const getBillType = (identifier: InfoFactura['identificacionComprador']): BillTargetType => {
+export const getBillType = (
+  identifier: InfoFactura['identificacionComprador'],
+): BillTargetType => {
   const regexPersonal = /^\d{10}$/
   const regexProfessional = /^\d{13}$/
 
@@ -53,8 +55,15 @@ export const getBillType = (identifier: InfoFactura['identificacionComprador']):
 export const getBillAmounts = (data: InfoFactura) => {
   const tip = roundToDecimals(data.propina ? parseFloat(data.propina) : 0)
   const totalAmount = roundToDecimals(data.importeTotal)
-  const totalWithoutTaxes = roundToDecimals(parseFloat(data.totalSinImpuestos) + tip)
-  const taxes = roundToDecimals(data.totalConImpuestos.totalImpuesto.reduce((acc, tax) => acc + parseFloat(tax.valor || "0"), 0))
+  const totalWithoutTaxes = roundToDecimals(
+    parseFloat(data.totalSinImpuestos) + tip,
+  )
+  const taxes = roundToDecimals(
+    data.totalConImpuestos.totalImpuesto.reduce(
+      (acc, tax) => acc + parseFloat(tax.valor || '0'),
+      0,
+    ),
+  )
 
   return {
     totalWithoutTaxes,

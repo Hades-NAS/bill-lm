@@ -1,4 +1,4 @@
-import type { FileWithPath } from "@mantine/dropzone"
+import type { FileWithPath } from '@mantine/dropzone'
 
 export const fileToBase64 = (file: FileWithPath): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -18,6 +18,6 @@ export const filesToBase64 = async (files: Array<FileWithPath>) => {
       name: file.name,
       base64: await fileToBase64(file),
       mimeType: file.type as 'application/pdf' | 'text/xml',
-    }))
+    })),
   )
 }
