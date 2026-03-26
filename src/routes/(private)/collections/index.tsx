@@ -8,8 +8,10 @@ import {
   SimpleGrid,
   Center,
 } from '@mantine/core'
+import { useLocalStorage } from '@mantine/hooks'
 import { createFileRoute } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
+import { DateTime } from 'luxon'
 
 import {
   isEmptyArrayQuery,
@@ -17,6 +19,7 @@ import {
   isLoadingQuery,
   isSuccessWithDataQuery,
 } from '#/utils/query'
+import { isEmptyObject } from '#/utils/string'
 
 import { useModal } from '#/hooks/modal'
 import { useGetCollectionsQuery } from '#/hooks/query/collection'
@@ -31,27 +34,28 @@ import type { FilterField, FilterValue } from '#/components/shared/quick-filter'
 import type { CollectionBaseType } from '#/integrations/trpc/procedures/collections'
 
 const filterFields: Array<FilterField> = [
-  { name: 'name', label: 'Nombre', type: 'text' },
-  { name: 'description', label: 'Descripción', type: 'text' },
-  { name: 'year', label: 'Año', type: 'number' },
+  {
+    name: 'name',
+    label: 'Nombre',
+    type: 'text',
+    placeholder: 'Buscar por nombre',
+  },
+  {
+    name: 'year',
+    label: 'Año',
+    type: 'number',
+    placeholder: 'Buscar por año',
+    defaultValue: DateTime.now().year,
+  },
   {
     name: 'createdAt',
     label: 'Fecha de creación',
     type: 'dateRange',
-  },
-  {
-    name: 'invoiceCount',
-    label: 'Cantidad de facturas',
-    type: 'numberRange',
-    min: 0,
-    max: 1000,
-  },
-  {
-    name: 'confidence',
-    label: 'Confianza de análisis',
-    type: 'threshold',
-    min: 0,
-    max: 100,
+    placeholder: 'Buscar por fecha de creación',
+    defaultValue: [
+      DateTime.now().minus({ months: 1 }).toJSDate(),
+      DateTime.now().toJSDate(),
+    ],
   },
 ]
 
@@ -63,8 +67,19 @@ function CollectionsListPage() {
   const [modalCollectionForm, setCollectionForm] =
     useModal<CollectionBaseType>()
 
+  const [filter, setFilter] = useLocalStorage<FilterValue>({
+    key: 'collections-list-filter-value',
+    defaultValue: {
+      field: 'name',
+      type: 'text',
+      value: '',
+    },
+  })
+
   const collectionQuery = useGetCollectionsQuery({
-    search: {},
+    search: {
+      [filter.field]: filter.value,
+    },
     sort: {},
   })
 
@@ -87,17 +102,29 @@ function CollectionsListPage() {
             <Text c="dimmed">Administra tus colecciones de facturas</Text>
           </div>
 
-          {isSuccessWithData && (
-            <Button
-              leftSection={<Plus size={18} />}
-              onClick={() => {
-                setCollectionForm({ opened: true })
-              }}
-            >
-              Nueva Colección
-            </Button>
-          )}
+          <Button
+            leftSection={<Plus size={18} />}
+            onClick={() => {
+              setCollectionForm({ opened: true })
+            }}
+          >
+            Nueva Colección
+          </Button>
         </Group>
+
+        <QuickFilter
+          fields={filterFields}
+          filter={filter}
+          onSearch={(value) => setFilter(value)}
+        >
+          {isSuccessWithData && collectionQuery.isSuccess && (
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+              {collectionQuery.data.map((collection) => (
+                <CollectionCard data={collection} key={collection.id} />
+              ))}
+            </SimpleGrid>
+          )}
+        </QuickFilter>
 
         {isError && (
           <EmptyState>
@@ -108,17 +135,7 @@ function CollectionsListPage() {
 
         {isLoading && <LoaderText>Cargando colecciones</LoaderText>}
 
-        <QuickFilter fields={filterFields} onSearch={handleSearch}>
-          {isSuccessWithData && collectionQuery.isSuccess && (
-            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
-              {collectionQuery.data.map((collection) => (
-                <CollectionCard data={collection} key={collection.id} />
-              ))}
-            </SimpleGrid>
-          )}
-        </QuickFilter>
-
-        {isEmpty && (
+        {isEmpty && isEmptyObject(filter) && (
           <EmptyState>
             <Stack>
               <Text c="gray.6">
@@ -140,6 +157,15 @@ function CollectionsListPage() {
             </Stack>
           </EmptyState>
         )}
+        {isEmpty && !isEmptyObject(filter) && (
+          <EmptyState>
+            <Text c="gray.6">
+              No se encontraron colecciones que coincidan con tus criterios de
+              búsqueda. Intenta ajustar o eliminar los filtros para ver más
+              resultados.
+            </Text>
+          </EmptyState>
+        )}
       </Stack>
 
       <CollectionForm
@@ -154,8 +180,4 @@ function CollectionsListPage() {
       />
     </Box>
   )
-
-  function handleSearch(filter: FilterValue) {
-    console.log('searching...', filter)
-  }
 }
