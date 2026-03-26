@@ -38,7 +38,7 @@ export interface LLMClientConfig {
 export const LLMConfig: LLMConfig = {
   model: env.MODEL_KEY || 'openai/gpt-oss-20b',
   baseUrl: env.LLM_BASE_URL || 'http://localhost',
-  temperature: parseFloat(env.LLM_TEMPERATURE || '0.1'),
+  temperature: parseFloat('0.1'),
   // maxTokens: parseInt(env.LLM_MAX_TOKENS || '2048'),
   timeout: parseInt(env.LLM_TIMEOUT_MS || '30000'),
 
@@ -66,7 +66,9 @@ export const LLMConfig: LLMConfig = {
  * @param preset - The preset name (default: 'balanced')
  * @returns The preset configuration
  */
-export function getPresetConfig(preset: LLMPreset = 'balanced'): LLMPresetConfig {
+export function getPresetConfig(
+  preset: LLMPreset = 'balanced',
+): LLMPresetConfig {
   return LLMConfig.presets[preset]
 }
 
@@ -75,7 +77,9 @@ export function getPresetConfig(preset: LLMPreset = 'balanced'): LLMPresetConfig
  * @param preset - The preset name
  * @returns Configuration object for OpenAI client
  */
-export function getLLMClientConfig(preset: LLMPreset = 'balanced'): LLMClientConfig {
+export function getLLMClientConfig(
+  preset: LLMPreset = 'balanced',
+): LLMClientConfig {
   const presetConfig = getPresetConfig(preset)
   return {
     baseURL: `${LLMConfig.baseUrl}:1234/v1`,
