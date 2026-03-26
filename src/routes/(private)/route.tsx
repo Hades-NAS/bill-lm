@@ -4,6 +4,8 @@ import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 
 import { useIsMobile } from '#/utils/mobile'
 
+import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
+
 import { NavbarJobsIndicator } from '#/components/navbar-jobs-indicator'
 import NavbarThemeIcon from '#/components/navbar-theme-icon'
 import NavbarUserIcon from '#/components/user/navbar-icon'
@@ -13,6 +15,7 @@ export const Route = createFileRoute('/(private)')({
 })
 
 function RouteComponent() {
+  useJobsSubscriptionManager()
   // const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
   // const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
 
