@@ -60,7 +60,7 @@ export const useJobsStore = create<JobsStore>()(
       updateJob: (jobId: string, updates: Partial<JobStatusItem>) => {
         set((state) => {
           const updated = state.activeJobs.map((job) =>
-            job.jobId === jobId ? { ...job, ...updates } : job
+            job.jobId === jobId ? { ...job, ...updates } : job,
           )
 
           // Clean up old jobs during update
@@ -94,7 +94,7 @@ export const useJobsStore = create<JobsStore>()(
 
           // Sort by updatedAt descending (most recent first)
           updated = updated.sort(
-            (a, b) => (b.updatedAt.getTime()) - (a.updatedAt.getTime())
+            (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
           )
 
           // Limit to N most recent jobs
@@ -103,18 +103,21 @@ export const useJobsStore = create<JobsStore>()(
           }
 
           // Invalidate all collections cache on update to ensure consistency
-          const completedOrFailedJobs = jobs.filter((j) =>
-            j.status === 'completed' || j.status === 'failed'
+          const completedOrFailedJobs = jobs.filter(
+            (j) => j.status === 'completed' || j.status === 'failed',
           )
           if (completedOrFailedJobs.length > 0) {
             const affectedCollectionIds = completedOrFailedJobs
               .map((j) => j.data?.collectionId)
               .filter(Boolean) as Array<string>
 
-            const { queryClient } = getContext();
+            const { queryClient } = getContext()
+
             invalidateQueriesByKeys(
               queryClient,
-              affectedCollectionIds.map((id) => UPDATE_COLLECTION_INVALIDATION_KEYS(id)).flat()
+              Array.from(new Set(affectedCollectionIds))
+                .map((id) => UPDATE_COLLECTION_INVALIDATION_KEYS(id))
+                .flat(),
             )
           }
 
@@ -165,6 +168,6 @@ export const useJobsStore = create<JobsStore>()(
     {
       name: 'jobs-storage-v2', // Bumped version for schema change
       version: 2,
-    }
-  )
+    },
+  ),
 )
