@@ -6,26 +6,27 @@ import {
   transformRawToParsed,
 } from '#/schema/bill-analysis'
 
-import { AgentEngine } from '#/integrations/agent'
-import { AppError, ErrorType, withRetry, CircuitBreaker } from '#/integrations/errors/error-handler'
+import {
+  AppError,
+  ErrorType,
+  withRetry,
+  CircuitBreaker,
+} from '#/integrations/errors/error-handler'
 import { adminDb } from '#/integrations/firebase/firebase.server'
-import { LMStudio } from '#/integrations/lm-studio'
+import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
-import { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
+import { createBillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
 import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
 import { roundToDecimals } from '#/utils/math'
 
 import { FireCollections } from '#/constants/firebase'
 
-import type {
-  AnalyzedBill,
-  AnalysisContext
-} from '#/schema/bill-analysis'
+import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
+import type { AnalyzedBill, AnalysisContext } from '#/schema/bill-analysis'
 import type { AnalyzeJobData } from '#/schema/collections'
-
 
 const logger = getServiceLogger('BillAnalysisService')
 
@@ -61,7 +62,7 @@ export class BillAnalysisService {
   private maxRetries: number
 
   constructor(deps: ServiceDependencies = {}) {
-    this.promptBuilder = new BillPromptBuilder()
+    this.promptBuilder = createBillPromptBuilder()
     this.circuitBreaker = new CircuitBreaker(5, 60_000) // 5 failures, 60s timeout
     this.maxRetries = deps.maxRetries || 2
   }
@@ -77,7 +78,7 @@ export class BillAnalysisService {
   async analyzeBills(
     billIds: Array<string>,
     jobData: AnalyzeJobData,
-    context: AnalysisContext
+    context: AnalysisContext,
   ): Promise<Array<AnalysisResult>> {
     this.logger.info('Starting bill analysis', {
       jobId: context.jobId,
@@ -93,14 +94,20 @@ export class BillAnalysisService {
       const bills = await this.fetchBillsForAnalysis(billIds)
 
       if (bills.length === 0) {
-        throw new AppError(ErrorType.DATABASE, 'No bills found to analyze', { billIds })
+        throw new AppError(ErrorType.DATABASE, 'No bills found to analyze', {
+          billIds,
+        })
       }
 
       // Step 3: Fetch and parse XML files
       const billsWithParsedData = await this.fetchAndParseXmls(bills)
 
       // Step 4: Analyze each bill (partial success allowed)
-      const results = await this.analyzeEachBill(billsWithParsedData, jobData, context)
+      const results = await this.analyzeEachBill(
+        billsWithParsedData,
+        jobData,
+        context,
+      )
 
       // Step 5: Batch update database with results
       const successfulResults = results.filter((r) => r.success)
@@ -126,37 +133,30 @@ export class BillAnalysisService {
   }
 
   /**
-   * Ensure LLM model is loaded in LM Studio
+   * Ensure LLM model is loaded
+   * Delegates to provider (noop for cloud APIs, actual load for LM Studio)
    * @private
    */
   private async ensureModelLoaded(): Promise<void> {
-    const hasModelLoaded = await LMStudio.hasModelLoaded(LMStudio.MODEL_KEY)
+    const provider = LLMProviderFactory.getInstance()
+    const modelId = provider.getModelId()
+
+    const hasModelLoaded = await provider.isModelLoaded()
 
     if (hasModelLoaded) {
-      this.logger.debug(`Model ${LMStudio.MODEL_KEY} already loaded`)
+      this.logger.debug(`Model ${modelId} already loaded`)
       return
     }
 
-    this.logger.info(`Loading model ${LMStudio.MODEL_KEY} in LM Studio`)
+    this.logger.info(`Loading model ${modelId} via provider`)
 
-    const response = await withRetry(
-      () =>
-        LMStudio.loadModel({
-          model: LMStudio.MODEL_KEY,
-          context_length: 8192,
-          flash_attention: true,
-        }),
+    await withRetry(
+      () => provider.loadModel(),
       { maxRetries: this.maxRetries, backoff: 'exponential' },
-      'Load LLM model'
+      `Load model ${modelId}`,
     )
 
-    if (!response) {
-      throw new AppError(ErrorType.AI_ENGINE, `Failed to load model ${LMStudio.MODEL_KEY}`, {
-        model: LMStudio.MODEL_KEY,
-      })
-    }
-
-    this.logger.info(`Model ${LMStudio.MODEL_KEY} loaded successfully`)
+    this.logger.info(`Model ${modelId} loaded successfully`)
   }
 
   /**
@@ -179,7 +179,7 @@ export class BillAnalysisService {
    * @private
    */
   private async fetchAndParseXmls(
-    bills: Array<{ id: string; billType: string; storagePath: string }>
+    bills: Array<{ id: string; billType: string; storagePath: string }>,
   ) {
     const parsed = await Promise.all(
       bills.map(async (bill) => {
@@ -205,10 +205,13 @@ export class BillAnalysisService {
           return {
             billId: bill.id,
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error fetching XML',
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Unknown error fetching XML',
           }
         }
-      })
+      }),
     )
 
     return parsed
@@ -227,9 +230,10 @@ export class BillAnalysisService {
       error?: string
     }>,
     jobData: AnalyzeJobData,
-    context: AnalysisContext
+    context: AnalysisContext,
   ): Promise<Array<AnalysisResult>> {
     const results: Array<AnalysisResult> = []
+    const provider = LLMProviderFactory.getInstance()
 
     for (const billData of billsWithParsedData) {
       const { billId, success, parsedBill, error } = billData
@@ -247,26 +251,41 @@ export class BillAnalysisService {
         // Build prompt
         const prompt = this.promptBuilder.build(jobData, parsedBill)
 
-        // Call AI Engine with circuit breaker protection
+        // Call provider with circuit breaker protection
         const analysisOutput = await this.circuitBreaker.execute(
-          () => AgentEngine.process(prompt, context.preset, {
-            billId,
-            jobId: context.jobId,
-            promptVersion: this.promptBuilder.getVersion(),
-          }),
-          `Analyze bill ${billId}`
+          () =>
+            provider.process(prompt, context.preset, {
+              billId,
+              jobId: context.jobId,
+              promptVersion: this.promptBuilder.getVersion(),
+            }),
+          `Analyze bill ${billId}`,
         )
 
         if (!analysisOutput) {
-          throw new AppError(ErrorType.AI_ENGINE, 'AgentEngine returned null', { billId }, true)
+          throw new AppError(
+            ErrorType.AI_ENGINE,
+            `${provider.getProviderName()} provider returned null`,
+            { billId },
+            true,
+          )
         }
 
         // Enrich with metadata
-        const analysis = enrichAnalysisMetadata(analysisOutput, this.promptBuilder.getVersion(), context.preset)
+        const analysis = enrichAnalysisMetadata(
+          analysisOutput,
+          this.promptBuilder.getVersion(),
+          context.preset,
+        )
 
         // Validate
         if (!isValidAnalysis(analysis)) {
-          throw new AppError(ErrorType.VALIDATION, 'Analysis validation failed', { analysis }, true)
+          throw new AppError(
+            ErrorType.VALIDATION,
+            'Analysis validation failed',
+            { analysis },
+            true,
+          )
         }
 
         results.push({
@@ -281,7 +300,11 @@ export class BillAnalysisService {
         })
 
         // Update Firestore with progress
-        await this.updateFirestoreProgress(context.jobId, results.length, billsWithParsedData.length)
+        await this.updateFirestoreProgress(
+          context.jobId,
+          results.length,
+          billsWithParsedData.length,
+        )
       } catch (_error) {
         this.logger.warn(`Failed to analyze bill ${billId}`, {
           jobId: context.jobId,
@@ -303,14 +326,21 @@ export class BillAnalysisService {
    * Update Firestore with analysis progress
    * @private
    */
-  private async updateFirestoreProgress(jobId: string, completed: number, total: number): Promise<void> {
+  private async updateFirestoreProgress(
+    jobId: string,
+    completed: number,
+    total: number,
+  ): Promise<void> {
     try {
       const percentage = roundToDecimals((completed / total) * 100)
-      await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(jobId).update({
-        percentage,
-        status: completed === total ? 'completed' : 'in-progress',
-        updatedAt: DateTime.now().toJSDate(),
-      })
+      await adminDb
+        .collection(FireCollections.ANALYZE_COLLECTION)
+        .doc(jobId)
+        .update({
+          percentage,
+          status: completed === total ? 'completed' : 'in-progress',
+          updatedAt: DateTime.now().toJSDate(),
+        })
     } catch (error) {
       this.logger.error('Failed to update Firestore progress', {
         jobId,
@@ -324,9 +354,11 @@ export class BillAnalysisService {
    * Batch update bills in database with analysis results
    * @private
    */
-  private async updateBillsInDatabase(results: Array<AnalysisResult>): Promise<void> {
+  private async updateBillsInDatabase(
+    results: Array<AnalysisResult>,
+  ): Promise<void> {
     const validResults = results.filter(
-      (r) => r.success && r.analysis
+      (r) => r.success && r.analysis,
     ) as Array<AnalysisResult & { analysis: AnalyzedBill }>
 
     if (validResults.length === 0) {
@@ -344,8 +376,8 @@ export class BillAnalysisService {
             reason: analysis.reason,
             updatedAt,
           },
-        })
-      )
+        }),
+      ),
     )
 
     this.logger.info(`Updated ${validResults.length} bills in database`)
@@ -369,6 +401,8 @@ export class BillAnalysisService {
 /**
  * Factory function to create a BillAnalysisService instance
  */
-export function createBillAnalysisService(deps?: ServiceDependencies): BillAnalysisService {
+export function createBillAnalysisService(
+  deps?: ServiceDependencies,
+): BillAnalysisService {
   return new BillAnalysisService(deps)
 }

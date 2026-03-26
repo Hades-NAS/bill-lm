@@ -1,14 +1,13 @@
 // src/integrations/services/telemetry.service.ts
-import { FieldValue } from "firebase-admin/firestore"
-import { DateTime } from "luxon"
+import { FieldValue } from 'firebase-admin/firestore'
+import { DateTime } from 'luxon'
 
-import { adminDb } from "#/integrations/firebase/firebase.server"
-import { getServiceLogger } from "#/integrations/logger.server"
+import { adminDb } from '#/integrations/firebase/firebase.server'
+import { getServiceLogger } from '#/integrations/logger.server'
 
-import { FireCollections } from "#/constants/firebase"
+import { FireCollections } from '#/constants/firebase'
 
-import type { AgentTelemetry } from "#/schema/telemetry"
-
+import type { AgentTelemetry } from '#/schema/telemetry'
 
 export class TelemetryService {
   private logger = getServiceLogger('TelemetryService')
@@ -24,15 +23,12 @@ export class TelemetryService {
         preset: data.preset,
       })
 
-      await adminDb
-        .collection(FireCollections.TELEMETRY_COLLECTION)
-        .add({
-          ...data,
-          timestamp: DateTime.now().toJSDate(),
-        })
+      await adminDb.collection(FireCollections.TELEMETRY_COLLECTION).add({
+        ...data,
+        timestamp: DateTime.now().toJSDate(),
+      })
 
       await this.updateAggregations(data)
-
     } catch (error) {
       console.log('NORMAL ERROR', error)
       this.logger.error('Failed to record telemetry', error)
@@ -47,6 +43,7 @@ export class TelemetryService {
         totalTokens: FieldValue.increment(data.tokensTotal),
         callCount: FieldValue.increment(1),
         lastUpdated: DateTime.now().toJSDate(),
+        error: data.status === 'success' ? FieldValue.delete() : data.error,
       })
   }
 }
