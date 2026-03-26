@@ -1,4 +1,4 @@
 export const FireCollections = {
-  ANALYZE_COLLECTION: "analyze-v1",
-  TELEMETRY_COLLECTION: "telemetry-v1",
+  ANALYZE_COLLECTION: 'analyze-v1',
+  TELEMETRY_COLLECTION: 'telemetry-v1',
 }

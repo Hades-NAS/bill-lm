@@ -1,5 +1,3 @@
-
-
 export const BillPromptTemplate = `
 Eres un asistente que ayuda a los usuarios a analizar facturas electrónicas.
 
