@@ -14,11 +14,27 @@ if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
 }
 
 if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(
-    readFileSync(resolve(env.GOOGLE_APPLICATION_CREDENTIALS), 'utf-8'),
-  )
+  let serviceAccount: any
+  try {
+    serviceAccount = JSON.parse(readFileSync(resolve(env.GOOGLE_APPLICATION_CREDENTIALS), "utf-8"))
 
-  logger.info('Initializing Firebase Admin SDK')
+    logger.info(
+      {
+        type: serviceAccount.type,
+        projectId: serviceAccount.project_id,
+        hasPrivateKey: !!serviceAccount.private_key,
+        privateKeyLength: serviceAccount.private_key?.length || 0,
+      },
+      'Initializing Firebase Admin SDK',
+    )
+  } catch (error) {
+    logger.error({
+      error,
+      path: env.GOOGLE_APPLICATION_CREDENTIALS,
+      message: error instanceof Error ? error.message : String(error),
+    }, 'Failed to load Firebase credentials')
+    throw error
+  }
 
   const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),

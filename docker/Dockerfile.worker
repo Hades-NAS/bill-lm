@@ -1,0 +1,47 @@
+# ===== STAGE 1: Builder =====
+FROM oven/bun:latest AS builder
+
+WORKDIR /app
+
+# Copy dependency files
+COPY package.json bun.lock tsconfig.json ./
+COPY src ./src
+COPY prisma ./prisma
+
+# Generar cliente de Prisma
+RUN bun install && bun run db:gen
+
+# ===== STAGE 2: Runtime =====
+FROM oven/bun:latest
+
+WORKDIR /app
+
+# Argumentos de build para las variables de entorno
+ARG DATABASE_URL=postgresql://localhost/bill-lm
+ARG GOOGLE_APPLICATION_CREDENTIALS
+ARG FIREBASE_PROJECT_ID
+ARG LLM_PROVIDER
+ARG LLM_MODEL
+ARG LLM_API_KEY
+ARG LLM_API_URL
+ARG LLM_TEMPERATURE
+
+# Establecer variables de entorno
+ENV DATABASE_URL=${DATABASE_URL}
+ENV GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+ENV FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+ENV LLM_PROVIDER=${LLM_PROVIDER}
+ENV LLM_MODEL=${LLM_MODEL}
+ENV LLM_API_KEY=${LLM_API_KEY}
+ENV LLM_API_URL=${LLM_API_URL}
+ENV LLM_TEMPERATURE=${LLM_TEMPERATURE}
+ENV NODE_ENV=production
+ENV TZ=UTC
+
+# Copy dependencies and source
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/src ./src
+COPY package.json bun.lock tsconfig.json ./
+
+# Ejecutar el worker
+CMD ["bun", "src/integrations/jobs/analyze-job.ts"]

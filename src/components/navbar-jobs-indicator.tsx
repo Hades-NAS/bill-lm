@@ -22,6 +22,9 @@ import { useJobsStore } from '#/integrations/store/jobs.store'
 
 import { useIsMobile } from '#/utils/mobile'
 
+import { useUserAuth } from '#/hooks/auth'
+import { useMarkAsReadMutation } from '#/hooks/mutation/bill'
+
 import type { JobStatusItem } from '#/integrations/store/jobs.store'
 
 /**
@@ -155,6 +158,7 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
 }
 
 export function NavbarJobsIndicator() {
+  const auth = useUserAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
 
@@ -182,6 +186,12 @@ export function NavbarJobsIndicator() {
     (j) => j.status === 'completed' || j.status === 'failed',
   )
 
+  const markAsReadMutation = useMarkAsReadMutation({
+    onSuccess: () => {
+      clearJobs()
+    },
+  })
+
   const content = hasJobs ? (
     <Stack gap="sm" w={isMobile ? '100%' : 320}>
       <Group justify="space-between">
@@ -196,7 +206,16 @@ export function NavbarJobsIndicator() {
           </Link>
         </Box>
         <Tooltip withArrow label="Limpiar lista" position="bottom">
-          <ActionIcon size={'md'} variant="light" onClick={() => clearJobs()}>
+          <ActionIcon
+            loading={markAsReadMutation.isPending}
+            size={'md'}
+            variant="light"
+            onClick={() =>
+              markAsReadMutation.mutate({
+                auth,
+              })
+            }
+          >
             <BrushCleaning size={16} />
           </ActionIcon>
         </Tooltip>

@@ -118,6 +118,8 @@ export const useAnalyzeCollectionMutation = (
           updatedAt: DateTime.now().toJSDate(),
           callCount: 0,
           totalTokens: 0,
+          deletedAt: null,
+          read: false,
         })
 
         invalidateQueriesByKeys(

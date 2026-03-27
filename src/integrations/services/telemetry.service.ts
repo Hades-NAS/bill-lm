@@ -42,7 +42,7 @@ export class TelemetryService {
       .update({
         totalTokens: FieldValue.increment(data.tokensTotal),
         callCount: FieldValue.increment(1),
-        lastUpdated: DateTime.now().toJSDate(),
+        updatedAt: DateTime.now().toJSDate(),
         error: data.status === 'success' ? FieldValue.delete() : data.error,
       })
   }
