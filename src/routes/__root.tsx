@@ -99,7 +99,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         property: 'og:image',
-        content: 'https://bill-lm.app/og-image.png',
+        content: 'https://bill-lm.app/logo512.png',
       },
       {
         property: 'og:url',
@@ -128,10 +128,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         name: 'twitter:image',
-        content: 'https://bill-lm.app/og-image.png',
+        content: 'https://bill-lm.app/logo512.png',
       },
       {
         title: 'Bill LM - Simplifica la gestión de tus gastos deducibles',
+      },
+      {
+        rel: 'icon',
+        href: '/favicon.ico',
       },
     ],
     links: [
