@@ -85,7 +85,7 @@ ENV TZ=UTC
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copiar output del build (TanStack Start)
-COPY --from=builder /app/.output ./.output
+COPY --from=builder /app/dist ./dist
 
 # Copiar package.json para referencia
 COPY package.json bun.lock ./
