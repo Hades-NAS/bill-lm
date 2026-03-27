@@ -12,7 +12,7 @@ env:
   MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
   MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
   MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-  MINIO_BUCKET: ${{ secrets.MINIO_BUCKET_NAME }}
+  MINIO_BUCKET_NAME: ${{ secrets.MINIO_BUCKET_NAME }}
   GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
   VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
   VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
@@ -77,7 +77,7 @@ jobs:
             --build-arg MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
             --build-arg MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
             --build-arg MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
-            --build-arg MINIO_BUCKET=${{ env.MINIO_BUCKET }} \
+            --build-arg MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
             --build-arg GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             --build-arg FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             --build-arg FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
@@ -112,7 +112,7 @@ jobs:
             --build-arg MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
             --build-arg MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
             --build-arg MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
-            --build-arg MINIO_BUCKET=${{ env.MINIO_BUCKET }} \
+            --build-arg MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
             --build-arg GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             --build-arg FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             --build-arg FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
@@ -182,7 +182,7 @@ jobs:
             -e MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
             -e MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
             -e MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
-            -e MINIO_BUCKET=${{ env.MINIO_BUCKET }} \
+            -e MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
             -e GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             -e FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             -e FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
@@ -236,7 +236,7 @@ jobs:
             -e MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
             -e MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
             -e MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
-            -e MINIO_BUCKET=${{ env.MINIO_BUCKET }} \
+            -e MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
             -e GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             -e FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             -e FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
