@@ -12,11 +12,8 @@ env:
   MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
   MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
   MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-  MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+  MINIO_BUCKET: ${{ secrets.MINIO_BUCKET_NAME }}
   GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-  FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-  FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
   VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
   VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
   VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
@@ -25,10 +22,14 @@ env:
   VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
   VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
   LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
-  LLM_MODEL: ${{ secrets.LLM_MODEL }}
+  MODEL_KEY: ${{ secrets.MODEL_KEY }}
   LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-  LLM_API_URL: ${{ secrets.LLM_API_URL }}
+  LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
   LLM_TEMPERATURE: ${{ secrets.LLM_TEMPERATURE }}
+  OPENAI_MODEL_ID: ${{ secrets.OPENAI_MODEL_ID }}
+  OPENAI_ORGANIZATION: ${{ secrets.OPENAI_ORGANIZATION }}
+  OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 jobs:
   build:
@@ -89,10 +90,14 @@ jobs:
             --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID=${{ env.VITE_FIREBASE_MESSAGING_SENDER_ID }} \
             --build-arg VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }} \
             --build-arg LLM_PROVIDER=${{ env.LLM_PROVIDER }} \
-            --build-arg LLM_MODEL=${{ env.LLM_MODEL }} \
+            --build-arg MODEL_KEY=${{ env.MODEL_KEY }} \
             --build-arg LLM_API_KEY=${{ env.LLM_API_KEY }} \
-            --build-arg LLM_API_URL=${{ env.LLM_API_URL }} \
+            --build-arg LLM_BASE_URL=${{ env.LLM_BASE_URL }} \
             --build-arg LLM_TEMPERATURE=${{ env.LLM_TEMPERATURE }} \
+            --build-arg OPENAI_MODEL_ID=${{ env.OPENAI_MODEL_ID }} \
+            --build-arg OPENAI_ORGANIZATION=${{ env.OPENAI_ORGANIZATION }} \
+            --build-arg OPENAI_PROJECT_ID=${{ env.OPENAI_PROJECT_ID }} \
+            --build-arg OPENAI_API_KEY=${{ env.OPENAI_API_KEY }} \
             -t $IMAGE .
 
           echo "✅ Server Image loaded: $IMAGE"
@@ -102,14 +107,32 @@ jobs:
           IMAGE="localhost:5000/bill-lm-worker:${{ env.IMAGE_TAG }}"
           docker buildx build --load \
             -f docker/Dockerfile.worker \
+            --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
             --build-arg DATABASE_URL="${{ env.DATABASE_URL }}" \
+            --build-arg MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
+            --build-arg MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
+            --build-arg MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
+            --build-arg MINIO_BUCKET=${{ env.MINIO_BUCKET }} \
             --build-arg GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             --build-arg FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
+            --build-arg FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
+            --build-arg CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }} \
+            --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ env.VITE_CLERK_PUBLISHABLE_KEY }} \
+            --build-arg VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
+            --build-arg VITE_FIREBASE_AUTH_DOMAIN=${{ env.VITE_FIREBASE_AUTH_DOMAIN }} \
+            --build-arg VITE_FIREBASE_PROJECT_ID=${{ env.VITE_FIREBASE_PROJECT_ID }} \
+            --build-arg VITE_FIREBASE_STORAGE_BUCKET=${{ env.VITE_FIREBASE_STORAGE_BUCKET }} \
+            --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID=${{ env.VITE_FIREBASE_MESSAGING_SENDER_ID }} \
+            --build-arg VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }} \
             --build-arg LLM_PROVIDER=${{ env.LLM_PROVIDER }} \
-            --build-arg LLM_MODEL=${{ env.LLM_MODEL }} \
+            --build-arg MODEL_KEY=${{ env.MODEL_KEY }} \
             --build-arg LLM_API_KEY=${{ env.LLM_API_KEY }} \
-            --build-arg LLM_API_URL=${{ env.LLM_API_URL }} \
+            --build-arg LLM_BASE_URL=${{ env.LLM_BASE_URL }} \
             --build-arg LLM_TEMPERATURE=${{ env.LLM_TEMPERATURE }} \
+            --build-arg OPENAI_MODEL_ID=${{ env.OPENAI_MODEL_ID }} \
+            --build-arg OPENAI_ORGANIZATION=${{ env.OPENAI_ORGANIZATION }} \
+            --build-arg OPENAI_PROJECT_ID=${{ env.OPENAI_PROJECT_ID }} \
+            --build-arg OPENAI_API_KEY=${{ env.OPENAI_API_KEY }} \
             -t $IMAGE .
 
           echo "✅ Worker Image loaded: $IMAGE"
@@ -172,10 +195,14 @@ jobs:
             -e VITE_FIREBASE_MESSAGING_SENDER_ID=${{ env.VITE_FIREBASE_MESSAGING_SENDER_ID }} \
             -e VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }} \
             -e LLM_PROVIDER=${{ env.LLM_PROVIDER }} \
-            -e LLM_MODEL=${{ env.LLM_MODEL }} \
+            -e MODEL_KEY=${{ env.MODEL_KEY }} \
             -e LLM_API_KEY=${{ env.LLM_API_KEY }} \
-            -e LLM_API_URL=${{ env.LLM_API_URL }} \
+            -e LLM_BASE_URL=${{ env.LLM_BASE_URL }} \
             -e LLM_TEMPERATURE=${{ env.LLM_TEMPERATURE }} \
+            -e OPENAI_MODEL_ID=${{ env.OPENAI_MODEL_ID }} \
+            -e OPENAI_ORGANIZATION=${{ env.OPENAI_ORGANIZATION }} \
+            -e OPENAI_PROJECT_ID=${{ env.OPENAI_PROJECT_ID }} \
+            -e OPENAI_API_KEY=${{ env.OPENAI_API_KEY }} \
             -e NODE_ENV=production \
             -e TZ=UTC \
             "localhost:5000/bill-lm-server:${IMAGE_TAG}"
@@ -205,13 +232,31 @@ jobs:
             --name bill-lm-worker-validate \
             --network bill-lm-network \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+            -e ENVIRONMENT=prod \
+            -e MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
+            -e MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
+            -e MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
+            -e MINIO_BUCKET=${{ env.MINIO_BUCKET }} \
             -e GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             -e FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
+            -e FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
+            -e CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }} \
+            -e VITE_CLERK_PUBLISHABLE_KEY=${{ env.VITE_CLERK_PUBLISHABLE_KEY }} \
+            -e VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
+            -e VITE_FIREBASE_AUTH_DOMAIN=${{ env.VITE_FIREBASE_AUTH_DOMAIN }} \
+            -e VITE_FIREBASE_PROJECT_ID=${{ env.VITE_FIREBASE_PROJECT_ID }} \
+            -e VITE_FIREBASE_STORAGE_BUCKET=${{ env.VITE_FIREBASE_STORAGE_BUCKET }} \
+            -e VITE_FIREBASE_MESSAGING_SENDER_ID=${{ env.VITE_FIREBASE_MESSAGING_SENDER_ID }} \
+            -e VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }} \
             -e LLM_PROVIDER=${{ env.LLM_PROVIDER }} \
-            -e LLM_MODEL=${{ env.LLM_MODEL }} \
+            -e MODEL_KEY=${{ env.MODEL_KEY }} \
             -e LLM_API_KEY=${{ env.LLM_API_KEY }} \
-            -e LLM_API_URL=${{ env.LLM_API_URL }} \
+            -e LLM_BASE_URL=${{ env.LLM_BASE_URL }} \
             -e LLM_TEMPERATURE=${{ env.LLM_TEMPERATURE }} \
+            -e OPENAI_MODEL_ID=${{ env.OPENAI_MODEL_ID }} \
+            -e OPENAI_ORGANIZATION=${{ env.OPENAI_ORGANIZATION }} \
+            -e OPENAI_PROJECT_ID=${{ env.OPENAI_PROJECT_ID }} \
+            -e OPENAI_API_KEY=${{ env.OPENAI_API_KEY }} \
             -e NODE_ENV=production \
             -e TZ=UTC \
             "localhost:5000/bill-lm-worker:${IMAGE_TAG}"
