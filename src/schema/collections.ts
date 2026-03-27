@@ -93,6 +93,8 @@ export const AnalyzeJobDataSchema = z.object({
   // telemetry:
   totalTokens: z.number(),
   callCount: z.number(),
+  deletedAt: z.date().nullable(),
+  read: z.boolean().default(false),
 })
 
 export type AnalyzeJobData = z.infer<typeof AnalyzeJobDataSchema>
