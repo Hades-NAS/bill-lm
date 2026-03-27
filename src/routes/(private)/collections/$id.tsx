@@ -64,6 +64,7 @@ import type { CollectionBaseType } from '#/integrations/trpc/procedures/bills'
 import type { AnalyzeCollectionRequest } from '#/schema/collections'
 
 export const Route = createFileRoute('/(private)/collections/$id')({
+  ssr: false,
   component: CollectionDetailPage,
 })
 
