@@ -105,7 +105,7 @@ COPY --from=builder /app/index.html ./
 # Copiar package.json para referencia
 COPY package.json bun.lock tsconfig.json prisma.config.ts ./
 COPY scripts/start.sh ./start.sh
-COPY sever.ts ./server.ts
+COPY server.ts ./server.ts
 # Exponer puerto
 EXPOSE $PORT
 
