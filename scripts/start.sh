@@ -9,6 +9,8 @@ echo "============================================"
 if [ -z "$SKIP_DB_MIGRATION" ]; then
   echo "🔄 Ejecutando migraciones de base de datos..."
   echo ""
+
+  echo "ENVIRONMENT: $ENVIRONMENT"
   
   bun run db:push
   

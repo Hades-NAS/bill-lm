@@ -6,15 +6,26 @@ FROM oven/bun:latest as builder
 
 WORKDIR /app
 
+# Argumentos para el builder stage
+ARG DATABASE_URL=postgresql://localhost/bill-lm
+ARG ENVIRONMENT=dev
+
+# Establecer variables de entorno para el builder
+ENV DATABASE_URL=${DATABASE_URL}
+ENV ENVIRONMENT=${ENVIRONMENT}
+
 # Copiar dependencias
 COPY package.json bun.lock ./
 COPY tsconfig.json ./
 COPY prisma.config.ts ./
+COPY vite.config.ts ./
+COPY postcss.config.cjs ./
 
 # Copiar código fuente
 COPY src ./src
 COPY prisma ./prisma
 COPY public ./public
+COPY index.html ./
 
 # Instalar dependencias (incluyendo dev para build)
 RUN bun install
@@ -88,11 +99,16 @@ COPY --from=builder /app/node_modules ./node_modules
 # Copiar output del build (TanStack Start)
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src/generated ./src/generated
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/index.html ./
 # Copiar package.json para referencia
 COPY package.json bun.lock tsconfig.json prisma.config.ts ./
 COPY scripts/start.sh ./start.sh
 # Exponer puerto
 EXPOSE $PORT
+
+RUN chmod +x ./start.sh
 
 # Ejecutar servidor
 ENTRYPOINT ["./start.sh"]
