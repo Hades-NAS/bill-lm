@@ -78,3 +78,29 @@ export const useDeleteBillsMutation = (
     }),
   )
 }
+
+export const useMarkAsReadMutation = (options: MutationOptions<void> = {}) => {
+  // const queryClient = useQueryClient()
+  const trpc = useTRPC()
+
+  return useMutation(
+    trpc.collections.markAsRead.mutationOptions({
+      ...options,
+      onSuccess: () => {
+        options.onSuccess?.()
+        notify.success({
+          title: 'Trabajos marcados como leídos',
+          message: 'Todos los trabajos han sido marcados como leídos exitosamente.',
+        })
+      },
+      onError: (error) => {
+        options.onError?.(error)
+        notify.error({
+          title: 'Error al marcar trabajos como leídos',
+          message:
+            'Ocurrió un error al marcar los trabajos como leídos. Por favor, intenta de nuevo.',
+        })
+      },
+    }),
+  )
+}

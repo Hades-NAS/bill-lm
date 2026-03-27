@@ -35,13 +35,11 @@ export function useJobsSubscriptionManager() {
       return
     }
 
-    // Create a SINGLE collection query instead of N doc queries
-    // Include: pending, in-progress, AND recently completed/failed (last 24h)
-    // This ensures completed jobs still appear in the UI briefly
     const jobsCollectionQuery = query(
       collection(db, FireCollections.ANALYZE_COLLECTION),
       where('userId', '==', auth.userId),
       where('status', 'in', ['pending', 'in-progress', 'completed', 'failed']),
+      where('read', '==', false),
     )
 
     // ONE subscription for all active jobs
