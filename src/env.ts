@@ -6,6 +6,8 @@ export type LLMProvider = z.infer<typeof LLMProviderEnum>
 
 export const env = createEnv({
   server: {
+    NODE_ENV: z.enum(['development', 'production', 'test']).default('development').optional(),
+
     DATABASE_URL: z.string().min(1),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
 
