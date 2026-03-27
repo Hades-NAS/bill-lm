@@ -9,6 +9,7 @@ WORKDIR /app
 # Copiar dependencias
 COPY package.json bun.lock ./
 COPY tsconfig.json ./
+COPY prisma.config.ts ./
 
 # Copiar código fuente
 COPY src ./src
@@ -86,12 +87,12 @@ COPY --from=builder /app/node_modules ./node_modules
 
 # Copiar output del build (TanStack Start)
 COPY --from=builder /app/dist ./dist
-
+COPY --from=builder /app/src/generated ./src/generated
 # Copiar package.json para referencia
-COPY package.json bun.lock ./
-
+COPY package.json bun.lock tsconfig.json prisma.config.ts ./
+COPY scripts/start.sh ./start.sh
 # Exponer puerto
 EXPOSE $PORT
 
 # Ejecutar servidor
-CMD ["bun", "run", "start"]
+ENTRYPOINT ["./start.sh"]
