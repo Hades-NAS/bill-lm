@@ -15,3 +15,4 @@ keys/
 tests/
 .claude/
 !.claude/memory/
+.env
