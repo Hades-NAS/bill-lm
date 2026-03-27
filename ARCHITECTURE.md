@@ -1,4 +1,4 @@
-# 🏗️ Bill-LM: Arquitectura de Análisis de Facturas
+# Bill-LM: Arquitectura de Análisis de Facturas
 
 ## 📋 Tabla de Contenidos
 
