@@ -94,4 +94,4 @@ COPY package.json bun.lock ./
 EXPOSE $PORT
 
 # Ejecutar servidor
-CMD ["bun", "run", "preview"]
+CMD ["bun", "run", "start"]
