@@ -14,7 +14,9 @@ import {
   ThemeIcon,
   List,
   Grid,
+  useMantineColorScheme,
 } from '@mantine/core'
+import { useColorScheme } from '@mantine/hooks'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   FileText,
@@ -27,7 +29,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 
 import { useUserAuth } from '#/hooks/auth'
 
@@ -42,12 +44,18 @@ function App() {
 
   const [isVisible, setIsVisible] = useState(false)
 
+  const { colorScheme, setColorScheme } = useMantineColorScheme()
+
+  useLayoutEffect(() => {
+    setColorScheme('light')
+  }, [])
+
   useEffect(() => {
     setIsVisible(true)
   }, [])
 
   return (
-    <Box bg="violet.9" min-h="100vh">
+    <Box bg="violet.6" min-h="100vh">
       {/* Hero Section */}
       <Transition
         duration={800}
@@ -157,7 +165,11 @@ function App() {
       </Transition>
 
       {/* How It Works Section */}
-      <Box bg="white" id="como-funciona" py={80}>
+      <Box
+        bg={colorScheme === 'dark' ? 'red' : 'white'}
+        id="como-funciona"
+        py={80}
+      >
         <Container size="lg">
           <Stack gap={60}>
             <Stack align="center" gap={16}>
@@ -359,7 +371,12 @@ function App() {
                 </Grid.Col>
 
                 <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Card bg="violet.0" padding="xl" radius="md" shadow="sm">
+                  <Card
+                    bg={colorScheme === 'dark' ? 'violet.9' : 'violet.1'}
+                    padding="xl"
+                    radius="md"
+                    shadow="sm"
+                  >
                     <Stack gap={16}>
                       <Group gap={8}>
                         <ThemeIcon
@@ -413,11 +430,11 @@ function App() {
       </Box>
 
       {/* Benefits Section */}
-      <Box bg="violet.9" py={80}>
+      <Box bg="violet.6" py={80}>
         <Container size="lg">
           <Stack gap={60}>
             <Stack align="center" gap={16}>
-              <Badge color="white" variant="light">
+              <Badge color="white" size="xl" variant="light">
                 Para Ti
               </Badge>
               <Title c="white" fw={700} order={2} size={36} ta="center">
@@ -541,11 +558,17 @@ function App() {
       </Box>
 
       {/* CTA Section */}
-      <Box bg="white" py={80}>
+      <Box bg={colorScheme === 'dark' ? 'dark' : 'white'} pt={80}>
         <Container size="md">
           <Stack align="center" gap={32}>
             <Stack align="center" gap={16}>
-              <Title fw={700} order={2} size={36} ta="center">
+              <Title
+                c={colorScheme === 'dark' ? 'white' : 'black'}
+                fw={700}
+                order={2}
+                size={36}
+                ta="center"
+              >
                 Comienza Hoy Mismo
               </Title>
               <Text c="dimmed" size="lg" ta="center">
@@ -567,11 +590,18 @@ function App() {
                 Crear Cuenta Gratis
               </Button>
             </Group>
-
-            <Text c="dimmed" size="sm" ta="center">
-              ¿Preguntas? Revisa nuestra documentación o contacta al equipo
-            </Text>
           </Stack>
+          <Box bg={colorScheme === 'dark' ? 'dark' : 'light'}>
+            <Text c="dimmed" mt={80} size="xs" ta="center">
+              Made with ❤️ by{' '}
+              <Text inherit c="violet.3" component="span" fw="bold">
+                Enmanuel Magallanes
+              </Text>
+            </Text>
+            <Text c="dimmed" pb={40} pt={10} size="xs" ta="center">
+              © 2026 Bill LM. Todos los derechos reservados.
+            </Text>
+          </Box>
         </Container>
       </Box>
     </Box>
