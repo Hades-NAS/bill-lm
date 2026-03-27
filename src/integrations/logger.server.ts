@@ -1,31 +1,27 @@
 import pino from 'pino'
 
-// NOTE: This logger is SERVER-ONLY. Do not import in client-side (browser) files.
-// Pino uses Node.js streams and will fail in the browser.
-// For client-side logging, use console.log/warn/error directly.
-
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 export const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   transport: isDevelopment
     ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'HH:MM:ss Z',
-          ignore: 'pid,hostname',
-        },
-      }
-    : {
-        target: 'pino-pretty',
-        options: {
-          colorize: false,
-          translateTime: 'yyyy-mm-dd HH:MM:ss Z',
-          ignore: 'hostname',
-          crlf: true,
-        },
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname',
       },
+    }
+    : {
+      target: 'pino-pretty',
+      options: {
+        colorize: false,
+        translateTime: 'yyyy-mm-dd HH:MM:ss Z',
+        ignore: 'hostname',
+        crlf: true,
+      },
+    },
 })
 
 function parseArgs(args: Array<unknown>): string {

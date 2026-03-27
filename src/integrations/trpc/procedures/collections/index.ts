@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { DateTime } from 'luxon'
+import z from 'zod'
 
 import { WithAuthSchema } from '#/schema/auth'
 import {
@@ -68,9 +69,9 @@ export const collectionsRouter = {
           year: search.year ? search.year : undefined,
           createdAt: search.createdAt
             ? {
-                gte: search.createdAt.from,
-                lte: search.createdAt.to,
-              }
+              gte: search.createdAt.from,
+              lte: search.createdAt.to,
+            }
             : undefined,
         },
         orderBy,
@@ -192,50 +193,36 @@ export const collectionsRouter = {
         collectionId: data.id,
       })
 
-      try {
-        const collection = await prisma.collection.findUnique({
-          where: {
-            id: data.id,
-            userId: auth.userId,
+      const collection = await prisma.collection.findUnique({
+        where: {
+          id: data.id,
+          userId: auth.userId,
+        },
+        include: {
+          bills: {
+            orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
           },
-          include: {
-            bills: {
-              orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-            },
-          },
-        })
-        if (!collection) {
-          logger.warn('Collection not found', {
-            userId: auth.userId,
-            collectionId: data.id,
-          })
-
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Collection not found',
-          })
-        }
-
-        logger.info('Fetched collection detail', {
+        },
+      })
+      if (!collection) {
+        logger.warn('Collection not found', {
           userId: auth.userId,
           collectionId: data.id,
         })
 
-        return collection
-      } catch (error) {
-        logger.error(
-          `Failed to fetch collection detail from database ${error}`,
-          {
-            userId: auth.userId,
-            collectionId: data.id,
-          },
-        )
-
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch collection detail',
+          code: 'NOT_FOUND',
+          message: 'Collection not found',
         })
       }
+
+      logger.info('Fetched collection detail', {
+        userId: auth.userId,
+        collectionId: data.id,
+      })
+
+      return collection
+
     }),
   analyze: privateProcedure
     .input(WithAuthSchema(AnalyzeCollectionRequestSchema))
@@ -358,6 +345,8 @@ export const collectionsRouter = {
         updatedAt: DateTime.now().toJSDate(),
         callCount: 0,
         totalTokens: 0,
+        deletedAt: null,
+        read: false,
       }
 
       const jobName = `analyze-${data.collectionId}-${payload.jobId}`
@@ -381,6 +370,44 @@ export const collectionsRouter = {
         collectionId: data.collectionId,
         collectionName: collection.name,
       }
+    }),
+  markAsRead: privateProcedure
+    .input(WithAuthSchema(z.object({}).optional()))
+    .mutation(async () => {
+      const finalizedJobs = await adminDb
+        .collection(FireCollections.ANALYZE_COLLECTION)
+        .where('status', 'not-in', ['pending', 'in-progress'])
+        .get()
+
+      const stuckedJobs = await adminDb
+        .collection(FireCollections.ANALYZE_COLLECTION)
+        .where('status', 'in', ['pending', 'in-progress'])
+        .where(
+          'updatedAt',
+          '<=',
+          DateTime.now().minus({ hours: 1 }).toJSDate(),
+        )
+        .get()
+
+      const jobsToClear = [...finalizedJobs.docs, ...stuckedJobs.docs]
+
+      logger.info('Clearing old analyze jobs', {
+        count: jobsToClear.length,
+      })
+
+      const batch = adminDb.batch()
+
+      jobsToClear.forEach((doc) => {
+        batch.update(doc.ref, {
+          read: true,
+        })
+      })
+
+      await batch.commit()
+
+      logger.info('Cleared old analyze jobs', {
+        count: jobsToClear.length,
+      })
     }),
 } satisfies TRPCRouterRecord
 
