@@ -180,6 +180,7 @@ jobs:
             --name bill-lm-server-validate \
             --network bill-lm-network \
             -p 3001:3001 \
+            -v /home/cardor/secrets/bill-lm/bill-lm-firebase.json:/run/secrets/bill-lm-service-account.json:ro \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             -e ENVIRONMENT=prod \
             -e MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
@@ -235,6 +236,7 @@ jobs:
           docker run -d \
             --name bill-lm-worker-validate \
             --network bill-lm-network \
+            -v /home/cardor/secrets/bill-lm/bill-lm-firebase.json:/run/secrets/bill-lm-service-account.json:ro \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             -e ENVIRONMENT=prod \
             -e MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
