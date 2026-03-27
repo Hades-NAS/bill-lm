@@ -21,7 +21,7 @@ logger.info(
 )
 
 // Initialize LLM Provider at startup
-const llmProvider = LLMProviderFactory.create(env)
+const llmProvider = await LLMProviderFactory.create(env)
 logger.info(`LLM Provider initialized`, {
   provider: llmProvider.getProviderName(),
   model: llmProvider.getModelId(),

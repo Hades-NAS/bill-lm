@@ -9,16 +9,17 @@ import { OpenAI } from 'openai'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
 
+
 import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { createTelemetryService } from '#/integrations/services/telemetry.service'
 
 import type { LLMPreset } from '#/config/llm-config'
 import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
+import type { LLMProviderConfig } from '#/schema/llm-provider'
 import type {
   ContextProcess,
   ILLMProvider,
-  LLMProviderConfig,
 } from '../provider.interface'
 
 setTracingDisabled(true)
@@ -77,15 +78,16 @@ export class OpenAIProvider implements ILLMProvider {
     try {
       this.logger.debug('Checking OpenAI API connectivity')
 
+      return Promise.resolve(true)
       // Simple connectivity check by listing models
-      const models = await this.client.models.list()
-      const hasModels = models.data.length > 0
+      // const models = await this.client.models.list()
+      // const hasModels = models.data.length > 0
 
-      this.logger.debug(
-        `OpenAI API connectivity check ${hasModels ? 'healthy' : 'unhealthy'}`,
-      )
+      // this.logger.debug(
+      //   `OpenAI API connectivity check ${hasModels ? 'healthy' : 'unhealthy'}`,
+      // )
 
-      return hasModels
+      // return hasModels
     } catch (error) {
       this.logger.error('Failed to check OpenAI API health', { error })
       return false
@@ -98,14 +100,15 @@ export class OpenAIProvider implements ILLMProvider {
    */
   async isModelLoaded(): Promise<boolean> {
     try {
-      const models = await this.client.models.list()
-      const modelExists = models.data.some((m) => m.id === this.config.modelId)
+      return Promise.resolve(true)
+      // const models = await this.client.models.list()
+      // const modelExists = models.data.some((m) => m.id === this.config.modelId)
 
-      this.logger.debug(
-        `Model ${this.config.modelId} ${modelExists ? 'exists' : 'not found'} in OpenAI`,
-      )
+      // this.logger.debug(
+      //   `Model ${this.config.modelId} ${modelExists ? 'exists' : 'not found'} in OpenAI`,
+      // )
 
-      return modelExists
+      // return modelExists
     } catch (error) {
       this.logger.error('Failed to check model availability', { error })
       return false

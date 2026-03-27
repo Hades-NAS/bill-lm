@@ -9,6 +9,7 @@ import OpenAI from 'openai'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
 
+
 import {
   AppError,
   CircuitBreaker,
@@ -20,10 +21,10 @@ import { createTelemetryService } from '#/integrations/services/telemetry.servic
 
 import type { LLMPreset } from '#/config/llm-config'
 import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
+import type { LLMProviderConfig } from '#/schema/llm-provider'
 import type {
   ContextProcess,
   ILLMProvider,
-  LLMProviderConfig,
 } from '../provider.interface'
 
 import { env } from '#/env'

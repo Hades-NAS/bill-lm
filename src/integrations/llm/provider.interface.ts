@@ -56,16 +56,3 @@ export interface ILLMProvider {
   getTemperatureForPreset: (preset: LLMPreset) => number
 }
 
-export type LLMProviderType = 'lm-studio' | 'openai' | 'claude'
-
-export interface LLMProviderConfig {
-  provider: LLMProviderType
-  modelId: string
-  maxTokens: number
-  timeout: number
-  agentInstructions: string
-  apiKey?: string // For OpenAI, Claude
-  projectId?: string
-  organization?: string
-  baseUrl?: string // For LMStudio
-}

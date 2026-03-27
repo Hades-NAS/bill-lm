@@ -1,16 +1,21 @@
+
+import { adminDb } from '#/integrations/firebase/firebase.server'
+
+import { FireCollections } from '#/constants/firebase'
+
 import { ClaudeProvider } from './providers/claude-provider'
 import { LMStudioProvider } from './providers/lm-studio-provider'
 import { OpenAIProvider } from './providers/openai-provider'
 
 import { createBillPromptBuilder } from '../prompts/bill-prompt-builder'
 
+import type { LLMProviderConfig, LLMProviderType } from '#/schema/llm-provider'
 import type {
   ILLMProvider,
-  LLMProviderConfig,
-  LLMProviderType,
 } from './provider.interface'
-import type { env } from '@/env'
+import type { env } from '@/env';
 
+import { LLMProviderEnum } from '@/env'
 import { getServiceLogger } from '@/integrations/logger.server'
 
 const logger = getServiceLogger('LlmProviderFactory')
@@ -22,13 +27,17 @@ const logger = getServiceLogger('LlmProviderFactory')
 export class LLMProviderFactory {
   private static instance: ILLMProvider | null = null
 
+  private static llmProviderDocId = 'llm-provider-config'
+
+  private static currentProvider: LLMProviderType | null = null
+
   private static promptBuilder = createBillPromptBuilder()
 
   /**
    * Factory method - instantiate the correct provider based on LLM_PROVIDER env var
    * Call this ONCE at application startup
    */
-  static create(serverEnv: typeof env): ILLMProvider {
+  static async create(serverEnv: typeof env): Promise<ILLMProvider> {
     if (this.instance) {
       logger.debug(
         'LLMProvider already initialized, returning existing instance',
@@ -36,19 +45,19 @@ export class LLMProviderFactory {
       return this.instance
     }
 
-    const providerType = serverEnv.LLM_PROVIDER as LLMProviderType
+    this.currentProvider = (await this.getProviderFromFirebase()) ?? serverEnv.LLM_PROVIDER
 
-    logger.info('Initializing LLMProvider', { provider: providerType })
+    logger.info('Initializing LLMProvider', { provider: this.currentProvider })
 
     const baseConfig: LLMProviderConfig = {
       modelId: '',
       agentInstructions: this.promptBuilder.getAgentInstructions(),
-      provider: providerType,
+      provider: this.currentProvider,
       maxTokens: parseInt(serverEnv.LLM_MAX_TOKENS ?? '2048'),
       timeout: parseInt(serverEnv.LLM_TIMEOUT_MS ?? '30000'),
     }
 
-    switch (providerType) {
+    switch (this.currentProvider) {
       case 'openai':
         logger.info('Creating OpenAI provider')
         if (!serverEnv.OPENAI_API_KEY) {
@@ -96,6 +105,29 @@ export class LLMProviderFactory {
     })
 
     return this.instance
+  }
+
+  static async getProviderFromFirebase() {
+    logger.info('Fetching LLM provider config from Firebase')
+
+    const snap = await adminDb.collection(FireCollections.CONFIG_COLLECTION).doc(this.llmProviderDocId).get()
+
+    if (!snap.exists) {
+      logger.warn('No LLM provider config found in Firebase, using default')
+      return null
+    }
+
+    const data = snap.data() as Pick<LLMProviderConfig, 'provider'>
+
+    logger.info('LLM provider config fetched from Firebase', { provider: data.provider })
+
+    const result = LLMProviderEnum.safeParse(data.provider)
+    if (!result.success) {
+      logger.error('Invalid LLM provider config in Firebase, using default', { provider: data.provider })
+      return null
+    }
+
+    return result.data
   }
 
   /**

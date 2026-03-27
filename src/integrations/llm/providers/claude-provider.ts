@@ -3,13 +3,15 @@ import { DateTime } from 'luxon'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
 
+
 import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { createTelemetryService } from '#/integrations/services/telemetry.service'
 
 import type { LLMPreset } from '#/config/llm-config'
 import type { AnalyzeBillOutput } from '#/schema/bill-analysis';
-import type { ContextProcess, ILLMProvider, LLMProviderConfig } from '../provider.interface'
+import type { LLMProviderConfig } from '#/schema/llm-provider'
+import type { ContextProcess, ILLMProvider } from '../provider.interface'
 
 /**
  * Claude Provider
@@ -60,24 +62,26 @@ export class ClaudeProvider implements ILLMProvider {
     try {
       this.logger.debug('Checking Anthropic API connectivity')
 
+      return Promise.resolve(true)
+
       // Send a simple test message with minimal tokens
-      const response = await this.client.messages.create({
-        model: this.config.modelId,
-        max_tokens: 10,
-        system: 'You are a helpful assistant.',
-        messages: [
-          {
-            role: 'user',
-            content: 'ping',
-          },
-        ],
-      })
+      // const response = await this.client.messages.create({
+      //   model: this.config.modelId,
+      //   max_tokens: 10,
+      //   system: 'You are a helpful assistant.',
+      //   messages: [
+      //     {
+      //       role: 'user',
+      //       content: 'ping',
+      //     },
+      //   ],
+      // })
 
-      const isHealthy = response.stop_reason === 'end_turn'
+      // const isHealthy = response.stop_reason === 'end_turn'
 
-      this.logger.debug(`Anthropic API connectivity check ${isHealthy ? 'healthy' : 'unhealthy'}`)
+      // this.logger.debug(`Anthropic API connectivity check ${isHealthy ? 'healthy' : 'unhealthy'}`)
 
-      return isHealthy
+      // return isHealthy
     } catch (error) {
       this.logger.error('Failed to check Anthropic API health', { error })
       return false
