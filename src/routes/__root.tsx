@@ -56,7 +56,79 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
+        content: 'width=device-width, initial-scale=1, maximum-scale=5',
+      },
+      {
+        name: 'description',
+        content:
+          'Bill LM - Simplifica la gestión de tus gastos deducibles. Carga, organiza y analiza tus facturas con inteligencia artificial para maximizar deducciones fiscales.',
+      },
+      {
+        name: 'keywords',
+        content:
+          'gestión de facturas, gastos deducibles, análisis de facturas, software contable, deducciones fiscales, Bill LM',
+      },
+      {
+        name: 'author',
+        content: 'Bill LM',
+      },
+      {
+        name: 'robots',
+        content: 'index, follow',
+      },
+      {
+        name: 'application-name',
+        content: 'Bill LM',
+      },
+      {
+        name: 'msapplication-TileColor',
+        content: '#7c3aed',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        property: 'og:title',
+        content: 'Bill LM - Gestión Inteligente de Gastos Deducibles',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Carga, organiza y analiza tus facturas con inteligencia artificial. Maximiza deducciones fiscales de forma automática.',
+      },
+      {
+        property: 'og:image',
+        content: 'https://bill-lm.app/og-image.png',
+      },
+      {
+        property: 'og:url',
+        content: 'https://bill-lm.app',
+      },
+      {
+        property: 'og:site_name',
+        content: 'Bill LM',
+      },
+      {
+        property: 'og:locale',
+        content: 'es_ES',
+      },
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        name: 'twitter:title',
+        content: 'Bill LM - Gestión Inteligente de Gastos Deducibles',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          'Carga, organiza y analiza tus facturas con inteligencia artificial.',
+      },
+      {
+        name: 'twitter:image',
+        content: 'https://bill-lm.app/og-image.png',
       },
       {
         title: 'Bill LM - Simplifica la gestión de tus gastos deducibles',
