@@ -15,8 +15,8 @@ import {
   List,
   Grid,
   useMantineColorScheme,
+  Anchor,
 } from '@mantine/core'
-import { useColorScheme } from '@mantine/hooks'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   FileText,
@@ -72,8 +72,8 @@ function App() {
                   <ThemeIcon radius="md" size={40} variant="transparent">
                     <FileText color="white" size={24} />
                   </ThemeIcon>
-                  <Badge color="violet" size="xl" variant="dot">
-                    Bill LM
+                  <Badge bg="white" color="violet" size="xl" variant="dot">
+                    Bill-LM
                   </Badge>
                 </Group>
 
@@ -90,8 +90,8 @@ function App() {
                   </Title>
 
                   <Text c="white" maw={600} size="xl" ta="center">
-                    Automatiza el análisis de tus facturas XML/PDF y determina
-                    qué gastos son deducibles según la normativa actual del SRI.
+                    Automatiza el análisis de tus facturas y determina qué
+                    gastos son deducibles según la normativa actual del SRI.
                     Perfecto para contadores y personas naturales.
                   </Text>
                 </Stack>
@@ -177,7 +177,7 @@ function App() {
                 Proceso Simplificado
               </Badge>
               <Title fw={700} order={2} size={36} ta="center">
-                ¿Cómo Funciona Bill LM?
+                ¿Cómo Funciona Bill-LM?
               </Title>
               <Text c="dimmed" maw={600} size="lg" ta="center">
                 Tres pasos simples para analizar tus facturas y optimizar tu
@@ -261,7 +261,7 @@ function App() {
                           2. Subir Facturas
                         </Title>
                         <Text c="dimmed" size="sm" ta="center">
-                          Carga tus archivos XML o PDF en la colección
+                          Carga tus archivos XML en la colección
                         </Text>
                       </Stack>
                     </Stack>
@@ -594,12 +594,18 @@ function App() {
           <Box bg={colorScheme === 'dark' ? 'dark' : 'light'}>
             <Text c="dimmed" mt={80} size="xs" ta="center">
               Made with ❤️ by{' '}
-              <Text inherit c="violet.3" component="span" fw="bold">
-                Enmanuel Magallanes
-              </Text>
+              <Anchor
+                href="https://www.linkedin.com/in/enmanuelmag/"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Text inherit c="violet.3" component="span" fw="bold">
+                  Enmanuel Magallanes
+                </Text>
+              </Anchor>
             </Text>
             <Text c="dimmed" pb={40} pt={10} size="xs" ta="center">
-              © 2026 Bill LM. Todos los derechos reservados.
+              © 2026 Bill-LM. Todos los derechos reservados.
             </Text>
           </Box>
         </Container>

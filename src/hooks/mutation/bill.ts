@@ -88,10 +88,6 @@ export const useMarkAsReadMutation = (options: MutationOptions<void> = {}) => {
       ...options,
       onSuccess: () => {
         options.onSuccess?.()
-        notify.success({
-          title: 'Trabajos marcados como leídos',
-          message: 'Todos los trabajos han sido marcados como leídos exitosamente.',
-        })
       },
       onError: (error) => {
         options.onError?.(error)
