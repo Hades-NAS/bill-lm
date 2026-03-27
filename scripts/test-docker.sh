@@ -143,6 +143,7 @@ build_image() {
         "VITE_FIREBASE_MESSAGING_SENDER_ID"
         "VITE_FIREBASE_APP_ID"
         "LLM_PROVIDER"
+        "ANALYZE_QUEUE_NAME"
         "MODEL_KEY"
         "LLM_BASE_URL"
         "LLM_TEMPERATURE"
