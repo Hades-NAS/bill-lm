@@ -39,3 +39,15 @@ export const useGetCollectionByIdQuery = (id: string) => {
     ),
   )
 }
+
+export const useCheckCanAnalyzeCollectionQuery = () => {
+  const auth = useUserAuth()
+  const trpc = useTRPC()
+
+  return useQuery(
+    trpc.collections.checkUserCanAnalyze.queryOptions(
+      { auth },
+      { enabled: auth.isSignedIn && auth.isLoaded },
+    ),
+  )
+}
