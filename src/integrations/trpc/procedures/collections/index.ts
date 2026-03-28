@@ -45,25 +45,42 @@ const checkUserCanAnalyzeCollection = async (user: AuthType) => {
       code: 'FORBIDDEN',
       message: 'Su cuenta no tiene permiso para realizar esta acción',
     })
+  }
+
+  const whitelistConfig = whitelistSnap.data() as WhitelistConfig
+
+  if (!whitelistConfig.enabled) {
+    logger.info('Whitelist is disabled, allowing access to analyze collection', {
+      userId,
+    })
+
+    return true
+  }
+
+  if (userId && !whitelistConfig.allowedUserIds.includes(userId)) {
+    logger.warn('User ID not in whitelist, denying access to analyze collection', {
+      userId,
+    })
+
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Su cuenta no tiene permiso para realizar esta acción',
+    })
+  } else if (primaryEmail && !whitelistConfig.allowedEmails.includes(primaryEmail)) {
+    logger.warn('User email not in whitelist, denying access to analyze collection', {
+      userId,
+      email: primaryEmail,
+    })
+
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Su cuenta no tiene permiso para realizar esta acción',
+    })
   } else {
-    const whitelistConfig = whitelistSnap.data() as WhitelistConfig
-
-    if (primaryEmail && whitelistConfig.enabled && !whitelistConfig.allowedEmails.includes(primaryEmail)) {
-      logger.warn('User email not in whitelist, denying access to analyze collection', {
-        userId,
-        email: primaryEmail,
-      })
-
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'Su cuenta no tiene permiso para realizar esta acción',
-      })
-    } else {
-      logger.info('User passed whitelist check for analyzing collection', {
-        userId,
-        email: primaryEmail,
-      })
-    }
+    logger.info('User passed whitelist check for analyzing collection', {
+      userId,
+      email: primaryEmail,
+    })
   }
 
   return true
