@@ -47,7 +47,10 @@ import { useUserAuth } from '#/hooks/auth'
 import { useModal } from '#/hooks/modal'
 import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
 import { useAnalyzeCollectionMutation } from '#/hooks/mutation/collection'
-import { useGetCollectionByIdQuery } from '#/hooks/query/collection'
+import {
+  useCheckCanAnalyzeCollectionQuery,
+  useGetCollectionByIdQuery,
+} from '#/hooks/query/collection'
 import { billsKeys } from '#/hooks/query-keys'
 
 import BillDetailPage from '#/components/bill/bill-detail'
@@ -92,6 +95,8 @@ function CollectionDetailPage() {
 
   const collectionQuery = useGetCollectionByIdQuery(collectionId)
 
+  const userCanAnalyzeQuery = useCheckCanAnalyzeCollectionQuery()
+
   const analyzeCollectionMutation = useAnalyzeCollectionMutation()
 
   const billsCalcQuery = useQuery({
@@ -125,7 +130,7 @@ function CollectionDetailPage() {
     },
   })
 
-  const isLoading = isLoadingQuery(collectionQuery)
+  const isLoading = isLoadingQuery(collectionQuery, userCanAnalyzeQuery)
 
   const isLoadingOrRefetch = isLoadingOrRefetchQuery(collectionQuery)
 
@@ -276,6 +281,7 @@ function CollectionDetailPage() {
           {billsCalcQuery.data && billsCalcQuery.data.notAnalyzed && (
             <Button
               color="violet"
+              disabled={!userCanAnalyzeQuery.data?.canAnalyze}
               loading={isAnalyzing}
               onClick={analyzeByType.bind(null, 'all')}
             >
@@ -285,6 +291,7 @@ function CollectionDetailPage() {
           {billsCalcQuery.data && billsCalcQuery.data.partialAnalyzed && (
             <Button
               color="violet"
+              disabled={!userCanAnalyzeQuery.data?.canAnalyze}
               loading={isAnalyzing}
               variant={billsCalcQuery.data.fullAnalyzed ? 'light' : 'filled'}
               onClick={analyzeByType.bind(null, 'missing')}
@@ -297,6 +304,7 @@ function CollectionDetailPage() {
               billsCalcQuery.data.partialAnalyzed) && (
               <Button
                 color="violet"
+                disabled={!userCanAnalyzeQuery.data?.canAnalyze}
                 loading={isAnalyzing}
                 onClick={analyzeByType.bind(null, 'all')}
               >
@@ -388,18 +396,30 @@ function CollectionDetailPage() {
 
                   <Skeleton visible={isLoading}>
                     <Group mt={12}>
-                      <Button
-                        color="violet"
-                        disabled={
-                          !collectionQuery.data ||
-                          collectionQuery.data.bills.length === 0
+                      <Tooltip
+                        label={
+                          userCanAnalyzeQuery.data?.canAnalyze
+                            ? 'Analizar facturas de esta colección con IA para determinar su deducibilidad y obtener insights adicionales.'
+                            : 'Su cuenta no tiene permisos para analizar esta colección. Contacta al administrador (enmanuelmag@cardor.dev) para más información.'
                         }
-                        leftSection={<Sparkles size={18} />}
-                        variant="light"
-                        onClick={() => setAnalyzeModal({ opened: true })}
+                        openDelay={
+                          userCanAnalyzeQuery.data?.canAnalyze ? 1000 : 0
+                        }
                       >
-                        Analizar Colección
-                      </Button>
+                        <Button
+                          color="violet"
+                          disabled={
+                            !collectionQuery.data ||
+                            collectionQuery.data.bills.length === 0 ||
+                            !userCanAnalyzeQuery.data?.canAnalyze
+                          }
+                          leftSection={<Sparkles size={18} />}
+                          variant="light"
+                          onClick={() => setAnalyzeModal({ opened: true })}
+                        >
+                          Analizar Colección
+                        </Button>
+                      </Tooltip>
                       <Button
                         leftSection={<EyeIcon size={18} />}
                         variant="subtle"
