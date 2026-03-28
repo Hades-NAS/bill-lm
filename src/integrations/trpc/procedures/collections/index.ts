@@ -11,6 +11,7 @@ import {
   UpdateCollectionSchema,
 } from '#/schema/collections'
 
+
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
@@ -22,10 +23,52 @@ import { privateProcedure } from '../../init'
 import { checkAndCreateUser } from '../../middleware/auth'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
+import type { AuthType } from '#/schema/auth';
 import type { AnalyzeJobData } from '#/schema/collections'
+import type { WhitelistConfig } from '#/schema/config'
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
 
 const logger = getServiceLogger('Collections')
+
+
+const checkUserCanAnalyzeCollection = async (user: AuthType) => {
+  const { userId, primaryEmail } = user
+
+  const whitelistSnap = await adminDb.collection(FireCollections.CONFIG_COLLECTION).doc("whitelist").get()
+
+  if (!whitelistSnap.exists) {
+    logger.warn('No whitelist config found in Firebase, denying access to analyze collection', {
+      userId,
+    })
+
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Su cuenta no tiene permiso para realizar esta acción',
+    })
+  } else {
+    const whitelistConfig = whitelistSnap.data() as WhitelistConfig
+
+    if (primaryEmail && whitelistConfig.enabled && !whitelistConfig.allowedEmails.includes(primaryEmail)) {
+      logger.warn('User email not in whitelist, denying access to analyze collection', {
+        userId,
+        email: primaryEmail,
+      })
+
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Su cuenta no tiene permiso para realizar esta acción',
+      })
+    } else {
+      logger.info('User passed whitelist check for analyzing collection', {
+        userId,
+        email: primaryEmail,
+      })
+    }
+  }
+
+  return true
+}
+
 
 export const collectionsRouter = {
   list: privateProcedure
@@ -226,6 +269,7 @@ export const collectionsRouter = {
     }),
   analyze: privateProcedure
     .input(WithAuthSchema(AnalyzeCollectionRequestSchema))
+    .use(({ input, next }) => checkAndCreateUser({ auth: input.auth, next }))
     .mutation(async ({ input }) => {
       const { auth, data } = input
 
@@ -244,6 +288,8 @@ export const collectionsRouter = {
         userId: auth.userId,
         collectionId: data.collectionId,
       })
+
+
 
       const { type, billIds } = data
 
@@ -371,6 +417,31 @@ export const collectionsRouter = {
         collectionName: collection.name,
       }
     }),
+
+  checkUserCanAnalyze: privateProcedure
+    .input(WithAuthSchema(z.object().optional()))
+    .query(async ({ input }) => {
+      const { auth } = input
+
+      if (!auth.userId) {
+        logger.warn('Unauthorized access attempt to check analyze permission', {
+          auth,
+        })
+
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'User ID is required for collections procedures',
+        })
+
+      }
+
+      const result = await checkUserCanAnalyzeCollection(auth)
+
+      return {
+        canAnalyze: result,
+      }
+    }),
+
   markAsRead: privateProcedure
     .input(WithAuthSchema(z.object({}).optional()))
     .mutation(async () => {
