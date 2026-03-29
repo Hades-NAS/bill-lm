@@ -112,19 +112,19 @@ function CollectionsListPage() {
           </Button>
         </Group>
 
-        <QuickFilter
+        {/* <QuickFilter
           fields={filterFields}
           filter={filter}
           onSearch={(value) => setFilter(value)}
-        >
-          {isSuccessWithData && collectionQuery.isSuccess && (
-            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
-              {collectionQuery.data.map((collection) => (
-                <CollectionCard data={collection} key={collection.id} />
-              ))}
-            </SimpleGrid>
-          )}
-        </QuickFilter>
+        > */}
+        {isSuccessWithData && collectionQuery.isSuccess && (
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+            {collectionQuery.data.map((collection) => (
+              <CollectionCard data={collection} key={collection.id} />
+            ))}
+          </SimpleGrid>
+        )}
+        {/* </QuickFilter> */}
 
         {isError && (
           <EmptyState>
