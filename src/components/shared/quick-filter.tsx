@@ -1,5 +1,4 @@
 import {
-  Group,
   Select,
   TextInput,
   Button,
@@ -7,6 +6,7 @@ import {
   RangeSlider,
   NumberInput,
   ActionIcon,
+  Flex,
 } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
 import { CalendarIcon, XCircle } from 'lucide-react'
@@ -196,10 +196,10 @@ function DateRangeInput({
 }
 
 const conditionOptions: SelectProps['data'] = [
-  { value: '>', label: 'Mayor que (>)' },
-  { value: '>=', label: 'Mayor o igual (>=)' },
-  { value: '<', label: 'Menor que (<)' },
-  { value: '<=', label: 'Menor o igual (<=)' },
+  { value: '>', label: 'Mayor que' },
+  { value: '>=', label: 'Mayor o igual que' },
+  { value: '<', label: 'Menor que' },
+  { value: '<=', label: 'Menor o igual que' },
 ]
 
 const defaultFilter: FilterFormValues = {
@@ -277,7 +277,7 @@ export function QuickFilter({
       }}
     >
       <Stack gap={16}>
-        <Group>
+        <Flex align="center" gap={12} pos="relative">
           <Select
             allowDeselect={false}
             data={fields.map((f) => ({ value: f.name, label: f.label }))}
@@ -296,7 +296,7 @@ export function QuickFilter({
           >
             Buscar
           </Button>
-        </Group>
+        </Flex>
 
         {children}
       </Stack>
@@ -474,14 +474,13 @@ export function QuickFilter({
 
       case 'threshold':
         return (
-          <Group gap={12}>
+          <Flex align="center" flex={1} gap={12} pos="relative" w="100%">
             <form.AppField
               children={(field) => (
                 <Select
                   data={conditionOptions}
                   placeholder="Condición"
                   value={field.state.value}
-                  w={150}
                   onChange={(val) =>
                     field.handleChange(val as ConditionOperator)
                   }
@@ -514,15 +513,15 @@ export function QuickFilter({
                   step={selectedField.step}
                   type="number"
                   value={field.state.value}
-                  w={150}
+                  w="100%"
                   onChange={(e) =>
-                    field.handleChange(parseFloat(e.currentTarget.value) || 0)
+                    field.handleChange(parseFloat(e.currentTarget.value))
                   }
                 />
               )}
               name="thresholdValue"
             />
-          </Group>
+          </Flex>
         )
 
       default:
