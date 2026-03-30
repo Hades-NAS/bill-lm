@@ -48,17 +48,6 @@ const filterFields: Array<FilterField> = [
     clearable: true,
     // defaultValue: DateTime.now().year,
   },
-  // {
-  //   name: 'createdAt',
-  //   label: 'Fecha de creación',
-  //   type: 'dateRange',
-  //   placeholder: 'Buscar por fecha de creación',
-  //   clearable: true,
-  //   // defaultValue: [
-  //   //   DateTime.now().minus({ months: 1 }).toJSDate(),
-  //   //   DateTime.now().toJSDate(),
-  //   // ],
-  // },
 ]
 
 export const Route = createFileRoute('/(private)/collections/')({

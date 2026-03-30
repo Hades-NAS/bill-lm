@@ -60,8 +60,10 @@ import ConfModal from '#/components/shared/conf-modal'
 import { EmptyState } from '#/components/shared/empty-state'
 import Input from '#/components/shared/input'
 import { NumberDisplay } from '#/components/shared/number-display'
+import { QuickFilter } from '#/components/shared/quick-filter'
 import TextWithIcon from '#/components/shared/text-icon'
 
+import type { FilterValue, FilterField } from '#/components/shared/quick-filter'
 import type { LLMPreset } from '#/config/llm-config'
 import type { CollectionBaseType } from '#/integrations/trpc/procedures/bills'
 import type { AnalyzeCollectionRequest } from '#/schema/collections'
@@ -71,12 +73,36 @@ export const Route = createFileRoute('/(private)/collections/$id')({
   component: CollectionDetailPage,
 })
 
+const filterFields: Array<FilterField> = [
+  {
+    name: 'name',
+    label: 'Nombre',
+    type: 'text',
+    placeholder: 'Buscar por nombre',
+    clearable: true,
+  },
+  {
+    name: 'percentage',
+    label: 'Porcentaje',
+    type: 'threshold',
+    placeholder: 'Buscar por porcentaje',
+    clearable: true,
+    // defaultValue: DateTime.now().year,
+  },
+]
+
 function CollectionDetailPage() {
   const { id: collectionId } = Route.useParams()
 
   const modalInstId = React.useRef(`collection-detail-${collectionId}`)
 
   const auth = useUserAuth()
+
+  const [filter, setFilter] = React.useState<FilterValue>({
+    field: 'name',
+    type: 'text',
+    value: '',
+  })
 
   const [billModal, setBillModal] = useModal<string>(collectionId)
 
@@ -144,7 +170,7 @@ function CollectionDetailPage() {
 
   const rowsMemo = React.useMemo(
     () => renderRows(),
-    [collectionQuery.data?.bills, selectedRows],
+    [collectionQuery.data?.bills, selectedRows, filter],
   )
 
   return (
@@ -370,7 +396,7 @@ function CollectionDetailPage() {
                         {collectionQuery.data?.description || 'Sin descripción'}
                       </Text>
 
-                      <TextWithIcon>
+                      {/* <TextWithIcon>
                         <TextWithIcon.Icon c="violet.5" size="xs">
                           <Calendar />
                         </TextWithIcon.Icon>
@@ -379,7 +405,7 @@ function CollectionDetailPage() {
                             collectionQuery.data?.createdAt || new Date(),
                           ).toLocaleString(DateTime.DATE_MED)}
                         </TextWithIcon.Text>
-                      </TextWithIcon>
+                      </TextWithIcon> */}
                     </Box>
                   </Skeleton>
 
@@ -491,61 +517,75 @@ function CollectionDetailPage() {
                   </Box>
 
                   <Skeleton visible={isLoading || isLoadingOrRefetch}>
-                    <Table.ScrollContainer
-                      maxHeight={height * 0.5}
-                      minWidth={700}
-                      px={0}
+                    <QuickFilter
+                      fields={filterFields}
+                      filter={filter}
+                      onSearch={(value) => {
+                        if (isLoading || isLoadingOrRefetch) return
+
+                        if (selectedRows.length > 0) {
+                          handlerSelectRows.setState([])
+                        }
+
+                        setFilter(value)
+                      }}
                     >
-                      <Table highlightOnHover striped px={0}>
-                        <Table.Thead>
-                          <Table.Tr>
-                            <Table.Th w="3%">
-                              <Checkbox
-                                aria-label="Select all rows"
-                                checked={
-                                  collectionQuery.data &&
-                                  collectionQuery.data.bills.length > 0 &&
-                                  selectedRows.length ===
-                                    collectionQuery.data.bills.length
-                                }
-                                indeterminate={
-                                  selectedRows.length > 0 &&
-                                  collectionQuery.data &&
-                                  selectedRows.length <
-                                    collectionQuery.data.bills.length
-                                }
-                                onChange={(event) => {
-                                  if (!collectionQuery.data) return
-
-                                  const checked = event.currentTarget.checked
-
-                                  if (checked) {
-                                    handlerSelectRows.setState(
-                                      collectionQuery.data.bills.map(
-                                        (b) => b.id,
-                                      ),
-                                    )
-                                  } else {
-                                    handlerSelectRows.setState([])
+                      <Table.ScrollContainer
+                        maxHeight={height * 0.5}
+                        minWidth={700}
+                        px={0}
+                      >
+                        <Table highlightOnHover striped px={0}>
+                          <Table.Thead>
+                            <Table.Tr>
+                              <Table.Th w="3%">
+                                <Checkbox
+                                  aria-label="Select all rows"
+                                  checked={
+                                    collectionQuery.data &&
+                                    collectionQuery.data.bills.length > 0 &&
+                                    selectedRows.length ===
+                                      collectionQuery.data.bills.length
                                   }
-                                }}
-                              />
-                            </Table.Th>
-                            <Table.Th w="12%">Archivo</Table.Th>
-                            <Table.Th w="10%">Secuencial</Table.Th>
-                            <Table.Th w="11%">Tipo</Table.Th>
-                            <Table.Th w="10%">Fecha</Table.Th>
-                            <Table.Th w="8%">Subtotal</Table.Th>
-                            <Table.Th w="8%">Impuestos</Table.Th>
-                            <Table.Th w="8%">Total</Table.Th>
-                            <Table.Th w="10%">Deducibilidad</Table.Th>
-                            <Table.Th>Razonamiento</Table.Th>
-                            <Table.Th w="8%" />
-                          </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>{rowsMemo}</Table.Tbody>
-                      </Table>
-                    </Table.ScrollContainer>
+                                  indeterminate={
+                                    selectedRows.length > 0 &&
+                                    collectionQuery.data &&
+                                    selectedRows.length <
+                                      collectionQuery.data.bills.length
+                                  }
+                                  onChange={(event) => {
+                                    if (!collectionQuery.data) return
+
+                                    const checked = event.currentTarget.checked
+
+                                    if (checked) {
+                                      handlerSelectRows.setState(
+                                        collectionQuery.data.bills.map(
+                                          (b) => b.id,
+                                        ),
+                                      )
+                                    } else {
+                                      handlerSelectRows.setState([])
+                                    }
+                                  }}
+                                />
+                              </Table.Th>
+                              <Table.Th w="12%">Archivo</Table.Th>
+                              <Table.Th w="10%">Secuencial</Table.Th>
+                              <Table.Th w="11%">Tipo</Table.Th>
+                              <Table.Th w="10%">Fecha</Table.Th>
+                              <Table.Th w="8%">Subtotal</Table.Th>
+                              <Table.Th w="8%">Impuestos</Table.Th>
+                              <Table.Th w="8%">Total</Table.Th>
+                              <Table.Th w="10%">Deducibilidad</Table.Th>
+                              <Table.Th>Razonamiento</Table.Th>
+                              <Table.Th w="8%" />
+                            </Table.Tr>
+                          </Table.Thead>
+                          <Table.Tbody>{rowsMemo}</Table.Tbody>
+                        </Table>
+                      </Table.ScrollContainer>
+                    </QuickFilter>
                   </Skeleton>
                 </Card>
               </Box>
@@ -572,7 +612,40 @@ function CollectionDetailPage() {
   }
 
   function renderRows() {
-    const bills = collectionQuery.data?.bills || []
+    let bills = collectionQuery.data?.bills || []
+
+    if (filter.field && filter.value) {
+      bills = bills.filter((bill) => {
+        const fieldValue = bill[filter.field as keyof typeof bill]
+
+        if (filter.type === 'text' && typeof fieldValue === 'string') {
+          return fieldValue
+            .toLowerCase()
+            .includes(String(filter.value).toLowerCase())
+        }
+
+        if (filter.type === 'number' && typeof fieldValue === 'number') {
+          return fieldValue === Number(filter.value)
+        }
+
+        if (filter.type === 'threshold' && typeof fieldValue === 'number') {
+          switch (filter.condition) {
+            case '>':
+              return fieldValue > filter.value
+            case '>=':
+              return fieldValue >= filter.value
+            case '<':
+              return fieldValue < filter.value
+            case '<=':
+              return fieldValue <= filter.value
+            default:
+              return false
+          }
+        }
+
+        return false
+      })
+    }
 
     if (bills.length === 0) {
       return (
@@ -722,11 +795,13 @@ function CollectionDetailPage() {
       children: (
         <Flex direction="column" gap="md">
           <Text c="gray.7" size="md">
-            Estas son las instrucciones que el agente, en conjunto con las
-            últimas normativas fiscales, utiliza para analizar tus facturas.
-            Puedes editarlas para agregar información adicional que consideres
-            relevante para el análisis de tus facturas, como por ejemplo, el
-            tipo de actividad económica de tu empresa.
+            Estas son las instrucciones que el agente, usará como referencia
+            para facturas que sea de tipo{' '}
+            <Text component="span" fw="bold">
+              profesional
+            </Text>
+            . Puedes especificar los detalles de la actividad profesional y que
+            compras o gastos serían deducibles
           </Text>
           <Textarea autosize readOnly maxRows={100} size="md" variant="filled">
             {collectionQuery.data?.instructions ||
