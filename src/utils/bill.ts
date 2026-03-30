@@ -30,7 +30,7 @@ export const getColorPercentage = (percentage: number | null) => {
     return 'gray'
   } else if (percentage < 50) {
     return 'red'
-  } else if (percentage < 100) {
+  } else if (percentage < 80) {
     return 'yellow'
   } else {
     return 'green'
