@@ -11,7 +11,6 @@ import {
 import { useLocalStorage } from '@mantine/hooks'
 import { createFileRoute } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
-import { DateTime } from 'luxon'
 
 import {
   isEmptyArrayQuery,
@@ -39,41 +38,49 @@ const filterFields: Array<FilterField> = [
     label: 'Nombre',
     type: 'text',
     placeholder: 'Buscar por nombre',
+    clearable: true,
   },
   {
     name: 'year',
     label: 'Año',
     type: 'number',
     placeholder: 'Buscar por año',
-    defaultValue: DateTime.now().year,
+    clearable: true,
+    // defaultValue: DateTime.now().year,
   },
-  {
-    name: 'createdAt',
-    label: 'Fecha de creación',
-    type: 'dateRange',
-    placeholder: 'Buscar por fecha de creación',
-    defaultValue: [
-      DateTime.now().minus({ months: 1 }).toJSDate(),
-      DateTime.now().toJSDate(),
-    ],
-  },
+  // {
+  //   name: 'createdAt',
+  //   label: 'Fecha de creación',
+  //   type: 'dateRange',
+  //   placeholder: 'Buscar por fecha de creación',
+  //   clearable: true,
+  //   // defaultValue: [
+  //   //   DateTime.now().minus({ months: 1 }).toJSDate(),
+  //   //   DateTime.now().toJSDate(),
+  //   // ],
+  // },
 ]
 
 export const Route = createFileRoute('/(private)/collections/')({
   component: CollectionsListPage,
 })
 
+const defaultFilter: FilterValue = {
+  field: 'name',
+  type: 'text',
+  value: '',
+}
+
 function CollectionsListPage() {
   const [modalCollectionForm, setCollectionForm] =
     useModal<CollectionBaseType>()
 
   const [filter, setFilter] = useLocalStorage<FilterValue>({
-    key: 'collections-list-filter-value',
-    defaultValue: {
-      field: 'name',
-      type: 'text',
-      value: '',
-    },
+    key: 'collections-list-filter-value-v2',
+    defaultValue: defaultFilter,
+    deserialize: (str) =>
+      str ? (JSON.parse(str) as FilterValue) : defaultFilter,
+    serialize: JSON.stringify,
   })
 
   const collectionQuery = useGetCollectionsQuery({
@@ -112,19 +119,20 @@ function CollectionsListPage() {
           </Button>
         </Group>
 
-        {/* <QuickFilter
+        <QuickFilter
           fields={filterFields}
           filter={filter}
+          loading={isLoading}
           onSearch={(value) => setFilter(value)}
-        > */}
-        {isSuccessWithData && collectionQuery.isSuccess && (
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
-            {collectionQuery.data.map((collection) => (
-              <CollectionCard data={collection} key={collection.id} />
-            ))}
-          </SimpleGrid>
-        )}
-        {/* </QuickFilter> */}
+        >
+          {isSuccessWithData && collectionQuery.isSuccess && (
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={24}>
+              {collectionQuery.data.map((collection) => (
+                <CollectionCard data={collection} key={collection.id} />
+              ))}
+            </SimpleGrid>
+          )}
+        </QuickFilter>
 
         {isError && (
           <EmptyState>
