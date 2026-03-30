@@ -6,12 +6,18 @@ import {
   Stack,
   RangeSlider,
   NumberInput,
+  ActionIcon,
 } from '@mantine/core'
 import { DatePickerInput } from '@mantine/dates'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, XCircle } from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
 
+import { FilterFormSchema } from '#/schema/quick-filter'
+
+import { useAppForm } from '#/hooks/app-form'
+
+import type { FilterFormValues } from '#/schema/quick-filter'
 import type { SelectProps } from '@mantine/core'
 
 type FilterFieldType =
@@ -29,6 +35,7 @@ interface BaseFilterField {
   type: FilterFieldType
   defaultValue?: any
   placeholder?: string
+  clearable?: boolean
 }
 
 interface TextFilterField extends BaseFilterField {
@@ -109,6 +116,7 @@ export type FilterValue =
   | ThresholdFilterValue
 
 interface QuickFilterProps {
+  loading?: boolean
   filter?: FilterValue | null
   fields: Array<FilterField>
   onSearch: (filter: FilterValue) => void
@@ -126,6 +134,7 @@ function NumberRangeInput({
   onChange: (val: [number, number]) => void
   defaultValue?: [number, number]
   placeholder?: string
+  rightSection?: React.ReactNode
 }) {
   return (
     <RangeSlider
@@ -157,18 +166,19 @@ function DateRangeInput({
   onChange,
   defaultValue,
   placeholder,
+  rightSection,
 }: {
   value: [Date | null, Date | null]
   onChange: (val: [Date | null, Date | null]) => void
   defaultValue?: [Date, Date]
   placeholder?: string
+  rightSection?: React.ReactNode
 }) {
   return (
     <DatePickerInput
-      clearable
       defaultValue={defaultValue}
       placeholder={placeholder || 'Selecciona un rango de fechas'}
-      rightSection={<CalendarIcon size={16} />}
+      rightSection={rightSection || <CalendarIcon size={16} />}
       type="range"
       value={value}
       w={300}
@@ -185,47 +195,20 @@ function DateRangeInput({
   )
 }
 
-function ThresholdInput({
-  field,
-  value,
-  onChange,
-  condition,
-  onConditionChange,
-}: {
-  field: ThresholdFilterField
-  value: number
-  onChange: (val: number) => void
-  condition: ConditionOperator
-  onConditionChange: (val: ConditionOperator) => void
-}) {
-  const conditionOptions: SelectProps['data'] = [
-    { value: '>', label: 'Mayor que (>)' },
-    { value: '>=', label: 'Mayor o igual (>=)' },
-    { value: '<', label: 'Menor que (<)' },
-    { value: '<=', label: 'Menor o igual (<=)' },
-  ]
+const conditionOptions: SelectProps['data'] = [
+  { value: '>', label: 'Mayor que (>)' },
+  { value: '>=', label: 'Mayor o igual (>=)' },
+  { value: '<', label: 'Menor que (<)' },
+  { value: '<=', label: 'Menor o igual (<=)' },
+]
 
-  return (
-    <Group gap={12}>
-      <Select
-        data={conditionOptions}
-        placeholder="Condición"
-        value={condition}
-        w={150}
-        onChange={(val) => onConditionChange(val as ConditionOperator)}
-      />
-      <TextInput
-        max={field.max}
-        min={field.min}
-        placeholder="Valor"
-        step={field.step}
-        type="number"
-        value={value}
-        w={150}
-        onChange={(e) => onChange(parseFloat(e.currentTarget.value) || 0)}
-      />
-    </Group>
-  )
+const defaultFilter: FilterFormValues = {
+  textValue: '',
+  numberValue: null,
+  dateRangeValue: [null, null],
+  numberRangeValue: [0, 100],
+  thresholdValue: 0,
+  thresholdCondition: '>=',
 }
 
 export function QuickFilter({
@@ -233,29 +216,29 @@ export function QuickFilter({
   fields,
   onSearch,
   children,
+  loading,
 }: QuickFilterProps) {
   const [selectedFieldName, setSelectedFieldName] = React.useState<
     string | null
   >(fields[0]?.name ?? null)
 
-  const [textValue, setTextValue] = React.useState('')
-
-  const [numberValue, setNumberValue] = React.useState<number | null>(null)
-
-  const [numberRangeValue, setNumberRangeValue] = React.useState<
-    [number, number]
-  >([0, 100])
-
-  const [dateRangeValue, setDateRangeValue] = React.useState<
-    [Date | null, Date | null]
-  >([null, null])
-
-  const [thresholdValue, setThresholdValue] = React.useState(0)
-
-  const [thresholdCondition, setThresholdCondition] =
-    React.useState<ConditionOperator>('>=')
-
   const selectedField = fields.find((f) => f.name === selectedFieldName)
+
+  const form = useAppForm({
+    defaultValues: defaultFilter,
+    validators: {
+      onSubmit: FilterFormSchema,
+    },
+    onSubmit: ({ value }) => {
+      handleSearch(value)
+      form.reset(value, {
+        keepDefaultValues: true,
+      })
+    },
+    onSubmitInvalid: ({ formApi }) => {
+      console.error('Invalid filter form values:', formApi.getAllErrors())
+    },
+  })
 
   React.useLayoutEffect(() => {
     if (!filter) return
@@ -264,49 +247,63 @@ export function QuickFilter({
 
     switch (filter.type) {
       case 'text':
-        setTextValue(filter.value)
+        form.setFieldValue('textValue', filter.value)
         break
 
       case 'number':
-        setNumberValue(filter.value)
+        form.setFieldValue('numberValue', filter.value)
         break
 
       case 'numberRange':
-        setNumberRangeValue(filter.value)
+        form.setFieldValue('numberRangeValue', filter.value)
         break
 
       case 'dateRange':
-        setDateRangeValue(filter.value)
+        form.setFieldValue('dateRangeValue', filter.value)
         break
 
       case 'threshold':
-        setThresholdValue(filter.value)
-        setThresholdCondition(filter.condition)
+        form.setFieldValue('thresholdValue', filter.value)
+        form.setFieldValue('thresholdCondition', filter.condition)
         break
     }
   }, [filter])
 
   return (
-    <Stack gap={16}>
-      <Group>
-        <Select
-          data={fields.map((f) => ({ value: f.name, label: f.label }))}
-          placeholder="Selecciona un campo"
-          value={selectedFieldName}
-          w={200}
-          onChange={setSelectedFieldName}
-        />
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        form.handleSubmit()
+      }}
+    >
+      <Stack gap={16}>
+        <Group>
+          <Select
+            allowDeselect={false}
+            data={fields.map((f) => ({ value: f.name, label: f.label }))}
+            placeholder="Selecciona un campo"
+            value={selectedFieldName}
+            w={200}
+            onChange={setSelectedFieldName}
+          />
 
-        {renderFilterInput()}
+          {renderFilterInput()}
 
-        <Button onClick={handleSearch}>Buscar</Button>
-      </Group>
+          <Button
+            disabled={!selectedFieldName || loading}
+            loading={loading}
+            type="submit"
+          >
+            Buscar
+          </Button>
+        </Group>
 
-      {children}
-    </Stack>
+        {children}
+      </Stack>
+    </form>
   )
 
-  function handleSearch() {
+  function handleSearch(values: FilterFormValues) {
     if (!selectedField) return
 
     try {
@@ -315,7 +312,7 @@ export function QuickFilter({
           onSearch({
             field: selectedField.name,
             type: 'text',
-            value: textValue,
+            value: values.textValue,
           } as TextFilterValue)
           break
 
@@ -323,7 +320,7 @@ export function QuickFilter({
           onSearch({
             field: selectedField.name,
             type: 'number',
-            value: numberValue,
+            value: values.numberValue,
           } as NumberFilterValue)
           break
 
@@ -331,26 +328,24 @@ export function QuickFilter({
           onSearch({
             field: selectedField.name,
             type: 'numberRange',
-            value: numberRangeValue,
+            value: values.numberRangeValue,
           } as NumberRangeFilterValue)
           break
 
         case 'dateRange':
-          if (dateRangeValue[0] && dateRangeValue[1]) {
-            onSearch({
-              field: selectedField.name,
-              type: 'dateRange',
-              value: dateRangeValue as [Date, Date],
-            } as DateRangeFilterValue)
-          }
+          onSearch({
+            field: selectedField.name,
+            type: 'dateRange',
+            value: values.dateRangeValue as [Date, Date],
+          } as DateRangeFilterValue)
           break
 
         case 'threshold':
           onSearch({
             field: selectedField.name,
             type: 'threshold',
-            condition: thresholdCondition,
-            value: thresholdValue,
+            condition: values.thresholdCondition,
+            value: values.thresholdValue,
           } as ThresholdFilterValue)
           break
       }
@@ -365,56 +360,169 @@ export function QuickFilter({
     switch (selectedField.type) {
       case 'text':
         return (
-          <TextInput
-            defaultValue={selectedField.defaultValue}
-            flex={1}
-            placeholder={selectedField.placeholder || 'Escriba un texto...'}
-            value={textValue}
-            onChange={(e) => setTextValue(e.currentTarget.value)}
+          <form.AppField
+            children={(field) => (
+              <TextInput
+                defaultValue={selectedField.defaultValue}
+                flex={1}
+                placeholder={selectedField.placeholder || 'Escriba un texto...'}
+                rightSection={
+                  field.state.value &&
+                  selectedField.clearable && (
+                    <ActionIcon
+                      color="gray"
+                      size="xs"
+                      variant="transparent"
+                      onClick={() => {
+                        field.handleChange('')
+                        form.handleSubmit()
+                      }}
+                    >
+                      <XCircle size={16} />
+                    </ActionIcon>
+                  )
+                }
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.currentTarget.value)}
+              />
+            )}
+            name="textValue"
           />
         )
 
       case 'number':
         return (
-          <NumberInput
-            defaultValue={selectedField.defaultValue}
-            flex={1}
-            placeholder={selectedField.placeholder || 'Escriba un número...'}
-            value={numberValue || undefined}
-            onChange={(value) => setNumberValue(Number(value))}
+          <form.AppField
+            children={(field) => (
+              <NumberInput
+                defaultValue={selectedField.defaultValue}
+                flex={1}
+                placeholder={
+                  selectedField.placeholder || 'Escriba un número...'
+                }
+                rightSection={
+                  field.state.value !== null &&
+                  selectedField.clearable && (
+                    <ActionIcon
+                      color="gray"
+                      size="xs"
+                      variant="transparent"
+                      onClick={() => {
+                        field.handleChange(null)
+                        form.handleSubmit()
+                      }}
+                    >
+                      <XCircle size={16} />
+                    </ActionIcon>
+                  )
+                }
+                value={field.state.value || undefined}
+                onChange={(e) => field.handleChange(Number(e))}
+              />
+            )}
+            name="numberValue"
           />
         )
 
       case 'numberRange':
         return (
-          <NumberRangeInput
-            field={selectedField}
-            value={numberRangeValue}
-            onChange={setNumberRangeValue}
+          <form.AppField
+            children={(field) => (
+              <NumberRangeInput
+                field={selectedField}
+                value={field.state.value}
+                onChange={(val) => field.handleChange(val)}
+              />
+            )}
+            name="numberRangeValue"
           />
         )
 
       case 'dateRange':
         return (
-          <DateRangeInput
-            defaultValue={selectedField.defaultValue}
-            placeholder={
-              selectedField.placeholder || 'Selecciona un rango de fechas'
-            }
-            value={dateRangeValue}
-            onChange={setDateRangeValue}
+          <form.AppField
+            children={(field) => (
+              <DateRangeInput
+                defaultValue={selectedField.defaultValue}
+                placeholder={
+                  selectedField.placeholder || 'Selecciona un rango de fechas'
+                }
+                rightSection={
+                  field.state.value[0] &&
+                  field.state.value[1] &&
+                  selectedField.clearable && (
+                    <ActionIcon
+                      color="gray"
+                      size="xs"
+                      variant="transparent"
+                      onClick={() => {
+                        field.handleChange([null, null])
+                        form.handleSubmit()
+                      }}
+                    >
+                      <XCircle size={16} />
+                    </ActionIcon>
+                  )
+                }
+                value={field.state.value}
+                onChange={(val) => field.handleChange(val)}
+              />
+            )}
+            name="dateRangeValue"
           />
         )
 
       case 'threshold':
         return (
-          <ThresholdInput
-            condition={thresholdCondition}
-            field={selectedField}
-            value={thresholdValue}
-            onChange={setThresholdValue}
-            onConditionChange={setThresholdCondition}
-          />
+          <Group gap={12}>
+            <form.AppField
+              children={(field) => (
+                <Select
+                  data={conditionOptions}
+                  placeholder="Condición"
+                  value={field.state.value}
+                  w={150}
+                  onChange={(val) =>
+                    field.handleChange(val as ConditionOperator)
+                  }
+                />
+              )}
+              name="thresholdCondition"
+            />
+            <form.AppField
+              children={(field) => (
+                <TextInput
+                  max={selectedField.max}
+                  min={selectedField.min}
+                  placeholder="Valor"
+                  rightSection={
+                    field.state.value &&
+                    selectedField.clearable && (
+                      <ActionIcon
+                        color="gray"
+                        size="xs"
+                        variant="transparent"
+                        onClick={() => {
+                          field.handleChange(0)
+                          form.handleSubmit()
+                        }}
+                      >
+                        <XCircle size={16} />
+                      </ActionIcon>
+                    )
+                  }
+                  step={selectedField.step}
+                  type="number"
+                  value={field.state.value}
+                  w={150}
+                  onChange={(e) =>
+                    field.handleChange(parseFloat(e.currentTarget.value) || 0)
+                  }
+                />
+              )}
+              name="thresholdValue"
+            />
+          </Group>
         )
 
       default:
