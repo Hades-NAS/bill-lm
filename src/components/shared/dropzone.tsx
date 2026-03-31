@@ -58,19 +58,19 @@ export function DropzoneInput(props: Props) {
           </Dropzone.Reject>
           <Dropzone.Idle>
             {rest.disabled && (
-              <ThemeIcon color="gray.5" size={52} variant="transparent">
+              <ThemeIcon color="gray" size={52} variant="transparent">
                 <X size={52} />
               </ThemeIcon>
             )}
             {!rest.disabled && (
-              <ThemeIcon color="gray.5" size={52} variant="transparent">
+              <ThemeIcon color="gray" size={52} variant="transparent">
                 <Image size={52} />
               </ThemeIcon>
             )}
           </Dropzone.Idle>
 
           <div>
-            <Text inline c="gray.7" size="xl">
+            <Text inline c="gray" size="xl">
               Suelta tus archivos XML aquí o haz click para seleccionar
             </Text>
             <Text inline c="dimmed" mt={7} size="sm">

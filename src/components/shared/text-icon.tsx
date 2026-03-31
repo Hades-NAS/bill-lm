@@ -1,10 +1,15 @@
-import { Flex, Text, ThemeIcon } from '@mantine/core'
+import { Flex, Text, ThemeIcon, Tooltip } from '@mantine/core'
 import React from 'react'
 
 import type { TextProps, ThemeIconProps } from '@mantine/core'
 
 type Props = {
   iconPosition?: 'left' | 'right'
+  tooltip?: string
+  openDelay?: number
+  closeDelay?: number
+  maxWidth?: number | string
+  multiLine?: boolean
   children: React.ReactNode | Array<React.ReactNode>
 }
 
@@ -28,11 +33,31 @@ export const TextWithIcon = (props: Props) => {
     )
   })
 
-  if (textChild && iconChild) {
+  const content =
+    iconPosition === 'left' ? [iconChild, textChild] : [textChild, iconChild]
+
+  if (textChild && iconChild && props.tooltip) {
+    return (
+      <Tooltip
+        closeDelay={props.closeDelay}
+        label={props.tooltip}
+        maw={props.maxWidth}
+        multiline={props.multiLine}
+        openDelay={props.openDelay}
+      >
+        <Flex align="center" direction="row" gap={6} justify="flex-start">
+          {content.map((child, index) => (
+            <React.Fragment key={index}>{child}</React.Fragment>
+          ))}
+        </Flex>
+      </Tooltip>
+    )
+  } else if (textChild && iconChild) {
     return (
       <Flex align="center" direction="row" gap={6} justify="flex-start">
-        {iconPosition === 'left' ? iconChild : textChild}
-        {iconPosition === 'left' ? textChild : iconChild}
+        {content.map((child, index) => (
+          <React.Fragment key={index}>{child}</React.Fragment>
+        ))}
       </Flex>
     )
   }
