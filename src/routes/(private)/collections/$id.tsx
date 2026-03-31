@@ -24,10 +24,10 @@ import { modals } from '@mantine/modals'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
-  Calendar,
   ChevronLeft,
   Edit,
   EyeIcon,
+  HelpCircle,
   NotepadText,
   Sparkles,
   Trash2,
@@ -37,11 +37,13 @@ import { DateTime } from 'luxon'
 import React from 'react'
 
 import { getColorBillTargetType, getColorPercentage } from '#/utils/bill'
+import { useIsMobile } from '#/utils/mobile'
 import {
   isLoadingMutation,
   isLoadingOrRefetchQuery,
   isLoadingQuery,
 } from '#/utils/query'
+import { formatRUC } from '#/utils/string'
 
 import { useUserAuth } from '#/hooks/auth'
 import { useModal } from '#/hooks/modal'
@@ -156,11 +158,11 @@ function CollectionDetailPage() {
     },
   })
 
+  const isMobile = useIsMobile()
+
   const isLoading = isLoadingQuery(collectionQuery, userCanAnalyzeQuery)
 
   const isLoadingOrRefetch = isLoadingOrRefetchQuery(collectionQuery)
-
-  const isLoadingCalc = isLoadingOrRefetchQuery(billsCalcQuery)
 
   const isLoadingDelete = isLoadingMutation(deleteBillsMutation)
 
@@ -196,7 +198,15 @@ function CollectionDetailPage() {
       <BillAddForm
         modal
         size="xl"
-        state={billModal}
+        state={{
+          opened: billModal.opened,
+          data: {
+            collectionId: billModal.data || '',
+            personalIdNumber: collectionQuery.data?.personalIdNumber || '',
+            professionalIdNumber:
+              collectionQuery.data?.professionalIdNumber || '',
+          },
+        }}
         onClose={() => {
           setBillModal({ opened: false })
         }}
@@ -370,7 +380,7 @@ function CollectionDetailPage() {
                         </Title>
 
                         <ActionIcon
-                          size="sm"
+                          size="md"
                           variant="subtle"
                           onClick={() => {
                             if (!collectionQuery.data) return
@@ -387,7 +397,7 @@ function CollectionDetailPage() {
                           }}
                         >
                           <Tooltip label="Editar colección">
-                            <Edit />
+                            <Edit size={20} />
                           </Tooltip>
                         </ActionIcon>
                       </Flex>
@@ -395,65 +405,78 @@ function CollectionDetailPage() {
                       <Text c="gray">
                         {collectionQuery.data?.description || 'Sin descripción'}
                       </Text>
-
-                      {/* <TextWithIcon>
-                        <TextWithIcon.Icon c="violet.5" size="xs">
-                          <Calendar />
-                        </TextWithIcon.Icon>
-                        <TextWithIcon.Text c="gray" size="md">
-                          {DateTime.fromJSDate(
-                            collectionQuery.data?.createdAt || new Date(),
-                          ).toLocaleString(DateTime.DATE_MED)}
-                        </TextWithIcon.Text>
-                      </TextWithIcon> */}
                     </Box>
                   </Skeleton>
 
-                  <Skeleton visible={isLoadingCalc || isLoading}>
-                    <Group>
-                      <Badge color="violet">
-                        {billsCalcQuery.data?.analyzed || 0} analizadas
-                      </Badge>
-                      <Badge color="gray">
-                        {billsCalcQuery.data?.pending || 0} pendientes
-                      </Badge>
-                    </Group>
-                  </Skeleton>
-
                   <Skeleton visible={isLoading}>
-                    <Group mt={12}>
-                      <Tooltip
-                        label={
-                          userCanAnalyzeQuery.data?.canAnalyze
-                            ? 'Analizar facturas de esta colección con IA para determinar su deducibilidad y obtener insights adicionales.'
-                            : 'Su cuenta no tiene permisos para analizar esta colección. Contacta al administrador (enmanuelmag@cardor.dev) para más información.'
-                        }
-                        openDelay={
-                          userCanAnalyzeQuery.data?.canAnalyze ? 1000 : 0
-                        }
+                    <Flex
+                      align="baseline"
+                      direction={isMobile ? 'column' : 'row'}
+                      justify={{
+                        xs: 'center',
+                        md: 'space-between',
+                      }}
+                    >
+                      <Flex gap="md">
+                        <Stack gap={4}>
+                          <Text c="gray.6" size="sm">
+                            CED:
+                            <Text component="span" fw={600} ml={4}>
+                              {collectionQuery.data?.personalIdNumber || 'N/A'}
+                            </Text>
+                          </Text>
+                          <Text c="gray.6" size="sm">
+                            RUC:
+                            <Text component="span" fw={600} ml={4}>
+                              {formatRUC(
+                                collectionQuery.data?.professionalIdNumber ||
+                                  'N/A',
+                              )}
+                            </Text>
+                          </Text>
+                        </Stack>
+                      </Flex>
+                      <Flex
+                        align="baseline"
+                        gap="md"
+                        justify="flex-end"
+                        style={{
+                          alignItems: isMobile ? 'center' : 'flex-end',
+                        }}
                       >
                         <Button
-                          color="violet"
-                          disabled={
-                            !collectionQuery.data ||
-                            collectionQuery.data.bills.length === 0 ||
-                            !userCanAnalyzeQuery.data?.canAnalyze
-                          }
-                          leftSection={<Sparkles size={18} />}
-                          variant="light"
-                          onClick={() => setAnalyzeModal({ opened: true })}
+                          leftSection={<EyeIcon size={18} />}
+                          variant="subtle"
+                          onClick={() => seeInstructions()}
                         >
-                          Analizar Colección
+                          Ver Instrucciones
                         </Button>
-                      </Tooltip>
-                      <Button
-                        leftSection={<EyeIcon size={18} />}
-                        variant="subtle"
-                        onClick={() => seeInstructions()}
-                      >
-                        Ver Instrucciones
-                      </Button>
-                    </Group>
+                        <Tooltip
+                          label={
+                            userCanAnalyzeQuery.data?.canAnalyze
+                              ? 'Analizar facturas de esta colección con IA para determinar su deducibilidad y obtener insights adicionales.'
+                              : 'Su cuenta no tiene permisos para analizar esta colección. Contacta al administrador (enmanuelmag@cardor.dev) para más información.'
+                          }
+                          openDelay={
+                            userCanAnalyzeQuery.data?.canAnalyze ? 1000 : 0
+                          }
+                        >
+                          <Button
+                            color="violet"
+                            disabled={
+                              !collectionQuery.data ||
+                              collectionQuery.data.bills.length === 0 ||
+                              !userCanAnalyzeQuery.data?.canAnalyze
+                            }
+                            leftSection={<Sparkles size={18} />}
+                            variant="light"
+                            onClick={() => setAnalyzeModal({ opened: true })}
+                          >
+                            Analizar Colección
+                          </Button>
+                        </Tooltip>
+                      </Flex>
+                    </Flex>
                   </Skeleton>
                 </Stack>
               </Card>
@@ -461,6 +484,7 @@ function CollectionDetailPage() {
               <Box>
                 <Card withBorder padding="md" radius="md" shadow="sm">
                   <Flex
+                    align="flex-start"
                     direction={{
                       md: 'row',
                       xs: 'column',
@@ -471,7 +495,17 @@ function CollectionDetailPage() {
                     }}
                     mih={52}
                   >
-                    <Title order={2}>Facturas</Title>
+                    <Stack gap={8}>
+                      <Title order={2}>Facturas</Title>
+                      <Group>
+                        <Badge color="violet">
+                          {billsCalcQuery.data?.analyzed || 0} analizadas
+                        </Badge>
+                        <Badge color="gray">
+                          {billsCalcQuery.data?.pending || 0} pendientes
+                        </Badge>
+                      </Group>
+                    </Stack>
                     <Group>
                       {selectedRows.length > 0 && (
                         <Button
@@ -501,20 +535,25 @@ function CollectionDetailPage() {
                     </Group>
                   </Flex>
 
-                  <Box mb="xs">
-                    {selectedRows.length > 0 && (
-                      <Text c="dimmed">
-                        {selectedRows.length} factura(s) seleccionada(s)
-                      </Text>
-                    )}
-                    {selectedRows.length === 0 &&
-                      collectionQuery.data?.bills &&
-                      collectionQuery.data.bills.length > 0 && (
-                        <Text c="dimmed">
-                          Selecciona una factura para ver opciones adicionales
-                        </Text>
-                      )}
-                  </Box>
+                  <Flex justify="space-between" my="sm">
+                    <Flex mb="xs">
+                      <Box>
+                        {selectedRows.length > 0 && (
+                          <Text c="dimmed">
+                            {selectedRows.length} factura(s) seleccionada(s)
+                          </Text>
+                        )}
+                        {selectedRows.length === 0 &&
+                          collectionQuery.data?.bills &&
+                          collectionQuery.data.bills.length > 0 && (
+                            <Text c="dimmed">
+                              Selecciona una factura para ver opciones
+                              adicionales
+                            </Text>
+                          )}
+                      </Box>
+                    </Flex>
+                  </Flex>
 
                   <Skeleton visible={isLoading || isLoadingOrRefetch}>
                     <QuickFilter
@@ -577,7 +616,30 @@ function CollectionDetailPage() {
                               <Table.Th w="8%">Subtotal</Table.Th>
                               <Table.Th w="8%">Impuestos</Table.Th>
                               <Table.Th w="8%">Total</Table.Th>
-                              <Table.Th w="10%">Deducibilidad</Table.Th>
+                              <Table.Th w="10%">
+                                <TextWithIcon
+                                  multiLine
+                                  iconPosition="right"
+                                  maxWidth={400}
+                                  openDelay={500}
+                                  tooltip={
+                                    'Porcentaje de confianza de que esta factura es deducible según el análisis de IA. Un porcentaje más alto indica una mayor confianza en la deducibilidad de la factura.'
+                                  }
+                                >
+                                  <TextWithIcon.Text inherit>
+                                    Porcentaje
+                                  </TextWithIcon.Text>
+                                  <TextWithIcon.Icon
+                                    c="violet"
+                                    size="xs"
+                                    variant="transparent"
+                                  >
+                                    <ThemeIcon size="xs">
+                                      <HelpCircle size={18} />
+                                    </ThemeIcon>
+                                  </TextWithIcon.Icon>
+                                </TextWithIcon>
+                              </Table.Th>
                               <Table.Th>Razonamiento</Table.Th>
                               <Table.Th w="8%" />
                             </Table.Tr>
@@ -794,7 +856,7 @@ function CollectionDetailPage() {
       ),
       children: (
         <Flex direction="column" gap="md">
-          <Text c="gray.7" size="md">
+          <Text size="md">
             Estas son las instrucciones que el agente, usará como referencia
             para facturas que sea de tipo{' '}
             <Text component="span" fw="bold">
