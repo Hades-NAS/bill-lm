@@ -1,4 +1,4 @@
-import { Alert, Box, Flex, Modal, ScrollArea, Text } from '@mantine/core'
+import { Alert, Box, Flex, Modal, Text } from '@mantine/core'
 import { FileWarningIcon } from 'lucide-react'
 import React from 'react'
 
