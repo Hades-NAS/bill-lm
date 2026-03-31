@@ -134,6 +134,8 @@ export const collectionsRouter = {
           name: true,
           description: true,
           instructions: true,
+          personalIdNumber: true,
+          professionalIdNumber: true,
           year: true,
           createdAt: true,
           updatedAt: true,
@@ -179,6 +181,8 @@ export const collectionsRouter = {
           name: data.name,
           description: data.description,
           instructions: data.instructions,
+          personalIdNumber: data.personalIdNumber,
+          professionalIdNumber: data.professionalIdNumber,
           year: data.year,
         },
       })
