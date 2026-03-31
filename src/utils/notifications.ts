@@ -73,9 +73,17 @@ const error = (params: NotificationData) => {
   })
 }
 
+const warn = (params: NotificationData) => {
+  show({
+    ...params,
+    color: 'yellow',
+  })
+}
+
 export const notify = {
   show,
   success,
+  warn,
   error,
   hide,
   clean,
