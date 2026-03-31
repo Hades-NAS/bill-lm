@@ -2,12 +2,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { getContext } from '#/integrations/tanstack-query/root-provider'
 import { useTRPC } from '#/integrations/trpc/react'
+import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
 import { notify } from '#/utils/notifications'
 
 import { invalidateQueriesByKeys } from '../invalidate-utils'
 
+import type { BillFormData } from '#/components/bill/form'
+import type { Factura } from '#/schema/bill'
 import type { MutationOptions } from '#/schema/network'
+import type { FileWithPath } from '@mantine/dropzone'
 
 export const UPDATE_BILLS_INVALIDATION_KEYS = (id: string) => {
   const { trpc } = getContext()
@@ -99,4 +103,93 @@ export const useMarkAsReadMutation = (options: MutationOptions<void> = {}) => {
       },
     }),
   )
+}
+
+type PreprocessBillResult = {
+  bills: Array<FileWithPath>
+  errors: Array<{ file: FileWithPath, error: string }>
+}
+
+export const usePreprocessBillMutation = (params: Partial<BillFormData>, options: MutationOptions<PreprocessBillResult> = {}) => {
+
+  return useMutation({
+    mutationFn: async (bills: Array<FileWithPath>) => {
+      const { personalIdNumber, professionalIdNumber } = params
+
+      const results: PreprocessBillResult = {
+        bills: [],
+        errors: [],
+      }
+
+      if (!personalIdNumber) {
+        notify.error({
+          title: 'Número de cédula requerido',
+          message:
+            'Por favor, proporciona un número de cédula para validar las facturas.',
+        })
+        return results
+      }
+
+      const billsData: Array<{ file: FileWithPath, factura: Factura }> = []
+
+      for (const billFile of bills) {
+        const buffer = await billFile.arrayBuffer()
+        const xmlString = new TextDecoder().decode(buffer)
+        const bill = parseAndValidateInvoiceXML(xmlString)
+
+        if (!bill.success) {
+          console.error('Error parsing bill XML:', bill.error)
+          continue
+        }
+
+        billsData.push({ file: billFile, factura: bill.data.factura })
+      }
+
+      billsData.forEach((bill) => {
+        const idBuyer = bill.factura.infoFactura.identificacionComprador.trim() || ''
+
+        if (idBuyer.length === 10) {
+          if (idBuyer === personalIdNumber) {
+            results.bills.push(bill.file)
+          } else {
+            results.errors.push({
+              file: bill.file,
+              error: `Cédula del comprador (${idBuyer}) no coincide con la proporcionada (${personalIdNumber}).`,
+            })
+          }
+        }
+        if (idBuyer.length === 13) {
+          if (!professionalIdNumber) {
+            results.errors.push({
+              file: bill.file,
+              error: `Factura contiene RUC del comprador (${idBuyer}) pero no se proporcionó un RUC para validar.`,
+            })
+            return
+          }
+
+          if (idBuyer === professionalIdNumber) {
+            results.bills.push(bill.file)
+          } else {
+            results.errors.push({
+              file: bill.file,
+              error: `RUC del comprador (${idBuyer}) no coincide con el proporcionado (${professionalIdNumber}).`,
+            })
+          }
+        }
+      })
+      return results
+    },
+    onSuccess: (data) => {
+      options.onSuccess?.(data)
+    },
+    onError: (error) => {
+      console.error('Error preprocessing bills:', error)
+      options.onError?.(error)
+      notify.error({
+        title: 'Error al procesar facturas',
+        message:
+          'Ocurrió un error al procesar tus facturas. Por favor, intenta de nuevo.',
+      })
+    },
+  })
 }
