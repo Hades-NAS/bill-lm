@@ -3,6 +3,8 @@ import React from 'react'
 
 import { AddBillToCollectionSchema } from '#/schema/collections'
 
+import { parseAndValidateInvoiceXML } from '#/integrations/xml'
+
 import { filesToBase64 } from '#/utils/file'
 import { useIsMobile } from '#/utils/mobile'
 import { notify } from '#/utils/notifications'
@@ -15,22 +17,30 @@ import { useUploadBillsMutation } from '#/hooks/mutation/bill'
 import ConfModal from '#/components/shared/conf-modal'
 import { DropzoneInput } from '#/components/shared/dropzone'
 
+import type { Factura } from '#/schema/bill'
 import type {
   AddBillToCollectionType,
   UploadBillsRequest,
 } from '#/schema/collections'
 import type { ModalPageProps } from '#/schema/page'
+import type { FileWithPath } from '@mantine/dropzone'
 
 const defaultValues: AddBillToCollectionType = {
   collectionId: '',
   bills: [],
 }
 
+type BillFormData = {
+  collectionId: string
+  personalIdNumber: string
+  professionalIdNumber: string
+}
+
 const MAX_BILLS = 10
 
-const BillAddForm = (props: ModalPageProps<string>) => {
+const BillAddForm = (props: ModalPageProps<BillFormData>) => {
   const {
-    state: { opened, data: collectionId },
+    state: { opened, data },
     modal,
     size = 'lg',
     onSubmitted,
@@ -40,6 +50,8 @@ const BillAddForm = (props: ModalPageProps<string>) => {
   const [confirmExit, setConfirmExit] = React.useState(false)
 
   const isMobile = useIsMobile()
+
+  const [processing, setProcessing] = React.useState(false)
 
   const auth = useUserAuth()
 
@@ -52,6 +64,8 @@ const BillAddForm = (props: ModalPageProps<string>) => {
       console.error('Error uploading bills:', error)
     },
   })
+
+  const { collectionId, personalIdNumber, professionalIdNumber } = data || {}
 
   const form = useAppForm({
     defaultValues,
@@ -115,9 +129,32 @@ const BillAddForm = (props: ModalPageProps<string>) => {
                   accept={['text/xml']}
                   disabled={isLoading || field.state.value.length >= MAX_BILLS}
                   files={field.state.value}
+                  loading={processing}
                   maxFiles={MAX_BILLS}
                   onDrop={(files) => {
-                    field.setValue([...field.state.value, ...files])
+                    setProcessing(true)
+                    preProcessBills(files)
+                      .then((result) => {
+                        if (!result) {
+                          notify.error({
+                            title: 'Error al subir facturas',
+                            message:
+                              'Una o más facturas no coinciden con el número de cédula o RUC proporcionado. Por favor, verifica tus archivos e intenta de nuevo.',
+                          })
+                          return
+                        }
+                        field.setValue([...field.state.value, ...files])
+                      })
+                      .then(() => setProcessing(false))
+                      .catch((error) => {
+                        console.error('Error pre-processing bills:', error)
+                        notify.error({
+                          title: 'Error al procesar facturas',
+                          message:
+                            'Ocurrió un error al procesar tus facturas. Por favor, intenta de nuevo.',
+                        })
+                        setProcessing(false)
+                      })
                   }}
                   onRemove={(index) => {
                     const newFiles = [...field.state.value]
@@ -183,6 +220,43 @@ const BillAddForm = (props: ModalPageProps<string>) => {
   }
 
   return Content
+
+  async function preProcessBills(bills: Array<FileWithPath>) {
+    if (!personalIdNumber) {
+      notify.error({
+        title: 'Número de cédula requerido',
+        message:
+          'Por favor, proporciona un número de cédula para validar las facturas.',
+      })
+      return false
+    }
+
+    const billsData: Array<Factura> = []
+
+    for (const billFile of bills) {
+      const buffer = await billFile.arrayBuffer()
+      const bill = parseAndValidateInvoiceXML(Buffer.from(buffer))
+
+      if (!bill.success) {
+        console.error('Error parsing bill XML:', bill.error)
+        continue
+      }
+
+      billsData.push(bill.data.factura)
+    }
+
+    return billsData.every((bill) => {
+      const idBuyer = bill.infoFactura.identificacionComprador.trim() || ''
+
+      if (idBuyer.length === 10) {
+        return idBuyer === personalIdNumber
+      }
+      if (idBuyer.length === 13) {
+        return idBuyer === professionalIdNumber
+      }
+      return false
+    })
+  }
 
   function onClose() {
     form.reset()
