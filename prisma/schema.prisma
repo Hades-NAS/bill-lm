@@ -27,14 +27,19 @@ model User {
 }
 
 model Collection {
+  // collection fields
   id            String   @id @default(uuid())
   name          String   @db.VarChar(100)
   description   String?  @db.VarChar(255)
 
+  // user activity fields
+  personalIdNumber      String   @db.VarChar(10)
+  professionalIdNumber  String   @db.VarChar(13)
   instructions  String?  @db.VarChar(555)
 
   year          Int
 
+  // auditable fields
   createdAt     DateTime @default(now()) @db.Timestamptz
   updatedAt     DateTime @updatedAt      @db.Timestamptz
   deletedAt     DateTime?
