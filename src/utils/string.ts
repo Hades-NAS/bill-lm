@@ -24,6 +24,16 @@ export const isEmptyObject = (obj?: Record<string, any>) => {
   )
 }
 
+export const formatRUC = (ruc: string) => {
+  const cleanedRUC = ruc.replace(/-/g, '')
+
+  if (cleanedRUC.length <= 10) {
+    return cleanedRUC
+  }
+
+  return `${cleanedRUC.slice(0, 10)}-${cleanedRUC.slice(10)}`
+}
+
 export const capitalize = (text: string, onlyFirst = false) => {
   text = text.toLowerCase()
 
