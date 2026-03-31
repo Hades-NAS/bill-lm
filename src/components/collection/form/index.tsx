@@ -1,4 +1,4 @@
-import { Flex, Modal, Text } from '@mantine/core'
+import { Fieldset, Flex, Modal, Text } from '@mantine/core'
 import { DateTime } from 'luxon'
 import React from 'react'
 
@@ -27,6 +27,8 @@ const defaultValues: CreateCollectionType = {
   name: '',
   description: '',
   instructions: '',
+  personalIdNumber: '',
+  professionalIdNumber: '',
   year: DateTime.now().year,
 }
 
@@ -103,56 +105,93 @@ const CollectionForm = (
         }}
       >
         <Flex direction="column" gap="md">
-          <form.AppField
-            children={(field) => (
-              <field.Input
-                label="Nombre"
-                placeholder="Ingrese el nombre de la colección"
-                typeInput="text"
-                onChange={(e) => field.handleChange(e.target.value)}
+          <Fieldset legend="Información de la colección">
+            <Flex direction="column" gap="sm">
+              <form.AppField
+                children={(field) => (
+                  <field.Input
+                    label="Nombre"
+                    placeholder="Ingrese el nombre de la colección"
+                    typeInput="text"
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                )}
+                name="name"
               />
-            )}
-            name="name"
-          />
 
-          <form.AppField
-            children={(field) => (
-              <field.Input
-                label="Descripción"
-                placeholder="Ingrese una descripción"
-                typeInput="textarea"
-                onChange={(e) => field.handleChange(e.target.value)}
+              <form.AppField
+                children={(field) => (
+                  <field.Input
+                    label="Descripción"
+                    placeholder="Ingrese una descripción"
+                    typeInput="textarea"
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                )}
+                name="description"
               />
-            )}
-            name="description"
-          />
 
-          <form.AppField
-            children={(field) => (
-              <field.Input
-                label="Año"
-                placeholder="Ingrese el año"
-                typeInput="number"
-                onChange={(value) => field.handleChange(value)}
+              <form.AppField
+                children={(field) => (
+                  <field.Input
+                    label="Año"
+                    placeholder="Ingrese el año"
+                    typeInput="number"
+                    onChange={(value) => field.handleChange(value)}
+                  />
+                )}
+                name="year"
               />
-            )}
-            name="year"
-          />
+            </Flex>
+          </Fieldset>
 
-          <form.AppField
-            children={(field) => (
-              <field.Input
-                autosize
-                label="Instrucciones"
-                minRows={4}
-                placeholder="Agrega instrucciones para el análisis de esta colección"
-                typeInput="textarea"
-                onChange={(e) => field.handleChange(e.target.value)}
+          <Fieldset legend="Información fiscal">
+            <Flex direction="column" gap="sm">
+              <Flex direction={isMobile ? 'column' : 'row'} gap="sm">
+                <form.AppField
+                  children={(field) => (
+                    <field.Input
+                      label="Cédula"
+                      maxLength={10}
+                      placeholder="cédula personal"
+                      style={{ flex: 1 }}
+                      typeInput="text"
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  )}
+                  name="personalIdNumber"
+                />
+
+                <form.AppField
+                  children={(field) => (
+                    <field.Input
+                      label="RUC (opcional)"
+                      maxLength={13}
+                      placeholder="RUC profesional"
+                      style={{ flex: 1 }}
+                      typeInput="text"
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  )}
+                  name="professionalIdNumber"
+                />
+              </Flex>
+
+              <form.AppField
+                children={(field) => (
+                  <field.Input
+                    autosize
+                    label="Instrucciones (opcional)"
+                    minRows={4}
+                    placeholder="Instrucciones para facturas emitidas a RUC"
+                    typeInput="textarea"
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                )}
+                name="instructions"
               />
-            )}
-            name="instructions"
-          />
-
+            </Flex>
+          </Fieldset>
           <form.AppForm>
             <form.SubmitButton loading={isLoading} mt="md">
               {data ? 'Actualizar colección' : 'Crear colección'}
@@ -170,6 +209,8 @@ const CollectionForm = (
         name: data.name,
         description: data.description || '',
         instructions: data.instructions || '',
+        personalIdNumber: data.personalIdNumber || '',
+        professionalIdNumber: data.professionalIdNumber || '',
         year: data.year,
       })
     } else {
