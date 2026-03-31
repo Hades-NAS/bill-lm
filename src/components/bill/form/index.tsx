@@ -1,9 +1,8 @@
-import { Box, Flex, Modal, Text } from '@mantine/core'
+import { Alert, Box, Flex, Modal, ScrollArea, Text } from '@mantine/core'
+import { FileWarningIcon } from 'lucide-react'
 import React from 'react'
 
 import { AddBillToCollectionSchema } from '#/schema/collections'
-
-import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
 import { filesToBase64 } from '#/utils/file'
 import { useIsMobile } from '#/utils/mobile'
@@ -12,25 +11,26 @@ import { isLoadingMutation } from '#/utils/query'
 
 import { useAppForm } from '#/hooks/app-form'
 import { useUserAuth } from '#/hooks/auth'
-import { useUploadBillsMutation } from '#/hooks/mutation/bill'
+import {
+  usePreprocessBillMutation,
+  useUploadBillsMutation,
+} from '#/hooks/mutation/bill'
 
 import ConfModal from '#/components/shared/conf-modal'
 import { DropzoneInput } from '#/components/shared/dropzone'
 
-import type { Factura } from '#/schema/bill'
 import type {
   AddBillToCollectionType,
   UploadBillsRequest,
 } from '#/schema/collections'
 import type { ModalPageProps } from '#/schema/page'
-import type { FileWithPath } from '@mantine/dropzone'
 
 const defaultValues: AddBillToCollectionType = {
   collectionId: '',
   bills: [],
 }
 
-type BillFormData = {
+export type BillFormData = {
   collectionId: string
   personalIdNumber: string
   professionalIdNumber: string
@@ -47,11 +47,11 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
     onClose: outerOnClose,
   } = props
 
+  const { collectionId, personalIdNumber, professionalIdNumber } = data || {}
+
   const [confirmExit, setConfirmExit] = React.useState(false)
 
   const isMobile = useIsMobile()
-
-  const [processing, setProcessing] = React.useState(false)
 
   const auth = useUserAuth()
 
@@ -65,7 +65,26 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
     },
   })
 
-  const { collectionId, personalIdNumber, professionalIdNumber } = data || {}
+  const preprocessBillMutation = usePreprocessBillMutation(
+    {
+      collectionId,
+      personalIdNumber,
+      professionalIdNumber,
+    },
+    {
+      onSuccess: (result) => {
+        const { bills, errors } = result
+        form.setFieldValue('bills', bills)
+
+        if (errors.length > 0) {
+          notify.warn({
+            title: 'Algunas facturas no se pudieron procesar',
+            message: 'Revisar el mensaje de error para más detalles.',
+          })
+        }
+      },
+    },
+  )
 
   const form = useAppForm({
     defaultValues,
@@ -111,6 +130,14 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
     },
   })
 
+  React.useEffect(() => {
+    if (!opened) {
+      form.reset()
+      preprocessBillMutation.reset()
+      return
+    }
+  }, [opened, data, form])
+
   const isLoading = isLoadingMutation(uploadBillsMutation)
 
   const Content = React.useMemo(
@@ -123,38 +150,36 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
           }}
         >
           <Flex direction="column" gap="md">
+            {preprocessBillMutation.data?.errors &&
+              preprocessBillMutation.data.errors.length > 0 && (
+                <Alert
+                  color="yellow"
+                  icon={<FileWarningIcon />}
+                  title="Algunas facturas no se pudieron procesar"
+                  variant="light"
+                >
+                  {preprocessBillMutation.data.errors.map(
+                    ({ file, error }, index) => (
+                      <Text key={index} mt="sm" size="sm">
+                        <Text span fw={500}>
+                          {file.name}:
+                        </Text>{' '}
+                        {error}
+                      </Text>
+                    ),
+                  )}
+                </Alert>
+              )}
             <form.AppField
               children={(field) => (
                 <DropzoneInput
                   accept={['text/xml']}
                   disabled={isLoading || field.state.value.length >= MAX_BILLS}
                   files={field.state.value}
-                  loading={processing}
+                  loading={preprocessBillMutation.isPending}
                   maxFiles={MAX_BILLS}
                   onDrop={(files) => {
-                    setProcessing(true)
-                    preProcessBills(files)
-                      .then((result) => {
-                        if (!result) {
-                          notify.error({
-                            title: 'Error al subir facturas',
-                            message:
-                              'Una o más facturas no coinciden con el número de cédula o RUC proporcionado. Por favor, verifica tus archivos e intenta de nuevo.',
-                          })
-                          return
-                        }
-                        field.setValue([...field.state.value, ...files])
-                      })
-                      .then(() => setProcessing(false))
-                      .catch((error) => {
-                        console.error('Error pre-processing bills:', error)
-                        notify.error({
-                          title: 'Error al procesar facturas',
-                          message:
-                            'Ocurrió un error al procesar tus facturas. Por favor, intenta de nuevo.',
-                        })
-                        setProcessing(false)
-                      })
+                    preprocessBillMutation.mutate(files)
                   }}
                   onRemove={(index) => {
                     const newFiles = [...field.state.value]
@@ -177,7 +202,13 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
         </form>
       </Box>
     ),
-    [isLoading, form.state.errors, collectionId],
+    [
+      isLoading,
+      form.state.errors,
+      collectionId,
+      preprocessBillMutation.data,
+      preprocessBillMutation.isPending,
+    ],
   )
 
   if (modal) {
@@ -220,43 +251,6 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
   }
 
   return Content
-
-  async function preProcessBills(bills: Array<FileWithPath>) {
-    if (!personalIdNumber) {
-      notify.error({
-        title: 'Número de cédula requerido',
-        message:
-          'Por favor, proporciona un número de cédula para validar las facturas.',
-      })
-      return false
-    }
-
-    const billsData: Array<Factura> = []
-
-    for (const billFile of bills) {
-      const buffer = await billFile.arrayBuffer()
-      const bill = parseAndValidateInvoiceXML(Buffer.from(buffer))
-
-      if (!bill.success) {
-        console.error('Error parsing bill XML:', bill.error)
-        continue
-      }
-
-      billsData.push(bill.data.factura)
-    }
-
-    return billsData.every((bill) => {
-      const idBuyer = bill.infoFactura.identificacionComprador.trim() || ''
-
-      if (idBuyer.length === 10) {
-        return idBuyer === personalIdNumber
-      }
-      if (idBuyer.length === 13) {
-        return idBuyer === professionalIdNumber
-      }
-      return false
-    })
-  }
 
   function onClose() {
     form.reset()
