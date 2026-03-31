@@ -118,12 +118,54 @@ export const CreateCollectionSchema = CollectionSchema.pick({
   name: true,
   description: true,
   instructions: true,
+  personalIdNumber: true,
+  professionalIdNumber: true,
   year: true,
 }).extend({
   name: CollectionSchema.shape.name.min(1, 'El nombre es requerido'),
   year: CollectionSchema.shape.year
     .int()
     .min(0, 'El año debe ser un número positivo'),
+}).superRefine((data, ctx) => {
+  if (
+    data.personalIdNumber &&
+    !/^\d+$/.test(data.personalIdNumber)
+  ) {
+    ctx.addIssue({
+      code: "invalid_value",
+      path: ['personalIdNumber'],
+      values: [data.personalIdNumber],
+      message: 'La cédula personal solo debe contener números',
+    })
+  }
+  if (
+    data.professionalIdNumber &&
+    !/^\d+$/.test(data.professionalIdNumber)
+  ) {
+    ctx.addIssue({
+      code: "invalid_value",
+      path: ['professionalIdNumber'],
+      values: [data.professionalIdNumber],
+      message: 'El RUC solo debe contener números',
+    })
+  }
+
+  if (data.professionalIdNumber && !data.instructions) {
+    ctx.addIssue({
+      code: "invalid_value",
+      path: ['instructions'],
+      values: [data.instructions],
+      message: 'Si se RUC es proporcionado, las instrucciones son requeridas',
+    })
+  }
+  if (data.instructions && !data.professionalIdNumber) {
+    ctx.addIssue({
+      code: "invalid_value",
+      path: ['professionalIdNumber'],
+      values: [data.professionalIdNumber],
+      message: 'Si se proporcionan instrucciones, el RUC es requerido',
+    })
+  }
 })
 
 export type CreateCollectionType = z.infer<typeof CreateCollectionSchema>
