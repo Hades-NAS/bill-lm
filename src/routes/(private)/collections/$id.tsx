@@ -186,6 +186,7 @@ function CollectionDetailPage() {
 
       <CollectionForm
         modal
+        size="xl"
         state={modalCollectionForm}
         onClose={() => {
           setCollectionForm({ opened: false })
@@ -441,7 +442,7 @@ function CollectionDetailPage() {
                         gap="md"
                         justify="flex-end"
                         style={{
-                          alignItems: isMobile ? 'center' : 'flex-end',
+                          alignSelf: isMobile ? 'center' : 'flex-end',
                         }}
                       >
                         <Button
