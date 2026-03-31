@@ -6,8 +6,8 @@ export type MutationOptions<TData = unknown> = {
   retry?: boolean | number
   onBefore?: () => void
   onSuccess?: (data: TData) => void
-  onError?: (error: TRPCClientErrorLike<any>) => void
-  onSettled?: (data?: TData, error?: TRPCClientErrorLike<any> | null) => void
+  onError?: (error: TRPCClientErrorLike<any> | Error) => void
+  onSettled?: (data?: TData, error?: TRPCClientErrorLike<any> | Error | null) => void
 }
 
 export type QueryOptions = {
