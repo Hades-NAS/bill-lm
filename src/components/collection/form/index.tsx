@@ -96,6 +96,21 @@ const CollectionForm = (
     collectionUpdateMutation,
   )
 
+  React.useLayoutEffect(() => {
+    if (data) {
+      form.reset({
+        name: data.name,
+        description: data.description || '',
+        instructions: data.instructions || '',
+        personalIdNumber: data.personalIdNumber || '',
+        professionalIdNumber: data.professionalIdNumber || '',
+        year: data.year,
+      })
+    } else {
+      form.reset()
+    }
+  }, [data, form])
+
   const Content = React.useMemo(
     () => (
       <form
@@ -153,7 +168,7 @@ const CollectionForm = (
                     <field.Input
                       label="Cédula"
                       maxLength={10}
-                      placeholder="cédula personal"
+                      placeholder="Cédula personal"
                       style={{ flex: 1 }}
                       typeInput="text"
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -202,21 +217,6 @@ const CollectionForm = (
     ),
     [data, isLoading],
   )
-
-  React.useEffect(() => {
-    if (data) {
-      form.reset({
-        name: data.name,
-        description: data.description || '',
-        instructions: data.instructions || '',
-        personalIdNumber: data.personalIdNumber || '',
-        professionalIdNumber: data.professionalIdNumber || '',
-        year: data.year,
-      })
-    } else {
-      form.reset()
-    }
-  }, [data, form])
 
   if (modal) {
     return (
