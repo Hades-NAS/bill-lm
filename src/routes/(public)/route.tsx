@@ -1,5 +1,5 @@
-import { AppShell, Badge, Burger, Group, Transition } from '@mantine/core'
-import { useDisclosure, useWindowScroll } from '@mantine/hooks'
+import { AppShell, Badge, Group, Transition } from '@mantine/core'
+import { useWindowScroll } from '@mantine/hooks'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 import { useIsMobile } from '#/utils/mobile'
@@ -16,9 +16,6 @@ export const Route = createFileRoute('/(public)')({
 function RouteComponent() {
   const { isSignedIn } = useUserAuth()
 
-  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
-  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
-
   const [scroll] = useWindowScroll()
 
   const isMobile = useIsMobile()
@@ -29,29 +26,12 @@ function RouteComponent() {
       navbar={{
         width: 300,
         breakpoint: 'sm',
-        collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
+        collapsed: { mobile: true, desktop: true },
       }}
       padding="md"
     >
       <AppShell.Header bd={0} bg={scroll.y < 80 ? 'transparent' : 'violet.6'}>
-        <Group h="100%" justify="space-between" px="md">
-          <Group bdrs={6} bg="violet.6" px={4} py={4}>
-            <Burger
-              color="white"
-              hiddenFrom={isMobile ? 'xs' : 'sm'}
-              opened={mobileOpened}
-              size="sm"
-              onClick={toggleMobile}
-            />
-            <Burger
-              color="white"
-              opened={desktopOpened}
-              size={isMobile ? 'xs' : 'sm'}
-              visibleFrom="sm"
-              onClick={toggleDesktop}
-            />
-          </Group>
-
+        <Group h="100%" justify="flex-end" px="md">
           <Transition duration={300} mounted={scroll.y > 80} transition="fade">
             {(styles) => (
               <Badge
@@ -60,7 +40,13 @@ function RouteComponent() {
                 c="dark"
                 color="violet"
                 size="lg"
-                style={styles}
+                style={{
+                  ...styles,
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                }}
                 variant="dot"
               >
                 Bill-LM
