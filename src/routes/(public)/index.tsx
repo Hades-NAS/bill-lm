@@ -29,7 +29,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import React from 'react'
 
 import { useUserAuth } from '#/hooks/auth'
 
@@ -42,15 +42,11 @@ function App() {
   const { isSignedIn } = useUserAuth()
   const navigate = useNavigate()
 
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = React.useState(false)
 
-  const { colorScheme, setColorScheme } = useMantineColorScheme()
+  const { colorScheme } = useMantineColorScheme()
 
-  useLayoutEffect(() => {
-    setColorScheme('light')
-  }, [])
-
-  useEffect(() => {
+  React.useEffect(() => {
     setIsVisible(true)
   }, [])
 
@@ -72,7 +68,14 @@ function App() {
                   <ThemeIcon radius="md" size={40} variant="transparent">
                     <FileText color="white" size={24} />
                   </ThemeIcon>
-                  <Badge bg="white" color="violet" size="xl" variant="dot">
+                  <Badge
+                    bd="1px solid white"
+                    bg="white"
+                    c="dark"
+                    color="violet"
+                    size="xl"
+                    variant="dot"
+                  >
                     Bill-LM
                   </Badge>
                 </Group>
@@ -107,7 +110,7 @@ function App() {
                       navigate({ to: isSignedIn ? '/collections' : '/sign-up' })
                     }}
                   >
-                    Comenzar Gratis
+                    {isSignedIn ? 'Ver Colecciones' : 'Crear Cuenta Gratis'}
                   </Button>
                   <Button
                     color="white"
@@ -166,7 +169,7 @@ function App() {
 
       {/* How It Works Section */}
       <Box
-        bg={colorScheme === 'dark' ? 'red' : 'white'}
+        bg={colorScheme === 'dark' ? 'dark' : 'white'}
         id="como-funciona"
         py={80}
       >
@@ -387,7 +390,12 @@ function App() {
                         >
                           <CheckCircle2 size={24} />
                         </ThemeIcon>
-                        <Title order={4}>¿Qué obtienes?</Title>
+                        <Title
+                          c={colorScheme === 'dark' ? 'white' : 'black'}
+                          order={4}
+                        >
+                          ¿Qué obtienes?
+                        </Title>
                       </Group>
 
                       <List
@@ -403,20 +411,30 @@ function App() {
                         size="sm"
                         spacing={12}
                       >
-                        <List.Item>
+                        <List.Item
+                          c={colorScheme === 'dark' ? 'white' : undefined}
+                        >
                           <strong>Porcentaje de deducibilidad</strong> para cada
                           factura
                         </List.Item>
-                        <List.Item>
+                        <List.Item
+                          c={colorScheme === 'dark' ? 'white' : undefined}
+                        >
                           <strong>Razonamiento detallado</strong> del análisis
                         </List.Item>
-                        <List.Item>
+                        <List.Item
+                          c={colorScheme === 'dark' ? 'white' : undefined}
+                        >
                           <strong>Exportación</strong> de resultados
                         </List.Item>
-                        <List.Item>
+                        <List.Item
+                          c={colorScheme === 'dark' ? 'white' : undefined}
+                        >
                           <strong>Historial completo</strong> de análisis
                         </List.Item>
-                        <List.Item>
+                        <List.Item
+                          c={colorScheme === 'dark' ? 'white' : undefined}
+                        >
                           <strong>Asesoría basada en SRI</strong> actualizada
                         </List.Item>
                       </List>
@@ -569,7 +587,7 @@ function App() {
                 size={36}
                 ta="center"
               >
-                Comienza Hoy Mismo
+                {isSignedIn ? 'Explora tus Análisis' : 'Comienza Hoy Mismo'}
               </Title>
               <Text c="dimmed" size="lg" ta="center">
                 Gratis. Sin tarjeta de crédito. Analiza tus primeras facturas
@@ -587,7 +605,7 @@ function App() {
                   navigate({ to: isSignedIn ? '/collections' : '/sign-up' })
                 }}
               >
-                Crear Cuenta Gratis
+                {isSignedIn ? 'Ver Colecciones' : 'Crear Cuenta Gratis'}
               </Button>
             </Group>
           </Stack>
