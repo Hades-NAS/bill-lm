@@ -101,7 +101,7 @@ function App() {
                   </Text>
                 </Stack>
 
-                <Flex direction={isMobile ? 'column' : 'row'}>
+                <Flex direction={isMobile ? 'column' : 'row'} gap={16}>
                   <Button
                     className="hover:-translate-y-2 hover:shadow-lg transition-all duration-200"
                     color="violet"
