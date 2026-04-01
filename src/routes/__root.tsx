@@ -158,7 +158,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           `,
           },
         ]
-      : [],
+      : [
+          {
+            defer: true,
+            'data-domain': 'bill-lm.cardor.dev',
+            src: 'https://plau.cardor.dev/js/script.js',
+          },
+        ],
   }),
   shellComponent: RootDocument,
 })
