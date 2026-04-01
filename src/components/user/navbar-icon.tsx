@@ -19,7 +19,7 @@ const NavbarUserIcon = () => {
         <Menu.Target>
           <Tooltip
             label={user?.firstName || 'Usuario'}
-            openDelay={1250}
+            openDelay={500}
             position="left"
           >
             <ActionIcon
