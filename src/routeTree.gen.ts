@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as publicRouteRouteImport } from './routes/(public)/route'
 import { Route as privateRouteRouteImport } from './routes/(private)/route'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as publicSignUpRouteImport } from './routes/(public)/sign-up'
@@ -18,19 +19,23 @@ import { Route as privateCollectionsIndexRouteImport } from './routes/(private)/
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 import { Route as privateCollectionsIdRouteImport } from './routes/(private)/collections/$id'
 
+const publicRouteRoute = publicRouteRouteImport.update({
+  id: '/(public)',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const privateRouteRoute = privateRouteRouteImport.update({
   id: '/(private)',
   getParentRoute: () => rootRouteImport,
 } as any)
 const publicIndexRoute = publicIndexRouteImport.update({
-  id: '/(public)/',
+  id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => publicRouteRoute,
 } as any)
 const publicSignUpRoute = publicSignUpRouteImport.update({
-  id: '/(public)/sign-up',
+  id: '/sign-up',
   path: '/sign-up',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => publicRouteRoute,
 } as any)
 const privateUserRoute = privateUserRouteImport.update({
   id: '/user',
@@ -79,6 +84,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(private)': typeof privateRouteRouteWithChildren
+  '/(public)': typeof publicRouteRouteWithChildren
   '/(private)/user': typeof privateUserRoute
   '/(public)/sign-up': typeof publicSignUpRoute
   '/(public)/': typeof publicIndexRoute
@@ -109,6 +115,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/(private)'
+    | '/(public)'
     | '/(private)/user'
     | '/(public)/sign-up'
     | '/(public)/'
@@ -120,13 +127,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   privateRouteRoute: typeof privateRouteRouteWithChildren
-  publicSignUpRoute: typeof publicSignUpRoute
-  publicIndexRoute: typeof publicIndexRoute
+  publicRouteRoute: typeof publicRouteRouteWithChildren
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/(public)': {
+      id: '/(public)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof publicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(private)': {
       id: '/(private)'
       path: ''
@@ -139,14 +152,14 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof publicIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicRouteRoute
     }
     '/(public)/sign-up': {
       id: '/(public)/sign-up'
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof publicSignUpRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicRouteRoute
     }
     '/(private)/user': {
       id: '/(private)/user'
@@ -204,10 +217,23 @@ const privateRouteRouteWithChildren = privateRouteRoute._addFileChildren(
   privateRouteRouteChildren,
 )
 
-const rootRouteChildren: RootRouteChildren = {
-  privateRouteRoute: privateRouteRouteWithChildren,
+interface publicRouteRouteChildren {
+  publicSignUpRoute: typeof publicSignUpRoute
+  publicIndexRoute: typeof publicIndexRoute
+}
+
+const publicRouteRouteChildren: publicRouteRouteChildren = {
   publicSignUpRoute: publicSignUpRoute,
   publicIndexRoute: publicIndexRoute,
+}
+
+const publicRouteRouteWithChildren = publicRouteRoute._addFileChildren(
+  publicRouteRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  privateRouteRoute: privateRouteRouteWithChildren,
+  publicRouteRoute: publicRouteRouteWithChildren,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
 }
 export const routeTree = rootRouteImport
