@@ -16,6 +16,7 @@ import {
   Grid,
   useMantineColorScheme,
   Anchor,
+  Flex,
 } from '@mantine/core'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
@@ -31,6 +32,8 @@ import {
 } from 'lucide-react'
 import React from 'react'
 
+import { useIsMobile } from '#/utils/mobile'
+
 import { useUserAuth } from '#/hooks/auth'
 
 export const Route = createFileRoute('/(public)/')({
@@ -43,6 +46,8 @@ function App() {
   const navigate = useNavigate()
 
   const [isVisible, setIsVisible] = React.useState(false)
+
+  const isMobile = useIsMobile()
 
   const { colorScheme } = useMantineColorScheme()
 
@@ -65,9 +70,6 @@ function App() {
               {/* Hero Content */}
               <Stack align="center" gap={32}>
                 <Group gap={8} justify="center">
-                  <ThemeIcon radius="md" size={40} variant="transparent">
-                    <FileText color="white" size={24} />
-                  </ThemeIcon>
                   <Badge
                     bd="1px solid white"
                     bg="white"
@@ -99,7 +101,7 @@ function App() {
                   </Text>
                 </Stack>
 
-                <Group>
+                <Flex direction={isMobile ? 'column' : 'row'}>
                   <Button
                     className="hover:-translate-y-2 hover:shadow-lg transition-all duration-200"
                     color="violet"
@@ -123,7 +125,7 @@ function App() {
                   >
                     Cómo Funciona
                   </Button>
-                </Group>
+                </Flex>
 
                 {/* Trust Badges */}
                 <Group gap={32} justify="center" mt={32}>
