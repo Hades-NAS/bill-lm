@@ -21,3 +21,5 @@ tests/
 .harness/harness.db-shm
 .harness/harness.db-wal
 .harness/current.md
+
+skills/
