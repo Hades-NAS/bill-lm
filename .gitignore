@@ -16,3 +16,8 @@ tests/
 .claude/
 !.claude/memory/
 .env
+# agent-harness-kit
+.harness/harness.db
+.harness/harness.db-shm
+.harness/harness.db-wal
+.harness/current.md
