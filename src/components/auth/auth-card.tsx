@@ -15,8 +15,8 @@ export function AuthCard({
 }) {
   return (
     <Box bg="gray.0" mih="100vh" py={{ base: 'xl', sm: 72 }}>
-      <Container size={460} px="md">
-        <Paper p={{ base: 'lg', sm: 'xl' }} radius="lg" shadow="sm" withBorder>
+      <Container px="md" size={460}>
+        <Paper withBorder p={{ base: 'lg', sm: 'xl' }} radius="lg" shadow="sm">
           <Stack gap="xl">
             <Stack gap={6}>
               <Text c="violet" fw={700} size="sm" tt="uppercase">

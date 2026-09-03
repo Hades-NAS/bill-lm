@@ -49,7 +49,6 @@ const CollectionForm = (
 
   const isMobile = useIsMobile()
 
-
   const collectionCreateMutation = useCollectionCreateMutation({
     onSuccess: (_data) => {
       onSubmitted?.(_data)

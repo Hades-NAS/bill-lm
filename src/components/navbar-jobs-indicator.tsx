@@ -208,9 +208,7 @@ export function NavbarJobsIndicator() {
             loading={markAsReadMutation.isPending}
             size={'md'}
             variant="light"
-            onClick={() =>
-              markAsReadMutation.mutate({})
-            }
+            onClick={() => markAsReadMutation.mutate({})}
           >
             <BrushCleaning size={16} />
           </ActionIcon>

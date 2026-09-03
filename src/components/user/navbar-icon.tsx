@@ -2,8 +2,10 @@ import { ActionIcon, Divider, Menu, Tooltip } from '@mantine/core'
 import { useNavigate } from '@tanstack/react-router'
 import { LibraryBig, LogOutIcon, Telescope, User } from 'lucide-react'
 
-import { useIsMobile } from '#/utils/mobile'
 import { signOutFromFirebase } from '#/integrations/firebase/auth'
+
+import { useIsMobile } from '#/utils/mobile'
+
 import { useUserAuth } from '#/hooks/auth'
 
 const NavbarUserIcon = () => {

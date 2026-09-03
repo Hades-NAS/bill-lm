@@ -52,7 +52,6 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
 
   const isMobile = useIsMobile()
 
-
   const uploadBillsMutation = useUploadBillsMutation({
     onSuccess: () => {
       onSubmitted?.()

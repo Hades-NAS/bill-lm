@@ -13,6 +13,12 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import {
+  EmailPasswordCredentialsSchema,
+  PasswordResetRequestSchema,
+  SignUpCredentialsSchema,
+} from '#/schema/firebase-auth'
+
+import {
   requestPasswordReset,
   resendEmailVerification,
   signInWithEmail,
@@ -20,19 +26,20 @@ import {
   signUpWithEmail,
 } from '#/integrations/firebase/auth'
 import { getFirebaseAuthErrorMessage } from '#/integrations/firebase/auth-error'
-import {
-  EmailPasswordCredentialsSchema,
-  PasswordResetRequestSchema,
-  SignUpCredentialsSchema,
-} from '#/schema/firebase-auth'
 
-type AuthFormError = Record<string, string[] | undefined>
+type AuthFormError = Record<string, Array<string> | undefined>
 
 function GoogleDivider() {
   return <Divider label="o" labelPosition="center" />
 }
 
-function GoogleButton({ onClick, loading }: { onClick: () => void; loading: boolean }) {
+function GoogleButton({
+  onClick,
+  loading,
+}: {
+  onClick: () => void
+  loading: boolean
+}) {
   return (
     <Button fullWidth loading={loading} variant="default" onClick={onClick}>
       Continuar con Google
@@ -92,11 +99,21 @@ export function SignInForm() {
 
   return (
     <Stack gap="md">
-      {formError && <Alert color="red" title="No pudimos iniciar sesión">{formError}</Alert>}
+      {formError && (
+        <Alert color="red" title="No pudimos iniciar sesión">
+          {formError}
+        </Alert>
+      )}
       {needsVerification && (
         <Alert color="violet" title="Verifica tu correo antes de continuar">
-          Revisa tu bandeja de entrada. Cuando completes la verificación, vuelve a iniciar sesión.
-          <Button mt="sm" size="xs" variant="light" onClick={() => resendEmailVerification()}>
+          Revisa tu bandeja de entrada. Cuando completes la verificación, vuelve
+          a iniciar sesión.
+          <Button
+            mt="sm"
+            size="xs"
+            variant="light"
+            onClick={() => resendEmailVerification()}
+          >
             Reenviar correo de verificación
           </Button>
         </Alert>
@@ -105,29 +122,36 @@ export function SignInForm() {
         autoComplete="email"
         error={errors.email?.[0]}
         label="Correo electrónico"
-        onChange={(event) => setEmail(event.currentTarget.value)}
         placeholder="tu@correo.com"
         value={email}
+        onChange={(event) => setEmail(event.currentTarget.value)}
       />
       <PasswordInput
         autoComplete="current-password"
         error={errors.password?.[0]}
         label="Contraseña"
-        onChange={(event) => setPassword(event.currentTarget.value)}
         value={password}
+        onChange={(event) => setPassword(event.currentTarget.value)}
       />
-      <Button fullWidth loading={loading} onClick={handleEmailSignIn} type="button">
+      <Button
+        fullWidth
+        loading={loading}
+        type="button"
+        onClick={handleEmailSignIn}
+      >
         Continuar
       </Button>
       <GoogleDivider />
       <GoogleButton loading={loading} onClick={handleGoogleSignIn} />
-      <Group justify="space-between" gap="xs">
+      <Group gap="xs" justify="space-between">
         <Anchor component={Link} size="sm" to="/forgot-password">
           ¿Olvidaste tu contraseña?
         </Anchor>
         <Text c="dimmed" size="sm">
           ¿No tienes cuenta?{' '}
-          <Anchor component={Link} to="/sign-up">Crear cuenta</Anchor>
+          <Anchor component={Link} to="/sign-up">
+            Crear cuenta
+          </Anchor>
         </Text>
       </Group>
     </Stack>
@@ -189,20 +213,52 @@ export function SignUpForm() {
     <Stack gap="md">
       {verificationSent && (
         <Alert color="violet" title="Revisa tu correo">
-          Te enviamos un enlace de verificación. Cuando lo completes, inicia sesión para continuar.
+          Te enviamos un enlace de verificación. Cuando lo completes, inicia
+          sesión para continuar.
         </Alert>
       )}
-      {formError && <Alert color="red" title="No pudimos crear la cuenta">{formError}</Alert>}
-      <TextInput autoComplete="email" error={errors.email?.[0]} label="Correo electrónico" onChange={(event) => setEmail(event.currentTarget.value)} placeholder="tu@correo.com" value={email} />
-      <PasswordInput autoComplete="new-password" error={errors.password?.[0]} label="Contraseña" onChange={(event) => setPassword(event.currentTarget.value)} value={password} />
-      <PasswordInput autoComplete="new-password" error={errors.passwordConfirmation?.[0]} label="Confirma tu contraseña" onChange={(event) => setPasswordConfirmation(event.currentTarget.value)} value={passwordConfirmation} />
-      <Button fullWidth loading={loading} onClick={handleEmailSignUp} type="button">
+      {formError && (
+        <Alert color="red" title="No pudimos crear la cuenta">
+          {formError}
+        </Alert>
+      )}
+      <TextInput
+        autoComplete="email"
+        error={errors.email?.[0]}
+        label="Correo electrónico"
+        placeholder="tu@correo.com"
+        value={email}
+        onChange={(event) => setEmail(event.currentTarget.value)}
+      />
+      <PasswordInput
+        autoComplete="new-password"
+        error={errors.password?.[0]}
+        label="Contraseña"
+        value={password}
+        onChange={(event) => setPassword(event.currentTarget.value)}
+      />
+      <PasswordInput
+        autoComplete="new-password"
+        error={errors.passwordConfirmation?.[0]}
+        label="Confirma tu contraseña"
+        value={passwordConfirmation}
+        onChange={(event) => setPasswordConfirmation(event.currentTarget.value)}
+      />
+      <Button
+        fullWidth
+        loading={loading}
+        type="button"
+        onClick={handleEmailSignUp}
+      >
         Crear cuenta
       </Button>
       <GoogleDivider />
       <GoogleButton loading={loading} onClick={handleGoogleSignUp} />
       <Text c="dimmed" size="sm" ta="center">
-        ¿Ya tienes cuenta? <Anchor component={Link} to="/sign-in">Iniciar sesión</Anchor>
+        ¿Ya tienes cuenta?{' '}
+        <Anchor component={Link} to="/sign-in">
+          Iniciar sesión
+        </Anchor>
       </Text>
     </Stack>
   )
@@ -234,10 +290,26 @@ export function PasswordResetForm() {
 
   return (
     <Stack gap="md">
-      {sent && <Alert color="violet" title="Revisa tu correo">Si existe una cuenta para este correo, recibirás instrucciones para restablecer tu contraseña.</Alert>}
-      <TextInput autoComplete="email" error={error} label="Correo electrónico" onChange={(event) => setEmail(event.currentTarget.value)} placeholder="tu@correo.com" value={email} />
-      <Button fullWidth loading={loading} onClick={handleSubmit} type="button">Enviar instrucciones</Button>
-      <Anchor component={Link} size="sm" ta="center" to="/sign-in">Volver a iniciar sesión</Anchor>
+      {sent && (
+        <Alert color="violet" title="Revisa tu correo">
+          Si existe una cuenta para este correo, recibirás instrucciones para
+          restablecer tu contraseña.
+        </Alert>
+      )}
+      <TextInput
+        autoComplete="email"
+        error={error}
+        label="Correo electrónico"
+        placeholder="tu@correo.com"
+        value={email}
+        onChange={(event) => setEmail(event.currentTarget.value)}
+      />
+      <Button fullWidth loading={loading} type="button" onClick={handleSubmit}>
+        Enviar instrucciones
+      </Button>
+      <Anchor component={Link} size="sm" ta="center" to="/sign-in">
+        Volver a iniciar sesión
+      </Anchor>
     </Stack>
   )
 }
