@@ -7,6 +7,7 @@ describe('AnalyzeJobNotificationSchema', () => {
     const notification = AnalyzeJobNotificationSchema.parse({
       jobId: 'job-1',
       firebaseUid: 'firebase-user-1',
+      credentialId: 'credential-1',
       data: {
         collectionId: 'collection-1',
         collectionName: 'Facturas 2026',
@@ -25,5 +26,6 @@ describe('AnalyzeJobNotificationSchema', () => {
 
     expect(notification).not.toHaveProperty('userId')
     expect(notification.firebaseUid).toBe('firebase-user-1')
+    expect(notification.credentialId).toBe('credential-1')
   })
 })

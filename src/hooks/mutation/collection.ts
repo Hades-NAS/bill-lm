@@ -106,6 +106,7 @@ export const useAnalyzeCollectionMutation = (
         addJob({
           jobId: data.jobId,
           firebaseUid: auth.userId,
+          credentialId: null,
           data: {
             collectionName: data.collectionName,
             collectionId: data.collectionId,

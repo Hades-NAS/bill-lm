@@ -2,7 +2,7 @@ import { Worker } from 'bullmq'
 import { DateTime } from 'luxon'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
-import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
+import { createEnvironmentLLMProvider } from '#/integrations/llm/llm-provider-factory'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { redisConnection } from '#/integrations/redis'
 
@@ -19,13 +19,6 @@ const logger = getServiceLogger('AnalyzeWorker')
 logger.info(
   `Starting Analyze Worker connecting to Redis at ${redisConnection.host}:${redisConnection.port}`,
 )
-
-// Initialize LLM Provider at startup
-const llmProvider = await LLMProviderFactory.create(env)
-logger.info(`LLM Provider initialized`, {
-  provider: llmProvider.getProviderName(),
-  model: llmProvider.getModelId(),
-})
 
 /**
  * Simplified job handler using AnalyzeBillsUseCase
@@ -46,8 +39,10 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       preset: data.preset,
     })
 
-    // Create and execute use case
-    const useCase = createAnalyzeBillsUseCase()
+    // Resolve an immutable provider for this job only. The resolver currently
+    // uses the deployment credential; Phase 1 will resolve job.data.credentialId.
+    const provider = await createEnvironmentLLMProvider(env)
+    const useCase = createAnalyzeBillsUseCase(provider)
     const results = await useCase.execute(
       billIds,
       job.data,
@@ -106,23 +101,5 @@ const worker = new Worker<AnalyzeJobData>(env.ANALYZE_QUEUE_NAME, jobHandler, {
   connection: redisConnection,
 })
 
-async function controlLoop() {
-  const provider = LLMProviderFactory.getInstance()
-  const isHealthy = await provider.isEngineHealthy()
-
-  if (isHealthy) {
-    worker.resume()
-  } else {
-    logger.debug(
-      `${provider.getProviderName()} provider is not healthy, pausing worker`,
-    )
-    await worker.pause()
-  }
-  return
-}
-
-setInterval(() => {
-  void controlLoop()
-}, 3_000)
-
+void worker
 logger.info('Analyze Worker started and listening for jobs...')

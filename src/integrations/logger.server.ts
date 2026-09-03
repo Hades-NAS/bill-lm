@@ -26,15 +26,39 @@ export const logger = pino({
     },
 })
 
+const secretKeyPattern = /^(api[-_]?key|authorization|secret|token|password)$/i
+const apiKeyValuePattern = /\b(sk-(?:ant-)?[A-Za-z0-9_-]{8,})\b/g
+
+export function sanitizeLogValue(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return value.replace(apiKeyValuePattern, '[REDACTED]')
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(sanitizeLogValue)
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        secretKeyPattern.test(key) ? '[REDACTED]' : sanitizeLogValue(nestedValue),
+      ]),
+    )
+  }
+
+  return value
+}
+
 function parseArgs(args: Array<unknown>): string {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!args || args.length === 0) return ''
 
   return args
     .map((arg) => {
-      if (typeof arg === 'string') return ` ${arg}`
+      if (typeof arg === 'string') return ` ${sanitizeLogValue(arg)}`
       try {
-        return ` ${JSON.stringify(arg)}`
+        return ` ${JSON.stringify(sanitizeLogValue(arg))}`
       } catch {
         return ` ${String(arg)}`
       }

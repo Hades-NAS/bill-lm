@@ -339,6 +339,7 @@ export const collectionsRouter = {
       const payload: AnalyzeJobData = {
         jobId: crypto.randomUUID(),
         userId: principal.userId,
+        credentialId: null,
         data: {
           collectionId: collection.id,
           collectionName: collection.name,

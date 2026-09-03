@@ -13,7 +13,6 @@ import {
   CircuitBreaker,
 } from '#/integrations/errors/error-handler'
 import { adminDb } from '#/integrations/firebase/firebase.server'
-import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
@@ -25,6 +24,7 @@ import { roundToDecimals } from '#/utils/math'
 import { FireCollections } from '#/constants/firebase'
 
 import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
+import type { ILLMProvider } from '#/integrations/llm/provider.interface'
 import type { AnalyzedBill, AnalysisContext } from '#/schema/bill-analysis'
 import type { AnalyzeJobData } from '#/schema/collections'
 
@@ -40,6 +40,7 @@ export interface AnalysisResult {
 export interface ServiceDependencies {
   maxRetries?: number
   updateProgressInterval?: number // ms between Firebase updates
+  provider: ILLMProvider
 }
 
 /**
@@ -60,11 +61,13 @@ export class BillAnalysisService {
   private promptBuilder: BillPromptBuilder
   private circuitBreaker: CircuitBreaker
   private maxRetries: number
+  private provider: ILLMProvider
 
-  constructor(deps: ServiceDependencies = {}) {
+  constructor(deps: ServiceDependencies) {
     this.promptBuilder = createBillPromptBuilder()
     this.circuitBreaker = new CircuitBreaker(5, 60_000) // 5 failures, 60s timeout
     this.maxRetries = deps.maxRetries || 2
+    this.provider = deps.provider
   }
 
   /**
@@ -138,10 +141,9 @@ export class BillAnalysisService {
    * @private
    */
   private async ensureModelLoaded(): Promise<void> {
-    const provider = LLMProviderFactory.getInstance()
-    const modelId = provider.getModelId()
+    const modelId = this.provider.getModelId()
 
-    const hasModelLoaded = await provider.isModelLoaded()
+    const hasModelLoaded = await this.provider.isModelLoaded()
 
     if (hasModelLoaded) {
       this.logger.debug(`Model ${modelId} already loaded`)
@@ -151,7 +153,7 @@ export class BillAnalysisService {
     this.logger.info(`Loading model ${modelId} via provider`)
 
     await withRetry(
-      () => provider.loadModel(),
+      () => this.provider.loadModel(),
       { maxRetries: this.maxRetries, backoff: 'exponential' },
       `Load model ${modelId}`,
     )
@@ -233,7 +235,6 @@ export class BillAnalysisService {
     context: AnalysisContext,
   ): Promise<Array<AnalysisResult>> {
     const results: Array<AnalysisResult> = []
-    const provider = LLMProviderFactory.getInstance()
 
     for (const billData of billsWithParsedData) {
       const { billId, success, parsedBill, error } = billData
@@ -254,7 +255,7 @@ export class BillAnalysisService {
         // Call provider with circuit breaker protection
         const analysisOutput = await this.circuitBreaker.execute(
           () =>
-            provider.process(prompt, context.preset, {
+            this.provider.process(prompt, context.preset, {
               billId,
               jobId: context.jobId,
               promptVersion: this.promptBuilder.getVersion(),
@@ -265,7 +266,7 @@ export class BillAnalysisService {
         if (!analysisOutput) {
           throw new AppError(
             ErrorType.AI_ENGINE,
-            `${provider.getProviderName()} provider returned null`,
+            `${this.provider.getProviderName()} provider returned null`,
             { billId },
             true,
           )
@@ -402,7 +403,7 @@ export class BillAnalysisService {
  * Factory function to create a BillAnalysisService instance
  */
 export function createBillAnalysisService(
-  deps?: ServiceDependencies,
+  deps: ServiceDependencies,
 ): BillAnalysisService {
   return new BillAnalysisService(deps)
 }

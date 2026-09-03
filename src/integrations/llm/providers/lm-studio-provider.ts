@@ -1,9 +1,9 @@
 import {
   Agent,
   run,
-  setDefaultOpenAIClient,
   setTracingDisabled,
 } from '@openai/agents'
+import { OpenAIChatCompletionsModel } from '@openai/agents-openai'
 import { DateTime } from 'luxon'
 import OpenAI from 'openai'
 
@@ -58,8 +58,6 @@ export class LMStudioProvider implements ILLMProvider {
       baseURL: baseUrl,
       apiKey: 'dummy',
     })
-
-    setDefaultOpenAIClient(this.client)
 
     this.agentInstructions = config.agentInstructions
   }
@@ -255,7 +253,7 @@ export class LMStudioProvider implements ILLMProvider {
 
       this._agent = new Agent({
         name: 'Bill Analysis Agent',
-        model: this.config.modelId,
+        model: new OpenAIChatCompletionsModel(this.client, this.config.modelId),
         instructions: this.agentInstructions,
         outputType: AnalyzeBillOutputSchema,
         modelSettings: { temperature, maxTokens: this.config.maxTokens },

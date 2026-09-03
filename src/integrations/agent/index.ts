@@ -1,9 +1,9 @@
 import {
   Agent,
   run,
-  setDefaultOpenAIClient,
   setTracingDisabled,
 } from '@openai/agents'
+import { OpenAIChatCompletionsModel } from '@openai/agents-openai'
 import { DateTime } from 'luxon'
 import { OpenAI } from 'openai'
 
@@ -24,17 +24,17 @@ type ContextProcess = { jobId: string; billId: string; promptVersion: string }
 setTracingDisabled(true)
 
 export abstract class AgentEngine {
-  static logger = getServiceLogger('AgentEngine')
+  private logger = getServiceLogger('AgentEngine')
 
-  static config: LLMClientConfig | null = null
+  private config: LLMClientConfig | null = null
 
-  private static telemetryService = createTelemetryService()
+  private telemetryService = createTelemetryService()
 
-  static _agent: Agent<unknown, typeof AnalyzeBillOutputSchema> | null = null
-  static circuitBreaker = new CircuitBreaker(5, 60_000) // 5 failures, 60s timeout
+  private agent: Agent<unknown, typeof AnalyzeBillOutputSchema> | null = null
+  private circuitBreaker = new CircuitBreaker(5, 60_000) // 5 failures, 60s timeout
 
-  static getAgent(preset: LLMPreset = 'balanced') {
-    if (!this._agent) {
+  private getAgent(preset: LLMPreset = 'balanced') {
+    if (!this.agent) {
       const config = getLLMClientConfig(preset)
       const customClient = new OpenAI({
         baseURL: config.baseURL,
@@ -43,17 +43,15 @@ export abstract class AgentEngine {
 
       this.config = config
 
-      setDefaultOpenAIClient(customClient)
-
-      this._agent = new Agent({
+      this.agent = new Agent({
         name: 'Bill Analysis Agent',
-        model: config.model,
+        model: new OpenAIChatCompletionsModel(customClient, config.model),
         instructions: 'dummy',
         outputType: AnalyzeBillOutputSchema,
         modelSettings: { temperature: config.temperature },
       })
     }
-    return this._agent
+    return this.agent
   }
 
   // static async isEngineHealthy(): Promise<boolean> {
@@ -99,7 +97,7 @@ export abstract class AgentEngine {
   //   }
   // }
 
-  static async process(
+  async process(
     message: string,
     preset: LLMPreset = 'balanced',
     context?: ContextProcess,
@@ -129,7 +127,7 @@ export abstract class AgentEngine {
       const response = await this.circuitBreaker.execute(async () => {
         attempts++
 
-        const agent = AgentEngine.getAgent(preset)
+        const agent = this.getAgent(preset)
         const result = await run(agent, message, {
           maxTurns: 6,
           stream: false,
@@ -208,14 +206,14 @@ export abstract class AgentEngine {
   /**
    * Get circuit breaker status for monitoring
    */
-  static getCircuitBreakerStatus(): 'closed' | 'open' | 'half-open' {
+  getCircuitBreakerStatus(): 'closed' | 'open' | 'half-open' {
     return this.circuitBreaker.getState()
   }
 
   /**
    * Reset circuit breaker (manual recovery)
    */
-  static resetCircuitBreaker(): void {
+  resetCircuitBreaker(): void {
     this.circuitBreaker.reset()
   }
 }

@@ -85,6 +85,9 @@ export const AnalyzeJobDataSchema = z.object({
   data: AnalyzeCollectionRequestSchema,
   jobId: z.string(),
   userId: z.string(),
+  // Phase 0 transition contract. It is an opaque reference only: the worker
+  // will resolve its secret server-side in Phase 1.
+  credentialId: z.string().min(1).nullable(),
   percentage: z.number().min(0).max(100),
   status: z.enum(['pending', 'in-progress', 'completed', 'failed']),
   error: z.string().optional(),
