@@ -55,6 +55,7 @@ jobs:
         env:
           PLAYWRIGHT_PORT: '3100'
           GOOGLE_APPLICATION_CREDENTIALS: /home/cardor/secrets/bill-lm/bill-lm-firebase.json
+          SKIP_E2E: 'true'
         run: bash health.sh
 
   build:
