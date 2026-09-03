@@ -1,11 +1,13 @@
-import { initTRPC } from '@trpc/server'
+import { initTRPC, TRPCError } from '@trpc/server'
 import superjson from 'superjson'
 
 import { getServiceLogger } from '../logger.server'
 
+import type { TRPCContext } from './context'
+
 const logger = getServiceLogger('Trpc')
 
-const t = initTRPC.create({
+const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     logger.error('tRPC Error Global', {
@@ -22,13 +24,12 @@ export const createTRPCRouter = t.router
 export const publicProcedure = t.procedure
 
 
-const errorLoggingMiddleware = t.middleware(async ({ next, path, input, }) => {
+const errorLoggingMiddleware = t.middleware(async ({ next, path }) => {
   try {
     return await next()
   } catch (error) {
     logger.error('Unhandled error in privateProcedure', {
       path,
-      input,
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     })
@@ -38,4 +39,21 @@ const errorLoggingMiddleware = t.middleware(async ({ next, path, input, }) => {
   }
 })
 
-export const privateProcedure = t.procedure.use(errorLoggingMiddleware)
+const requirePrincipal = t.middleware(({ ctx, next }) => {
+  if (!ctx.principal) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: ctx.failure,
+    })
+  }
+
+  return next({
+    ctx: {
+      principal: ctx.principal,
+    },
+  })
+})
+
+export const privateProcedure = t.procedure
+  .use(errorLoggingMiddleware)
+  .use(requirePrincipal)

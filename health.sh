@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
-# health.sh — project health check for agent-harness-kit
-#
-# This script must exit 0 when the project is healthy.
-# Agents will run this before making codebase changes.
-#
-# TODO: implement your project's health checks below.
-# Examples:
-#   npm test
-#   docker compose ps | grep -q "running"
-#   psql -c "SELECT 1" > /dev/null 2>&1
-#
-# Until you implement it, this script intentionally exits 1
-# so agents know the environment is not verified.
 
-echo "health.sh not implemented yet."
-echo "Edit this file with your project's health checks."
-echo "It must exit 0 for agents to start working."
-exit 1
+set -euo pipefail
+
+run_check() {
+  local label="$1"
+  shift
+
+  printf '\n==> %s\n' "$label"
+  "$@"
+}
+
+run_check "Typecheck" bun run typecheck
+run_check "Build" bun run build
+run_check "Vitest" bun run test -- --passWithNoTests
+run_check "Playwright" bun run test:e2e
+
+printf '\nNote: Vitest may report that no tests exist yet; this bootstrap exception does not replace migration test coverage.\n'
+
+printf '\nHealth check passed.\n'

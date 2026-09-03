@@ -1,6 +1,7 @@
-import { SignUp } from '@clerk/clerk-react'
-import { Box, Center, Container, Paper } from '@mantine/core'
 import { createFileRoute } from '@tanstack/react-router'
+
+import { AuthCard } from '#/components/auth/auth-card'
+import { SignUpForm } from '#/components/auth/auth-forms'
 
 export const Route = createFileRoute('/(public)/sign-up')({
   component: SignUpPage,
@@ -8,14 +9,12 @@ export const Route = createFileRoute('/(public)/sign-up')({
 
 function SignUpPage() {
   return (
-    <Box bg="gray.0" min-h="100vh" py={40}>
-      <Container size="sm">
-        <Center>
-          <Paper p="xl" radius="md" shadow="sm">
-            <SignUp />
-          </Paper>
-        </Center>
-      </Container>
-    </Box>
+    <AuthCard
+      description="Primero crea tu acceso. Luego configuraremos cómo quieres analizar tus facturas."
+      eyebrow="Crear cuenta"
+      title="Empieza con tranquilidad"
+    >
+      <SignUpForm />
+    </AuthCard>
   )
 }

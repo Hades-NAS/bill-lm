@@ -1,6 +1,5 @@
 import { TRPCError } from '@trpc/server'
 
-import { WithAuthSchema } from '#/schema/auth'
 import {
   DeleteBillsRequestSchema,
   GetBillDetailRequestSchema,
@@ -32,28 +31,28 @@ const TypeMimes = {
 
 export const billsRouter = {
   uploadBills: privateProcedure
-    .input(WithAuthSchema(UploadBillsRequestSchema))
-    .mutation(async ({ input }) => {
-      const { auth, data } = input
+    .input(UploadBillsRequestSchema)
+    .mutation(async ({ input: data, ctx }) => {
+      const { principal } = ctx
       const { bills, collectionId } = data
 
       logger.info('Received request to upload bills', {
         collectionId,
-        userId: auth.userId,
+        userId: principal.userId,
         billCount: bills.length,
       })
 
       const collection = await prisma.collection.findFirst({
         where: {
           id: collectionId,
-          userId: auth.userId,
+          userId: principal.userId,
         },
       })
 
       if (!collection) {
         logger.warn('Collection not found for bill upload', {
           collectionId,
-          userId: auth.userId,
+          userId: principal.userId,
         })
 
         throw new TRPCError({
@@ -79,7 +78,7 @@ export const billsRouter = {
             'Failed to parse and validate invoice XML for bill upload',
             {
               collectionId,
-              userId: auth.userId,
+              userId: principal.userId,
               error: billParsed.error,
             },
           )
@@ -131,7 +130,7 @@ export const billsRouter = {
 
       logger.info('Uploading bills to storage', {
         collectionId,
-        userId: auth.userId,
+        userId: principal.userId,
         billCount: bills.length,
       })
 
@@ -149,7 +148,7 @@ export const billsRouter = {
           'Bills uploaded to storage, now saving metadata to database',
           {
             collectionId,
-            userId: auth.userId,
+            userId: principal.userId,
             billCount: bills.length,
           },
         )
@@ -166,42 +165,42 @@ export const billsRouter = {
 
         logger.info('Bill metadata saved to database successfully', {
           collectionId,
-          userId: auth.userId,
+          userId: principal.userId,
           billCount: bills.length,
         })
       })
 
       logger.info('Bills uploaded successfully', {
         collectionId,
-        userId: auth.userId,
+        userId: principal.userId,
         billCount: bills.length,
       })
 
       return { collectionId }
     }),
   deleteBills: privateProcedure
-    .input(WithAuthSchema(DeleteBillsRequestSchema))
-    .mutation(async ({ input }) => {
-      const { auth, data } = input
+    .input(DeleteBillsRequestSchema)
+    .mutation(async ({ input: data, ctx }) => {
+      const { principal } = ctx
       const { collectionId, billIds } = data
 
       logger.info('Received request to delete bills', {
         collectionId,
-        userId: auth.userId,
+        userId: principal.userId,
         billIds,
       })
 
       const collection = await prisma.collection.findUnique({
         where: {
           id: collectionId,
-          userId: auth.userId,
+          userId: principal.userId,
         },
       })
 
       if (!collection) {
         logger.warn('Collection not found for bill deletion', {
           collectionId,
-          userId: auth.userId,
+          userId: principal.userId,
         })
 
         throw new TRPCError({
@@ -226,7 +225,7 @@ export const billsRouter = {
           'Bills deleted from storage, now deleting metadata from database',
           {
             collectionId,
-            userId: auth.userId,
+            userId: principal.userId,
             billIds,
           },
         )
@@ -240,47 +239,36 @@ export const billsRouter = {
 
         logger.info('Bill metadata deleted from database successfully', {
           collectionId,
-          userId: auth.userId,
+          userId: principal.userId,
           billIds,
         })
       })
 
       logger.info('Bills deleted successfully', {
         collectionId,
-        userId: auth.userId,
+        userId: principal.userId,
         billIds,
       })
 
       return { collectionId }
     }),
   getBillDetailById: privateProcedure
-    .input(WithAuthSchema(GetBillDetailRequestSchema))
-    .query(async ({ input }) => {
-      const { auth, data } = input
-
-      if (!auth.userId) {
-        logger.warn('Unauthorized request to get bill details', {
-          billId: data.billId,
-        })
-
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in to view bill details',
-        })
-      }
+    .input(GetBillDetailRequestSchema)
+    .query(async ({ input: data, ctx }) => {
+      const { principal } = ctx
 
       const { billId } = data
 
       logger.info('Received request to get bill details', {
         billId,
-        userId: auth.userId,
+        userId: principal.userId,
       })
 
       const bill = await prisma.billHeader.findFirst({
         where: {
           id: billId,
           collection: {
-            userId: auth.userId,
+            userId: principal.userId,
           },
         },
         include: {
@@ -293,7 +281,7 @@ export const billsRouter = {
       if (!bill) {
         logger.warn('Bill not found for get details request', {
           billId,
-          userId: auth.userId,
+          userId: principal.userId,
         })
 
         throw new TRPCError({
@@ -304,7 +292,7 @@ export const billsRouter = {
 
       logger.info('Bill details retrieved successfully', {
         billId,
-        userId: auth.userId,
+        userId: principal.userId,
       })
 
       return bill

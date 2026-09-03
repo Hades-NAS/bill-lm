@@ -54,7 +54,7 @@ export const UPDATE_COLLECTION_INVALIDATION_KEYS = (id: string) => {
   const { trpc } = getContext()
   return [
     trpc.collections.list.queryKey(),
-    trpc.collections.detail.queryKey({ data: { id } }),
+    trpc.collections.detail.queryKey({ id }),
   ]
 }
 
@@ -105,7 +105,7 @@ export const useAnalyzeCollectionMutation = (
         // Add job to global store - subscription manager will handle Firestore subscription
         addJob({
           jobId: data.jobId,
-          userId: auth.userId,
+          firebaseUid: auth.userId,
           data: {
             collectionName: data.collectionName,
             collectionId: data.collectionId,

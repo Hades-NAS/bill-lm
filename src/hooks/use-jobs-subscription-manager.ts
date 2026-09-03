@@ -1,7 +1,7 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { useEffect, useRef } from 'react'
 
-import { db } from '#/integrations/firebase/firebase.client'
+import { db } from '#/integrations/firebase/firebase'
 import { useJobsStore } from '#/integrations/store/jobs.store'
 
 import { toDate } from '#/utils/firestore-date'
@@ -37,7 +37,7 @@ export function useJobsSubscriptionManager() {
 
     const jobsCollectionQuery = query(
       collection(db, FireCollections.ANALYZE_COLLECTION),
-      where('userId', '==', auth.userId),
+      where('firebaseUid', '==', auth.userId),
       where('status', 'in', ['pending', 'in-progress', 'completed', 'failed']),
       where('read', '==', false),
     )
@@ -56,7 +56,7 @@ export function useJobsSubscriptionManager() {
               status: data.status,
               error: data.error,
               data: data.data,
-              userId: data.userId,
+              firebaseUid: data.firebaseUid,
               createdAt: toDate(data.createdAt),
               updatedAt: toDate(data.updatedAt),
             }
@@ -82,5 +82,5 @@ export function useJobsSubscriptionManager() {
         unsubscribeRef.current = null
       }
     }
-  }, [auth.userId]) // Only depend on userId
+  }, [auth.userId]) // Firebase UID scopes direct Firestore reads
 }

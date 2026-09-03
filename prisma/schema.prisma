@@ -4,8 +4,8 @@ generator client {
 }
 
 generator zod {
-  provider  = "zod-prisma-types"
-  output = "../src/generated/zod"
+  provider = "zod-prisma-types"
+  output   = "../src/generated/zod"
 }
 
 datasource db {
@@ -13,43 +13,65 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(uuid())
-  
-  primaryEmail   String?     @db.VarChar(255)
-  
-  createdAt      DateTime  @default(now()) @db.Timestamptz
-  updatedAt      DateTime  @updatedAt      @db.Timestamptz
-  
+  id String @id @default(uuid())
+
+  primaryEmail String? @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
   // Relaciones
   collections    Collection[]
+  authIdentities AuthIdentity[]
 
   @@map("users")
 }
 
+enum AuthProvider {
+  FIREBASE
+}
+
+model AuthIdentity {
+  id         String       @id @default(uuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  provider   AuthProvider
+  subject    String       @db.VarChar(255)
+  linkedAt   DateTime     @default(now()) @db.Timestamptz
+  verifiedAt DateTime?    @db.Timestamptz
+  disabledAt DateTime?    @db.Timestamptz
+  createdAt  DateTime     @default(now()) @db.Timestamptz
+  updatedAt  DateTime     @updatedAt @db.Timestamptz
+
+  @@unique([provider, subject], name: "auth_identity_provider_subject_key")
+  @@index([userId], name: "auth_identity_user_id_idx")
+  @@map("auth_identities")
+}
+
 model Collection {
   // collection fields
-  id            String   @id @default(uuid())
-  name          String   @db.VarChar(100)
-  description   String?  @db.VarChar(255)
+  id          String  @id @default(uuid())
+  name        String  @db.VarChar(100)
+  description String? @db.VarChar(255)
 
   // user activity fields
-  personalIdNumber      String   @db.VarChar(10)
-  professionalIdNumber  String   @db.VarChar(13)
-  instructions  String?  @db.VarChar(555)
+  personalIdNumber     String  @db.VarChar(10)
+  professionalIdNumber String  @db.VarChar(13)
+  instructions         String? @db.VarChar(555)
 
-  year          Int
+  year Int
 
   // auditable fields
-  createdAt     DateTime @default(now()) @db.Timestamptz
-  updatedAt     DateTime @updatedAt      @db.Timestamptz
-  deletedAt     DateTime?
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime?
 
   // Foreign key to User  userId      String
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   // One-to-many relationship with Bill
-  bills         BillHeader[]
+  bills BillHeader[]
 
   @@index([year], name: "collection_year_idx")
   @@index([deletedAt], name: "collection_deleted_at_idx")
@@ -69,41 +91,39 @@ enum BillTargetType {
   OTHER
 }
 
-
 model BillHeader {
-  id          String          @id @default(uuid())
+  id String @id @default(uuid())
 
-  number      String          @db.VarChar(255)
-  name        String          @db.VarChar(255)
+  number String @db.VarChar(255)
+  name   String @db.VarChar(255)
 
-  description String?         @db.VarChar(255)
+  description String? @db.VarChar(255)
 
-  buyerName         String    @db.VarChar(255)
-  idBuyer           String    @db.VarChar(255)
-  totalWithoutTaxes Float     @db.DoublePrecision
-  taxes             Float     @db.DoublePrecision
-  totalAmount       Float     @db.DoublePrecision
+  buyerName         String @db.VarChar(255)
+  idBuyer           String @db.VarChar(255)
+  totalWithoutTaxes Float  @db.DoublePrecision
+  taxes             Float  @db.DoublePrecision
+  totalAmount       Float  @db.DoublePrecision
 
-  comercialName     String    @db.VarChar(255)
-  socialName        String    @db.VarChar(255)
-  idSeller          String    @db.VarChar(255)
-  addressMatriz     String    @db.VarChar(255)
+  comercialName String @db.VarChar(255)
+  socialName    String @db.VarChar(255)
+  idSeller      String @db.VarChar(255)
+  addressMatriz String @db.VarChar(255)
 
+  fileType    BillFileType   @default(XML)
+  billType    BillTargetType @default(PERSONAL)
+  storagePath String         @db.VarChar(255)
 
-  fileType    BillFileType    @default(XML)
-  billType    BillTargetType  @default(PERSONAL)
-  storagePath String          @db.VarChar(255)
+  percentage Float?  @db.DoublePrecision
+  reason     String? @db.VarChar(10000)
 
-  percentage  Float?          @db.DoublePrecision
-  reason      String?         @db.VarChar(10000)
-
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt        @db.Timestamptz
-  deletedAt   DateTime?
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime?
 
   // Foreign key to Collection
   collectionId String
-  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collection   Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   // One-to-many relationship with BillDetail
   details      BillDetail[]
 
@@ -113,19 +133,19 @@ model BillHeader {
 }
 
 model BillDetail {
-  id          String  @id @default(uuid())
-  description String  @db.VarChar(255)
+  id          String @id @default(uuid())
+  description String @db.VarChar(255)
   quantity    Int
-  unitPrice   Float   @db.DoublePrecision
-  discount    Float   @db.DoublePrecision
+  unitPrice   Float  @db.DoublePrecision
+  discount    Float  @db.DoublePrecision
 
   // Foreign key to Bill
-  billId      String 
-  bill        BillHeader @relation(fields: [billId], references: [id], onDelete: Cascade)
+  billId String
+  bill   BillHeader @relation(fields: [billId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt      @db.Timestamptz
-  deletedAt   DateTime?
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  deletedAt DateTime?
 
   @@index([billId], name: "bill_detail_bill_id_idx")
   @@index([deletedAt], name: "bill_detail_deleted_at_idx")

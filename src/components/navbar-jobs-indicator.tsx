@@ -22,7 +22,6 @@ import { useJobsStore } from '#/integrations/store/jobs.store'
 
 import { useIsMobile } from '#/utils/mobile'
 
-import { useUserAuth } from '#/hooks/auth'
 import { useMarkAsReadMutation } from '#/hooks/mutation/bill'
 
 import type { JobStatusItem } from '#/integrations/store/jobs.store'
@@ -158,7 +157,6 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
 }
 
 export function NavbarJobsIndicator() {
-  const auth = useUserAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
 
@@ -211,9 +209,7 @@ export function NavbarJobsIndicator() {
             size={'md'}
             variant="light"
             onClick={() =>
-              markAsReadMutation.mutate({
-                auth,
-              })
+              markAsReadMutation.mutate({})
             }
           >
             <BrushCleaning size={16} />

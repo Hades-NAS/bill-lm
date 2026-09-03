@@ -14,7 +14,7 @@ import {
 } from '@tanstack/react-router'
 // import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-import AppClerkProvider from '#/integrations/clerk/provider'
+import { FirebaseAuthProvider } from '#/integrations/firebase/auth-provider'
 // import TanStackQueryDevtools from '#/integrations/tanstack-query/devtools'
 import TanStackQueryProvider from '#/integrations/tanstack-query/root-provider'
 
@@ -202,7 +202,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <MantineProvider defaultColorScheme="auto" theme={theme}>
             <ModalsProvider>
               <Notifications position="bottom-right" />
-              <AppClerkProvider>
+              <FirebaseAuthProvider>
                 <JobsSubscriptionProvider>
                   {children}
                   {/* <TanStackDevtools
@@ -220,7 +220,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     }
                   /> */}
                 </JobsSubscriptionProvider>
-              </AppClerkProvider>
+              </FirebaseAuthProvider>
             </ModalsProvider>
           </MantineProvider>
         </TanStackQueryProvider>

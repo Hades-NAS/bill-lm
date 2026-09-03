@@ -13,6 +13,8 @@ import { Route as publicRouteRouteImport } from './routes/(public)/route'
 import { Route as privateRouteRouteImport } from './routes/(private)/route'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as publicSignUpRouteImport } from './routes/(public)/sign-up'
+import { Route as publicSignInRouteImport } from './routes/(public)/sign-in'
+import { Route as publicForgotPasswordRouteImport } from './routes/(public)/forgot-password'
 import { Route as privateUserRouteImport } from './routes/(private)/user'
 import { Route as privateJobsIndexRouteImport } from './routes/(private)/jobs/index'
 import { Route as privateCollectionsIndexRouteImport } from './routes/(private)/collections/index'
@@ -35,6 +37,16 @@ const publicIndexRoute = publicIndexRouteImport.update({
 const publicSignUpRoute = publicSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
+  getParentRoute: () => publicRouteRoute,
+} as any)
+const publicSignInRoute = publicSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => publicRouteRoute,
+} as any)
+const publicForgotPasswordRoute = publicForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => publicRouteRoute,
 } as any)
 const privateUserRoute = privateUserRouteImport.update({
@@ -65,6 +77,8 @@ const privateCollectionsIdRoute = privateCollectionsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/user': typeof privateUserRoute
+  '/forgot-password': typeof publicForgotPasswordRoute
+  '/sign-in': typeof publicSignInRoute
   '/sign-up': typeof publicSignUpRoute
   '/': typeof publicIndexRoute
   '/collections/$id': typeof privateCollectionsIdRoute
@@ -74,6 +88,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/user': typeof privateUserRoute
+  '/forgot-password': typeof publicForgotPasswordRoute
+  '/sign-in': typeof publicSignInRoute
   '/sign-up': typeof publicSignUpRoute
   '/': typeof publicIndexRoute
   '/collections/$id': typeof privateCollectionsIdRoute
@@ -86,6 +102,8 @@ export interface FileRoutesById {
   '/(private)': typeof privateRouteRouteWithChildren
   '/(public)': typeof publicRouteRouteWithChildren
   '/(private)/user': typeof privateUserRoute
+  '/(public)/forgot-password': typeof publicForgotPasswordRoute
+  '/(public)/sign-in': typeof publicSignInRoute
   '/(public)/sign-up': typeof publicSignUpRoute
   '/(public)/': typeof publicIndexRoute
   '/(private)/collections/$id': typeof privateCollectionsIdRoute
@@ -97,6 +115,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/user'
+    | '/forgot-password'
+    | '/sign-in'
     | '/sign-up'
     | '/'
     | '/collections/$id'
@@ -106,6 +126,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/user'
+    | '/forgot-password'
+    | '/sign-in'
     | '/sign-up'
     | '/'
     | '/collections/$id'
@@ -117,6 +139,8 @@ export interface FileRouteTypes {
     | '/(private)'
     | '/(public)'
     | '/(private)/user'
+    | '/(public)/forgot-password'
+    | '/(public)/sign-in'
     | '/(public)/sign-up'
     | '/(public)/'
     | '/(private)/collections/$id'
@@ -159,6 +183,20 @@ declare module '@tanstack/react-router' {
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof publicSignUpRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(public)/sign-in': {
+      id: '/(public)/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof publicSignInRouteImport
+      parentRoute: typeof publicRouteRoute
+    }
+    '/(public)/forgot-password': {
+      id: '/(public)/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof publicForgotPasswordRouteImport
       parentRoute: typeof publicRouteRoute
     }
     '/(private)/user': {
@@ -218,11 +256,15 @@ const privateRouteRouteWithChildren = privateRouteRoute._addFileChildren(
 )
 
 interface publicRouteRouteChildren {
+  publicForgotPasswordRoute: typeof publicForgotPasswordRoute
+  publicSignInRoute: typeof publicSignInRoute
   publicSignUpRoute: typeof publicSignUpRoute
   publicIndexRoute: typeof publicIndexRoute
 }
 
 const publicRouteRouteChildren: publicRouteRouteChildren = {
+  publicForgotPasswordRoute: publicForgotPasswordRoute,
+  publicSignInRoute: publicSignInRoute,
   publicSignUpRoute: publicSignUpRoute,
   publicIndexRoute: publicIndexRoute,
 }

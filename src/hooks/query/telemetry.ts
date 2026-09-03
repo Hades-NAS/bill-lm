@@ -41,10 +41,7 @@ export const useGetUserMetricsQuery = () => {
 
   return useQuery(
     trpc.telemetry.getUserMetrics.queryOptions(
-      {
-        auth,
-        data: {},
-      },
+      {},
       {
         enabled: !!auth.isSignedIn && auth.isLoaded,
       },
@@ -58,10 +55,7 @@ export const useGetUserJobsQuery = (limit: number = 50) => {
 
   return useQuery(
     trpc.telemetry.getUserJobs.queryOptions(
-      {
-        auth,
-        data: { limit },
-      },
+      { limit },
       {
         enabled: !!auth.isSignedIn && auth.isLoaded,
       },

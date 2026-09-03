@@ -14,6 +14,8 @@ export const TransactionIsolationLevelSchema = z.enum(['ReadUncommitted','ReadCo
 
 export const UserScalarFieldEnumSchema = z.enum(['id','primaryEmail','createdAt','updatedAt']);
 
+export const AuthIdentityScalarFieldEnumSchema = z.enum(['id','userId','provider','subject','linkedAt','verifiedAt','disabledAt','createdAt','updatedAt']);
+
 export const CollectionScalarFieldEnumSchema = z.enum(['id','name','description','personalIdNumber','professionalIdNumber','instructions','year','createdAt','updatedAt','deletedAt','userId']);
 
 export const BillHeaderScalarFieldEnumSchema = z.enum(['id','number','name','description','buyerName','idBuyer','totalWithoutTaxes','taxes','totalAmount','comercialName','socialName','idSeller','addressMatriz','fileType','billType','storagePath','percentage','reason','createdAt','updatedAt','deletedAt','collectionId']);
@@ -25,6 +27,10 @@ export const SortOrderSchema = z.enum(['asc','desc']);
 export const QueryModeSchema = z.enum(['default','insensitive']);
 
 export const NullsOrderSchema = z.enum(['first','last']);
+
+export const AuthProviderSchema = z.enum(['FIREBASE']);
+
+export type AuthProviderType = `${z.infer<typeof AuthProviderSchema>}`
 
 export const BillFileTypeSchema = z.enum(['XML','PDF','TEXT','MARKDOWN']);
 
@@ -50,6 +56,24 @@ export const UserSchema = z.object({
 })
 
 export type User = z.infer<typeof UserSchema>
+
+/////////////////////////////////////////
+// AUTH IDENTITY SCHEMA
+/////////////////////////////////////////
+
+export const AuthIdentitySchema = z.object({
+  provider: AuthProviderSchema,
+  id: z.uuid(),
+  userId: z.string(),
+  subject: z.string(),
+  linkedAt: z.coerce.date(),
+  verifiedAt: z.coerce.date().nullable(),
+  disabledAt: z.coerce.date().nullable(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AuthIdentity = z.infer<typeof AuthIdentitySchema>
 
 /////////////////////////////////////////
 // COLLECTION SCHEMA
@@ -129,6 +153,7 @@ export type BillDetail = z.infer<typeof BillDetailSchema>
 
 export const UserIncludeSchema: z.ZodType<Prisma.UserInclude> = z.object({
   collections: z.union([z.boolean(),z.lazy(() => CollectionFindManyArgsSchema)]).optional(),
+  authIdentities: z.union([z.boolean(),z.lazy(() => AuthIdentityFindManyArgsSchema)]).optional(),
   _count: z.union([z.boolean(),z.lazy(() => UserCountOutputTypeArgsSchema)]).optional(),
 }).strict();
 
@@ -143,6 +168,7 @@ export const UserCountOutputTypeArgsSchema: z.ZodType<Prisma.UserCountOutputType
 
 export const UserCountOutputTypeSelectSchema: z.ZodType<Prisma.UserCountOutputTypeSelect> = z.object({
   collections: z.boolean().optional(),
+  authIdentities: z.boolean().optional(),
 }).strict();
 
 export const UserSelectSchema: z.ZodType<Prisma.UserSelect> = z.object({
@@ -151,7 +177,33 @@ export const UserSelectSchema: z.ZodType<Prisma.UserSelect> = z.object({
   createdAt: z.boolean().optional(),
   updatedAt: z.boolean().optional(),
   collections: z.union([z.boolean(),z.lazy(() => CollectionFindManyArgsSchema)]).optional(),
+  authIdentities: z.union([z.boolean(),z.lazy(() => AuthIdentityFindManyArgsSchema)]).optional(),
   _count: z.union([z.boolean(),z.lazy(() => UserCountOutputTypeArgsSchema)]).optional(),
+}).strict()
+
+// AUTH IDENTITY
+//------------------------------------------------------
+
+export const AuthIdentityIncludeSchema: z.ZodType<Prisma.AuthIdentityInclude> = z.object({
+  user: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
+}).strict();
+
+export const AuthIdentityArgsSchema: z.ZodType<Prisma.AuthIdentityDefaultArgs> = z.object({
+  select: z.lazy(() => AuthIdentitySelectSchema).optional(),
+  include: z.lazy(() => AuthIdentityIncludeSchema).optional(),
+}).strict();
+
+export const AuthIdentitySelectSchema: z.ZodType<Prisma.AuthIdentitySelect> = z.object({
+  id: z.boolean().optional(),
+  userId: z.boolean().optional(),
+  provider: z.boolean().optional(),
+  subject: z.boolean().optional(),
+  linkedAt: z.boolean().optional(),
+  verifiedAt: z.boolean().optional(),
+  disabledAt: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  updatedAt: z.boolean().optional(),
+  user: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
 }).strict()
 
 // COLLECTION
@@ -282,6 +334,7 @@ export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> = z.strictOb
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
   collections: z.lazy(() => CollectionListRelationFilterSchema).optional(),
+  authIdentities: z.lazy(() => AuthIdentityListRelationFilterSchema).optional(),
 });
 
 export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWithRelationInput> = z.strictObject({
@@ -290,6 +343,7 @@ export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWit
   createdAt: z.lazy(() => SortOrderSchema).optional(),
   updatedAt: z.lazy(() => SortOrderSchema).optional(),
   collections: z.lazy(() => CollectionOrderByRelationAggregateInputSchema).optional(),
+  authIdentities: z.lazy(() => AuthIdentityOrderByRelationAggregateInputSchema).optional(),
 });
 
 export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> = z.object({
@@ -304,6 +358,7 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
   collections: z.lazy(() => CollectionListRelationFilterSchema).optional(),
+  authIdentities: z.lazy(() => AuthIdentityListRelationFilterSchema).optional(),
 }));
 
 export const UserOrderByWithAggregationInputSchema: z.ZodType<Prisma.UserOrderByWithAggregationInput> = z.strictObject({
@@ -322,6 +377,94 @@ export const UserScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.UserScal
   NOT: z.union([ z.lazy(() => UserScalarWhereWithAggregatesInputSchema), z.lazy(() => UserScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema), z.string() ]).optional(),
   primaryEmail: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema), z.string() ]).optional().nullable(),
+  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema), z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema), z.coerce.date() ]).optional(),
+});
+
+export const AuthIdentityWhereInputSchema: z.ZodType<Prisma.AuthIdentityWhereInput> = z.strictObject({
+  AND: z.union([ z.lazy(() => AuthIdentityWhereInputSchema), z.lazy(() => AuthIdentityWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => AuthIdentityWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => AuthIdentityWhereInputSchema), z.lazy(() => AuthIdentityWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  provider: z.union([ z.lazy(() => EnumAuthProviderFilterSchema), z.lazy(() => AuthProviderSchema) ]).optional(),
+  subject: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  linkedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  verifiedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date() ]).optional().nullable(),
+  disabledAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date() ]).optional().nullable(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  user: z.union([ z.lazy(() => UserScalarRelationFilterSchema), z.lazy(() => UserWhereInputSchema) ]).optional(),
+});
+
+export const AuthIdentityOrderByWithRelationInputSchema: z.ZodType<Prisma.AuthIdentityOrderByWithRelationInput> = z.strictObject({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  provider: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  linkedAt: z.lazy(() => SortOrderSchema).optional(),
+  verifiedAt: z.union([ z.lazy(() => SortOrderSchema), z.lazy(() => SortOrderInputSchema) ]).optional(),
+  disabledAt: z.union([ z.lazy(() => SortOrderSchema), z.lazy(() => SortOrderInputSchema) ]).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  user: z.lazy(() => UserOrderByWithRelationInputSchema).optional(),
+});
+
+export const AuthIdentityWhereUniqueInputSchema: z.ZodType<Prisma.AuthIdentityWhereUniqueInput> = z.union([
+  z.object({
+    id: z.uuid(),
+    auth_identity_provider_subject_key: z.lazy(() => AuthIdentityAuth_identity_provider_subject_keyCompoundUniqueInputSchema),
+  }),
+  z.object({
+    id: z.uuid(),
+  }),
+  z.object({
+    auth_identity_provider_subject_key: z.lazy(() => AuthIdentityAuth_identity_provider_subject_keyCompoundUniqueInputSchema),
+  }),
+])
+.and(z.strictObject({
+  id: z.uuid().optional(),
+  auth_identity_provider_subject_key: z.lazy(() => AuthIdentityAuth_identity_provider_subject_keyCompoundUniqueInputSchema).optional(),
+  AND: z.union([ z.lazy(() => AuthIdentityWhereInputSchema), z.lazy(() => AuthIdentityWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => AuthIdentityWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => AuthIdentityWhereInputSchema), z.lazy(() => AuthIdentityWhereInputSchema).array() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  provider: z.union([ z.lazy(() => EnumAuthProviderFilterSchema), z.lazy(() => AuthProviderSchema) ]).optional(),
+  subject: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  linkedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  verifiedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date() ]).optional().nullable(),
+  disabledAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date() ]).optional().nullable(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  user: z.union([ z.lazy(() => UserScalarRelationFilterSchema), z.lazy(() => UserWhereInputSchema) ]).optional(),
+}));
+
+export const AuthIdentityOrderByWithAggregationInputSchema: z.ZodType<Prisma.AuthIdentityOrderByWithAggregationInput> = z.strictObject({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  provider: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  linkedAt: z.lazy(() => SortOrderSchema).optional(),
+  verifiedAt: z.union([ z.lazy(() => SortOrderSchema), z.lazy(() => SortOrderInputSchema) ]).optional(),
+  disabledAt: z.union([ z.lazy(() => SortOrderSchema), z.lazy(() => SortOrderInputSchema) ]).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => AuthIdentityCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => AuthIdentityMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => AuthIdentityMinOrderByAggregateInputSchema).optional(),
+});
+
+export const AuthIdentityScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.AuthIdentityScalarWhereWithAggregatesInput> = z.strictObject({
+  AND: z.union([ z.lazy(() => AuthIdentityScalarWhereWithAggregatesInputSchema), z.lazy(() => AuthIdentityScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => AuthIdentityScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => AuthIdentityScalarWhereWithAggregatesInputSchema), z.lazy(() => AuthIdentityScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema), z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema), z.string() ]).optional(),
+  provider: z.union([ z.lazy(() => EnumAuthProviderWithAggregatesFilterSchema), z.lazy(() => AuthProviderSchema) ]).optional(),
+  subject: z.union([ z.lazy(() => StringWithAggregatesFilterSchema), z.string() ]).optional(),
+  linkedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema), z.coerce.date() ]).optional(),
+  verifiedAt: z.union([ z.lazy(() => DateTimeNullableWithAggregatesFilterSchema), z.coerce.date() ]).optional().nullable(),
+  disabledAt: z.union([ z.lazy(() => DateTimeNullableWithAggregatesFilterSchema), z.coerce.date() ]).optional().nullable(),
   createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema), z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema), z.coerce.date() ]).optional(),
 });
@@ -653,6 +796,7 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.strict
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
   collections: z.lazy(() => CollectionCreateNestedManyWithoutUserInputSchema).optional(),
+  authIdentities: z.lazy(() => AuthIdentityCreateNestedManyWithoutUserInputSchema).optional(),
 });
 
 export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreateInput> = z.strictObject({
@@ -661,6 +805,7 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
   collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
+  authIdentities: z.lazy(() => AuthIdentityUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
 });
 
 export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.strictObject({
@@ -669,6 +814,7 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.strict
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   collections: z.lazy(() => CollectionUpdateManyWithoutUserNestedInputSchema).optional(),
+  authIdentities: z.lazy(() => AuthIdentityUpdateManyWithoutUserNestedInputSchema).optional(),
 });
 
 export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdateInput> = z.strictObject({
@@ -677,6 +823,7 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
+  authIdentities: z.lazy(() => AuthIdentityUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
 });
 
 export const UserCreateManyInputSchema: z.ZodType<Prisma.UserCreateManyInput> = z.strictObject({
@@ -696,6 +843,89 @@ export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyM
 export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedUpdateManyInput> = z.strictObject({
   id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   primaryEmail: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+});
+
+export const AuthIdentityCreateInputSchema: z.ZodType<Prisma.AuthIdentityCreateInput> = z.strictObject({
+  id: z.uuid().optional(),
+  provider: z.lazy(() => AuthProviderSchema),
+  subject: z.string(),
+  linkedAt: z.coerce.date().optional(),
+  verifiedAt: z.coerce.date().optional().nullable(),
+  disabledAt: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  user: z.lazy(() => UserCreateNestedOneWithoutAuthIdentitiesInputSchema),
+});
+
+export const AuthIdentityUncheckedCreateInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedCreateInput> = z.strictObject({
+  id: z.uuid().optional(),
+  userId: z.string(),
+  provider: z.lazy(() => AuthProviderSchema),
+  subject: z.string(),
+  linkedAt: z.coerce.date().optional(),
+  verifiedAt: z.coerce.date().optional().nullable(),
+  disabledAt: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
+
+export const AuthIdentityUpdateInputSchema: z.ZodType<Prisma.AuthIdentityUpdateInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  provider: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => EnumAuthProviderFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  linkedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  verifiedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  disabledAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutAuthIdentitiesNestedInputSchema).optional(),
+});
+
+export const AuthIdentityUncheckedUpdateInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedUpdateInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  provider: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => EnumAuthProviderFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  linkedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  verifiedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  disabledAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+});
+
+export const AuthIdentityCreateManyInputSchema: z.ZodType<Prisma.AuthIdentityCreateManyInput> = z.strictObject({
+  id: z.uuid().optional(),
+  userId: z.string(),
+  provider: z.lazy(() => AuthProviderSchema),
+  subject: z.string(),
+  linkedAt: z.coerce.date().optional(),
+  verifiedAt: z.coerce.date().optional().nullable(),
+  disabledAt: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
+
+export const AuthIdentityUpdateManyMutationInputSchema: z.ZodType<Prisma.AuthIdentityUpdateManyMutationInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  provider: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => EnumAuthProviderFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  linkedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  verifiedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  disabledAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+});
+
+export const AuthIdentityUncheckedUpdateManyInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedUpdateManyInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  provider: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => EnumAuthProviderFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  linkedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  verifiedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  disabledAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 });
@@ -1109,12 +1339,22 @@ export const CollectionListRelationFilterSchema: z.ZodType<Prisma.CollectionList
   none: z.lazy(() => CollectionWhereInputSchema).optional(),
 });
 
+export const AuthIdentityListRelationFilterSchema: z.ZodType<Prisma.AuthIdentityListRelationFilter> = z.strictObject({
+  every: z.lazy(() => AuthIdentityWhereInputSchema).optional(),
+  some: z.lazy(() => AuthIdentityWhereInputSchema).optional(),
+  none: z.lazy(() => AuthIdentityWhereInputSchema).optional(),
+});
+
 export const SortOrderInputSchema: z.ZodType<Prisma.SortOrderInput> = z.strictObject({
   sort: z.lazy(() => SortOrderSchema),
   nulls: z.lazy(() => NullsOrderSchema).optional(),
 });
 
 export const CollectionOrderByRelationAggregateInputSchema: z.ZodType<Prisma.CollectionOrderByRelationAggregateInput> = z.strictObject({
+  _count: z.lazy(() => SortOrderSchema).optional(),
+});
+
+export const AuthIdentityOrderByRelationAggregateInputSchema: z.ZodType<Prisma.AuthIdentityOrderByRelationAggregateInput> = z.strictObject({
   _count: z.lazy(() => SortOrderSchema).optional(),
 });
 
@@ -1189,15 +1429,11 @@ export const DateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeWithAg
   _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
 });
 
-export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.strictObject({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
+export const EnumAuthProviderFilterSchema: z.ZodType<Prisma.EnumAuthProviderFilter> = z.strictObject({
+  equals: z.lazy(() => AuthProviderSchema).optional(),
+  in: z.lazy(() => AuthProviderSchema).array().optional(),
+  notIn: z.lazy(() => AuthProviderSchema).array().optional(),
+  not: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => NestedEnumAuthProviderFilterSchema) ]).optional(),
 });
 
 export const DateTimeNullableFilterSchema: z.ZodType<Prisma.DateTimeNullableFilter> = z.strictObject({
@@ -1214,6 +1450,82 @@ export const DateTimeNullableFilterSchema: z.ZodType<Prisma.DateTimeNullableFilt
 export const UserScalarRelationFilterSchema: z.ZodType<Prisma.UserScalarRelationFilter> = z.strictObject({
   is: z.lazy(() => UserWhereInputSchema).optional(),
   isNot: z.lazy(() => UserWhereInputSchema).optional(),
+});
+
+export const AuthIdentityAuth_identity_provider_subject_keyCompoundUniqueInputSchema: z.ZodType<Prisma.AuthIdentityAuth_identity_provider_subject_keyCompoundUniqueInput> = z.strictObject({
+  provider: z.lazy(() => AuthProviderSchema),
+  subject: z.string(),
+});
+
+export const AuthIdentityCountOrderByAggregateInputSchema: z.ZodType<Prisma.AuthIdentityCountOrderByAggregateInput> = z.strictObject({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  provider: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  linkedAt: z.lazy(() => SortOrderSchema).optional(),
+  verifiedAt: z.lazy(() => SortOrderSchema).optional(),
+  disabledAt: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+});
+
+export const AuthIdentityMaxOrderByAggregateInputSchema: z.ZodType<Prisma.AuthIdentityMaxOrderByAggregateInput> = z.strictObject({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  provider: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  linkedAt: z.lazy(() => SortOrderSchema).optional(),
+  verifiedAt: z.lazy(() => SortOrderSchema).optional(),
+  disabledAt: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+});
+
+export const AuthIdentityMinOrderByAggregateInputSchema: z.ZodType<Prisma.AuthIdentityMinOrderByAggregateInput> = z.strictObject({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  provider: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  linkedAt: z.lazy(() => SortOrderSchema).optional(),
+  verifiedAt: z.lazy(() => SortOrderSchema).optional(),
+  disabledAt: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+});
+
+export const EnumAuthProviderWithAggregatesFilterSchema: z.ZodType<Prisma.EnumAuthProviderWithAggregatesFilter> = z.strictObject({
+  equals: z.lazy(() => AuthProviderSchema).optional(),
+  in: z.lazy(() => AuthProviderSchema).array().optional(),
+  notIn: z.lazy(() => AuthProviderSchema).array().optional(),
+  not: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => NestedEnumAuthProviderWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumAuthProviderFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumAuthProviderFilterSchema).optional(),
+});
+
+export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> = z.strictObject({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+});
+
+export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.strictObject({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
 });
 
 export const BillHeaderListRelationFilterSchema: z.ZodType<Prisma.BillHeaderListRelationFilter> = z.strictObject({
@@ -1290,20 +1602,6 @@ export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFi
   _sum: z.lazy(() => NestedIntFilterSchema).optional(),
   _min: z.lazy(() => NestedIntFilterSchema).optional(),
   _max: z.lazy(() => NestedIntFilterSchema).optional(),
-});
-
-export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> = z.strictObject({
-  equals: z.coerce.date().optional().nullable(),
-  in: z.coerce.date().array().optional().nullable(),
-  notIn: z.coerce.date().array().optional().nullable(),
-  lt: z.coerce.date().optional(),
-  lte: z.coerce.date().optional(),
-  gt: z.coerce.date().optional(),
-  gte: z.coerce.date().optional(),
-  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
-  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
-  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
-  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
 });
 
 export const FloatFilterSchema: z.ZodType<Prisma.FloatFilter> = z.strictObject({
@@ -1558,11 +1856,25 @@ export const CollectionCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.
   connect: z.union([ z.lazy(() => CollectionWhereUniqueInputSchema), z.lazy(() => CollectionWhereUniqueInputSchema).array() ]).optional(),
 });
 
+export const AuthIdentityCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityCreateNestedManyWithoutUserInput> = z.strictObject({
+  create: z.union([ z.lazy(() => AuthIdentityCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateWithoutUserInputSchema).array(), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => AuthIdentityCreateManyUserInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+});
+
 export const CollectionUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput> = z.strictObject({
   create: z.union([ z.lazy(() => CollectionCreateWithoutUserInputSchema), z.lazy(() => CollectionCreateWithoutUserInputSchema).array(), z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema), z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema), z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
   createMany: z.lazy(() => CollectionCreateManyUserInputEnvelopeSchema).optional(),
   connect: z.union([ z.lazy(() => CollectionWhereUniqueInputSchema), z.lazy(() => CollectionWhereUniqueInputSchema).array() ]).optional(),
+});
+
+export const AuthIdentityUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedCreateNestedManyWithoutUserInput> = z.strictObject({
+  create: z.union([ z.lazy(() => AuthIdentityCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateWithoutUserInputSchema).array(), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => AuthIdentityCreateManyUserInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
 });
 
 export const StringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.StringFieldUpdateOperationsInput> = z.strictObject({
@@ -1591,6 +1903,20 @@ export const CollectionUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.
   deleteMany: z.union([ z.lazy(() => CollectionScalarWhereInputSchema), z.lazy(() => CollectionScalarWhereInputSchema).array() ]).optional(),
 });
 
+export const AuthIdentityUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.AuthIdentityUpdateManyWithoutUserNestedInput> = z.strictObject({
+  create: z.union([ z.lazy(() => AuthIdentityCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateWithoutUserInputSchema).array(), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => AuthIdentityUpsertWithWhereUniqueWithoutUserInputSchema), z.lazy(() => AuthIdentityUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => AuthIdentityCreateManyUserInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => AuthIdentityUpdateWithWhereUniqueWithoutUserInputSchema), z.lazy(() => AuthIdentityUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => AuthIdentityUpdateManyWithWhereWithoutUserInputSchema), z.lazy(() => AuthIdentityUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => AuthIdentityScalarWhereInputSchema), z.lazy(() => AuthIdentityScalarWhereInputSchema).array() ]).optional(),
+});
+
 export const CollectionUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput> = z.strictObject({
   create: z.union([ z.lazy(() => CollectionCreateWithoutUserInputSchema), z.lazy(() => CollectionCreateWithoutUserInputSchema).array(), z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema), z.lazy(() => CollectionUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
   connectOrCreate: z.union([ z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema), z.lazy(() => CollectionCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
@@ -1603,6 +1929,42 @@ export const CollectionUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodTyp
   update: z.union([ z.lazy(() => CollectionUpdateWithWhereUniqueWithoutUserInputSchema), z.lazy(() => CollectionUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
   updateMany: z.union([ z.lazy(() => CollectionUpdateManyWithWhereWithoutUserInputSchema), z.lazy(() => CollectionUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
   deleteMany: z.union([ z.lazy(() => CollectionScalarWhereInputSchema), z.lazy(() => CollectionScalarWhereInputSchema).array() ]).optional(),
+});
+
+export const AuthIdentityUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedUpdateManyWithoutUserNestedInput> = z.strictObject({
+  create: z.union([ z.lazy(() => AuthIdentityCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateWithoutUserInputSchema).array(), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema), z.lazy(() => AuthIdentityCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => AuthIdentityUpsertWithWhereUniqueWithoutUserInputSchema), z.lazy(() => AuthIdentityUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => AuthIdentityCreateManyUserInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => AuthIdentityWhereUniqueInputSchema), z.lazy(() => AuthIdentityWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => AuthIdentityUpdateWithWhereUniqueWithoutUserInputSchema), z.lazy(() => AuthIdentityUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => AuthIdentityUpdateManyWithWhereWithoutUserInputSchema), z.lazy(() => AuthIdentityUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => AuthIdentityScalarWhereInputSchema), z.lazy(() => AuthIdentityScalarWhereInputSchema).array() ]).optional(),
+});
+
+export const UserCreateNestedOneWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutAuthIdentitiesInput> = z.strictObject({
+  create: z.union([ z.lazy(() => UserCreateWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUncheckedCreateWithoutAuthIdentitiesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutAuthIdentitiesInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+});
+
+export const EnumAuthProviderFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumAuthProviderFieldUpdateOperationsInput> = z.strictObject({
+  set: z.lazy(() => AuthProviderSchema).optional(),
+});
+
+export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> = z.strictObject({
+  set: z.coerce.date().optional().nullable(),
+});
+
+export const UserUpdateOneRequiredWithoutAuthIdentitiesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutAuthIdentitiesNestedInput> = z.strictObject({
+  create: z.union([ z.lazy(() => UserCreateWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUncheckedCreateWithoutAuthIdentitiesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutAuthIdentitiesInputSchema).optional(),
+  upsert: z.lazy(() => UserUpsertWithoutAuthIdentitiesInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUpdateWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUncheckedUpdateWithoutAuthIdentitiesInputSchema) ]).optional(),
 });
 
 export const UserCreateNestedOneWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutCollectionsInput> = z.strictObject({
@@ -1631,10 +1993,6 @@ export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdat
   decrement: z.number().optional(),
   multiply: z.number().optional(),
   divide: z.number().optional(),
-});
-
-export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> = z.strictObject({
-  set: z.coerce.date().optional().nullable(),
 });
 
 export const UserUpdateOneRequiredWithoutCollectionsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutCollectionsNestedInput> = z.strictObject({
@@ -1876,6 +2234,13 @@ export const NestedDateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDa
   _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
 });
 
+export const NestedEnumAuthProviderFilterSchema: z.ZodType<Prisma.NestedEnumAuthProviderFilter> = z.strictObject({
+  equals: z.lazy(() => AuthProviderSchema).optional(),
+  in: z.lazy(() => AuthProviderSchema).array().optional(),
+  notIn: z.lazy(() => AuthProviderSchema).array().optional(),
+  not: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => NestedEnumAuthProviderFilterSchema) ]).optional(),
+});
+
 export const NestedDateTimeNullableFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableFilter> = z.strictObject({
   equals: z.coerce.date().optional().nullable(),
   in: z.coerce.date().array().optional().nullable(),
@@ -1885,6 +2250,30 @@ export const NestedDateTimeNullableFilterSchema: z.ZodType<Prisma.NestedDateTime
   gt: z.coerce.date().optional(),
   gte: z.coerce.date().optional(),
   not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableFilterSchema) ]).optional().nullable(),
+});
+
+export const NestedEnumAuthProviderWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumAuthProviderWithAggregatesFilter> = z.strictObject({
+  equals: z.lazy(() => AuthProviderSchema).optional(),
+  in: z.lazy(() => AuthProviderSchema).array().optional(),
+  notIn: z.lazy(() => AuthProviderSchema).array().optional(),
+  not: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => NestedEnumAuthProviderWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumAuthProviderFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumAuthProviderFilterSchema).optional(),
+});
+
+export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableWithAggregatesFilter> = z.strictObject({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
 });
 
 export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> = z.strictObject({
@@ -1912,20 +2301,6 @@ export const NestedFloatFilterSchema: z.ZodType<Prisma.NestedFloatFilter> = z.st
   gt: z.number().optional(),
   gte: z.number().optional(),
   not: z.union([ z.number(),z.lazy(() => NestedFloatFilterSchema) ]).optional(),
-});
-
-export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableWithAggregatesFilter> = z.strictObject({
-  equals: z.coerce.date().optional().nullable(),
-  in: z.coerce.date().array().optional().nullable(),
-  notIn: z.coerce.date().array().optional().nullable(),
-  lt: z.coerce.date().optional(),
-  lte: z.coerce.date().optional(),
-  gt: z.coerce.date().optional(),
-  gte: z.coerce.date().optional(),
-  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
-  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
-  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
-  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
 });
 
 export const NestedEnumBillFileTypeFilterSchema: z.ZodType<Prisma.NestedEnumBillFileTypeFilter> = z.strictObject({
@@ -2043,6 +2418,38 @@ export const CollectionCreateManyUserInputEnvelopeSchema: z.ZodType<Prisma.Colle
   skipDuplicates: z.boolean().optional(),
 });
 
+export const AuthIdentityCreateWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityCreateWithoutUserInput> = z.strictObject({
+  id: z.uuid().optional(),
+  provider: z.lazy(() => AuthProviderSchema),
+  subject: z.string(),
+  linkedAt: z.coerce.date().optional(),
+  verifiedAt: z.coerce.date().optional().nullable(),
+  disabledAt: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
+
+export const AuthIdentityUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedCreateWithoutUserInput> = z.strictObject({
+  id: z.uuid().optional(),
+  provider: z.lazy(() => AuthProviderSchema),
+  subject: z.string(),
+  linkedAt: z.coerce.date().optional(),
+  verifiedAt: z.coerce.date().optional().nullable(),
+  disabledAt: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
+
+export const AuthIdentityCreateOrConnectWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityCreateOrConnectWithoutUserInput> = z.strictObject({
+  where: z.lazy(() => AuthIdentityWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => AuthIdentityCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema) ]),
+});
+
+export const AuthIdentityCreateManyUserInputEnvelopeSchema: z.ZodType<Prisma.AuthIdentityCreateManyUserInputEnvelope> = z.strictObject({
+  data: z.union([ z.lazy(() => AuthIdentityCreateManyUserInputSchema), z.lazy(() => AuthIdentityCreateManyUserInputSchema).array() ]),
+  skipDuplicates: z.boolean().optional(),
+});
+
 export const CollectionUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutUserInput> = z.strictObject({
   where: z.lazy(() => CollectionWhereUniqueInputSchema),
   update: z.union([ z.lazy(() => CollectionUpdateWithoutUserInputSchema), z.lazy(() => CollectionUncheckedUpdateWithoutUserInputSchema) ]),
@@ -2076,11 +2483,91 @@ export const CollectionScalarWhereInputSchema: z.ZodType<Prisma.CollectionScalar
   userId: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
 });
 
+export const AuthIdentityUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUpsertWithWhereUniqueWithoutUserInput> = z.strictObject({
+  where: z.lazy(() => AuthIdentityWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => AuthIdentityUpdateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedUpdateWithoutUserInputSchema) ]),
+  create: z.union([ z.lazy(() => AuthIdentityCreateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedCreateWithoutUserInputSchema) ]),
+});
+
+export const AuthIdentityUpdateWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUpdateWithWhereUniqueWithoutUserInput> = z.strictObject({
+  where: z.lazy(() => AuthIdentityWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => AuthIdentityUpdateWithoutUserInputSchema), z.lazy(() => AuthIdentityUncheckedUpdateWithoutUserInputSchema) ]),
+});
+
+export const AuthIdentityUpdateManyWithWhereWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUpdateManyWithWhereWithoutUserInput> = z.strictObject({
+  where: z.lazy(() => AuthIdentityScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => AuthIdentityUpdateManyMutationInputSchema), z.lazy(() => AuthIdentityUncheckedUpdateManyWithoutUserInputSchema) ]),
+});
+
+export const AuthIdentityScalarWhereInputSchema: z.ZodType<Prisma.AuthIdentityScalarWhereInput> = z.strictObject({
+  AND: z.union([ z.lazy(() => AuthIdentityScalarWhereInputSchema), z.lazy(() => AuthIdentityScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => AuthIdentityScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => AuthIdentityScalarWhereInputSchema), z.lazy(() => AuthIdentityScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  provider: z.union([ z.lazy(() => EnumAuthProviderFilterSchema), z.lazy(() => AuthProviderSchema) ]).optional(),
+  subject: z.union([ z.lazy(() => StringFilterSchema), z.string() ]).optional(),
+  linkedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  verifiedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date() ]).optional().nullable(),
+  disabledAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date() ]).optional().nullable(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema), z.coerce.date() ]).optional(),
+});
+
+export const UserCreateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserCreateWithoutAuthIdentitiesInput> = z.strictObject({
+  id: z.uuid().optional(),
+  primaryEmail: z.string().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  collections: z.lazy(() => CollectionCreateNestedManyWithoutUserInputSchema).optional(),
+});
+
+export const UserUncheckedCreateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutAuthIdentitiesInput> = z.strictObject({
+  id: z.uuid().optional(),
+  primaryEmail: z.string().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  collections: z.lazy(() => CollectionUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
+});
+
+export const UserCreateOrConnectWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserCreateOrConnectWithoutAuthIdentitiesInput> = z.strictObject({
+  where: z.lazy(() => UserWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => UserCreateWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUncheckedCreateWithoutAuthIdentitiesInputSchema) ]),
+});
+
+export const UserUpsertWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserUpsertWithoutAuthIdentitiesInput> = z.strictObject({
+  update: z.union([ z.lazy(() => UserUpdateWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUncheckedUpdateWithoutAuthIdentitiesInputSchema) ]),
+  create: z.union([ z.lazy(() => UserCreateWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUncheckedCreateWithoutAuthIdentitiesInputSchema) ]),
+  where: z.lazy(() => UserWhereInputSchema).optional(),
+});
+
+export const UserUpdateToOneWithWhereWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserUpdateToOneWithWhereWithoutAuthIdentitiesInput> = z.strictObject({
+  where: z.lazy(() => UserWhereInputSchema).optional(),
+  data: z.union([ z.lazy(() => UserUpdateWithoutAuthIdentitiesInputSchema), z.lazy(() => UserUncheckedUpdateWithoutAuthIdentitiesInputSchema) ]),
+});
+
+export const UserUpdateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserUpdateWithoutAuthIdentitiesInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  primaryEmail: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  collections: z.lazy(() => CollectionUpdateManyWithoutUserNestedInputSchema).optional(),
+});
+
+export const UserUncheckedUpdateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutAuthIdentitiesInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  primaryEmail: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  collections: z.lazy(() => CollectionUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
+});
+
 export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreateWithoutCollectionsInput> = z.strictObject({
   id: z.uuid().optional(),
   primaryEmail: z.string().optional().nullable(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  authIdentities: z.lazy(() => AuthIdentityCreateNestedManyWithoutUserInputSchema).optional(),
 });
 
 export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutCollectionsInput> = z.strictObject({
@@ -2088,6 +2575,7 @@ export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.
   primaryEmail: z.string().optional().nullable(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  authIdentities: z.lazy(() => AuthIdentityUncheckedCreateNestedManyWithoutUserInputSchema).optional(),
 });
 
 export const UserCreateOrConnectWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreateOrConnectWithoutCollectionsInput> = z.strictObject({
@@ -2171,6 +2659,7 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
   primaryEmail: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  authIdentities: z.lazy(() => AuthIdentityUpdateManyWithoutUserNestedInputSchema).optional(),
 });
 
 export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutCollectionsInput> = z.strictObject({
@@ -2178,6 +2667,7 @@ export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.
   primaryEmail: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  authIdentities: z.lazy(() => AuthIdentityUncheckedUpdateManyWithoutUserNestedInputSchema).optional(),
 });
 
 export const BillHeaderUpsertWithWhereUniqueWithoutCollectionInputSchema: z.ZodType<Prisma.BillHeaderUpsertWithWhereUniqueWithoutCollectionInput> = z.strictObject({
@@ -2488,6 +2978,17 @@ export const CollectionCreateManyUserInputSchema: z.ZodType<Prisma.CollectionCre
   deletedAt: z.coerce.date().optional().nullable(),
 });
 
+export const AuthIdentityCreateManyUserInputSchema: z.ZodType<Prisma.AuthIdentityCreateManyUserInput> = z.strictObject({
+  id: z.uuid().optional(),
+  provider: z.lazy(() => AuthProviderSchema),
+  subject: z.string(),
+  linkedAt: z.coerce.date().optional(),
+  verifiedAt: z.coerce.date().optional().nullable(),
+  disabledAt: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
+
 export const CollectionUpdateWithoutUserInputSchema: z.ZodType<Prisma.CollectionUpdateWithoutUserInput> = z.strictObject({
   id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -2527,6 +3028,39 @@ export const CollectionUncheckedUpdateManyWithoutUserInputSchema: z.ZodType<Pris
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   deletedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+});
+
+export const AuthIdentityUpdateWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUpdateWithoutUserInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  provider: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => EnumAuthProviderFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  linkedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  verifiedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  disabledAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+});
+
+export const AuthIdentityUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedUpdateWithoutUserInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  provider: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => EnumAuthProviderFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  linkedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  verifiedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  disabledAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+});
+
+export const AuthIdentityUncheckedUpdateManyWithoutUserInputSchema: z.ZodType<Prisma.AuthIdentityUncheckedUpdateManyWithoutUserInput> = z.strictObject({
+  id: z.union([ z.uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  provider: z.union([ z.lazy(() => AuthProviderSchema), z.lazy(() => EnumAuthProviderFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  linkedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  verifiedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  disabledAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 });
 
 export const BillHeaderCreateManyCollectionInputSchema: z.ZodType<Prisma.BillHeaderCreateManyCollectionInput> = z.strictObject({
@@ -2735,6 +3269,68 @@ export const UserFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.UserFindUniqueOrT
   select: UserSelectSchema.optional(),
   include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema, 
+}).strict();
+
+export const AuthIdentityFindFirstArgsSchema: z.ZodType<Prisma.AuthIdentityFindFirstArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  where: AuthIdentityWhereInputSchema.optional(), 
+  orderBy: z.union([ AuthIdentityOrderByWithRelationInputSchema.array(), AuthIdentityOrderByWithRelationInputSchema ]).optional(),
+  cursor: AuthIdentityWhereUniqueInputSchema.optional(), 
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ AuthIdentityScalarFieldEnumSchema, AuthIdentityScalarFieldEnumSchema.array() ]).optional(),
+}).strict();
+
+export const AuthIdentityFindFirstOrThrowArgsSchema: z.ZodType<Prisma.AuthIdentityFindFirstOrThrowArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  where: AuthIdentityWhereInputSchema.optional(), 
+  orderBy: z.union([ AuthIdentityOrderByWithRelationInputSchema.array(), AuthIdentityOrderByWithRelationInputSchema ]).optional(),
+  cursor: AuthIdentityWhereUniqueInputSchema.optional(), 
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ AuthIdentityScalarFieldEnumSchema, AuthIdentityScalarFieldEnumSchema.array() ]).optional(),
+}).strict();
+
+export const AuthIdentityFindManyArgsSchema: z.ZodType<Prisma.AuthIdentityFindManyArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  where: AuthIdentityWhereInputSchema.optional(), 
+  orderBy: z.union([ AuthIdentityOrderByWithRelationInputSchema.array(), AuthIdentityOrderByWithRelationInputSchema ]).optional(),
+  cursor: AuthIdentityWhereUniqueInputSchema.optional(), 
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ AuthIdentityScalarFieldEnumSchema, AuthIdentityScalarFieldEnumSchema.array() ]).optional(),
+}).strict();
+
+export const AuthIdentityAggregateArgsSchema: z.ZodType<Prisma.AuthIdentityAggregateArgs> = z.object({
+  where: AuthIdentityWhereInputSchema.optional(), 
+  orderBy: z.union([ AuthIdentityOrderByWithRelationInputSchema.array(), AuthIdentityOrderByWithRelationInputSchema ]).optional(),
+  cursor: AuthIdentityWhereUniqueInputSchema.optional(), 
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict();
+
+export const AuthIdentityGroupByArgsSchema: z.ZodType<Prisma.AuthIdentityGroupByArgs> = z.object({
+  where: AuthIdentityWhereInputSchema.optional(), 
+  orderBy: z.union([ AuthIdentityOrderByWithAggregationInputSchema.array(), AuthIdentityOrderByWithAggregationInputSchema ]).optional(),
+  by: AuthIdentityScalarFieldEnumSchema.array(), 
+  having: AuthIdentityScalarWhereWithAggregatesInputSchema.optional(), 
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict();
+
+export const AuthIdentityFindUniqueArgsSchema: z.ZodType<Prisma.AuthIdentityFindUniqueArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  where: AuthIdentityWhereUniqueInputSchema, 
+}).strict();
+
+export const AuthIdentityFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.AuthIdentityFindUniqueOrThrowArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  where: AuthIdentityWhereUniqueInputSchema, 
 }).strict();
 
 export const CollectionFindFirstArgsSchema: z.ZodType<Prisma.CollectionFindFirstArgs> = z.object({
@@ -2974,6 +3570,60 @@ export const UserUpdateManyAndReturnArgsSchema: z.ZodType<Prisma.UserUpdateManyA
 
 export const UserDeleteManyArgsSchema: z.ZodType<Prisma.UserDeleteManyArgs> = z.object({
   where: UserWhereInputSchema.optional(), 
+  limit: z.number().optional(),
+}).strict();
+
+export const AuthIdentityCreateArgsSchema: z.ZodType<Prisma.AuthIdentityCreateArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  data: z.union([ AuthIdentityCreateInputSchema, AuthIdentityUncheckedCreateInputSchema ]),
+}).strict();
+
+export const AuthIdentityUpsertArgsSchema: z.ZodType<Prisma.AuthIdentityUpsertArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  where: AuthIdentityWhereUniqueInputSchema, 
+  create: z.union([ AuthIdentityCreateInputSchema, AuthIdentityUncheckedCreateInputSchema ]),
+  update: z.union([ AuthIdentityUpdateInputSchema, AuthIdentityUncheckedUpdateInputSchema ]),
+}).strict();
+
+export const AuthIdentityCreateManyArgsSchema: z.ZodType<Prisma.AuthIdentityCreateManyArgs> = z.object({
+  data: z.union([ AuthIdentityCreateManyInputSchema, AuthIdentityCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict();
+
+export const AuthIdentityCreateManyAndReturnArgsSchema: z.ZodType<Prisma.AuthIdentityCreateManyAndReturnArgs> = z.object({
+  data: z.union([ AuthIdentityCreateManyInputSchema, AuthIdentityCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict();
+
+export const AuthIdentityDeleteArgsSchema: z.ZodType<Prisma.AuthIdentityDeleteArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  where: AuthIdentityWhereUniqueInputSchema, 
+}).strict();
+
+export const AuthIdentityUpdateArgsSchema: z.ZodType<Prisma.AuthIdentityUpdateArgs> = z.object({
+  select: AuthIdentitySelectSchema.optional(),
+  include: AuthIdentityIncludeSchema.optional(),
+  data: z.union([ AuthIdentityUpdateInputSchema, AuthIdentityUncheckedUpdateInputSchema ]),
+  where: AuthIdentityWhereUniqueInputSchema, 
+}).strict();
+
+export const AuthIdentityUpdateManyArgsSchema: z.ZodType<Prisma.AuthIdentityUpdateManyArgs> = z.object({
+  data: z.union([ AuthIdentityUpdateManyMutationInputSchema, AuthIdentityUncheckedUpdateManyInputSchema ]),
+  where: AuthIdentityWhereInputSchema.optional(), 
+  limit: z.number().optional(),
+}).strict();
+
+export const AuthIdentityUpdateManyAndReturnArgsSchema: z.ZodType<Prisma.AuthIdentityUpdateManyAndReturnArgs> = z.object({
+  data: z.union([ AuthIdentityUpdateManyMutationInputSchema, AuthIdentityUncheckedUpdateManyInputSchema ]),
+  where: AuthIdentityWhereInputSchema.optional(), 
+  limit: z.number().optional(),
+}).strict();
+
+export const AuthIdentityDeleteManyArgsSchema: z.ZodType<Prisma.AuthIdentityDeleteManyArgs> = z.object({
+  where: AuthIdentityWhereInputSchema.optional(), 
   limit: z.number().optional(),
 }).strict();
 

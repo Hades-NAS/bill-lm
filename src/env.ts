@@ -51,7 +51,6 @@ export const env = createEnv({
   clientPrefix: 'VITE_',
 
   client: {
-    VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1),
     VITE_APP_TITLE: z.string().min(1).optional(),
     VITE_FIREBASE_API_KEY: z.string().min(1),
     VITE_FIREBASE_AUTH_DOMAIN: z.string().min(1),
@@ -99,7 +98,6 @@ export const env = createEnv({
     LLM_TIMEOUT_MS: process.env.LLM_TIMEOUT_MS,
 
     // Client vars
-    VITE_CLERK_PUBLISHABLE_KEY: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || process.env.VITE_CLERK_PUBLISHABLE_KEY,
     VITE_APP_TITLE: import.meta.env.VITE_APP_TITLE || process.env.VITE_APP_TITLE,
     VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY,
     VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.VITE_FIREBASE_AUTH_DOMAIN,

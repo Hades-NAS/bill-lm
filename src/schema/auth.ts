@@ -5,6 +5,7 @@ export const AuthSchema = z.object({
   primaryEmail: z.string().optional(),
   isLoaded: z.boolean().optional(),
   isSignedIn: z.boolean().optional(),
+  isEmailVerified: z.boolean().optional(),
 })
 
 export type AuthType = z.infer<typeof AuthSchema>

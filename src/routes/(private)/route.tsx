@@ -1,10 +1,11 @@
-import { AppShell, Container, Group, Text } from '@mantine/core'
+import { AppShell, Center, Container, Group, Loader, Text } from '@mantine/core'
 // import { useDisclosure } from '@mantine/hooks'
-import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { Navigate, createFileRoute, Link, Outlet } from '@tanstack/react-router'
 
 import { useIsMobile } from '#/utils/mobile'
 
 import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
+import { useUserAuth } from '#/hooks/auth'
 
 import { NavbarJobsIndicator } from '#/components/navbar-jobs-indicator'
 import NavbarThemeIcon from '#/components/navbar-theme-icon'
@@ -15,11 +16,24 @@ export const Route = createFileRoute('/(private)')({
 })
 
 function RouteComponent() {
+  const { isLoaded, isSignedIn, isEmailVerified } = useUserAuth()
   useJobsSubscriptionManager()
   // const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
   // const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
 
   const isMobile = useIsMobile()
+
+  if (!isLoaded) {
+    return (
+      <Center mih="100vh">
+        <Loader aria-label="Comprobando sesión" />
+      </Center>
+    )
+  }
+
+  if (!isSignedIn || !isEmailVerified) {
+    return <Navigate replace to="/sign-in" />
+  }
 
   return (
     <AppShell

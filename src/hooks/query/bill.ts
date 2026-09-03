@@ -10,10 +10,7 @@ export const useGetBillDetailQuery = (billId?: string | null) => {
 
   return useQuery(
     trpc.bills.getBillDetailById.queryOptions(
-      {
-        auth,
-        data: { billId: billId! },
-      },
+      { billId: billId! },
       {
         enabled: !!billId && !!auth.isSignedIn && auth.isLoaded,
       },

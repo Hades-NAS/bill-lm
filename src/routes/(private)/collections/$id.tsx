@@ -45,7 +45,6 @@ import {
 } from '#/utils/query'
 import { formatRUC } from '#/utils/string'
 
-import { useUserAuth } from '#/hooks/auth'
 import { useModal } from '#/hooks/modal'
 import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
 import { useAnalyzeCollectionMutation } from '#/hooks/mutation/collection'
@@ -98,7 +97,6 @@ function CollectionDetailPage() {
 
   const modalInstId = React.useRef(`collection-detail-${collectionId}`)
 
-  const auth = useUserAuth()
 
   const [filter, setFilter] = React.useState<FilterValue>({
     field: 'name',
@@ -224,10 +222,7 @@ function CollectionDetailPage() {
         }
         onCancel={() => setBillDeleteModal(false)}
         onConfirm={() => {
-          deleteBillsMutation.mutate({
-            auth,
-            data: { collectionId, billIds: selectedRows },
-          })
+          deleteBillsMutation.mutate({ collectionId, billIds: selectedRows })
         }}
       >
         {selectedRows.length === 1 && (
@@ -662,15 +657,12 @@ function CollectionDetailPage() {
   function analyzeByType(type: 'missing' | 'all') {
     setAnalyzeModal({ opened: false })
     analyzeCollectionMutation.mutate({
-      auth,
-      data: {
-        collectionId,
-        collectionName: collectionQuery.data?.name || 'Colección',
-        instructions: collectionQuery.data?.instructions || '',
-        type,
-        billIds: [],
-        preset,
-      },
+      collectionId,
+      collectionName: collectionQuery.data?.name || 'Colección',
+      instructions: collectionQuery.data?.instructions || '',
+      type,
+      billIds: [],
+      preset,
     })
   }
 

@@ -10,7 +10,6 @@ import { notify } from '#/utils/notifications'
 import { isLoadingMutation } from '#/utils/query'
 
 import { useAppForm } from '#/hooks/app-form'
-import { useUserAuth } from '#/hooks/auth'
 import {
   usePreprocessBillMutation,
   useUploadBillsMutation,
@@ -53,7 +52,6 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
 
   const isMobile = useIsMobile()
 
-  const auth = useUserAuth()
 
   const uploadBillsMutation = useUploadBillsMutation({
     onSuccess: () => {
@@ -107,11 +105,8 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
         )
 
         uploadBillsMutation.mutate({
-          auth,
-          data: {
-            collectionId: collectionId,
-            bills: billWithBuffer,
-          },
+          collectionId,
+          bills: billWithBuffer,
         })
       } catch (error) {
         console.error('Error processing bills:', error)

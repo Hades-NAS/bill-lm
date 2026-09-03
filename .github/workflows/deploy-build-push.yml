@@ -15,7 +15,6 @@ env:
   REDIS_HOST: ${{ secrets.REDIS_HOST }}
   MINIO_BUCKET_NAME: ${{ secrets.MINIO_BUCKET_NAME }}
   GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-  VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
   VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
   VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
   VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
@@ -83,8 +82,6 @@ jobs:
             --build-arg GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             --build-arg FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             --build-arg FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
-            --build-arg CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }} \
-            --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ env.VITE_CLERK_PUBLISHABLE_KEY }} \
             --build-arg VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
             --build-arg VITE_FIREBASE_AUTH_DOMAIN=${{ env.VITE_FIREBASE_AUTH_DOMAIN }} \
             --build-arg VITE_FIREBASE_PROJECT_ID=${{ env.VITE_FIREBASE_PROJECT_ID }} \
@@ -119,8 +116,6 @@ jobs:
             --build-arg GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             --build-arg FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             --build-arg FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
-            --build-arg CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }} \
-            --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ env.VITE_CLERK_PUBLISHABLE_KEY }} \
             --build-arg VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
             --build-arg VITE_FIREBASE_AUTH_DOMAIN=${{ env.VITE_FIREBASE_AUTH_DOMAIN }} \
             --build-arg VITE_FIREBASE_PROJECT_ID=${{ env.VITE_FIREBASE_PROJECT_ID }} \
@@ -149,14 +144,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Stop production containers
-        run: |
-          echo "🛑 Stopping prod containers..."
-          docker stop bill-lm-server 2>/dev/null || true
-          docker stop bill-lm-worker 2>/dev/null || true
-          sleep 3
-          echo "✅ Containers stopped"
-
       - name: Cleanup validation containers and images
         if: always()
         run: |
@@ -179,10 +166,12 @@ jobs:
           docker run -d \
             --name bill-lm-server-validate \
             --network bill-lm-network \
-            -p 3001:3001 \
+            -p 3002:3000 \
             -v /home/cardor/secrets/bill-lm/bill-lm-firebase.json:/run/secrets/bill-lm-service-account.json:ro \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             -e ENVIRONMENT=prod \
+            -e PORT=3000 \
+            -e SKIP_DB_MIGRATION=true \
             -e MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
             -e MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
             -e MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
@@ -191,8 +180,6 @@ jobs:
             -e GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             -e FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             -e FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
-            -e CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }} \
-            -e VITE_CLERK_PUBLISHABLE_KEY=${{ env.VITE_CLERK_PUBLISHABLE_KEY }} \
             -e VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
             -e VITE_FIREBASE_AUTH_DOMAIN=${{ env.VITE_FIREBASE_AUTH_DOMAIN }} \
             -e VITE_FIREBASE_PROJECT_ID=${{ env.VITE_FIREBASE_PROJECT_ID }} \
@@ -215,8 +202,8 @@ jobs:
           echo "⏳ Server container started, waiting for health check..."
 
           for i in {1..30}; do
-            if nc -z localhost 3001 2>/dev/null; then
-              echo "✅ Server is healthy on port 3000"
+            if nc -z localhost 3002 2>/dev/null; then
+              echo "✅ Server is healthy on validation port 3002"
               exit 0
             fi
             echo "⏳ Waiting for server... ($i/30)"
@@ -247,8 +234,6 @@ jobs:
             -e GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             -e FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             -e FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
-            -e CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }} \
-            -e VITE_CLERK_PUBLISHABLE_KEY=${{ env.VITE_CLERK_PUBLISHABLE_KEY }} \
             -e VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
             -e VITE_FIREBASE_AUTH_DOMAIN=${{ env.VITE_FIREBASE_AUTH_DOMAIN }} \
             -e VITE_FIREBASE_PROJECT_ID=${{ env.VITE_FIREBASE_PROJECT_ID }} \
@@ -287,15 +272,6 @@ jobs:
           docker rm bill-lm-server-validate bill-lm-worker-validate 2>/dev/null || true
           sleep 2
           echo "✅ Validation containers removed"
-
-      - name: Restart production containers
-        if: always()
-        run: |
-          echo "🔄 Restarting production containers..."
-          docker start bill-lm-server 2>/dev/null || echo "⚠️ Server container not found"
-          docker start bill-lm-worker 2>/dev/null || echo "⚠️ Worker container not found"
-          sleep 2
-          echo "✅ Production containers restarted"
 
   push-to-registry:
     name: Push Docker Images to Registry
@@ -342,6 +318,19 @@ jobs:
           echo "   Server Image: localhost:5000/bill-lm-server:${{ needs.build.outputs.image_tag }}"
           echo "   Worker Image: localhost:5000/bill-lm-worker:${{ needs.build.outputs.image_tag }}"
           echo "   Environment: Production"
+          {
+            echo "## Bill-LM deployment"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Environment | Production |"
+            echo "| Version | \`${{ needs.build.outputs.image_tag }}\` |"
+            echo "| Server image | \`localhost:5000/bill-lm-server:${{ needs.build.outputs.image_tag }}\` |"
+            echo "| Worker image | \`localhost:5000/bill-lm-worker:${{ needs.build.outputs.image_tag }}\` |"
+            echo "| Branch | \`${{ github.ref_name }}\` |"
+            echo "| Commit | \`${{ github.sha }}\` |"
+            echo "| Triggered by | ${{ github.actor }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Cleanup old images (keep only last 3)
         if: always()
@@ -375,3 +364,105 @@ jobs:
           done
 
           echo "✅ Old images cleanup completed"
+
+  notify-deployment-failure:
+    name: Notify Deployment Failure
+    needs: [build, validate-health, push-to-registry]
+    if: ${{ always() && (needs.build.result == 'failure' || needs.validate-health.result == 'failure' || needs.push-to-registry.result == 'failure') }}
+    runs-on: self-hosted
+
+    steps:
+      - name: Send optional Discord failure alert
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          VALIDATE_HEALTH_RESULT: ${{ needs.validate-health.result }}
+          PUSH_TO_REGISTRY_RESULT: ${{ needs.push-to-registry.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [[ -n "$DISCORD_WEBHOOK_URL" ]] \
+            && command -v jq >/dev/null 2>&1 \
+            && command -v curl >/dev/null 2>&1; then
+            payload="$(jq -n \
+              --arg build "$BUILD_RESULT" \
+              --arg validateHealth "$VALIDATE_HEALTH_RESULT" \
+              --arg pushToRegistry "$PUSH_TO_REGISTRY_RESULT" \
+              --arg runUrl "$RUN_URL" \
+              '{
+                embeds: [{
+                  title: "Bill-LM deployment failed",
+                  url: $runUrl,
+                  color: 15158332,
+                  fields: [
+                    { name: "Build", value: $build },
+                    { name: "Validate health", value: $validateHealth },
+                    { name: "Push to registry", value: $pushToRegistry }
+                  ]
+                }],
+                allowed_mentions: { parse: [] }
+              }')" || payload=''
+            [[ -z "$payload" ]] || curl \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --fail \
+              --silent \
+              --show-error \
+              --header 'Content-Type: application/json' \
+              --data "$payload" \
+              "$DISCORD_WEBHOOK_URL" >/dev/null 2>&1 || true
+          fi
+
+  notify-deployment-success:
+    name: Notify Deployment Success
+    needs: [build, push-to-registry]
+    if: ${{ needs.build.result == 'success' && needs.push-to-registry.result == 'success' }}
+    runs-on: self-hosted
+
+    steps:
+      - name: Send optional Discord success alert
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ENVIRONMENT: prod
+          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [[ -n "$DISCORD_WEBHOOK_URL" ]] \
+            && command -v jq >/dev/null 2>&1 \
+            && command -v curl >/dev/null 2>&1; then
+            payload="$(jq -n \
+              --arg environment "$ENVIRONMENT" \
+              --arg imageTag "$IMAGE_TAG" \
+              --arg branch "$BRANCH" \
+              --arg commitSha "$COMMIT_SHA" \
+              --arg actor "$ACTOR" \
+              --arg runUrl "$RUN_URL" \
+              '{
+                embeds: [{
+                  title: "Bill-LM deployment succeeded",
+                  url: $runUrl,
+                  color: 3066993,
+                  fields: [
+                    { name: "Environment", value: $environment },
+                    { name: "Version", value: $imageTag },
+                    { name: "Server image", value: ("localhost:5000/bill-lm-server:" + $imageTag) },
+                    { name: "Worker image", value: ("localhost:5000/bill-lm-worker:" + $imageTag) },
+                    { name: "Branch", value: $branch },
+                    { name: "Commit", value: $commitSha },
+                    { name: "Triggered by", value: $actor }
+                  ]
+                }],
+                allowed_mentions: { parse: [] }
+              }')" || payload=''
+            [[ -z "$payload" ]] || curl \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --fail \
+              --silent \
+              --show-error \
+              --header 'Content-Type: application/json' \
+              --data "$payload" \
+              "$DISCORD_WEBHOOK_URL" >/dev/null 2>&1 || true
+          fi

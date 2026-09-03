@@ -48,9 +48,10 @@ bun --bun run format
 bun --bun run check
 ```
 
-## Setting up Clerk
+## Firebase Authentication
 
-- Set the `VITE_CLERK_PUBLISHABLE_KEY` in your `.env.local`.
+- Configure the `VITE_FIREBASE_*` variables in `.env.local`.
+- Habilita Email/Password y Google en Firebase Authentication.
 
 ## T3Env
 

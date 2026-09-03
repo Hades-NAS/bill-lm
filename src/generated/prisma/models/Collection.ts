@@ -555,10 +555,6 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type CollectionCreateNestedOneWithoutBillsInput = {
   create?: Prisma.XOR<Prisma.CollectionCreateWithoutBillsInput, Prisma.CollectionUncheckedCreateWithoutBillsInput>
   connectOrCreate?: Prisma.CollectionCreateOrConnectWithoutBillsInput

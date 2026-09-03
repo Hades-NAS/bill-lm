@@ -105,7 +105,7 @@ AnalyzeBillsUseCase.execute(billIds, jobData, preset)
   2. Crea AnalysisContext
      {
        jobId: "uuid",
-       userId: "clerk_user_id",
+userId: "internal_user_id",
        collectionId: 5,
        preset: "balanced",
        instructions: "custom" | undefined,
@@ -332,7 +332,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 ```typescript
 {
   jobId: "uuid",
-  userId: "clerk_user_id",
+userId: "internal_user_id",
   collectionId: 5,
   preset: "balanced" | "strict" | "creative",
   instructions: "custom rules" | undefined,

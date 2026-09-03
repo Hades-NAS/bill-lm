@@ -1,4 +1,5 @@
 import { getApps, initializeApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 import { env } from '#/env'
@@ -16,3 +17,13 @@ const clientApp =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
 export const db = getFirestore(clientApp)
+
+export const getFirebaseAuth = () => getAuth(clientApp)
+
+export async function getFirebaseIdToken(): Promise<string | null> {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  return getFirebaseAuth().currentUser?.getIdToken() ?? null
+}

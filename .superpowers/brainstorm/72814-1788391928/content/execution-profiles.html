@@ -1,0 +1,49 @@
+<h2>El visor conoce un perfil, no tus credenciales</h2>
+<p class="subtitle">El workspace declara cómo se ejecutarán los análisis. Bill-LM comprueba que ese modo esté disponible, pero no intenta extraer OAuth de ninguna aplicación.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Perfil activo: GPU local · qwen3-14b</div>
+  <div class="mockup-body">
+    <div style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+      <div>
+        <strong style="color:#20804a">● Endpoint disponible</strong>
+        <p style="margin:4px 0 0">http://127.0.0.1:1234/v1 · modelo detectado</p>
+      </div>
+      <button class="mock-button">Analizar pendientes</button>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:18px">
+  <div class="mockup-header">Perfil activo: Codex · suscripción local</div>
+  <div class="mockup-body">
+    <div style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+      <div>
+        <strong style="color:#956500">● Esperando agente</strong>
+        <p style="margin:4px 0 0">MCP disponible · ninguna sesión procesando ahora</p>
+      </div>
+      <button class="mock-button">Ver cómo iniciar</button>
+    </div>
+    <div style="margin-top:14px;padding:12px;border:1px solid #d8dee9;border-radius:8px;font-family:monospace">cd mi-workspace/providers/codex<br>codex<br>/bill-analyze pending</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:22px">
+  <h3>Fuente de verdad + detección</h3>
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center">
+    <div style="padding:16px;border:1px solid #d8dee9;border-radius:10px;text-align:center"><strong>workspace.yaml</strong><br><small>perfil elegido y predeterminado</small></div>
+    <div style="font-size:24px">→</div>
+    <div style="padding:16px;border:1px solid #d8dee9;border-radius:10px;text-align:center"><strong>bill-lm doctor</strong><br><small>endpoint o MCP disponible</small></div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="single-profile" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content"><h3>Un modo fijo por workspace</h3><p>Más simple, pero obliga a editar configuración para cambiar entre Codex, Claude o GPU.</p></div>
+  </div>
+  <div class="option" data-choice="multiple-profiles" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content"><h3>Varios perfiles y uno predeterminado</h3><p>Permite tener Codex, Claude y GPU configurados a la vez; cada corrida registra cuál utilizó. Recomendado.</p></div>
+  </div>
+</div>

@@ -1,8 +1,6 @@
 import { DateTime } from 'luxon'
 import z from 'zod'
 
-import { WithAuthSchema } from '#/schema/auth'
-
 import { adminDb } from '#/integrations/firebase/firebase.server'
 // import { getServiceLogger } from '#/integrations/logger.server'
 
@@ -23,7 +21,7 @@ const PRETTY_REDUCTION_FACTOR = 1
 export const telemetryRouter = {
   getJobStats: privateProcedure
     .input(z.object({ jobId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const jobDoc = await adminDb
         .collection(FireCollections.ANALYZE_COLLECTION)
         .doc(input.jobId)
@@ -35,6 +33,10 @@ export const telemetryRouter = {
 
       const data = jobDoc.data() as AnalyzeJobData
 
+      if (data.userId !== ctx.principal.userId) {
+        return null
+      }
+
       return {
         totalTokens: (data.totalTokens || 0) * PRETTY_REDUCTION_FACTOR,
         callCount: data.callCount || 0,
@@ -44,7 +46,16 @@ export const telemetryRouter = {
 
   getAgentCalls: privateProcedure
     .input(z.object({ jobId: z.string(), limit: z.number().default(50) }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      const jobDoc = await adminDb
+        .collection(FireCollections.ANALYZE_COLLECTION)
+        .doc(input.jobId)
+        .get()
+
+      if (!jobDoc.exists || jobDoc.data()?.userId !== ctx.principal.userId) {
+        return { calls: [], avgDuration: 0 }
+      }
+
       const calls = await adminDb
         .collection(FireCollections.TELEMETRY_COLLECTION)
         .where('jobId', '==', input.jobId)
@@ -73,14 +84,14 @@ export const telemetryRouter = {
     }),
 
   getUserMetrics: privateProcedure
-    .input(WithAuthSchema(z.object({})))
-    .query(async ({ input }) => {
+    .input(z.object({}))
+    .query(async ({ ctx }) => {
       // Últimos 7 días
       const sevenDaysAgo = DateTime.now().minus({ days: 7 }).toJSDate()
 
       const calls = await adminDb
         .collection(FireCollections.TELEMETRY_COLLECTION)
-        .where('userId', '==', input.auth.userId)
+        .where('userId', '==', ctx.principal.userId)
         .where('timestamp', '>', sevenDaysAgo)
         .get()
 
@@ -105,13 +116,13 @@ export const telemetryRouter = {
     }),
 
   getUserJobs: privateProcedure
-    .input(WithAuthSchema(z.object({ limit: z.number().default(50) })))
-    .query(async ({ input }) => {
+    .input(z.object({ limit: z.number().default(50) }))
+    .query(async ({ input, ctx }) => {
       const jobs = await adminDb
         .collection(FireCollections.ANALYZE_COLLECTION)
-        .where('userId', '==', input.auth.userId)
+        .where('userId', '==', ctx.principal.userId)
         .orderBy('updatedAt', 'desc')
-        .limit(input.data.limit)
+        .limit(input.limit)
         .get()
 
       return jobs.docs.map((doc) => {

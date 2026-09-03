@@ -1,13 +1,13 @@
-import { useClerk, useUser } from '@clerk/clerk-react'
 import { ActionIcon, Divider, Menu, Tooltip } from '@mantine/core'
 import { useNavigate } from '@tanstack/react-router'
 import { LibraryBig, LogOutIcon, Telescope, User } from 'lucide-react'
 
 import { useIsMobile } from '#/utils/mobile'
+import { signOutFromFirebase } from '#/integrations/firebase/auth'
+import { useUserAuth } from '#/hooks/auth'
 
 const NavbarUserIcon = () => {
-  const { user } = useUser()
-  const { signOut } = useClerk()
+  const { primaryEmail } = useUserAuth()
   const navigate = useNavigate()
 
   const isMobile = useIsMobile()
@@ -18,7 +18,7 @@ const NavbarUserIcon = () => {
       <Menu shadow="md" width={200}>
         <Menu.Target>
           <Tooltip
-            label={user?.firstName || 'Usuario'}
+            label={primaryEmail || 'Usuario'}
             openDelay={500}
             position="left"
           >
@@ -50,7 +50,10 @@ const NavbarUserIcon = () => {
           <Divider />
           <Menu.Item
             leftSection={<LogOutIcon color="red" size={18} />}
-            onClick={() => signOut({ redirectUrl: '/' })}
+            onClick={async () => {
+              await signOutFromFirebase()
+              navigate({ to: '/' })
+            }}
           >
             Cerrar sesión
           </Menu.Item>

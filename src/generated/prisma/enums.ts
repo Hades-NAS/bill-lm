@@ -9,6 +9,13 @@
 * 🟢 You can import this file directly.
 */
 
+export const AuthProvider = {
+  FIREBASE: 'FIREBASE'
+} as const
+
+export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]
+
+
 export const BillFileType = {
   XML: 'XML',
   PDF: 'PDF',

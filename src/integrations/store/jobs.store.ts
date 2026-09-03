@@ -6,14 +6,12 @@ import { UPDATE_COLLECTION_INVALIDATION_KEYS } from '#/hooks/mutation/collection
 
 import { getContext } from '../tanstack-query/root-provider'
 
-import type { AnalyzeJobData } from '#/schema/collections'
+import type { AnalyzeJobNotification } from '#/schema/collections'
 
 const ACTIVE_JOBS_LIMIT = 20
 const COMPLETED_JOB_RETENTION_MS = 24 * 60 * 60 * 1000 // 24 hours
 
-export interface JobStatusItem extends AnalyzeJobData {
-  // The AnalyzeJobData already has all needed fields
-}
+export type JobStatusItem = AnalyzeJobNotification
 
 interface JobsStore {
   activeJobs: Array<JobStatusItem>

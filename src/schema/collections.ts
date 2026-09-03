@@ -99,6 +99,16 @@ export const AnalyzeJobDataSchema = z.object({
 
 export type AnalyzeJobData = z.infer<typeof AnalyzeJobDataSchema>
 
+export const AnalyzeJobNotificationSchema = AnalyzeJobDataSchema.omit({
+  userId: true,
+}).extend({
+  firebaseUid: z.string().min(1),
+})
+
+export type AnalyzeJobNotification = z.infer<
+  typeof AnalyzeJobNotificationSchema
+>
+
 export const UpdateAnalyzeJobDataSchema = AnalyzeJobDataSchema.partial().extend(
   {
     jobId: AnalyzeJobDataSchema.shape.jobId,

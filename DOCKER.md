@@ -33,8 +33,6 @@ docker build -f docker/Dockerfile \
   --build-arg GOOGLE_APPLICATION_CREDENTIALS="/path/to/serviceAccount.json" \
   --build-arg FIREBASE_PROJECT_ID="bill-lm" \
   --build-arg FIREBASE_STORAGE_BUCKET="bill-lm.firebasestorage.app" \
-  --build-arg CLERK_SECRET_KEY="sk_live_..." \
-  --build-arg VITE_CLERK_PUBLISHABLE_KEY="pk_live_..." \
   --build-arg VITE_FIREBASE_API_KEY="AIzaSy..." \
   --build-arg VITE_FIREBASE_AUTH_DOMAIN="bill-lm.firebaseapp.com" \
   --build-arg VITE_FIREBASE_PROJECT_ID="bill-lm" \
@@ -95,10 +93,6 @@ GOOGLE_APPLICATION_CREDENTIALS
 FIREBASE_PROJECT_ID
 FIREBASE_STORAGE_BUCKET
 
-# Clerk
-CLERK_SECRET_KEY
-VITE_CLERK_PUBLISHABLE_KEY
-
 # Firebase Web SDK
 VITE_FIREBASE_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN
@@ -134,8 +128,6 @@ docker run -d \
   -e FIREBASE_PROJECT_ID="bill-lm" \
   -e FIREBASE_STORAGE_BUCKET="bill-lm.firebasestorage.app" \
   -e GOOGLE_APPLICATION_CREDENTIALS="/path/to/serviceAccount.json" \
-  -e CLERK_SECRET_KEY="sk_live_..." \
-  -e VITE_CLERK_PUBLISHABLE_KEY="pk_live_..." \
   -e VITE_FIREBASE_API_KEY="AIzaSy..." \
   -e VITE_FIREBASE_AUTH_DOMAIN="bill-lm.firebaseapp.com" \
   -e VITE_FIREBASE_PROJECT_ID="bill-lm" \
@@ -190,8 +182,6 @@ services:
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
       FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET}
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
-      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-      VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
       VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
       VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN}
       VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID}
@@ -246,8 +236,6 @@ MINIO_SECRET_KEY=secret
 MINIO_BUCKET=invoices
 FIREBASE_PROJECT_ID=bill-lm
 FIREBASE_STORAGE_BUCKET=bill-lm.firebasestorage.app
-CLERK_SECRET_KEY=sk_live_...
-VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
 VITE_FIREBASE_API_KEY=AIzaSy...
 VITE_FIREBASE_AUTH_DOMAIN=bill-lm.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=bill-lm

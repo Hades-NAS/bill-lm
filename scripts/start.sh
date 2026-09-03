@@ -1,29 +1,29 @@
 #!/bin/bash
 
-# entrypoint.sh - Script de inicialización para Budgetfy Server
+# Entrypoint del servidor Bill-LM
 
-set -e
+set -eu
 
-# Skip database migrations if SKIP_DB_MIGRATION is set
 echo "============================================"
-if [ -z "$SKIP_DB_MIGRATION" ]; then
-  echo "🔄 Ejecutando migraciones de base de datos..."
-  echo ""
-
-  echo "ENVIRONMENT: $ENVIRONMENT"
-  
-  bun run db:push
-  
-  echo ""
-  echo "✅ Migraciones de base de datos completadas"
-else
-  echo "⏭️  Saltando migraciones de base de datos (SKIP_DB_MIGRATION está activado)"
-fi
+case "${SKIP_DB_MIGRATION:-false}" in
+  false|'')
+    echo "🔄 Aplicando migraciones pendientes de Prisma..."
+    echo "ENVIRONMENT: ${ENVIRONMENT:-unknown}"
+    ./node_modules/.bin/prisma migrate deploy
+    echo "✅ Migraciones de base de datos aplicadas"
+    ;;
+  true)
+    echo "⏭️  Saltando migraciones de base de datos (SKIP_DB_MIGRATION=true)"
+    ;;
+  *)
+    echo "❌ SKIP_DB_MIGRATION debe ser 'true' o 'false'"
+    exit 1
+    ;;
+esac
 echo "============================================"
 
 echo "🚀 Iniciando servidor Bill-LM"
 echo ""
 echo ""
 
-bun run start
-
+exec bun run start

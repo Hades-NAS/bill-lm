@@ -17,7 +17,7 @@ export const UPDATE_BILLS_INVALIDATION_KEYS = (id: string) => {
   const { trpc } = getContext()
   return [
     trpc.collections.list.queryKey(),
-    trpc.collections.detail.queryKey({ data: { id } }),
+    trpc.collections.detail.queryKey({ id }),
   ]
 }
 

@@ -8,7 +8,6 @@ import { useIsMobile } from '#/utils/mobile'
 import { isLoadingMutation } from '#/utils/query'
 
 import { useAppForm } from '#/hooks/app-form'
-import { useUserAuth } from '#/hooks/auth'
 import {
   useCollectionCreateMutation,
   useCollectionUpdateMutation,
@@ -50,7 +49,6 @@ const CollectionForm = (
 
   const isMobile = useIsMobile()
 
-  const auth = useUserAuth()
 
   const collectionCreateMutation = useCollectionCreateMutation({
     onSuccess: (_data) => {
@@ -73,17 +71,11 @@ const CollectionForm = (
     onSubmit: ({ value }) => {
       if (data?.id) {
         collectionUpdateMutation.mutate({
-          auth,
-          data: {
-            ...value,
-            id: data.id,
-          },
+          ...value,
+          id: data.id,
         })
       } else {
-        collectionCreateMutation.mutate({
-          auth,
-          data: value,
-        })
+        collectionCreateMutation.mutate(value)
       }
     },
     onSubmitInvalid: (errors) => {

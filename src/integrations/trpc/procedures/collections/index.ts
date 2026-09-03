@@ -2,7 +2,6 @@ import { TRPCError } from '@trpc/server'
 import { DateTime } from 'luxon'
 import z from 'zod'
 
-import { WithAuthSchema } from '#/schema/auth'
 import {
   AnalyzeCollectionRequestSchema,
   CreateCollectionSchema,
@@ -20,18 +19,20 @@ import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
 import { FireCollections } from '#/constants/firebase'
 
 import { privateProcedure } from '../../init'
-import { checkAndCreateUser } from '../../middleware/auth'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
-import type { AuthType } from '#/schema/auth';
-import type { AnalyzeJobData } from '#/schema/collections'
+import type { Principal } from '#/schema/auth-identity'
+import {
+  AnalyzeJobNotificationSchema,
+  type AnalyzeJobData,
+} from '#/schema/collections'
 import type { WhitelistConfig } from '#/schema/config'
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
 
 const logger = getServiceLogger('Collections')
 
 
-const checkUserCanAnalyzeCollection = async (user: AuthType) => {
+const checkUserCanAnalyzeCollection = async (user: Principal) => {
   const { userId, primaryEmail } = user
 
   const whitelistSnap = await adminDb.collection(FireCollections.CONFIG_COLLECTION).doc("whitelist").get()
@@ -83,21 +84,12 @@ const checkUserCanAnalyzeCollection = async (user: AuthType) => {
 
 export const collectionsRouter = {
   list: privateProcedure
-    .input(WithAuthSchema(GetCollectionsRequestSchema))
-    .use(({ input, next }) => checkAndCreateUser({ auth: input.auth, next }))
-    .query(async ({ input }) => {
-      const { auth, data } = input
-
-      if (!auth.userId) {
-        logger.warn('Unauthorized access attempt to list collections', {
-          auth,
-        })
-
-        return []
-      }
+    .input(GetCollectionsRequestSchema)
+    .query(async ({ input: data, ctx }) => {
+      const { principal } = ctx
 
       logger.info('Fetching collections for user', {
-        userId: auth.userId,
+        userId: principal.userId,
         search: data.search,
         sort: data.sort,
       })
@@ -116,7 +108,7 @@ export const collectionsRouter = {
 
       const collections = await prisma.collection.findMany({
         where: {
-          userId: auth.userId,
+          userId: principal.userId,
           name: search.name
             ? { contains: search.name, mode: 'insensitive' }
             : undefined,
@@ -148,36 +140,25 @@ export const collectionsRouter = {
       })
 
       logger.info('Fetched collections', {
-        userId: auth.userId,
+        userId: principal.userId,
         count: collections.length,
       })
 
       return collections
     }),
   create: privateProcedure
-    .input(WithAuthSchema(CreateCollectionSchema))
-    .mutation(async ({ input }) => {
-      const { auth, data } = input
-
-      if (!auth.userId) {
-        logger.warn('Unauthorized access attempt to create collection', {
-          auth,
-        })
-
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'User ID is required for collections procedures',
-        })
-      }
+    .input(CreateCollectionSchema)
+    .mutation(async ({ input: data, ctx }) => {
+      const { principal } = ctx
 
       logger.info('Creating collection for user', {
-        userId: auth.userId,
+        userId: principal.userId,
         name: data.name,
       })
 
       const collection = await prisma.collection.create({
         data: {
-          userId: auth.userId,
+          userId: principal.userId,
           name: data.name,
           description: data.description,
           instructions: data.instructions,
@@ -188,73 +169,51 @@ export const collectionsRouter = {
       })
 
       logger.info('Created collection', {
-        userId: auth.userId,
+        userId: principal.userId,
         collectionId: collection.id,
       })
 
       return collection
     }),
   update: privateProcedure
-    .input(WithAuthSchema(UpdateCollectionSchema))
-    .mutation(async ({ input }) => {
-      const { auth, data } = input
-
-      if (!auth.userId) {
-        logger.warn('Unauthorized access attempt to update collection', {
-          auth,
-        })
-
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'User ID is required for collections procedures',
-        })
-      }
+    .input(UpdateCollectionSchema)
+    .mutation(async ({ input: data, ctx }) => {
+      const { principal } = ctx
 
       logger.info('Updating collection for user', {
-        userId: auth.userId,
+        userId: principal.userId,
         collectionId: data.id,
       })
 
       const collection = await prisma.collection.update({
         where: {
           id: data.id,
-          userId: auth.userId,
+          userId: principal.userId,
         },
         data,
       })
 
       logger.info('Updated collection', {
-        userId: auth.userId,
+        userId: principal.userId,
         collectionId: data.id,
       })
 
       return collection
     }),
   detail: privateProcedure
-    .input(WithAuthSchema(GetCollectionByIdRequestSchema))
-    .query(async ({ input }) => {
-      const { auth, data } = input
-
-      if (!auth.userId) {
-        logger.warn('Unauthorized access attempt to get collection detail', {
-          auth,
-        })
-
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'User ID is required for collections procedures',
-        })
-      }
+    .input(GetCollectionByIdRequestSchema)
+    .query(async ({ input: data, ctx }) => {
+      const { principal } = ctx
 
       logger.info('Fetching collection detail for user', {
-        userId: auth.userId,
+        userId: principal.userId,
         collectionId: data.id,
       })
 
       const collection = await prisma.collection.findUnique({
         where: {
           id: data.id,
-          userId: auth.userId,
+          userId: principal.userId,
         },
         include: {
           bills: {
@@ -264,7 +223,7 @@ export const collectionsRouter = {
       })
       if (!collection) {
         logger.warn('Collection not found', {
-          userId: auth.userId,
+          userId: principal.userId,
           collectionId: data.id,
         })
 
@@ -275,7 +234,7 @@ export const collectionsRouter = {
       }
 
       logger.info('Fetched collection detail', {
-        userId: auth.userId,
+        userId: principal.userId,
         collectionId: data.id,
       })
 
@@ -283,41 +242,29 @@ export const collectionsRouter = {
 
     }),
   analyze: privateProcedure
-    .input(WithAuthSchema(AnalyzeCollectionRequestSchema))
-    .use(({ input, next }) => checkAndCreateUser({ auth: input.auth, next }))
-    .mutation(async ({ input }) => {
-      const { auth, data } = input
-
-      if (!auth.userId) {
-        logger.warn('Unauthorized access attempt to analyze collection', {
-          auth,
-        })
-
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'User ID is required for collections procedures',
-        })
-      }
+    .input(AnalyzeCollectionRequestSchema)
+    .mutation(async ({ input: data, ctx }) => {
+      const { principal } = ctx
 
       logger.info('Analyzing collection for user', {
-        userId: auth.userId,
+        userId: principal.userId,
         collectionId: data.collectionId,
       })
 
-      await checkUserCanAnalyzeCollection(auth)
+      await checkUserCanAnalyzeCollection(principal)
 
       const { type, billIds } = data
 
       const collection = await prisma.collection.findUnique({
         where: {
           id: data.collectionId,
-          userId: auth.userId,
+          userId: principal.userId,
         },
       })
 
       if (!collection) {
         logger.warn('Collection not found for analysis', {
-          userId: auth.userId,
+          userId: principal.userId,
           collectionId: data.collectionId,
         })
 
@@ -378,7 +325,7 @@ export const collectionsRouter = {
 
       if (billsToAnalyze.length === 0) {
         logger.info('No bills to analyze for collection', {
-          userId: auth.userId,
+          userId: principal.userId,
           collectionId: data.collectionId,
         })
 
@@ -391,7 +338,7 @@ export const collectionsRouter = {
 
       const payload: AnalyzeJobData = {
         jobId: crypto.randomUUID(),
-        userId: auth.userId,
+        userId: principal.userId,
         data: {
           collectionId: collection.id,
           collectionName: collection.name,
@@ -412,15 +359,20 @@ export const collectionsRouter = {
 
       const jobName = `analyze-${data.collectionId}-${payload.jobId}`
 
+      const notification = AnalyzeJobNotificationSchema.parse({
+        ...payload,
+        firebaseUid: principal.subject,
+      })
+
       await adminDb
         .collection(FireCollections.ANALYZE_COLLECTION)
         .doc(payload.jobId)
-        .set(payload)
+        .set(notification)
 
       await AnalyzeQueue.add(jobName, payload)
 
       logger.info('Added analyze job to queue', {
-        userId: auth.userId,
+        userId: principal.userId,
         collectionId: data.collectionId,
         jobId: payload.jobId,
         billCount: billsToAnalyze.length,
@@ -434,23 +386,9 @@ export const collectionsRouter = {
     }),
 
   checkUserCanAnalyze: privateProcedure
-    .input(WithAuthSchema(z.object().optional()))
-    .query(async ({ input }) => {
-      const { auth } = input
-
-      if (!auth.userId) {
-        logger.warn('Unauthorized access attempt to check analyze permission', {
-          auth,
-        })
-
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'User ID is required for collections procedures',
-        })
-
-      }
-
-      const result = await checkUserCanAnalyzeCollection(auth)
+    .input(z.object({}).optional())
+    .query(async ({ ctx }) => {
+      const result = await checkUserCanAnalyzeCollection(ctx.principal)
 
       return {
         canAnalyze: result,
@@ -458,15 +396,17 @@ export const collectionsRouter = {
     }),
 
   markAsRead: privateProcedure
-    .input(WithAuthSchema(z.object({}).optional()))
-    .mutation(async () => {
+    .input(z.object({}).optional())
+    .mutation(async ({ ctx }) => {
       const finalizedJobs = await adminDb
         .collection(FireCollections.ANALYZE_COLLECTION)
+        .where('firebaseUid', '==', ctx.principal.subject)
         .where('status', 'not-in', ['pending', 'in-progress'])
         .get()
 
       const stuckedJobs = await adminDb
         .collection(FireCollections.ANALYZE_COLLECTION)
+        .where('firebaseUid', '==', ctx.principal.subject)
         .where('status', 'in', ['pending', 'in-progress'])
         .where(
           'updatedAt',
