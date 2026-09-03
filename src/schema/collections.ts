@@ -42,6 +42,14 @@ export type GetCollectionByIdRequest = z.infer<
   typeof GetCollectionByIdRequestSchema
 >
 
+export const DeleteCollectionRequestSchema = z.object({
+  id: z.string().uuid('La colección a eliminar no es válida'),
+})
+
+export type DeleteCollectionRequest = z.infer<
+  typeof DeleteCollectionRequestSchema
+>
+
 // BILL CRUD
 
 export const UploadBillsRequestSchema = z.object({

@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
 import { readFile } from 'node:fs/promises'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   assertFiscalReferenceLimit,
@@ -14,9 +14,9 @@ import {
 
 describe('normalizeFiscalReferenceMarkdown', () => {
   it('cleans line endings and adds a neutral self-managed heading', () => {
-    expect(normalizeFiscalReferenceMarkdown('  Regla A  \r\n\r\n\r\nRegla B  ')).toBe(
-      '# Referencia fiscal autogestionada\n\nRegla A\n\nRegla B\n',
-    )
+    expect(
+      normalizeFiscalReferenceMarkdown('  Regla A  \r\n\r\n\r\nRegla B  '),
+    ).toBe('# Referencia fiscal autogestionada\n\nRegla A\n\nRegla B\n')
   })
 
   it('rejects a reference without extractable text', () => {

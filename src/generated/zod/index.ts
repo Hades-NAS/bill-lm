@@ -1,13 +1,14 @@
 import { z } from 'zod'
+
 import type { Prisma } from '../prisma/client'
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // HELPER FUNCTIONS
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // ENUMS
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const TransactionIsolationLevelSchema = z.enum([
   'ReadUncommitted',
@@ -151,13 +152,13 @@ export const BillTargetTypeSchema = z.enum([
 
 export type BillTargetTypeType = `${z.infer<typeof BillTargetTypeSchema>}`
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // MODELS
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // USER SCHEMA
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const UserSchema = z.object({
   id: z.uuid(),
@@ -168,9 +169,9 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // FISCAL REFERENCE SCHEMA
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 /**
  * Material fiscal aportado y autoaprobado por el usuario. No representa una
@@ -191,9 +192,9 @@ export const FiscalReferenceSchema = z.object({
 
 export type FiscalReference = z.infer<typeof FiscalReferenceSchema>
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // PROVIDER CONNECTION SCHEMA
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const ProviderConnectionSchema = z.object({
   provider: ProviderConnectionProviderSchema,
@@ -217,9 +218,9 @@ export const ProviderConnectionSchema = z.object({
 
 export type ProviderConnection = z.infer<typeof ProviderConnectionSchema>
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // AUTH IDENTITY SCHEMA
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const AuthIdentitySchema = z.object({
   provider: AuthProviderSchema,
@@ -235,9 +236,9 @@ export const AuthIdentitySchema = z.object({
 
 export type AuthIdentity = z.infer<typeof AuthIdentitySchema>
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // COLLECTION SCHEMA
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const CollectionSchema = z.object({
   id: z.uuid(),
@@ -255,9 +256,9 @@ export const CollectionSchema = z.object({
 
 export type Collection = z.infer<typeof CollectionSchema>
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // BILL HEADER SCHEMA
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const BillHeaderSchema = z.object({
   fileType: BillFileTypeSchema,
@@ -286,9 +287,9 @@ export const BillHeaderSchema = z.object({
 
 export type BillHeader = z.infer<typeof BillHeaderSchema>
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // BILL DETAIL SCHEMA
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const BillDetailSchema = z.object({
   id: z.uuid(),
@@ -304,12 +305,12 @@ export const BillDetailSchema = z.object({
 
 export type BillDetail = z.infer<typeof BillDetailSchema>
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // SELECT & INCLUDE
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 // USER
-//------------------------------------------------------
+// ------------------------------------------------------
 
 export const UserIncludeSchema: z.ZodType<Prisma.UserInclude> = z
   .object({
@@ -380,7 +381,7 @@ export const UserSelectSchema: z.ZodType<Prisma.UserSelect> = z
   .strict()
 
 // FISCAL REFERENCE
-//------------------------------------------------------
+// ------------------------------------------------------
 
 export const FiscalReferenceIncludeSchema: z.ZodType<Prisma.FiscalReferenceInclude> =
   z
@@ -415,7 +416,7 @@ export const FiscalReferenceSelectSchema: z.ZodType<Prisma.FiscalReferenceSelect
     .strict()
 
 // PROVIDER CONNECTION
-//------------------------------------------------------
+// ------------------------------------------------------
 
 export const ProviderConnectionIncludeSchema: z.ZodType<Prisma.ProviderConnectionInclude> =
   z
@@ -457,7 +458,7 @@ export const ProviderConnectionSelectSchema: z.ZodType<Prisma.ProviderConnection
     .strict()
 
 // AUTH IDENTITY
-//------------------------------------------------------
+// ------------------------------------------------------
 
 export const AuthIdentityIncludeSchema: z.ZodType<Prisma.AuthIdentityInclude> =
   z
@@ -490,7 +491,7 @@ export const AuthIdentitySelectSchema: z.ZodType<Prisma.AuthIdentitySelect> = z
   .strict()
 
 // COLLECTION
-//------------------------------------------------------
+// ------------------------------------------------------
 
 export const CollectionIncludeSchema: z.ZodType<Prisma.CollectionInclude> = z
   .object({
@@ -549,7 +550,7 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
   .strict()
 
 // BILL HEADER
-//------------------------------------------------------
+// ------------------------------------------------------
 
 export const BillHeaderIncludeSchema: z.ZodType<Prisma.BillHeaderInclude> = z
   .object({
@@ -623,7 +624,7 @@ export const BillHeaderSelectSchema: z.ZodType<Prisma.BillHeaderSelect> = z
   .strict()
 
 // BILL DETAIL
-//------------------------------------------------------
+// ------------------------------------------------------
 
 export const BillDetailIncludeSchema: z.ZodType<Prisma.BillDetailInclude> = z
   .object({
@@ -653,9 +654,9 @@ export const BillDetailSelectSchema: z.ZodType<Prisma.BillDetailSelect> = z
   })
   .strict()
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // INPUT TYPES
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> =
   z.strictObject({
@@ -10765,9 +10766,9 @@ export const BillDetailUncheckedUpdateManyWithoutBillInputSchema: z.ZodType<Pris
       .nullable(),
   })
 
-/////////////////////////////////////////
+// ///////////////////////////////////////
 // ARGS
-/////////////////////////////////////////
+// ///////////////////////////////////////
 
 export const UserFindFirstArgsSchema: z.ZodType<Prisma.UserFindFirstArgs> = z
   .object({

@@ -37,7 +37,9 @@ describe('deploy workflow', () => {
 
     expect(workflow).not.toContain('OPENAI_API_KEY')
     expect(workflow).not.toContain('CLAUDE_API_KEY')
-    expect(workflow).toContain('BYOK_ENCRYPTION_KEY=${{ secrets.BYOK_ENCRYPTION_KEY }}')
+    expect(workflow).toContain(
+      'BYOK_ENCRYPTION_KEY=${{ secrets.BYOK_ENCRYPTION_KEY }}',
+    )
   })
 
   it('entrega la configuración pública de Firebase al build del worker', () => {
@@ -48,9 +50,15 @@ describe('deploy workflow', () => {
       workflow.indexOf('  validate-health:'),
     )
 
-    expect(workerBuild).toContain('--build-arg VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }}')
-    expect(workerBuild).toContain('--build-arg VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }}')
+    expect(workerBuild).toContain(
+      '--build-arg VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }}',
+    )
+    expect(workerBuild).toContain(
+      '--build-arg VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }}',
+    )
     expect(workerDockerfile).toContain('ARG VITE_FIREBASE_API_KEY')
-    expect(workerDockerfile).toContain('ENV VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}')
+    expect(workerDockerfile).toContain(
+      'ENV VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}',
+    )
   })
 })

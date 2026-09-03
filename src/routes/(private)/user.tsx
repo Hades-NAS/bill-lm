@@ -4,14 +4,15 @@ import {
   Badge,
   Box,
   Button,
-  Card,
   Container,
+  Divider,
   FileInput,
   Group,
   Menu,
   Modal,
   PasswordInput,
   Select,
+  Skeleton,
   Stack,
   Text,
   TextInput,
@@ -19,11 +20,14 @@ import {
 } from '@mantine/core'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import React from 'react'
 import { MoreHorizontal, Trash2 } from 'lucide-react'
+import React from 'react'
 
 import { useTRPC } from '#/integrations/trpc/react'
+
 import { fileToBase64 } from '#/utils/file'
+
+import ConfModal from '#/components/shared/conf-modal'
 
 export const Route = createFileRoute('/(private)/user')({
   component: UserPage,
@@ -33,9 +37,7 @@ function UserPage() {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const connections = useQuery(trpc.providerConnections.list.queryOptions())
-  const fiscalReferences = useQuery(
-    trpc.fiscalReferences.list.queryOptions(),
-  )
+  const fiscalReferences = useQuery(trpc.fiscalReferences.list.queryOptions())
   const createConnection = useMutation(
     trpc.providerConnections.create.mutationOptions({
       onSuccess: () =>
@@ -91,6 +93,24 @@ function UserPage() {
   const [rotationKey, setRotationKey] = React.useState('')
   const [fiscalReferenceFile, setFiscalReferenceFile] =
     React.useState<File | null>(null)
+  const [fiscalReferenceModalOpened, setFiscalReferenceModalOpened] =
+    React.useState(false)
+  const [referenceToRemove, setReferenceToRemove] = React.useState<{
+    id: string
+    name: string
+  } | null>(null)
+
+  const connectionError = [
+    createConnection.error,
+    updateConnection.error,
+    probeConnection.error,
+    removeConnection.error,
+    rotateConnection.error,
+  ].find((error) => error != null)
+  const fiscalReferenceError = [
+    uploadFiscalReference.error,
+    removeFiscalReference.error,
+  ].find((error) => error != null)
 
   const closeCreateModal = () => {
     setCreateModalOpened(false)
@@ -102,6 +122,32 @@ function UserPage() {
   const closeRotationModal = () => {
     setRotationId(null)
     setRotationKey('')
+  }
+  const closeFiscalReferenceModal = () => {
+    setFiscalReferenceModalOpened(false)
+    setFiscalReferenceFile(null)
+    uploadFiscalReference.reset()
+  }
+  const uploadReference = async () => {
+    if (!fiscalReferenceFile) return
+
+    const mimeType =
+      fiscalReferenceFile.type === 'application/pdf'
+        ? 'application/pdf'
+        : fiscalReferenceFile.type === 'text/plain'
+          ? 'text/plain'
+          : 'text/markdown'
+
+    uploadFiscalReference.mutate(
+      {
+        file: {
+          name: fiscalReferenceFile.name,
+          base64: await fileToBase64(fiscalReferenceFile),
+          mimeType,
+        },
+      },
+      { onSuccess: closeFiscalReferenceModal },
+    )
   }
 
   return (
@@ -117,8 +163,8 @@ function UserPage() {
             </Text>
           </div>
 
-          <Card withBorder>
-            <Stack>
+          <Box>
+            <Stack gap="md">
               <Group justify="space-between">
                 <Title order={2}>Conexiones de proveedor</Title>
                 <Button onClick={() => setCreateModalOpened(true)}>
@@ -129,8 +175,42 @@ function UserPage() {
                 Puedes guardar varias conexiones; una será la predeterminada y
                 podrás elegir otra al analizar.
               </Alert>
+              {connections.isPending && (
+                <Stack gap="xs">
+                  <Skeleton height={74} />
+                  <Skeleton height={74} />
+                </Stack>
+              )}
+              {connections.isError && (
+                <Alert
+                  color="red"
+                  title="No pudimos cargar tus conexiones"
+                  withCloseButton={false}
+                >
+                  <Stack gap="xs">
+                    <Text size="sm">{connections.error.message}</Text>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      onClick={() => connections.refetch()}
+                    >
+                      Reintentar
+                    </Button>
+                  </Stack>
+                </Alert>
+              )}
+              {connectionError && (
+                <Alert color="red" title="No se pudo actualizar la conexión">
+                  {connectionError.message}
+                </Alert>
+              )}
               {connections.data?.map((connection) => (
-                <Card key={connection.id} padding="sm" withBorder>
+                <Box
+                  bd="1px solid var(--mantine-color-default-border)"
+                  key={connection.id}
+                  p="sm"
+                  style={{ borderRadius: 'var(--mantine-radius-sm)' }}
+                >
                   <Group justify="space-between">
                     <div>
                       <Text fw={600}>
@@ -140,8 +220,8 @@ function UserPage() {
                         )}
                       </Text>
                       <Text c="dimmed" size="sm">
-                        {connection.provider} · {connection.modelId} · termina en{' '}
-                        {connection.secretLastFour}
+                        {connection.provider} · {connection.modelId} · termina
+                        en {connection.secretLastFour}
                       </Text>
                     </div>
                     <Badge color={connection.isActive ? 'green' : 'gray'}>
@@ -153,7 +233,9 @@ function UserPage() {
                       loading={probeConnection.isPending}
                       size="xs"
                       variant="light"
-                      onClick={() => probeConnection.mutate({ id: connection.id })}
+                      onClick={() =>
+                        probeConnection.mutate({ id: connection.id })
+                      }
                     >
                       Probar
                     </Button>
@@ -209,79 +291,87 @@ function UserPage() {
                     </Menu>
                   </Group>
                   {connection.probedAt && (
-                    <Text c={connection.lastProbeError ? 'red' : 'green'} mt="xs" size="xs">
+                    <Text
+                      c={connection.lastProbeError ? 'red' : 'green'}
+                      mt="xs"
+                      size="xs"
+                    >
                       {connection.lastProbeError ?? 'Conexión validada'}.
                     </Text>
                   )}
-                </Card>
+                </Box>
               ))}
-              {connections.data?.length === 0 && (
-                <Text c="dimmed">Aún no tienes una conexión configurada.</Text>
-              )}
+              {!connections.isPending &&
+                !connections.isError &&
+                connections.data?.length === 0 && (
+                  <Alert color="gray" title="Aún no tienes conexiones">
+                    Agrega una conexión para poder analizar facturas con tu
+                    propia API key.
+                  </Alert>
+                )}
             </Stack>
-          </Card>
-          <Card withBorder>
-            <Stack>
-              <div>
-                <Title order={2}>Referencias fiscales</Title>
-                <Text c="dimmed" size="sm">
-                  Material autogestionado global para tus análisis. No se trata
-                  como normativa oficial ni como dictamen jurídico.
-                </Text>
-              </div>
-              <Alert color="blue">
-                Puedes mantener hasta tres archivos Markdown o PDFs con texto
-                seleccionable. Los PDFs se convierten a Markdown en el servidor.
-              </Alert>
-              <FileInput
-                accept=".md,.markdown,text/markdown,text/plain,application/pdf"
-                clearable
-                disabled={
-                  uploadFiscalReference.isPending ||
-                  (fiscalReferences.data?.length ?? 0) >= 3
-                }
-                label="Archivo de referencia"
-                placeholder="Selecciona un PDF o Markdown"
-                value={fiscalReferenceFile}
-                onChange={setFiscalReferenceFile}
-              />
-              <Group justify="flex-end">
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Stack gap="md">
+              <Group align="flex-start" justify="space-between">
+                <div>
+                  <Title order={2}>Referencias fiscales</Title>
+                  <Text c="dimmed" size="sm">
+                    Material autogestionado global para tus análisis. No se
+                    trata como normativa oficial ni como dictamen jurídico.
+                  </Text>
+                </div>
                 <Button
                   disabled={
-                    !fiscalReferenceFile ||
+                    fiscalReferences.isPending ||
                     (fiscalReferences.data?.length ?? 0) >= 3
                   }
-                  loading={uploadFiscalReference.isPending}
-                  onClick={async () => {
-                    if (!fiscalReferenceFile) return
-                    const mimeType =
-                      fiscalReferenceFile.type === 'application/pdf'
-                        ? 'application/pdf'
-                        : fiscalReferenceFile.type === 'text/plain'
-                          ? 'text/plain'
-                          : 'text/markdown'
-                    uploadFiscalReference.mutate(
-                      {
-                        file: {
-                          name: fiscalReferenceFile.name,
-                          base64: await fileToBase64(fiscalReferenceFile),
-                          mimeType,
-                        },
-                      },
-                      { onSuccess: () => setFiscalReferenceFile(null) },
-                    )
-                  }}
+                  onClick={() => setFiscalReferenceModalOpened(true)}
                 >
                   Agregar referencia
                 </Button>
               </Group>
-              {uploadFiscalReference.error && (
-                <Alert color="red">
-                  {uploadFiscalReference.error.message}
+              <Alert color="blue">
+                {fiscalReferences.data?.length ?? 0}/3 referencias. Aceptamos
+                Markdown o PDFs con texto seleccionable; los PDFs se convierten
+                a Markdown en el servidor.
+              </Alert>
+              {fiscalReferences.isPending && (
+                <Stack gap="xs">
+                  <Skeleton height={62} />
+                  <Skeleton height={62} />
+                </Stack>
+              )}
+              {fiscalReferences.isError && (
+                <Alert color="red" title="No pudimos cargar tus referencias">
+                  <Stack gap="xs">
+                    <Text size="sm">{fiscalReferences.error.message}</Text>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      onClick={() => fiscalReferences.refetch()}
+                    >
+                      Reintentar
+                    </Button>
+                  </Stack>
+                </Alert>
+              )}
+              {fiscalReferenceError && (
+                <Alert color="red" title="No se pudo actualizar la referencia">
+                  {fiscalReferenceError.message}
                 </Alert>
               )}
               {fiscalReferences.data?.map((reference) => (
-                <Group key={reference.id} justify="space-between">
+                <Group
+                  bd="1px solid var(--mantine-color-default-border)"
+                  justify="space-between"
+                  key={reference.id}
+                  p="sm"
+                  style={{ borderRadius: 'var(--mantine-radius-sm)' }}
+                >
                   <div>
                     <Text fw={600}>{reference.name}</Text>
                     <Text c="dimmed" size="sm">
@@ -293,27 +383,103 @@ function UserPage() {
                   <ActionIcon
                     aria-label={`Eliminar ${reference.name}`}
                     color="red"
-                    loading={removeFiscalReference.isPending}
-                    onClick={() =>
-                      removeFiscalReference.mutate({ id: reference.id })
+                    loading={
+                      removeFiscalReference.isPending &&
+                      referenceToRemove?.id === reference.id
                     }
+                    onClick={() => setReferenceToRemove(reference)}
                   >
                     <Trash2 size={16} />
                   </ActionIcon>
                 </Group>
               ))}
-              {fiscalReferences.data?.length === 0 && (
-                <Text c="dimmed">
-                  Aún no tienes referencias fiscales configuradas.
-                </Text>
-              )}
+              {!fiscalReferences.isPending &&
+                !fiscalReferences.isError &&
+                fiscalReferences.data?.length === 0 && (
+                  <Alert color="gray" title="Aún no tienes referencias">
+                    Agrega hasta tres documentos que quieras usar como contexto
+                    en análisis futuros.
+                  </Alert>
+                )}
             </Stack>
-          </Card>
+          </Box>
           <Modal
             centered
-            onClose={closeCreateModal}
+            opened={fiscalReferenceModalOpened}
+            title="Agregar referencia fiscal"
+            onClose={closeFiscalReferenceModal}
+          >
+            <Stack>
+              <Alert color="blue">
+                Puedes mantener hasta tres referencias globales. Aceptamos
+                Markdown, texto plano y PDF con texto seleccionable; los PDF se
+                convierten a Markdown en el servidor y no se conserva el PDF
+                original.
+              </Alert>
+              <FileInput
+                clearable
+                accept=".md,.markdown,text/markdown,text/plain,application/pdf"
+                disabled={uploadFiscalReference.isPending}
+                label="Archivo de referencia"
+                placeholder="Selecciona un PDF o Markdown"
+                value={fiscalReferenceFile}
+                onChange={setFiscalReferenceFile}
+              />
+              {uploadFiscalReference.isPending && (
+                <Text c="dimmed" size="sm">
+                  Convirtiendo, limpiando y guardando la referencia…
+                </Text>
+              )}
+              {uploadFiscalReference.error && (
+                <Alert color="red" title="No se pudo agregar la referencia">
+                  {uploadFiscalReference.error.message}
+                </Alert>
+              )}
+              <Group justify="flex-end">
+                <Button
+                  disabled={uploadFiscalReference.isPending}
+                  variant="default"
+                  onClick={closeFiscalReferenceModal}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  disabled={!fiscalReferenceFile}
+                  loading={uploadFiscalReference.isPending}
+                  onClick={uploadReference}
+                >
+                  Guardar referencia
+                </Button>
+              </Group>
+            </Stack>
+          </Modal>
+          <ConfModal
+            confirmColor="red"
+            confirmText="Eliminar referencia"
+            consequence="Los resultados ya generados no cambian; la referencia dejará de usarse en análisis futuros."
+            loading={removeFiscalReference.isPending}
+            opened={referenceToRemove !== null}
+            title="Eliminar referencia fiscal"
+            variant="destructive"
+            onCancel={() => setReferenceToRemove(null)}
+            onConfirm={() => {
+              if (!referenceToRemove) return
+              removeFiscalReference.mutate(
+                { id: referenceToRemove.id },
+                { onSuccess: () => setReferenceToRemove(null) },
+              )
+            }}
+          >
+            <Text>
+              Se eliminará <b>{referenceToRemove?.name}</b>. Dejará de influir
+              en análisis futuros; los resultados ya generados no se modifican.
+            </Text>
+          </ConfModal>
+          <Modal
+            centered
             opened={createModalOpened}
             title="Agregar conexión"
+            onClose={closeCreateModal}
           >
             <Stack>
               <Select
@@ -347,6 +513,11 @@ function UserPage() {
                 value={apiKey}
                 onChange={(event) => setApiKey(event.currentTarget.value)}
               />
+              {createConnection.error && (
+                <Alert color="red" title="No se pudo guardar la conexión">
+                  {createConnection.error.message}
+                </Alert>
+              )}
               <Button
                 disabled={!label.trim() || !modelId.trim() || apiKey.length < 8}
                 loading={createConnection.isPending}
@@ -369,9 +540,9 @@ function UserPage() {
           </Modal>
           <Modal
             centered
-            onClose={closeRotationModal}
             opened={rotationId !== null}
             title="Rotar API key"
+            onClose={closeRotationModal}
           >
             <Stack>
               <Text size="sm">
@@ -382,6 +553,11 @@ function UserPage() {
                 value={rotationKey}
                 onChange={(event) => setRotationKey(event.currentTarget.value)}
               />
+              {rotateConnection.error && (
+                <Alert color="red" title="No se pudo rotar la clave">
+                  {rotateConnection.error.message}
+                </Alert>
+              )}
               <Group justify="flex-end">
                 <Button variant="default" onClick={closeRotationModal}>
                   Cancelar

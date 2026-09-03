@@ -35,7 +35,7 @@ function RouteComponent() {
           <Transition duration={300} mounted={scroll.y > 80} transition="fade">
             {(styles) => (
               <Badge
-                bd="1px solid #7c3aed"
+                bd="1px solid var(--bill-lm-brand)"
                 bg="white"
                 c="dark"
                 color="violet"

@@ -9,6 +9,8 @@ type ConfModalProps = {
   cancelColor?: string
   cancelText?: string
   loading?: boolean
+  consequence?: React.ReactNode
+  variant?: 'default' | 'destructive'
   onConfirm: () => void
   onCancel: () => void
 }
@@ -25,7 +27,10 @@ const ConfModal = (props: ConfModalProps) => {
     onConfirm,
     loading,
     onCancel,
+    consequence,
+    variant = 'default',
   } = props
+  const isDestructive = variant === 'destructive'
   return (
     <Modal
       centered
@@ -38,19 +43,31 @@ const ConfModal = (props: ConfModalProps) => {
       }
       onClose={onCancel}
     >
-      <div className="cd-mb-[1rem]">{children}</div>
+      <div className="cd-mb-[1rem]">
+        {children}
+        {consequence && (
+          <Text c={isDestructive ? 'red' : 'dimmed'} mt="sm" size="sm">
+            {consequence}
+          </Text>
+        )}
+      </div>
 
       <Group justify="flex-end" mt="lg">
-        <Button color={cancelColor ?? 'gray'} onClick={onCancel}>
+        <Button
+          data-autofocus
+          color={cancelColor ?? 'gray'}
+          disabled={loading}
+          onClick={onCancel}
+        >
           {cancelText ?? 'Cancelar'}
         </Button>
         <Button
-          color={confirmColor ?? 'red'}
+          color={confirmColor ?? (isDestructive ? 'red' : 'violet')}
           loaderProps={{ type: 'dots' }}
           loading={loading}
           onClick={onConfirm}
         >
-          {confirmText ?? 'Confirmar'}
+          {confirmText ?? (isDestructive ? 'Eliminar' : 'Confirmar')}
         </Button>
       </Group>
     </Modal>

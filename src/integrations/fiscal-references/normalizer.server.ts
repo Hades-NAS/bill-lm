@@ -1,6 +1,5 @@
-import { createHash } from 'node:crypto'
 import { isUtf8 } from 'node:buffer'
-
+import { createHash } from 'node:crypto'
 import { PDFParse } from 'pdf-parse'
 
 import { FISCAL_REFERENCE_MAX_NORMALIZED_CHARS } from '#/schema/fiscal-references'
@@ -30,9 +29,7 @@ export function assertFiscalReferenceSource(
     )
 }
 
-export function assertFiscalReferenceLimit(
-  activeReferenceCount: number,
-): void {
+export function assertFiscalReferenceLimit(activeReferenceCount: number): void {
   if (activeReferenceCount >= 3)
     throw new FiscalReferenceInputError(
       'Solo puedes mantener hasta tres referencias fiscales.',

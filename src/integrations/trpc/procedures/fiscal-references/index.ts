@@ -6,9 +6,6 @@ import {
   UploadFiscalReferenceSchema,
 } from '#/schema/fiscal-references'
 
-import { getServiceLogger } from '#/integrations/logger.server'
-import { StorageHelper } from '#/integrations/minio/helper'
-import { prisma } from '#/integrations/prisma'
 import {
   fiscalReferenceContentHash,
   FiscalReferenceInputError,
@@ -18,6 +15,9 @@ import {
   pdfBufferToNormalizedMarkdown,
   withStorageCleanupOnFailure,
 } from '#/integrations/fiscal-references/normalizer.server'
+import { getServiceLogger } from '#/integrations/logger.server'
+import { StorageHelper } from '#/integrations/minio/helper'
+import { prisma } from '#/integrations/prisma'
 
 import { privateProcedure } from '../../init'
 
@@ -79,36 +79,38 @@ export const fiscalReferencesRouter = {
       return withStorageCleanupOnFailure(
         () =>
           prisma.$transaction(async (tx) => {
-          // Serializa altas del mismo usuario para que el límite de tres no se
-          // pueda sobrepasar con dos solicitudes concurrentes.
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ctx.principal.userId}))`
-          const count = await tx.fiscalReference.count({
-            where: { userId: ctx.principal.userId, deletedAt: null },
-          })
-          try {
-            assertFiscalReferenceLimit(count)
-          } catch (error) {
-            if (error instanceof FiscalReferenceInputError)
-              throw new TRPCError({
-                code: 'PRECONDITION_FAILED',
-                message: error.message,
-              })
-            throw error
-          }
+            // Serializa altas del mismo usuario para que el límite de tres no se
+            // pueda sobrepasar con dos solicitudes concurrentes.
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${ctx.principal.userId}))`
+            const count = await tx.fiscalReference.count({
+              where: { userId: ctx.principal.userId, deletedAt: null },
+            })
+            try {
+              assertFiscalReferenceLimit(count)
+            } catch (error) {
+              if (error instanceof FiscalReferenceInputError)
+                throw new TRPCError({
+                  code: 'PRECONDITION_FAILED',
+                  message: error.message,
+                })
+              throw error
+            }
 
-          return tx.fiscalReference.create({
-            data: {
-              id,
-              userId: ctx.principal.userId,
-              name: input.file.name,
-              sourceType:
-                input.file.mimeType === 'application/pdf' ? 'PDF' : 'MARKDOWN',
-              storagePath,
-              contentHash: fiscalReferenceContentHash(normalizedMarkdown),
-              normalizedSize: Buffer.byteLength(normalizedMarkdown, 'utf8'),
-            },
-            select: publicSelect,
-          })
+            return tx.fiscalReference.create({
+              data: {
+                id,
+                userId: ctx.principal.userId,
+                name: input.file.name,
+                sourceType:
+                  input.file.mimeType === 'application/pdf'
+                    ? 'PDF'
+                    : 'MARKDOWN',
+                storagePath,
+                contentHash: fiscalReferenceContentHash(normalizedMarkdown),
+                normalizedSize: Buffer.byteLength(normalizedMarkdown, 'utf8'),
+              },
+              select: publicSelect,
+            })
           }),
         () => StorageHelper.deleteObject(storagePath),
       )
@@ -133,10 +135,13 @@ export const fiscalReferencesRouter = {
       try {
         await StorageHelper.deleteObject(reference.storagePath)
       } catch (error) {
-        logger.warn('Could not remove normalized fiscal reference from storage', {
-          referenceId: reference.id,
-          error: error instanceof Error ? error.message : String(error),
-        })
+        logger.warn(
+          'Could not remove normalized fiscal reference from storage',
+          {
+            referenceId: reference.id,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        )
       }
     }),
 } satisfies TRPCRouterRecord

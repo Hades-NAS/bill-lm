@@ -6,6 +6,35 @@
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 }
 
+:root {
+  --bill-lm-brand: var(--mantine-color-violet-6);
+  --bill-lm-motion-fast: 160ms;
+}
+
+.bill-lm-landing-button {
+  transition:
+    transform var(--bill-lm-motion-fast) cubic-bezier(0.2, 0, 0, 1),
+    box-shadow var(--bill-lm-motion-fast) cubic-bezier(0.2, 0, 0, 1);
+}
+
+.bill-lm-landing-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mantine-shadow-md);
+}
+
+.bill-lm-landing-button:focus-visible {
+  outline: 2px solid var(--mantine-color-violet-2);
+  outline-offset: 3px;
+}
+
+.bill-lm-modal-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding-block: var(--mantine-spacing-sm);
+  background: var(--mantine-color-body);
+}
+
 * {
   box-sizing: border-box;
 }

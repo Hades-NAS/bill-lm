@@ -61,12 +61,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         name: 'description',
         content:
-          'Bill LM - Simplifica la gestión de tus gastos deducibles. Carga, organiza y analiza tus facturas con inteligencia artificial para maximizar deducciones fiscales.',
+          'Bill LM - Organiza facturas XML y revísalas con tu conexión de IA y referencias fiscales autogestionadas.',
       },
       {
         name: 'keywords',
         content:
-          'gestión de facturas, gastos deducibles, análisis de facturas, software contable, deducciones fiscales, Bill LM',
+          'gestión de facturas, facturas XML, análisis de facturas, referencias fiscales, Bill LM',
       },
       {
         name: 'author',
@@ -81,21 +81,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'Bill LM',
       },
       {
-        name: 'msapplication-TileColor',
-        content: '#7c3aed',
-      },
-      {
         property: 'og:type',
         content: 'website',
       },
       {
         property: 'og:title',
-        content: 'Bill LM - Gestión Inteligente de Gastos Deducibles',
+        content: 'Bill LM - Análisis de facturas con contexto configurable',
       },
       {
         property: 'og:description',
         content:
-          'Carga, organiza y analiza tus facturas con inteligencia artificial. Maximiza deducciones fiscales de forma automática.',
+          'Organiza facturas XML y revísalas con tu conexión de IA y referencias fiscales autogestionadas.',
       },
       {
         property: 'og:image',
@@ -119,19 +115,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         name: 'twitter:title',
-        content: 'Bill LM - Gestión Inteligente de Gastos Deducibles',
+        content: 'Bill LM - Análisis de facturas con contexto configurable',
       },
       {
         name: 'twitter:description',
         content:
-          'Carga, organiza y analiza tus facturas con inteligencia artificial.',
+          'Organiza facturas XML y revísalas con tu conexión de IA y referencias fiscales autogestionadas.',
       },
       {
         name: 'twitter:image',
         content: '/logo512.png',
       },
       {
-        title: 'Bill LM - Simplifica la gestión de tus gastos deducibles',
+        title: 'Bill LM - Análisis de facturas con contexto configurable',
       },
       {
         rel: 'icon',
@@ -191,7 +187,7 @@ function JobsSubscriptionProvider({ children }: { children: React.ReactNode }) {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="es-EC" {...mantineHtmlProps}>
       <head>
         <HeadContent />
         <ColorSchemeScript defaultColorScheme="auto" />

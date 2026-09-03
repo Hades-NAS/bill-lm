@@ -61,7 +61,7 @@ function App() {
       <Transition
         duration={800}
         mounted={isVisible}
-        timingFunction="ease"
+        timingFunction="cubic-bezier(0.2, 0, 0, 1)"
         transition="fade"
       >
         {(styles) => (
@@ -91,19 +91,20 @@ function App() {
                     style={{ lineHeight: 1.2 }}
                     ta="center"
                   >
-                    Análisis Inteligente de Facturas para SRI Ecuador
+                    Analiza tus facturas con el contexto fiscal que tú defines
                   </Title>
 
                   <Text c="white" maw={600} size="xl" ta="center">
-                    Automatiza el análisis de tus facturas y determina qué
-                    gastos son deducibles según la normativa actual del SRI.
-                    Perfecto para contadores y personas naturales.
+                    Organiza tus facturas XML y analízalas con tu conexión de IA
+                    y las referencias fiscales que agregas en Configuración. Es
+                    una ayuda para revisar información; no sustituye asesoría
+                    tributaria profesional.
                   </Text>
                 </Stack>
 
                 <Flex direction={isMobile ? 'column' : 'row'} gap={16}>
                   <Button
-                    className="hover:-translate-y-2 hover:shadow-lg transition-all duration-200"
+                    className="bill-lm-landing-button"
                     color="violet"
                     rightSection={<ArrowRight size={18} />}
                     size="lg"
@@ -112,7 +113,7 @@ function App() {
                       navigate({ to: isSignedIn ? '/collections' : '/sign-up' })
                     }}
                   >
-                    {isSignedIn ? 'Ver Colecciones' : 'Crear Cuenta Gratis'}
+                    {isSignedIn ? 'Ver colecciones' : 'Crear cuenta gratis'}
                   </Button>
                   <Button
                     color="white"
@@ -131,35 +132,20 @@ function App() {
                 <Group gap={32} justify="center" mt={32}>
                   <Group gap={8}>
                     <Shield color="white" size={20} />
-                    <Text
-                      c="white"
-                      className="hover:font-bold! transition-all duration-200 cursor-default"
-                      fw={500}
-                      size="sm"
-                    >
-                      Análisis SRI Actualizado
+                    <Text c="white" fw={500} size="sm">
+                      Referencias que administras
                     </Text>
                   </Group>
                   <Group gap={8}>
                     <Clock color="white" size={20} />
-                    <Text
-                      c="white"
-                      className="hover:font-bold! transition-all duration-200 cursor-default"
-                      fw={500}
-                      size="sm"
-                    >
-                      Resultados en Minutos
+                    <Text c="white" fw={500} size="sm">
+                      Análisis basado en tu contexto
                     </Text>
                   </Group>
                   <Group gap={8}>
                     <Users color="white" size={20} />
-                    <Text
-                      c="white"
-                      className="hover:font-bold! transition-all duration-200 cursor-default"
-                      fw={500}
-                      size="sm"
-                    >
-                      Para Todos los Usuarios
+                    <Text c="white" fw={500} size="sm">
+                      Claves protegidas en el servidor
                     </Text>
                   </Group>
                 </Group>
@@ -185,8 +171,7 @@ function App() {
                 ¿Cómo Funciona Bill-LM?
               </Title>
               <Text c="dimmed" maw={600} size="lg" ta="center">
-                Tres pasos simples para analizar tus facturas y optimizar tu
-                declaración de impuestos
+                Tres pasos para preparar el contexto y revisar tus facturas
               </Text>
             </Stack>
 
@@ -203,13 +188,7 @@ function App() {
                 transition="slide-up"
               >
                 {() => (
-                  <Card
-                    withBorder
-                    className="cursor-pointer transition-all duration-200 hover:-translate-y-2 hover:shadow-lg"
-                    padding="lg"
-                    radius="md"
-                    shadow="sm"
-                  >
+                  <Card withBorder padding="lg" radius="md" shadow="sm">
                     <Stack gap={16}>
                       <Center>
                         <ThemeIcon
@@ -223,11 +202,10 @@ function App() {
                       </Center>
                       <Stack align="center" gap={8}>
                         <Title order={4} size={18}>
-                          1. Crear Colección
+                          1. Crea una colección
                         </Title>
                         <Text c="dimmed" size="sm" ta="center">
-                          Define una colección con nombre, descripción y año
-                          fiscal
+                          Define el grupo de facturas que quieres revisar
                         </Text>
                       </Stack>
                     </Stack>
@@ -243,13 +221,7 @@ function App() {
                 transition="slide-up"
               >
                 {() => (
-                  <Card
-                    withBorder
-                    className="cursor-pointer transition-all duration-200 hover:-translate-y-2 hover:shadow-lg"
-                    padding="lg"
-                    radius="md"
-                    shadow="sm"
-                  >
+                  <Card withBorder padding="lg" radius="md" shadow="sm">
                     <Stack gap={16}>
                       <Center>
                         <ThemeIcon
@@ -263,7 +235,7 @@ function App() {
                       </Center>
                       <Stack align="center" gap={8}>
                         <Title order={4} size={18}>
-                          2. Subir Facturas
+                          2. Sube tus facturas
                         </Title>
                         <Text c="dimmed" size="sm" ta="center">
                           Carga tus archivos XML en la colección
@@ -282,13 +254,7 @@ function App() {
                 transition="slide-up"
               >
                 {() => (
-                  <Card
-                    withBorder
-                    className="cursor-pointer transition-all duration-200 hover:-translate-y-2 hover:shadow-lg"
-                    padding="lg"
-                    radius="md"
-                    shadow="sm"
-                  >
+                  <Card withBorder padding="lg" radius="md" shadow="sm">
                     <Stack gap={16}>
                       <Center>
                         <ThemeIcon
@@ -302,10 +268,11 @@ function App() {
                       </Center>
                       <Stack align="center" gap={8}>
                         <Title order={4} size={18}>
-                          3. Analizar Automático
+                          3. Analiza con tu contexto
                         </Title>
                         <Text c="dimmed" size="sm" ta="center">
-                          Nuestro IA analiza cada factura según normativa SRI
+                          Bill-LM usa la conexión y las referencias que
+                          configuraste para generar un resultado de revisión
                         </Text>
                       </Stack>
                     </Stack>
@@ -329,11 +296,13 @@ function App() {
                         >
                           <Sparkles size={18} />
                         </ThemeIcon>
-                        <Title order={4}>Análisis Inteligente</Title>
+                        <Title order={4}>
+                          Análisis con contexto configurable
+                        </Title>
                       </Group>
                       <Text c="dimmed">
-                        Procesa automáticamente cada factura analizando su
-                        contenido contra la última normativa actualizada del SRI
+                        Procesa cada factura usando la conexión de IA y las
+                        referencias fiscales que agregaste a tu cuenta.
                       </Text>
                     </Stack>
 
@@ -350,8 +319,8 @@ function App() {
                         <Title order={4}>Resultados Claros</Title>
                       </Group>
                       <Text c="dimmed">
-                        Recibe un porcentaje de deducibilidad y la razón
-                        específica por la cual esa factura es elegible o no
+                        Recibe una clasificación y el razonamiento que generó el
+                        análisis para revisar cada factura.
                       </Text>
                     </Stack>
 
@@ -416,7 +385,7 @@ function App() {
                         <List.Item
                           c={colorScheme === 'dark' ? 'white' : undefined}
                         >
-                          <strong>Porcentaje de deducibilidad</strong> para cada
+                          <strong>Resultado del análisis</strong> para cada
                           factura
                         </List.Item>
                         <List.Item
@@ -427,17 +396,19 @@ function App() {
                         <List.Item
                           c={colorScheme === 'dark' ? 'white' : undefined}
                         >
-                          <strong>Exportación</strong> de resultados
+                          <strong>Conexión y referencias</strong> que configuras
                         </List.Item>
                         <List.Item
                           c={colorScheme === 'dark' ? 'white' : undefined}
                         >
-                          <strong>Historial completo</strong> de análisis
+                          <strong>Progreso</strong> mientras se procesan tus
+                          facturas
                         </List.Item>
                         <List.Item
                           c={colorScheme === 'dark' ? 'white' : undefined}
                         >
-                          <strong>Asesoría basada en SRI</strong> actualizada
+                          <strong>Una ayuda de revisión</strong>, no asesoría
+                          tributaria profesional
                         </List.Item>
                       </List>
                     </Stack>
@@ -458,7 +429,7 @@ function App() {
                 Para Ti
               </Badge>
               <Title c="white" fw={700} order={2} size={36} ta="center">
-                Beneficios Según tu Rol
+                Para personas y equipos
               </Title>
             </Stack>
 
@@ -475,7 +446,6 @@ function App() {
                     <Card
                       bg="violet.8"
                       c="white"
-                      className="cursor-pointer transition-all duration-200 hover:-translate-y-1.5 hover:shadow-2xl"
                       padding="xl"
                       radius="md"
                       shadow="lg"
@@ -503,10 +473,10 @@ function App() {
                             Elimina la carga de análisis manual de facturas
                           </List.Item>
                           <List.Item>
-                            Asegúrate de máxima deducibilidad en tu declaración
+                            Revisa tus facturas antes de preparar tu declaración
                           </List.Item>
                           <List.Item>
-                            Conoce exactamente qué facturas son válidas
+                            Conserva el razonamiento generado para cada factura
                           </List.Item>
                           <List.Item>
                             Ahorra horas de revisión cada año fiscal
@@ -530,7 +500,6 @@ function App() {
                     <Card
                       bg="violet.8"
                       c="white"
-                      className="cursor-pointer transition-all duration-200 hover:-translate-y-1.5 hover:shadow-2xl"
                       padding="xl"
                       radius="md"
                       shadow="lg"
@@ -561,7 +530,7 @@ function App() {
                             Reduce tiempo en trabajo administrativo repetitivo
                           </List.Item>
                           <List.Item>
-                            Ofrece servicios más precisos a tus clientes
+                            Revisa resultados junto con el contexto configurado
                           </List.Item>
                           <List.Item>
                             Mejora tu competitividad en el mercado
@@ -589,11 +558,13 @@ function App() {
                 size={36}
                 ta="center"
               >
-                {isSignedIn ? 'Explora tus Análisis' : 'Comienza Hoy Mismo'}
+                {isSignedIn
+                  ? 'Revisa tus colecciones'
+                  : 'Empieza con tu contexto'}
               </Title>
               <Text c="dimmed" size="lg" ta="center">
-                Gratis. Sin tarjeta de crédito. Analiza tus primeras facturas
-                ahora.
+                Crea tu cuenta, configura una conexión y agrega las referencias
+                que usarás para revisar tus facturas.
               </Text>
             </Stack>
 
@@ -607,13 +578,13 @@ function App() {
                   navigate({ to: isSignedIn ? '/collections' : '/sign-up' })
                 }}
               >
-                {isSignedIn ? 'Ver Colecciones' : 'Crear Cuenta Gratis'}
+                {isSignedIn ? 'Ver colecciones' : 'Crear cuenta gratis'}
               </Button>
             </Group>
           </Stack>
           <Box bg={colorScheme === 'dark' ? 'dark' : 'light'}>
             <Text c="dimmed" mt={80} size="xs" ta="center">
-              Made with ❤️ by{' '}
+              Creado por{' '}
               <Anchor
                 href="https://www.linkedin.com/in/enmanuelmag/"
                 rel="noopener noreferrer"

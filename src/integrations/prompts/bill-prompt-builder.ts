@@ -135,7 +135,9 @@ export class BillPromptBuilder {
 
     if (fiscalReferences.length > 0) {
       instructions += `\n\nMaterial de referencia autogestionado (no es una fuente oficial ni una validación jurídica):\n${fiscalReferences
-        .map((reference) => `\n--- ${reference.name} ---\n${reference.markdown}`)
+        .map(
+          (reference) => `\n--- ${reference.name} ---\n${reference.markdown}`,
+        )
         .join('\n')}`
     }
 

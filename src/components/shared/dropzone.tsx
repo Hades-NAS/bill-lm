@@ -5,11 +5,13 @@ import {
   Group,
   Paper,
   SimpleGrid,
+  Stack,
   Text,
   ThemeIcon,
 } from '@mantine/core'
 import { Dropzone } from '@mantine/dropzone'
 import { File, Image, Upload, X } from 'lucide-react'
+import React from 'react'
 
 import TextWithIcon from './text-icon'
 
@@ -18,14 +20,30 @@ import type { DropzoneProps, FileWithPath } from '@mantine/dropzone'
 type Props = Partial<DropzoneProps> & {
   files: Array<FileWithPath>
   accept: Array<string>
+  acceptedFileLabel?: string
+  description?: string
+  fileListLabel?: string
   onDrop: (files: Array<FileWithPath>) => void
   onRemove?: (index: number) => void
 }
 
 export function DropzoneInput(props: Props) {
-  const { files, onDrop, onRemove, ...rest } = props
+  const {
+    acceptedFileLabel = 'archivos',
+    description,
+    fileListLabel = 'Archivos adjuntos',
+    files,
+    onDrop,
+    onRemove,
+    ...rest
+  } = props
+  const [rejections, setRejections] = React.useState<
+    Array<{ name: string; reason: string }>
+  >([])
+  const remainingFiles = rest.maxFiles ? rest.maxFiles - files.length : null
+
   return (
-    <Box>
+    <Stack gap="sm">
       <Dropzone
         {...rest}
         className={rest.disabled ? 'cursor-not-allowed!' : ''}
@@ -36,9 +54,19 @@ export function DropzoneInput(props: Props) {
         }
         maxSize={5 * 1024 ** 2}
         onDrop={(fs) => {
+          setRejections([])
           onDrop(fs)
         }}
-        onReject={(fs) => console.log('rejected files', fs)}
+        onReject={(fs) =>
+          setRejections(
+            fs.map((rejection) => ({
+              name: rejection.file.name,
+              reason:
+                rejection.errors[0]?.message ??
+                'El archivo no cumple los requisitos de carga.',
+            })),
+          )
+        }
       >
         <Group
           gap="xl"
@@ -71,24 +99,35 @@ export function DropzoneInput(props: Props) {
 
           <div>
             <Text inline c="gray" size="xl">
-              Suelta tus archivos XML aquí o haz click para seleccionar
+              Suelta tus {acceptedFileLabel} aquí o haz clic para seleccionar
             </Text>
             <Text inline c="dimmed" mt={7} size="sm">
-              Adjunta tantos archivos como quieras, cada archivo no debe exceder
-              los 5mb
+              {description ??
+                'Cada archivo puede pesar hasta 5 MB y debe cumplir el formato permitido.'}
             </Text>
             <Text inline c="dimmed" mt={7} size="sm">
-              El número máximo de archivos que puedes subir es{' '}
-              {rest.maxFiles || 'ilimitado'}
+              {rest.maxFiles
+                ? `${files.length}/${rest.maxFiles} archivos seleccionados`
+                : 'Sin límite de cantidad configurado'}
             </Text>
           </div>
         </Group>
       </Dropzone>
+      {rejections.length > 0 && (
+        <Stack gap={4}>
+          {rejections.map((rejection) => (
+            <Text c="red" key={`${rejection.name}-${rejection.reason}`} size="sm">
+              {rejection.name}: {rejection.reason}
+            </Text>
+          ))}
+        </Stack>
+      )}
       <Box mt="lg">
         <Text mb="xs" size="sm">
-          Archivos adjuntos ({files.length})
+          {fileListLabel} ({files.length}
+          {remainingFiles !== null ? `/${rest.maxFiles}` : ''})
         </Text>
-        <SimpleGrid cols={4}>
+        <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
           {files.map((file, index) => (
             <Paper withBorder key={index} p="sm" pos="relative">
               <Flex>
@@ -104,6 +143,7 @@ export function DropzoneInput(props: Props) {
               {onRemove && (
                 <Box>
                   <ActionIcon
+                    aria-label={`Quitar ${file.name}`}
                     color="red"
                     pos="absolute"
                     radius="xl"
@@ -123,6 +163,6 @@ export function DropzoneInput(props: Props) {
           ))}
         </SimpleGrid>
       </Box>
-    </Box>
+    </Stack>
   )
 }

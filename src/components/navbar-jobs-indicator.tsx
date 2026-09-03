@@ -203,8 +203,13 @@ export function NavbarJobsIndicator() {
             </Text>
           </Link>
         </Box>
-        <Tooltip withArrow label="Limpiar lista" position="bottom">
+        <Tooltip
+          withArrow
+          label="Marcar todos como leídos y ocultar esta lista"
+          position="bottom"
+        >
           <ActionIcon
+            aria-label="Marcar todos los análisis como leídos"
             loading={markAsReadMutation.isPending}
             size={'md'}
             variant="light"

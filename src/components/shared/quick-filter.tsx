@@ -155,7 +155,7 @@ function NumberRangeInput({
       min={field.min ?? 0}
       step={field.step ?? 1}
       value={value}
-      w={300}
+      w="100%"
       onChange={onChange}
     />
   )
@@ -181,7 +181,7 @@ function DateRangeInput({
       rightSection={rightSection || <CalendarIcon size={16} />}
       type="range"
       value={value}
-      w={300}
+      w="100%"
       onChange={(val) => {
         const [start, end] = val
         if (start && end) {
@@ -277,13 +277,18 @@ export function QuickFilter({
       }}
     >
       <Stack gap={16}>
-        <Flex align="center" gap={12} pos="relative">
+        <Flex
+          align={{ base: 'stretch', sm: 'center' }}
+          direction={{ base: 'column', sm: 'row' }}
+          gap={12}
+          pos="relative"
+        >
           <Select
             allowDeselect={false}
             data={fields.map((f) => ({ value: f.name, label: f.label }))}
             placeholder="Selecciona un campo"
             value={selectedFieldName}
-            w={200}
+            w={{ base: '100%', sm: 200 }}
             onChange={setSelectedFieldName}
           />
 
@@ -293,6 +298,7 @@ export function QuickFilter({
             disabled={!selectedFieldName || loading}
             loading={loading}
             type="submit"
+            w={{ base: '100%', sm: 'auto' }}
           >
             Buscar
           </Button>
@@ -474,7 +480,14 @@ export function QuickFilter({
 
       case 'threshold':
         return (
-          <Flex align="center" flex={1} gap={12} pos="relative" w="100%">
+          <Flex
+            align={{ base: 'stretch', sm: 'center' }}
+            direction={{ base: 'column', sm: 'row' }}
+            flex={1}
+            gap={12}
+            pos="relative"
+            w="100%"
+          >
             <form.AppField
               children={(field) => (
                 <Select

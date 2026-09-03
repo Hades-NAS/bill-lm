@@ -1,4 +1,4 @@
-import { Fieldset, Flex, Modal, Text } from '@mantine/core'
+import { Box, Fieldset, Flex, Modal, Text } from '@mantine/core'
 import { DateTime } from 'luxon'
 import React from 'react'
 
@@ -198,11 +198,13 @@ const CollectionForm = (
               />
             </Flex>
           </Fieldset>
-          <form.AppForm>
-            <form.SubmitButton loading={isLoading} mt="md">
-              {data ? 'Actualizar colección' : 'Crear colección'}
-            </form.SubmitButton>
-          </form.AppForm>
+          <Box className="bill-lm-modal-actions">
+            <form.AppForm>
+              <form.SubmitButton loading={isLoading} mt="md">
+                {data ? 'Actualizar colección' : 'Crear colección'}
+              </form.SubmitButton>
+            </form.AppForm>
+          </Box>
         </Flex>
       </form>
     ),

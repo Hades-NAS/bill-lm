@@ -41,7 +41,13 @@ function GoogleButton({
   loading: boolean
 }) {
   return (
-    <Button fullWidth loading={loading} variant="default" onClick={onClick}>
+    <Button
+      fullWidth
+      loading={loading}
+      type="button"
+      variant="default"
+      onClick={onClick}
+    >
       Continuar con Google
     </Button>
   )
@@ -98,7 +104,13 @@ export function SignInForm() {
   }
 
   return (
-    <Stack gap="md">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        void handleEmailSignIn()
+      }}
+    >
+      <Stack gap="md">
       {formError && (
         <Alert color="red" title="No pudimos iniciar sesión">
           {formError}
@@ -111,6 +123,7 @@ export function SignInForm() {
           <Button
             mt="sm"
             size="xs"
+            type="button"
             variant="light"
             onClick={() => resendEmailVerification()}
           >
@@ -136,8 +149,7 @@ export function SignInForm() {
       <Button
         fullWidth
         loading={loading}
-        type="button"
-        onClick={handleEmailSignIn}
+        type="submit"
       >
         Continuar
       </Button>
@@ -154,7 +166,8 @@ export function SignInForm() {
           </Anchor>
         </Text>
       </Group>
-    </Stack>
+      </Stack>
+    </form>
   )
 }
 
@@ -210,7 +223,13 @@ export function SignUpForm() {
   }
 
   return (
-    <Stack gap="md">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        void handleEmailSignUp()
+      }}
+    >
+      <Stack gap="md">
       {verificationSent && (
         <Alert color="violet" title="Revisa tu correo">
           Te enviamos un enlace de verificación. Cuando lo completes, inicia
@@ -247,8 +266,7 @@ export function SignUpForm() {
       <Button
         fullWidth
         loading={loading}
-        type="button"
-        onClick={handleEmailSignUp}
+        type="submit"
       >
         Crear cuenta
       </Button>
@@ -260,7 +278,8 @@ export function SignUpForm() {
           Iniciar sesión
         </Anchor>
       </Text>
-    </Stack>
+      </Stack>
+    </form>
   )
 }
 
@@ -289,7 +308,13 @@ export function PasswordResetForm() {
   }
 
   return (
-    <Stack gap="md">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        void handleSubmit()
+      }}
+    >
+      <Stack gap="md">
       {sent && (
         <Alert color="violet" title="Revisa tu correo">
           Si existe una cuenta para este correo, recibirás instrucciones para
@@ -304,12 +329,13 @@ export function PasswordResetForm() {
         value={email}
         onChange={(event) => setEmail(event.currentTarget.value)}
       />
-      <Button fullWidth loading={loading} type="button" onClick={handleSubmit}>
+      <Button fullWidth loading={loading} type="submit">
         Enviar instrucciones
       </Button>
       <Anchor component={Link} size="sm" ta="center" to="/sign-in">
         Volver a iniciar sesión
       </Anchor>
-    </Stack>
+      </Stack>
+    </form>
   )
 }

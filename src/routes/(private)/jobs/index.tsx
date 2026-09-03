@@ -6,7 +6,11 @@ import {
   Group,
   Table,
   Badge,
+  Button,
+  Card,
+  Flex,
   Paper,
+  Progress,
   ActionIcon,
   Tooltip,
 } from '@mantine/core'
@@ -27,6 +31,7 @@ import { useGetUserJobsQuery } from '#/hooks/query/telemetry'
 import JobTelemetryPage from '#/components/job/job-telemetry'
 import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
+import { useIsMobile } from '#/utils/mobile'
 
 export const Route = createFileRoute('/(private)/jobs/')({
   component: JobsListPage,
@@ -51,7 +56,7 @@ const getStatusColor = (status: string) => {
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
     pending: 'Pendiente',
-    'in-progress': 'En Progreso',
+    'in-progress': 'En progreso',
     completed: 'Completado',
     failed: 'Fallido',
     error: 'Error',
@@ -68,6 +73,7 @@ function JobsListPage() {
   const isSuccessWithData = isSuccessWithDataQuery(jobsQuery)
   const isEmpty = isEmptyArrayQuery(jobsQuery)
   const isError = isErrorQuery(jobsQuery)
+  const isMobile = useIsMobile()
 
   const handleViewTelemetry = (jobId: string) => {
     setJobTelemetryModal({ opened: true, data: jobId })
@@ -78,7 +84,7 @@ function JobsListPage() {
       <Stack gap={32}>
         <div>
           <Title mb={8} order={1}>
-            Mis Trabajos
+            Mis trabajos
           </Title>
           <Text c="dimmed">Historial de análisis y telemetría de trabajos</Text>
         </div>
@@ -94,15 +100,52 @@ function JobsListPage() {
 
         {isSuccessWithData && jobsQuery.isSuccess && (
           <Paper withBorder>
-            <Table.ScrollContainer minWidth={700}>
+            {isMobile ? (
+              <Stack gap="sm" p="sm">
+                {jobsQuery.data.map((job) => (
+                  <Card key={job.jobId} padding="sm" withBorder>
+                    <Stack gap="xs">
+                      <Group justify="space-between">
+                        <Text fw={600} lineClamp={1}>
+                          {job.data.collectionName || 'Colección sin nombre'}
+                        </Text>
+                        <Badge color={getStatusColor(job.status)}>
+                          {getStatusLabel(job.status)}
+                        </Badge>
+                      </Group>
+                      <Group justify="space-between">
+                        <Text c="dimmed" size="sm">
+                          Actualizado {formatRelativeTime(job.updatedAt)}
+                        </Text>
+                        <Button
+                          size="xs"
+                          variant="subtle"
+                          onClick={() => handleViewTelemetry(job.jobId)}
+                        >
+                          Ver detalle
+                        </Button>
+                      </Group>
+                      <Progress
+                        aria-label={`Progreso de ${job.data.collectionName || 'la colección'}: ${Math.round(job.percentage || 0)}%`}
+                        color={getStatusColor(job.status)}
+                        value={job.percentage || 0}
+                      />
+                      <Text c="dimmed" size="xs">
+                        {Math.round(job.percentage || 0)}% · {job.data.billIds.length}{' '}
+                        factura(s)
+                      </Text>
+                    </Stack>
+                  </Card>
+                ))}
+              </Stack>
+            ) : (
+              <Table.ScrollContainer minWidth={700}>
               <Table highlightOnHover striped>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Job ID</Table.Th>
                     <Table.Th>Colección</Table.Th>
                     <Table.Th>Estado</Table.Th>
                     <Table.Th>Progreso</Table.Th>
-                    <Table.Th>Creado</Table.Th>
                     <Table.Th>Actualizado</Table.Th>
                     <Table.Th>Acciones</Table.Th>
                   </Table.Tr>
@@ -110,11 +153,6 @@ function JobsListPage() {
                 <Table.Tbody>
                   {jobsQuery.data.map((job) => (
                     <Table.Tr key={job.jobId}>
-                      <Table.Td>
-                        <Text truncate title={job.jobId}>
-                          {job.jobId.slice(0, 6)}...{job.jobId.slice(-6)}
-                        </Text>
-                      </Table.Td>
                       <Table.Td>
                         <Text>{job.data.collectionName || 'N/A'}</Text>
                       </Table.Td>
@@ -127,26 +165,23 @@ function JobsListPage() {
                         </Badge>
                       </Table.Td>
                       <Table.Td>
-                        <Text>{job.percentage || 0}%</Text>
+                        <Flex align="center" gap="xs">
+                          <Progress
+                            aria-label={`Progreso: ${Math.round(job.percentage || 0)}%`}
+                            style={{ flex: 1 }}
+                            value={job.percentage || 0}
+                          />
+                          <Text size="sm">{Math.round(job.percentage || 0)}%</Text>
+                        </Flex>
                       </Table.Td>
                       <Table.Td>
-                        <Text>
-                          {DateTime.fromJSDate(job.createdAt).toLocaleString(
-                            DateTime.DATETIME_SHORT,
-                          )}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text>
-                          {DateTime.fromJSDate(job.updatedAt).toLocaleString(
-                            DateTime.DATETIME_SHORT,
-                          )}
-                        </Text>
+                        <Text>{formatRelativeTime(job.updatedAt)}</Text>
                       </Table.Td>
                       <Table.Td>
                         <Group gap={0}>
                           <Tooltip label="Ver telemetría">
                             <ActionIcon
+                              aria-label={`Ver telemetría de ${job.data.collectionName || 'la colección'}`}
                               variant="subtle"
                               onClick={() => handleViewTelemetry(job.jobId)}
                             >
@@ -159,7 +194,8 @@ function JobsListPage() {
                   ))}
                 </Table.Tbody>
               </Table>
-            </Table.ScrollContainer>
+              </Table.ScrollContainer>
+            )}
           </Paper>
         )}
 
@@ -185,4 +221,11 @@ function JobsListPage() {
       />
     </Box>
   )
+
+  function formatRelativeTime(date: Date) {
+    return (
+      DateTime.fromJSDate(date).toRelative({ locale: 'es' }) ??
+      DateTime.fromJSDate(date).toLocaleString(DateTime.DATETIME_SHORT)
+    )
+  }
 }

@@ -1,4 +1,5 @@
-import { Box, Container, Paper, Stack, Text, Title } from '@mantine/core'
+import { Anchor, Box, Container, Paper, Stack, Text, Title } from '@mantine/core'
+import { Link } from '@tanstack/react-router'
 
 import type { ReactNode } from 'react'
 
@@ -19,6 +20,9 @@ export function AuthCard({
         <Paper withBorder p={{ base: 'lg', sm: 'xl' }} radius="lg" shadow="sm">
           <Stack gap="xl">
             <Stack gap={6}>
+              <Anchor component={Link} fw={800} size="lg" to="/">
+                Bill-LM
+              </Anchor>
               <Text c="violet" fw={700} size="sm" tt="uppercase">
                 {eyebrow}
               </Text>
@@ -30,6 +34,10 @@ export function AuthCard({
               </Text>
             </Stack>
             {children}
+            <Text c="dimmed" size="xs" ta="center">
+              Usamos tu correo solo para administrar tu acceso. Tus claves de
+              proveedor se cifran en el servidor.
+            </Text>
           </Stack>
         </Paper>
       </Container>

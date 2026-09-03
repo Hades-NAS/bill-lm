@@ -92,6 +92,38 @@ export const useCollectionUpdateMutation = (
   )
 }
 
+export const useCollectionDeleteMutation = (
+  options: MutationOptions<string> = {},
+) => {
+  const queryClient = useQueryClient()
+  const trpc = useTRPC()
+
+  return useMutation(
+    trpc.collections.delete.mutationOptions({
+      onSuccess: (data) => {
+        invalidateQueriesByKeys(
+          queryClient,
+          CREATE_COLLECTION_INVALIDATION_KEYS(),
+        )
+        options.onSuccess?.(data.id)
+        notify.success({
+          title: 'Colección eliminada',
+          message: 'La colección y sus facturas asociadas fueron eliminadas.',
+        })
+      },
+      onError: (error) => {
+        options.onError?.(error)
+        notify.error({
+          title: 'No se pudo eliminar la colección',
+          message:
+            error.message ||
+            'Ocurrió un error al eliminar la colección. Inténtalo de nuevo.',
+        })
+      },
+    }),
+  )
+}
+
 export const useAnalyzeCollectionMutation = (
   options: MutationOptions<{ jobId: string; collectionId: string }> = {},
 ) => {

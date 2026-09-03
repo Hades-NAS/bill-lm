@@ -93,7 +93,7 @@ function CollectionsListPage() {
         <Group justify="space-between">
           <div>
             <Title mb={8} order={1}>
-              Mis Colecciones
+              Mis colecciones
             </Title>
             <Text c="dimmed">Administra tus colecciones de facturas</Text>
           </div>
@@ -104,7 +104,7 @@ function CollectionsListPage() {
               setCollectionForm({ opened: true })
             }}
           >
-            Nueva Colección
+            Nueva colección
           </Button>
         </Group>
 
@@ -148,7 +148,7 @@ function CollectionsListPage() {
                     setCollectionForm({ opened: true })
                   }}
                 >
-                  Nueva Colección
+                  Nueva colección
                 </Button>
               </Center>
             </Stack>

@@ -18,6 +18,4 @@ export const FiscalReferenceIdSchema = z.object({
   id: z.string().uuid(),
 })
 
-export type UploadFiscalReference = z.infer<
-  typeof UploadFiscalReferenceSchema
->
+export type UploadFiscalReference = z.infer<typeof UploadFiscalReferenceSchema>

@@ -1,4 +1,3 @@
-
 import { adminAuth } from '#/integrations/firebase/firebase.server'
 
 import { resolveFirebasePrincipal } from '../auth/firebase-principal'

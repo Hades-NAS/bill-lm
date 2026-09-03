@@ -134,6 +134,15 @@ function CollectionDetailPage() {
   const [credentialId, setCredentialId] = React.useState<string | null>(null)
   const activeConnections =
     connectionsQuery.data?.filter((connection) => connection.isActive) ?? []
+  const analysisConfigLoading =
+    connectionsQuery.isPending || fiscalReferencesQuery.isPending
+  const analysisConfigError =
+    connectionsQuery.isError || fiscalReferencesQuery.isError
+  const analysisConfigReady =
+    !analysisConfigLoading &&
+    !analysisConfigError &&
+    activeConnections.length > 0 &&
+    (fiscalReferencesQuery.data?.length ?? 0) > 0
 
   const analyzeCollectionMutation = useAnalyzeCollectionMutation()
 
@@ -182,6 +191,10 @@ function CollectionDetailPage() {
 
   const rowsMemo = React.useMemo(
     () => renderRows(),
+    [collectionQuery.data?.bills, selectedRows, filter],
+  )
+  const mobileBillsMemo = React.useMemo(
+    () => renderMobileBills(),
     [collectionQuery.data?.bills, selectedRows, filter],
   )
 
@@ -300,7 +313,20 @@ function CollectionDetailPage() {
           </Text>
         )}
 
-        {activeConnections.length === 0 ? (
+        {analysisConfigLoading ? (
+          <Stack gap="xs" mt="md">
+            <Text c="dimmed" size="sm">
+              Cargando configuración de análisis…
+            </Text>
+            <Skeleton height={36} />
+            <Skeleton height={36} />
+          </Stack>
+        ) : analysisConfigError ? (
+          <Alert color="red" mt="md">
+            No pudimos comprobar tu configuración. Cierra este modal e intenta
+            nuevamente antes de analizar.
+          </Alert>
+        ) : activeConnections.length === 0 ? (
           <Alert color="orange" mt="md">
             Necesitas una conexión activa para analizar.{' '}
             <Link to="/user">Configurar proveedor</Link>
@@ -329,18 +355,20 @@ function CollectionDetailPage() {
           />
         ) : null}
 
-        <Input
-          data={[
-            { value: 'strict', label: 'Estricto' },
-            { value: 'balanced', label: 'Equilibrado' },
-            { value: 'creative', label: 'Flexible' },
-          ]}
-          label="Preset de análisis"
-          mt="md"
-          typeInput="select"
-          value={preset}
-          onChange={(value) => setPreset(value as LLMPreset)}
-        />
+        {analysisConfigReady && (
+          <Input
+            data={[
+              { value: 'strict', label: 'Estricto' },
+              { value: 'balanced', label: 'Equilibrado' },
+              { value: 'creative', label: 'Flexible' },
+            ]}
+            label="Preset de análisis"
+            mt="md"
+            typeInput="select"
+            value={preset}
+            onChange={(value) => setPreset(value as LLMPreset)}
+          />
+        )}
 
         <Group justify="flex-end" mt={24}>
           <Button
@@ -354,7 +382,7 @@ function CollectionDetailPage() {
           {billsCalcQuery.data && billsCalcQuery.data.notAnalyzed && (
             <Button
               color="violet"
-              disabled={!userCanAnalyzeQuery.data?.canAnalyze}
+              disabled={!analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze}
               loading={isAnalyzing}
               onClick={analyzeByType.bind(null, 'all')}
             >
@@ -364,7 +392,7 @@ function CollectionDetailPage() {
           {billsCalcQuery.data && billsCalcQuery.data.partialAnalyzed && (
             <Button
               color="violet"
-              disabled={!userCanAnalyzeQuery.data?.canAnalyze}
+              disabled={!analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze}
               loading={isAnalyzing}
               variant={billsCalcQuery.data.fullAnalyzed ? 'light' : 'filled'}
               onClick={analyzeByType.bind(null, 'missing')}
@@ -377,7 +405,7 @@ function CollectionDetailPage() {
               billsCalcQuery.data.partialAnalyzed) && (
               <Button
                 color="violet"
-                disabled={!userCanAnalyzeQuery.data?.canAnalyze}
+                disabled={!analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze}
                 loading={isAnalyzing}
                 onClick={analyzeByType.bind(null, 'all')}
               >
@@ -392,7 +420,7 @@ function CollectionDetailPage() {
           <Group>
             <Link to="/collections">
               <Button leftSection={<ChevronLeft size={20} />} variant="subtle">
-                Volver a Colecciones
+                Volver a colecciones
               </Button>
             </Link>
           </Group>
@@ -486,13 +514,15 @@ function CollectionDetailPage() {
                           variant="subtle"
                           onClick={() => seeInstructions()}
                         >
-                          Ver Instrucciones
+                          Ver instrucciones
                         </Button>
                         <Tooltip
                           label={
-                            userCanAnalyzeQuery.data?.canAnalyze
-                              ? 'Analizar facturas de esta colección con IA para determinar su deducibilidad y obtener insights adicionales.'
-                              : 'Su cuenta no tiene permisos para analizar esta colección. Contacta al administrador (enmanuelmag@cardor.dev) para más información.'
+                            !analysisConfigReady
+                              ? 'Configura una conexión activa y al menos una referencia fiscal antes de analizar.'
+                              : userCanAnalyzeQuery.data?.canAnalyze
+                                ? 'Analizar facturas de esta colección con IA usando tu conexión y referencias configuradas.'
+                                : 'Su cuenta no tiene permisos para analizar esta colección. Contacta al administrador (enmanuelmag@cardor.dev) para más información.'
                           }
                           openDelay={
                             userCanAnalyzeQuery.data?.canAnalyze ? 1000 : 0
@@ -503,13 +533,14 @@ function CollectionDetailPage() {
                             disabled={
                               !collectionQuery.data ||
                               collectionQuery.data.bills.length === 0 ||
+                              !analysisConfigReady ||
                               !userCanAnalyzeQuery.data?.canAnalyze
                             }
                             leftSection={<Sparkles size={18} />}
                             variant="light"
                             onClick={() => setAnalyzeModal({ opened: true })}
                           >
-                            Analizar Colección
+                            Analizar colección
                           </Button>
                         </Tooltip>
                       </Flex>
@@ -566,7 +597,7 @@ function CollectionDetailPage() {
                             setBillModal({ opened: true, data: collectionId })
                           }}
                         >
-                          Subir Facturas
+                          Subir facturas
                         </Button>
                       )}
                     </Group>
@@ -606,11 +637,14 @@ function CollectionDetailPage() {
                         setFilter(value)
                       }}
                     >
-                      <Table.ScrollContainer
-                        maxHeight={height * 0.5}
-                        minWidth={700}
-                        px={0}
-                      >
+                      {isMobile ? (
+                        mobileBillsMemo
+                      ) : (
+                        <Table.ScrollContainer
+                          maxHeight={height * 0.5}
+                          minWidth={700}
+                          px={0}
+                        >
                         <Table highlightOnHover striped px={0}>
                           <Table.Thead>
                             <Table.Tr>
@@ -683,7 +717,8 @@ function CollectionDetailPage() {
                           </Table.Thead>
                           <Table.Tbody>{rowsMemo}</Table.Tbody>
                         </Table>
-                      </Table.ScrollContainer>
+                        </Table.ScrollContainer>
+                      )}
                     </QuickFilter>
                   </Skeleton>
                 </Card>
@@ -712,40 +747,7 @@ function CollectionDetailPage() {
   }
 
   function renderRows() {
-    let bills = collectionQuery.data?.bills || []
-
-    if (filter.field && filter.value) {
-      bills = bills.filter((bill) => {
-        const fieldValue = bill[filter.field as keyof typeof bill]
-
-        if (filter.type === 'text' && typeof fieldValue === 'string') {
-          return fieldValue
-            .toLowerCase()
-            .includes(String(filter.value).toLowerCase())
-        }
-
-        if (filter.type === 'number' && typeof fieldValue === 'number') {
-          return fieldValue === Number(filter.value)
-        }
-
-        if (filter.type === 'threshold' && typeof fieldValue === 'number') {
-          switch (filter.condition) {
-            case '>':
-              return fieldValue > filter.value
-            case '>=':
-              return fieldValue >= filter.value
-            case '<':
-              return fieldValue < filter.value
-            case '<=':
-              return fieldValue <= filter.value
-            default:
-              return false
-          }
-        }
-
-        return false
-      })
-    }
+    const bills = getFilteredBills()
 
     if (bills.length === 0) {
       return (
@@ -831,10 +833,16 @@ function CollectionDetailPage() {
         </Table.Td>
         <Table.Td>
           {bill.reason ? (
-            <Tooltip multiline label={bill.reason} maw={500}>
-              <ThemeIcon color="violet" size="sm" variant="subtle">
+            <Tooltip label="Ver razonamiento">
+              <ActionIcon
+                aria-label={`Ver razonamiento de ${bill.name}`}
+                color="violet"
+                size="sm"
+                variant="subtle"
+                onClick={() => setBillDetailModal({ opened: true, data: bill.id })}
+              >
                 <NotepadText size={16} />
-              </ThemeIcon>
+              </ActionIcon>
             </Tooltip>
           ) : (
             <Text c="dimmed" size="sm">
@@ -875,6 +883,131 @@ function CollectionDetailPage() {
       </Table.Tr>
     ))
     return rows
+  }
+
+  function renderMobileBills() {
+    const bills = getFilteredBills()
+
+    if (bills.length === 0) {
+      return (
+        <EmptyState
+          description="Sube facturas XML para organizarlas y analizarlas."
+          title="No hay facturas para mostrar"
+          variant={filter.value ? 'no-results' : 'empty'}
+        />
+      )
+    }
+
+    return (
+      <Stack gap="sm">
+        {bills.map((bill) => (
+          <Card key={bill.id} padding="sm" withBorder>
+            <Stack gap="xs">
+              <Group align="flex-start" justify="space-between" wrap="nowrap">
+                <Checkbox
+                  aria-label={`Seleccionar ${bill.name}`}
+                  checked={selectedRows.includes(bill.id)}
+                  onChange={(event) => {
+                    if (event.currentTarget.checked) {
+                      handlerSelectRows.append(bill.id)
+                    } else {
+                      handlerSelectRows.remove(selectedRows.indexOf(bill.id))
+                    }
+                  }}
+                />
+                <Box style={{ flex: 1 }}>
+                  <Text fw={600} lineClamp={1}>
+                    {bill.name}
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    {DateTime.fromJSDate(bill.createdAt).toLocaleString(
+                      DateTime.DATE_MED,
+                    )}
+                  </Text>
+                </Box>
+                <Badge color={getColorBillTargetType(bill.billType)}>
+                  {bill.billType.toUpperCase()}
+                </Badge>
+              </Group>
+              <Group justify="space-between">
+                <Text fw={600} size="sm">
+                  <NumberDisplay
+                    thousandSeparator
+                    prefix="$ "
+                    value={bill.totalAmount}
+                  />
+                </Text>
+                {bill.percentage !== null ? (
+                  <Badge color={getColorPercentage(bill.percentage)}>
+                    {bill.percentage}%
+                  </Badge>
+                ) : (
+                  <Badge color="gray">Pendiente</Badge>
+                )}
+              </Group>
+              <Group gap="xs" justify="flex-end">
+                <Button
+                  size="xs"
+                  variant="subtle"
+                  onClick={() => setBillDetailModal({ opened: true, data: bill.id })}
+                >
+                  {bill.reason ? 'Ver razonamiento' : 'Ver detalle'}
+                </Button>
+                <ActionIcon
+                  aria-label={`Eliminar ${bill.name}`}
+                  color="red"
+                  disabled={selectedRows.length > 0}
+                  variant="subtle"
+                  onClick={() => {
+                    handlerSelectRows.setState([bill.id])
+                    setBillDeleteModal(true)
+                  }}
+                >
+                  <Trash2 size={16} />
+                </ActionIcon>
+              </Group>
+            </Stack>
+          </Card>
+        ))}
+      </Stack>
+    )
+  }
+
+  function getFilteredBills() {
+    let bills = collectionQuery.data?.bills || []
+
+    if (!filter.field || !filter.value) return bills
+
+    return bills.filter((bill) => {
+      const fieldValue = bill[filter.field as keyof typeof bill]
+
+      if (filter.type === 'text' && typeof fieldValue === 'string') {
+        return fieldValue
+          .toLowerCase()
+          .includes(String(filter.value).toLowerCase())
+      }
+
+      if (filter.type === 'number' && typeof fieldValue === 'number') {
+        return fieldValue === Number(filter.value)
+      }
+
+      if (filter.type === 'threshold' && typeof fieldValue === 'number') {
+        switch (filter.condition) {
+          case '>':
+            return fieldValue > filter.value
+          case '>=':
+            return fieldValue >= filter.value
+          case '<':
+            return fieldValue < filter.value
+          case '<=':
+            return fieldValue <= filter.value
+          default:
+            return false
+        }
+      }
+
+      return false
+    })
   }
 
   function getBillName(id: string) {
@@ -926,7 +1059,7 @@ function CollectionDetailPage() {
               })
             }}
           >
-            Editar Instrucciones
+            Editar instrucciones
           </Button>
         </Flex>
       ),

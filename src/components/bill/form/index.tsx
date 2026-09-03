@@ -185,13 +185,15 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
               mode="array"
               name="bills"
             />
-            <form.SubmitButton
-              fullWidth
-              disabled={isLoading}
-              loading={isLoading}
-            >
-              Subir facturas
-            </form.SubmitButton>
+            <Box className="bill-lm-modal-actions">
+              <form.SubmitButton
+                fullWidth
+                disabled={isLoading}
+                loading={isLoading}
+              >
+                Subir facturas
+              </form.SubmitButton>
+            </Box>
           </Flex>
         </form>
       </Box>

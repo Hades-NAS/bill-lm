@@ -5,6 +5,7 @@ import z from 'zod'
 import {
   AnalyzeCollectionRequestSchema,
   CreateCollectionSchema,
+  DeleteCollectionRequestSchema,
   GetCollectionByIdRequestSchema,
   GetCollectionsRequestSchema,
   UpdateCollectionSchema,
@@ -12,10 +13,10 @@ import {
 } from '#/schema/collections'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
+import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
 import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
-import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
 
 import { FireCollections } from '#/constants/firebase'
 
@@ -160,6 +161,37 @@ export const collectionsRouter = {
       })
 
       return collection
+    }),
+  delete: privateProcedure
+    .input(DeleteCollectionRequestSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { principal } = ctx
+
+      logger.info('Deleting collection for user', {
+        userId: principal.userId,
+        collectionId: input.id,
+      })
+
+      const result = await prisma.collection.deleteMany({
+        where: {
+          id: input.id,
+          userId: principal.userId,
+        },
+      })
+
+      if (result.count === 0) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'La colección no existe o ya fue eliminada.',
+        })
+      }
+
+      logger.info('Deleted collection for user', {
+        userId: principal.userId,
+        collectionId: input.id,
+      })
+
+      return { id: input.id }
     }),
   detail: privateProcedure
     .input(GetCollectionByIdRequestSchema)

@@ -1,1 +1,236 @@
-[]
+[
+  {
+    "id": "UI-01",
+    "title": "Alinear la promesa pública con referencias autogestionadas",
+    "status": "pending",
+    "description": "Resolver A-01, A-07, A-19 y A-20 de la auditoría Hallmark: corregir copy público, retirar affordances falsas, normalizar motion/tokens y declarar idioma español Ecuador.",
+    "acceptance": [
+      "La landing no afirma usar normativa SRI oficial, actualizada o asesoría tributaria.",
+      "Las tarjetas informativas no aparentan ser clicables; las navegables son enlaces o botones accesibles.",
+      "No se usa transition-all, easing genérico ni color literal fuera de tokens aprobados.",
+      "El documento raíz declara lang=es-EC."
+    ],
+    "dependsOn": []
+  },
+  {
+    "id": "UI-02",
+    "title": "Completar eliminación de colecciones y accesibilidad de sus acciones",
+    "status": "pending",
+    "description": "Resolver A-02 y A-11: conectar la eliminación real de colección y convertir acciones icon-only en controles comprensibles y accesibles.",
+    "acceptance": [
+      "Confirmar eliminación borra únicamente la colección propia, invalida la lista y muestra carga/error.",
+      "Abrir y eliminar tienen aria-label y tooltip; no hay acción que parezca funcionar sin cambiar estado.",
+      "La confirmación describe consecuencias y usa un verbo específico."
+    ],
+    "dependsOn": []
+  },
+  {
+    "id": "UI-03",
+    "title": "Reestructurar configuración de conexiones y referencias",
+    "status": "pending",
+    "description": "Resolver A-05, A-06, A-08, A-09 y A-10: lista sobria, modal para agregar referencias, confirmación de borrado y estados de consulta/mutación.",
+    "acceptance": [
+      "Conexiones y referencias se muestran como listas, sin Card dentro de Card innecesaria.",
+      "Agregar referencia abre modal y comunica formatos, límite 3, progreso y errores.",
+      "Eliminar referencia pide confirmación y explica su efecto en análisis futuros.",
+      "Carga, vacío, error y reintento son distinguibles; cada mutación muestra error accionable."
+    ],
+    "dependsOn": ["UI-02"]
+  },
+  {
+    "id": "UI-04",
+    "title": "Consolidar componentes compartidos de estados, filtros y confirmaciones",
+    "status": "pending",
+    "description": "Resolver A-13, A-14, A-15, A-16 y A-22 en componentes reutilizables antes de rehacer pantallas consumidoras.",
+    "acceptance": [
+      "EmptyState admite icono, título, descripción, CTA y variantes empty/no-results/error.",
+      "ConfModal ofrece una variante destructiva con consecuencia, verbo específico y foco seguro.",
+      "QuickFilter y Dropzone son responsivos y reciben copy, formatos y límites por props.",
+      "Los modales largos tienen acción primaria visible y los uploads muestran contador y errores por archivo."
+    ],
+    "dependsOn": []
+  },
+  {
+    "id": "UI-05",
+    "title": "Convertir detalle de colección en workspace responsive",
+    "status": "pending",
+    "description": "Resolver A-03, A-04 y A-17: simplificar jerarquía, presentar facturas adecuadamente en móvil y estabilizar el flujo de análisis.",
+    "acceptance": [
+      "El detalle separa resumen, acción Analizar y workspace de facturas sin superficies redundantes.",
+      "La tabla de escritorio conserva información; móvil usa filas resumidas o tarjetas sin depender de scroll horizontal para operar.",
+      "Razones y detalles se abren bajo demanda sin competir con la tabla principal.",
+      "El modal de análisis muestra carga de configuración y no permite enviar hasta resolver conexión y referencias."
+    ],
+    "dependsOn": ["UI-03", "UI-04"]
+  },
+  {
+    "id": "UI-06",
+    "title": "Hacer legible y responsive el historial de trabajos",
+    "status": "pending",
+    "description": "Resolver A-12 y el indicador de trabajos: priorizar estado/progreso, reducir metadata y aclarar acciones de lectura/limpieza.",
+    "acceptance": [
+      "La vista prioriza colección, estado, progreso y tiempo; Job ID completo queda en detalle o copia explícita.",
+      "Móvil no requiere leer una tabla ancha para consultar un trabajo.",
+      "Progreso es visual y textual; 'limpiar' se renombra según su efecto real.",
+      "Nombre de colección y acciones tienen semántica de enlace/botón y foco visible."
+    ],
+    "dependsOn": ["UI-04"]
+  },
+  {
+    "id": "UI-07",
+    "title": "Pulir navegación, autenticación y copy transversal",
+    "status": "pending",
+    "description": "Resolver A-18 y A-21: jerarquizar menú de usuario, mejorar orientación de auth y unificar sentence case en acciones.",
+    "acceptance": [
+      "El menú distingue Trabajo y Cuenta, destaca o comunica la ruta actual y conserva salida separada.",
+      "Auth conserva su componente compartido, añade marca/regreso y nota breve de privacidad sin inventar promesas.",
+      "Flujos auth usan formulario y submit nativo; Enter funciona.",
+      "Acciones y encabezados aplican sentence case de forma consistente."
+    ],
+    "dependsOn": ["UI-01", "UI-04"]
+  },
+  {
+    "id": "UI-08",
+    "title": "Validar visualmente la remediación Hallmark",
+    "status": "pending",
+    "description": "Ejecutar validación autenticada y pública de los cambios UI en 320, 375, 414, 768 y escritorio; teclado, foco, modales, tablas y menús.",
+    "acceptance": [
+      "No hay scroll horizontal involuntario en los anchos definidos.",
+      "Botones, inputs, menú, modales y acciones destructivas funcionan con teclado y foco visible.",
+      "Se registran capturas/evidencia de escritorio y móvil para colecciones, configuración, trabajos y auth.",
+      "La auditoría Hallmark se actualiza con hallazgos resueltos o pendientes justificados."
+    ],
+    "dependsOn": ["UI-05", "UI-06", "UI-07"]
+  },
+  {
+    "id": "F2-01",
+    "title": "Definir contratos de Fase 2 para perfil, actividades y resultados",
+    "status": "pending",
+    "description": "Crear contratos Zod versionados para actividad económica, revisión de perfil, propósito de colección, periodos civiles, bloqueo, AnalysisRun y AnalysisResult. No incluye rulesets oficiales.",
+    "acceptance": [
+      "Los propósitos ejecutables son vat_credit, business_income_tax y personal_expenses; other no es ejecutable.",
+      "Actividades, perfil, colección, referencia fiscal, factura, parser, prompt y resultado tienen contratos/versiones explícitos.",
+      "Los bloqueos tienen códigos estables y mensajes accionables.",
+      "No se reemplaza todavía la proyección legacy percentage/reason."
+    ],
+    "dependsOn": []
+  },
+  {
+    "id": "F2-02",
+    "title": "Migración aditiva para perfil tributario y actividades revisables",
+    "status": "pending",
+    "description": "Añadir modelos para TaxpayerProfile, revisiones, EconomicActivity, revisiones y relaciones de actividad, sin inferir información desde colecciones actuales.",
+    "acceptance": [
+      "Una actividad pertenece al usuario, es reutilizable y toda edición crea revisión nueva.",
+      "El perfil conserva identificadores pertinentes y vincula revisiones de actividades.",
+      "La migración es aditiva, no borra ni renombra campos legacy y no se aplica automáticamente a producción.",
+      "Pruebas de ownership impiden leer o modificar perfiles/actividades ajenas."
+    ],
+    "dependsOn": ["F2-01"]
+  },
+  {
+    "id": "F2-03",
+    "title": "Construir wizard de perfil y actividad económica",
+    "status": "pending",
+    "description": "Crear la experiencia separada de perfil y actividad reutilizable, con revisiones visibles y sin presentar datos autogestionados como catálogo oficial.",
+    "acceptance": [
+      "El usuario puede crear, revisar y reemplazar una actividad propia sin mutar su historial.",
+      "El wizard valida campos, uso mixto e incertidumbre sin inventar tratamiento tributario.",
+      "La UI usa los patrones aprobados de modal/wizard, loading/error y móvil.",
+      "No existe dependencia de reglas oficiales SRI ni despliegue de contenido normativo."
+    ],
+    "dependsOn": ["F2-02", "UI-04"]
+  },
+  {
+    "id": "F2-04",
+    "title": "Versionar propósito, periodo y contexto de la colección",
+    "status": "pending",
+    "description": "Introducir revisión de colección con propósito singular, periodo civil, perfil y actividades seleccionadas; migrar datos legacy sin inferir propósito o actividad.",
+    "acceptance": [
+      "Una colección nueva elige propósito, periodo, perfil y una o más revisiones de actividad.",
+      "Colecciones legacy se conservan como legacy y quedan explícitamente incompletas, no se les inventa contexto.",
+      "El usuario entiende qué falta para poder analizar.",
+      "Cambiar el contexto crea una revisión en vez de reescribir historia."
+    ],
+    "dependsOn": ["F2-02", "F2-03", "UI-05"]
+  },
+  {
+    "id": "F2-05",
+    "title": "Introducir memberships y migrar pertenencia legacy de facturas",
+    "status": "pending",
+    "description": "Añadir CollectionBillMembership de forma aditiva para permitir una factura en varias colecciones sin romper BillHeader.collectionId actual.",
+    "acceptance": [
+      "Cada BillHeader existente obtiene exactamente una membership idempotente.",
+      "Nueva carga mantiene relación legacy y escribe membership durante la transición.",
+      "Una factura puede pertenecer a más de una colección sin duplicar el archivo original.",
+      "Las consultas/UI actuales siguen funcionando durante la transición."
+    ],
+    "dependsOn": ["F2-01"]
+  },
+  {
+    "id": "F2-06",
+    "title": "Persistir runs y resultados históricos con snapshots",
+    "status": "pending",
+    "description": "Crear AnalysisRun y AnalysisResult inmutables e idempotentes; fijar hashes/identificadores de contexto, incluyendo referencias autogestionadas en el momento de encolar.",
+    "acceptance": [
+      "Una misma solicitud con mismos inputs y snapshots reutiliza el mismo run; un cambio de contexto crea otro.",
+      "Cada resultado se persiste por run y factura, incluyendo éxito, fallo o bloqueo estructurado.",
+      "El run fija IDs/hashes de perfil, actividades, colección, referencias, factura, parser, prompt, proveedor/modelo y conexión opaca.",
+      "Eliminar o cambiar una referencia después de encolar no cambia el contexto de un run existente.",
+      "BillHeader.percentage/reason se conserva como proyección compatible solo tras resultado exitoso."
+    ],
+    "dependsOn": ["F2-01", "F2-04", "F2-05"]
+  },
+  {
+    "id": "F2-07",
+    "title": "Aplicar gate autogestionado antes de cola y en worker",
+    "status": "pending",
+    "description": "Reemplazar el gate mínimo actual por uno versionado que exige propósito, periodo, perfil/actividad y al menos una referencia autogestionada snapshot; no incluye ruleset oficial.",
+    "acceptance": [
+      "Si falta contexto, se persiste AnalysisRun BLOCKED con código accionable y no se llama a BullMQ ni al LLM.",
+      "El worker vuelve a validar propiedad, estado y snapshots antes de invocar al proveedor.",
+      "BullMQ, Firestore y logs no reciben texto de referencias ni secretos.",
+      "No existe bypass desde frontend."
+    ],
+    "dependsOn": ["F2-06"]
+  },
+  {
+    "id": "F2-08",
+    "title": "Evolucionar resultado de análisis y proyección legacy",
+    "status": "pending",
+    "description": "Introducir TaxAnalysisResultV2 por propósito y adaptador explícito a percentage/reason, sin hacer conclusiones oficiales SRI.",
+    "acceptance": [
+      "El resultado distingue aplicabilidad, evaluación, evidencia, incertidumbre y porcentaje aplicable cuando corresponde.",
+      "Cada run llena solo el brazo de su propósito; no rellena áreas no aplicables.",
+      "Fallos, bloqueos y needs_review no pisan la proyección legacy.",
+      "Las referencias autogestionadas se nombran como contexto aportado por usuario, no normativa oficial."
+    ],
+    "dependsOn": ["F2-06", "F2-07"]
+  },
+  {
+    "id": "F2-09",
+    "title": "Exponer historial de análisis y contexto fijado",
+    "status": "pending",
+    "description": "Añadir tRPC/UI protegida para listar runs de colección, ver resultados por factura, bloqueos y referencias/versiones usadas sin exponer archivos ni secretos.",
+    "acceptance": [
+      "Un usuario solo ve historial de sus colecciones y facturas.",
+      "La UI distingue resultado actual, histórico, fallo y bloqueo con causa accionable.",
+      "Se muestran nombres/huellas de referencias y versiones de contexto, nunca su contenido secreto ni API keys.",
+      "La pantalla legacy de facturas continúa mostrando percentage/reason durante la transición."
+    ],
+    "dependsOn": ["F2-08", "UI-05", "UI-06"]
+  },
+  {
+    "id": "F2-10",
+    "title": "Pruebas, migración y despliegue seguro de Fase 2",
+    "status": "pending",
+    "description": "Cubrir contratos, ownership, idempotencia, snapshots, gates, resultados parciales y compatibilidad; preparar rollout/rollback sin aplicar migraciones fuera del flujo autorizado.",
+    "acceptance": [
+      "Pruebas verifican que cambios posteriores de actividad/referencia no alteran un run histórico.",
+      "Pruebas verifican gate doble antes de cola y antes de LLM, y ausencia de secretos/texto fuente en cola/logs.",
+      "Migraciones se aplican con db:deploy sobre entorno autorizado, con status previo y plan de rollback aditivo.",
+      "Health, pruebas focalizadas y evidencia manual autenticada pasan antes de cerrar."
+    ],
+    "dependsOn": ["F2-09"]
+  }
+]

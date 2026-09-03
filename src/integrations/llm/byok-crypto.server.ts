@@ -71,12 +71,20 @@ export function encryptProviderSecret(
   secret: string,
   context: SecretContext,
 ): EncryptedSecret {
-  return encryptWithKey(secret, context, parseEncryptionKey(env.BYOK_ENCRYPTION_KEY))
+  return encryptWithKey(
+    secret,
+    context,
+    parseEncryptionKey(env.BYOK_ENCRYPTION_KEY),
+  )
 }
 
 export function decryptProviderSecret(
   encrypted: EncryptedSecret,
   context: SecretContext,
 ) {
-  return decryptWithKey(encrypted, context, parseEncryptionKey(env.BYOK_ENCRYPTION_KEY))
+  return decryptWithKey(
+    encrypted,
+    context,
+    parseEncryptionKey(env.BYOK_ENCRYPTION_KEY),
+  )
 }

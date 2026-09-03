@@ -1,7 +1,10 @@
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
 
-import { FiscalReferenceInputError, normalizeFiscalReferenceMarkdown } from './normalizer.server'
+import {
+  FiscalReferenceInputError,
+  normalizeFiscalReferenceMarkdown,
+} from './normalizer.server'
 
 export async function loadActiveFiscalReferenceContext(userId: string) {
   const references = await prisma.fiscalReference.findMany({

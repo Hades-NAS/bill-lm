@@ -1,5 +1,4 @@
 import { randomBytes } from 'node:crypto'
-
 import { describe, expect, it } from 'vitest'
 
 import { createProviderSecretCipher } from '../byok-crypto.server'
@@ -18,10 +17,23 @@ describe('BYOK provider-secret cipher', () => {
     )
     const encrypted = cipher.encrypt('test-secret-not-a-real-key', context)
 
-    expect(cipher.decrypt(encrypted, context)).toBe('test-secret-not-a-real-key')
-    expect(() => cipher.decrypt(encrypted, { ...context, userId: 'other-user' })).toThrow()
-    expect(() => cipher.decrypt(encrypted, { ...context, connectionId: 'other-connection' })).toThrow()
-    expect(() => cipher.decrypt(encrypted, { ...context, provider: 'claude' })).toThrow()
-    expect(() => cipher.decrypt(encrypted, { ...context, version: 2 })).toThrow()
+    expect(cipher.decrypt(encrypted, context)).toBe(
+      'test-secret-not-a-real-key',
+    )
+    expect(() =>
+      cipher.decrypt(encrypted, { ...context, userId: 'other-user' }),
+    ).toThrow()
+    expect(() =>
+      cipher.decrypt(encrypted, {
+        ...context,
+        connectionId: 'other-connection',
+      }),
+    ).toThrow()
+    expect(() =>
+      cipher.decrypt(encrypted, { ...context, provider: 'claude' }),
+    ).toThrow()
+    expect(() =>
+      cipher.decrypt(encrypted, { ...context, version: 2 }),
+    ).toThrow()
   })
 })

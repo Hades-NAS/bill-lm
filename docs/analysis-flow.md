@@ -36,7 +36,7 @@ La aplicación no analiza directamente desde el navegador. Para que un clic pued
 | Proceso web               | Sirve UI y API tRPC.                                                                  | `bun run dev` o imagen server.                                                         |
 | Proceso worker            | Consume la misma cola y llama al proveedor.                                           | `bun run worker:dev` o imagen worker.                                                  |
 | Proveedor LLM cloud       | OpenAI o Claude, resuelto por `credentialId` en cada job.                             | `BYOK_ENCRYPTION_KEY` compartida por web/worker.                                       |
-| Referencias fiscales      | Material global autoaprobado del usuario, usado como contexto de prompt.              | Hasta tres Markdown o PDFs con texto; se normalizan y guardan en MinIO.               |
+| Referencias fiscales      | Material global autoaprobado del usuario, usado como contexto de prompt.              | Hasta tres Markdown o PDFs con texto; se normalizan y guardan en MinIO.                |
 
 El archivo que valida el contrato real de variables es `src/env.ts`. `.env.example` todavía usa nombres antiguos como `LLM_API_KEY` y menciona Clerk; no es una fuente fiable para el flujo actual. Debe alinearse en una tarea separada antes de usarlo como guía de despliegue.
 
@@ -92,8 +92,8 @@ El worker (`src/integrations/jobs/analyze-job.ts`) escucha `ANALYZE_QUEUE_NAME` 
 3. Vuelve a exigir referencias fiscales activas propias y descarga solo sus Markdown normalizados desde MinIO. El contenido no entra en Firestore, BullMQ ni telemetría.
 4. Construye un proveedor **nuevo** para este job. No hay singleton compartido entre jobs ni fallback a una key global.
 5. Construye `AnalyzeBillsUseCase(provider)` y ejecuta los IDs de factura con ese contexto autogestionado.
-5. Al terminar, marca el documento Firestore como `completed` si no hubo fallos o `failed` si hubo al menos uno.
-6. Si el caso de uso lanza un error, escribe `failed` y el mensaje de error en Firestore; el handler devuelve `null`.
+6. Al terminar, marca el documento Firestore como `completed` si no hubo fallos o `failed` si hubo al menos uno.
+7. Si el caso de uso lanza un error, escribe `failed` y el mensaje de error en Firestore; el handler devuelve `null`.
 
 Ramas del proveedor actual:
 
