@@ -6,7 +6,7 @@ Esta fase habilita conexiones cloud de OpenAI y Claude por usuario. No incluye d
 
 ## Configuración de despliegue
 
-Todos los procesos que comparten la misma base PostgreSQL —web, worker y cualquier entorno que escriba conexiones— deben usar exactamente el mismo valor secreto de `BYOK_ENCRYPTION_KEY`. Es una cadena Base64 que representa 32 bytes y se configura solo en el entorno del servidor. No se agrega a `.env.example`, a variables `VITE_`, a argumentos de Docker, ni al repositorio.
+Todos los procesos que comparten la misma base PostgreSQL —web, worker y cualquier entorno que escriba conexiones— deben usar exactamente el mismo valor secreto de `BYOK_ENCRYPTION_KEY`. Es una cadena Base64 que representa 32 bytes y se configura solo en el entorno runtime del servidor. No se agrega a variables `VITE_`, a argumentos de Docker, ni al repositorio. La infraestructura heredada puede seguir llegando como build args para compatibilidad NAS; ver `DOCKER.md`.
 
 Antes de desplegar, aplicar la migración versionada con el proceso normal de Prisma. No usar `db push`: la migración crea `provider_connections`, su enum y el índice parcial que garantiza una sola conexión predeterminada activa por usuario.
 

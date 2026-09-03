@@ -34,7 +34,6 @@ describe('deploy workflow', () => {
 
     expect(workflow).not.toContain('OPENAI_API_KEY')
     expect(workflow).not.toContain('CLAUDE_API_KEY')
-    expect(workflow).not.toContain('--build-arg DATABASE_URL')
     expect(workflow).toContain('BYOK_ENCRYPTION_KEY=${{ secrets.BYOK_ENCRYPTION_KEY }}')
   })
 })

@@ -90,12 +90,21 @@ jobs:
           IMAGE="localhost:5000/bill-lm-server:${{ env.IMAGE_TAG }}"
           docker buildx build --load \
             -f docker/Dockerfile \
+            --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
+            --build-arg DATABASE_URL="${{ env.DATABASE_URL }}" \
+            --build-arg MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
+            --build-arg MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
+            --build-arg MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
+            --build-arg REDIS_HOST=${{ env.REDIS_HOST }} \
+            --build-arg MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
+            --build-arg GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
             --build-arg VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
             --build-arg VITE_FIREBASE_AUTH_DOMAIN=${{ env.VITE_FIREBASE_AUTH_DOMAIN }} \
             --build-arg VITE_FIREBASE_PROJECT_ID=${{ env.VITE_FIREBASE_PROJECT_ID }} \
             --build-arg VITE_FIREBASE_STORAGE_BUCKET=${{ env.VITE_FIREBASE_STORAGE_BUCKET }} \
             --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID=${{ env.VITE_FIREBASE_MESSAGING_SENDER_ID }} \
             --build-arg VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }} \
+            --build-arg ANALYZE_QUEUE_NAME=${{ env.ANALYZE_QUEUE_NAME }} \
             -t $IMAGE .
 
           echo "✅ Server Image loaded: $IMAGE"
@@ -105,6 +114,15 @@ jobs:
           IMAGE="localhost:5000/bill-lm-worker:${{ env.IMAGE_TAG }}"
           docker buildx build --load \
             -f docker/Dockerfile.worker \
+            --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
+            --build-arg DATABASE_URL="${{ env.DATABASE_URL }}" \
+            --build-arg MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }} \
+            --build-arg MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }} \
+            --build-arg MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
+            --build-arg REDIS_HOST=${{ env.REDIS_HOST }} \
+            --build-arg MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
+            --build-arg GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
+            --build-arg ANALYZE_QUEUE_NAME=${{ env.ANALYZE_QUEUE_NAME }} \
             -t $IMAGE .
 
           echo "✅ Worker Image loaded: $IMAGE"
