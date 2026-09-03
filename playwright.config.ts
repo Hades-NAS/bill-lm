@@ -1,15 +1,18 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const port = Number(process.env.PLAYWRIGHT_PORT ?? 3000)
+const baseURL = `http://localhost:${port}`
+
 export default defineConfig({
   outputDir: 'test-evidences/playwright-artifacts',
   testDir: './e2e/__tests__',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     ...devices['Desktop Chrome'],
   },
   webServer: {
-    command: 'bun run dev',
+    command: `./node_modules/.bin/vite dev --port ${port}`,
     reuseExistingServer: !process.env.CI,
-    url: 'http://localhost:3000',
+    url: baseURL,
   },
 })

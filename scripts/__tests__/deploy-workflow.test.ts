@@ -24,6 +24,7 @@ describe('deploy workflow', () => {
     expect(workflow).toContain('  quality:')
     expect(workflow).toContain('uses: actions/setup-node@v7')
     expect(workflow).toContain('node-version: 24')
+    expect(workflow).toContain("PLAYWRIGHT_PORT: '3100'")
     expect(workflow).toContain('run: bash health.sh')
     expect(workflow).toContain('needs: [quality, validate-health, build]')
     expect(workflow).toContain('QUALITY_RESULT: ${{ needs.quality.result }}')
