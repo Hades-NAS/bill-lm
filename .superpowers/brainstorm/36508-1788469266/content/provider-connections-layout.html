@@ -1,0 +1,51 @@
+<h2>¿Cómo debería sentirse Configuración?</h2>
+<p class="subtitle">Ambas opciones conservan el cifrado y las operaciones actuales; cambia solamente cómo se revela el formulario.</p>
+
+<div class="cards">
+  <div class="card" data-choice="modal-list" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#fff;color:#18181b;border-radius:12px;padding:18px;text-align:left;box-shadow:0 12px 28px rgba(0,0,0,.16)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <strong style="font-size:18px">Conexiones de proveedor</strong>
+          <button style="border:0;border-radius:7px;background:#6d4be8;color:#fff;padding:8px 12px;font-weight:700">+ Agregar conexión</button>
+        </div>
+        <div style="border:1px solid #e4e4e7;border-radius:8px;padding:12px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between"><strong>Trabajo</strong><span style="color:#15803d">Activa</span></div>
+          <div style="color:#71717a;font-size:12px;margin-top:5px">OpenAI · gpt-4o-mini · termina en 4K9P</div>
+          <div style="margin-top:10px;color:#6d4be8;font-size:12px">Probar &nbsp; · &nbsp; Editar &nbsp; · &nbsp; Más</div>
+        </div>
+        <div style="border:1px solid #e4e4e7;border-radius:8px;padding:12px;opacity:.72">
+          <strong>Claude personal</strong><div style="color:#71717a;font-size:12px;margin-top:5px">Claude · claude-sonnet-4-5 · termina en A83F</div>
+        </div>
+      </div>
+      <div style="margin:14px auto 0;background:rgba(24,24,27,.84);border-radius:10px;padding:13px;max-width:74%;text-align:left">
+        <strong style="font-size:13px">Agregar conexión</strong><br><span style="font-size:11px;opacity:.75">Modal: proveedor, nombre, modelo y API key</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Lista + modal</h3>
+      <p>Recomendado. La pantalla queda limpia; agregar y editar usan el mismo modal, con datos vacíos o precargados.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="inline-form" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#fff;color:#18181b;border-radius:12px;padding:18px;text-align:left;box-shadow:0 12px 28px rgba(0,0,0,.16)">
+        <strong style="font-size:18px">Conexiones de proveedor</strong>
+        <div style="border:1px solid #e4e4e7;border-radius:8px;padding:12px;margin:14px 0 10px"><strong>Trabajo</strong><div style="color:#71717a;font-size:12px;margin-top:5px">OpenAI · gpt-4o-mini</div></div>
+        <div style="border:1px solid #ddd6fe;background:#faf9ff;border-radius:8px;padding:12px">
+          <strong style="font-size:14px">Agregar conexión</strong>
+          <div style="height:16px;background:#fff;border:1px solid #e4e4e7;border-radius:4px;margin-top:9px"></div>
+          <div style="height:16px;background:#fff;border:1px solid #e4e4e7;border-radius:4px;margin-top:7px"></div>
+          <button style="border:0;border-radius:5px;background:#6d4be8;color:#fff;padding:6px 10px;font-weight:700;font-size:11px;margin-top:8px">Guardar</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Formulario expandible</h3>
+      <p>Menos pasos, pero la página vuelve a crecer al crear o editar una conexión.</p>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:22px">Haz clic en una opción y dime si quieres mantener “Probar”, “Rotar” y “Eliminar” visibles por fila o dentro de un menú de más acciones.</p>

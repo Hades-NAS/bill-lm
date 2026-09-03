@@ -1,10 +1,8 @@
 import { ActionIcon, Divider, Menu, Tooltip } from '@mantine/core'
 import { useNavigate } from '@tanstack/react-router'
-import { LibraryBig, LogOutIcon, Telescope, User } from 'lucide-react'
+import { LibraryBig, LogOutIcon, Settings, Telescope, User } from 'lucide-react'
 
 import { signOutFromFirebase } from '#/integrations/firebase/auth'
-
-import { useIsMobile } from '#/utils/mobile'
 
 import { useUserAuth } from '#/hooks/auth'
 
@@ -12,12 +10,8 @@ const NavbarUserIcon = () => {
   const { primaryEmail } = useUserAuth()
   const navigate = useNavigate()
 
-  const isMobile = useIsMobile()
-
-  // Desktop: Popover
-  if (!isMobile) {
-    return (
-      <Menu shadow="md" width={200}>
+  return (
+    <Menu shadow="md" width={200}>
         <Menu.Target>
           <Tooltip
             label={primaryEmail || 'Usuario'}
@@ -25,7 +19,7 @@ const NavbarUserIcon = () => {
             position="left"
           >
             <ActionIcon
-              aria-label="Ver análisis"
+              aria-label="Menú de usuario"
               radius="md"
               size="lg"
               variant="default"
@@ -49,6 +43,12 @@ const NavbarUserIcon = () => {
           >
             Colecciones
           </Menu.Item>
+          <Menu.Item
+            leftSection={<Settings size={18} />}
+            onClick={() => navigate({ to: '/user' })}
+          >
+            Configuración
+          </Menu.Item>
           <Divider />
           <Menu.Item
             leftSection={<LogOutIcon color="red" size={18} />}
@@ -60,9 +60,8 @@ const NavbarUserIcon = () => {
             Cerrar sesión
           </Menu.Item>
         </Menu.Dropdown>
-      </Menu>
-    )
-  }
+    </Menu>
+  )
 }
 
 export default NavbarUserIcon

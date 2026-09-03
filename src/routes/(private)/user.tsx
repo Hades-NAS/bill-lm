@@ -7,6 +7,7 @@ import {
   Card,
   Container,
   Group,
+  Modal,
   PasswordInput,
   Select,
   Stack,
@@ -17,7 +18,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import React from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
@@ -65,11 +66,22 @@ function UserPage() {
   const [label, setLabel] = React.useState('')
   const [modelId, setModelId] = React.useState('gpt-4o-mini')
   const [apiKey, setApiKey] = React.useState('')
+  const [createModalOpened, setCreateModalOpened] = React.useState(false)
   const [rotationId, setRotationId] = React.useState<string | null>(null)
   const [rotationKey, setRotationKey] = React.useState('')
-  const [editId, setEditId] = React.useState<string | null>(null)
-  const [editLabel, setEditLabel] = React.useState('')
-  const [editModelId, setEditModelId] = React.useState('')
+
+  const closeCreateModal = () => {
+    setCreateModalOpened(false)
+    setProvider('openai')
+    setLabel('')
+    setModelId('gpt-4o-mini')
+    setApiKey('')
+  }
+  const closeRotationModal = () => {
+    setRotationId(null)
+    setRotationKey('')
+  }
+
   return (
     <Box py={40}>
       <Container size="md">
@@ -85,7 +97,12 @@ function UserPage() {
 
           <Card withBorder>
             <Stack>
-              <Title order={2}>Conexiones de proveedor</Title>
+              <Group justify="space-between">
+                <Title order={2}>Conexiones de proveedor</Title>
+                <Button onClick={() => setCreateModalOpened(true)}>
+                  Agregar conexión
+                </Button>
+              </Group>
               <Alert color="blue">
                 Puedes guardar varias conexiones; una será la predeterminada y
                 podrás elegir otra al analizar.
@@ -93,21 +110,21 @@ function UserPage() {
               {connections.data?.map((connection) => (
                 <Card key={connection.id} padding="sm" withBorder>
                   <Group justify="space-between">
-                  <div>
-                    <Text fw={600}>
-                      {connection.label}{' '}
-                      {connection.isDefault && (
-                        <Badge ml="xs">Predeterminada</Badge>
-                      )}
-                    </Text>
-                    <Text c="dimmed" size="sm">
-                      {connection.provider} · {connection.modelId} · termina en{' '}
-                      {connection.secretLastFour}
-                    </Text>
-                  </div>
-                  <Badge color={connection.isActive ? 'green' : 'gray'}>
-                    {connection.isActive ? 'Activa' : 'Inactiva'}
-                  </Badge>
+                    <div>
+                      <Text fw={600}>
+                        {connection.label}{' '}
+                        {connection.isDefault && (
+                          <Badge ml="xs">Predeterminada</Badge>
+                        )}
+                      </Text>
+                      <Text c="dimmed" size="sm">
+                        {connection.provider} · {connection.modelId} · termina en{' '}
+                        {connection.secretLastFour}
+                      </Text>
+                    </div>
+                    <Badge color={connection.isActive ? 'green' : 'gray'}>
+                      {connection.isActive ? 'Activa' : 'Inactiva'}
+                    </Badge>
                   </Group>
                   <Group mt="sm">
                     <Button
@@ -123,18 +140,6 @@ function UserPage() {
                       }
                     >
                       Predeterminada
-                    </Button>
-                    <Button
-                      leftSection={<Pencil size={14} />}
-                      size="xs"
-                      variant="light"
-                      onClick={() => {
-                        setEditId(connection.id)
-                        setEditLabel(connection.label)
-                        setEditModelId(connection.modelId)
-                      }}
-                    >
-                      Editar
                     </Button>
                     <Button
                       loading={updateConnection.isPending}
@@ -157,7 +162,11 @@ function UserPage() {
                     >
                       Probar
                     </Button>
-                    <Button size="xs" variant="light" onClick={() => setRotationId(connection.id)}>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      onClick={() => setRotationId(connection.id)}
+                    >
                       Rotar clave
                     </Button>
                     <ActionIcon
@@ -181,60 +190,13 @@ function UserPage() {
               )}
             </Stack>
           </Card>
-          {rotationId && (
-            <Card withBorder>
-              <Stack>
-                <Title order={2}>Rotar API key</Title>
-                <Text size="sm">
-                  La clave anterior dejará de usarse para futuras ejecuciones.
-                </Text>
-                <PasswordInput label="Nueva API key" value={rotationKey} onChange={(event) => setRotationKey(event.currentTarget.value)} />
-                <Group justify="flex-end">
-                  <Button variant="default" onClick={() => { setRotationId(null); setRotationKey('') }}>Cancelar</Button>
-                  <Button loading={rotateConnection.isPending} onClick={() => rotateConnection.mutate({ id: rotationId, apiKey: rotationKey }, { onSuccess: () => { setRotationId(null); setRotationKey('') } })}>Rotar</Button>
-                </Group>
-              </Stack>
-            </Card>
-          )}
-          {editId && (
-            <Card withBorder>
-              <Stack>
-                <Title order={2}>Editar conexión</Title>
-                <TextInput
-                  label="Nombre"
-                  value={editLabel}
-                  onChange={(event) => setEditLabel(event.currentTarget.value)}
-                />
-                <TextInput
-                  label="Modelo"
-                  value={editModelId}
-                  onChange={(event) => setEditModelId(event.currentTarget.value)}
-                />
-                <Group justify="flex-end">
-                  <Button
-                    variant="default"
-                    onClick={() => setEditId(null)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    loading={updateConnection.isPending}
-                    onClick={() =>
-                      updateConnection.mutate(
-                        { id: editId, label: editLabel, modelId: editModelId },
-                        { onSuccess: () => setEditId(null) },
-                      )
-                    }
-                  >
-                    Guardar cambios
-                  </Button>
-                </Group>
-              </Stack>
-            </Card>
-          )}
-          <Card withBorder>
+          <Modal
+            centered
+            onClose={closeCreateModal}
+            opened={createModalOpened}
+            title="Agregar conexión"
+          >
             <Stack>
-              <Title order={2}>Agregar conexión</Title>
               <Select
                 data={[
                   { value: 'openai', label: 'OpenAI' },
@@ -267,21 +229,60 @@ function UserPage() {
                 onChange={(event) => setApiKey(event.currentTarget.value)}
               />
               <Button
+                disabled={!label.trim() || !modelId.trim() || apiKey.length < 8}
                 loading={createConnection.isPending}
                 onClick={() =>
-                  createConnection.mutate({
-                    provider,
-                    label,
-                    modelId,
-                    apiKey,
-                    makeDefault: connections.data?.length === 0,
-                  })
+                  createConnection.mutate(
+                    {
+                      provider,
+                      label,
+                      modelId,
+                      apiKey,
+                      makeDefault: connections.data?.length === 0,
+                    },
+                    { onSuccess: closeCreateModal },
+                  )
                 }
               >
                 Guardar conexión
               </Button>
             </Stack>
-          </Card>
+          </Modal>
+          <Modal
+            centered
+            onClose={closeRotationModal}
+            opened={rotationId !== null}
+            title="Rotar API key"
+          >
+            <Stack>
+              <Text size="sm">
+                La clave anterior dejará de usarse para futuras ejecuciones.
+              </Text>
+              <PasswordInput
+                label="Nueva API key"
+                value={rotationKey}
+                onChange={(event) => setRotationKey(event.currentTarget.value)}
+              />
+              <Group justify="flex-end">
+                <Button variant="default" onClick={closeRotationModal}>
+                  Cancelar
+                </Button>
+                <Button
+                  disabled={rotationKey.length < 8}
+                  loading={rotateConnection.isPending}
+                  onClick={() => {
+                    if (!rotationId) return
+                    rotateConnection.mutate(
+                      { id: rotationId, apiKey: rotationKey },
+                      { onSuccess: closeRotationModal },
+                    )
+                  }}
+                >
+                  Rotar clave
+                </Button>
+              </Group>
+            </Stack>
+          </Modal>
         </Stack>
       </Container>
     </Box>
