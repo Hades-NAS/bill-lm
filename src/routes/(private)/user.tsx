@@ -8,6 +8,7 @@ import {
   Container,
   FileInput,
   Group,
+  Menu,
   Modal,
   PasswordInput,
   Select,
@@ -19,7 +20,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import React from 'react'
-import { Trash2 } from 'lucide-react'
+import { MoreHorizontal, Trash2 } from 'lucide-react'
 
 import { useTRPC } from '#/integrations/trpc/react'
 import { fileToBase64 } from '#/utils/file'
@@ -149,33 +150,6 @@ function UserPage() {
                   </Group>
                   <Group mt="sm">
                     <Button
-                      disabled={connection.isDefault}
-                      loading={updateConnection.isPending}
-                      size="xs"
-                      variant="light"
-                      onClick={() =>
-                        updateConnection.mutate({
-                          id: connection.id,
-                          isDefault: true,
-                        })
-                      }
-                    >
-                      Predeterminada
-                    </Button>
-                    <Button
-                      loading={updateConnection.isPending}
-                      size="xs"
-                      variant="light"
-                      onClick={() =>
-                        updateConnection.mutate({
-                          id: connection.id,
-                          isActive: !connection.isActive,
-                        })
-                      }
-                    >
-                      {connection.isActive ? 'Desactivar' : 'Activar'}
-                    </Button>
-                    <Button
                       loading={probeConnection.isPending}
                       size="xs"
                       variant="light"
@@ -183,21 +157,56 @@ function UserPage() {
                     >
                       Probar
                     </Button>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      onClick={() => setRotationId(connection.id)}
-                    >
-                      Rotar clave
-                    </Button>
-                    <ActionIcon
-                      aria-label="Eliminar conexión"
-                      color="red"
-                      loading={removeConnection.isPending}
-                      onClick={() => removeConnection.mutate({ id: connection.id })}
-                    >
-                      <Trash2 size={16} />
-                    </ActionIcon>
+                    <Menu position="bottom-end" shadow="md" width={220}>
+                      <Menu.Target>
+                        <ActionIcon
+                          aria-label={`Más acciones para ${connection.label}`}
+                          variant="light"
+                        >
+                          <MoreHorizontal size={18} />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          disabled={
+                            connection.isDefault || updateConnection.isPending
+                          }
+                          onClick={() =>
+                            updateConnection.mutate({
+                              id: connection.id,
+                              isDefault: true,
+                            })
+                          }
+                        >
+                          Establecer como predeterminada
+                        </Menu.Item>
+                        <Menu.Item
+                          disabled={updateConnection.isPending}
+                          onClick={() =>
+                            updateConnection.mutate({
+                              id: connection.id,
+                              isActive: !connection.isActive,
+                            })
+                          }
+                        >
+                          {connection.isActive ? 'Desactivar' : 'Activar'}
+                        </Menu.Item>
+                        <Menu.Item onClick={() => setRotationId(connection.id)}>
+                          Rotar clave
+                        </Menu.Item>
+                        <Menu.Divider />
+                        <Menu.Item
+                          color="red"
+                          disabled={removeConnection.isPending}
+                          leftSection={<Trash2 size={16} />}
+                          onClick={() =>
+                            removeConnection.mutate({ id: connection.id })
+                          }
+                        >
+                          Eliminar conexión
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
                   </Group>
                   {connection.probedAt && (
                     <Text c={connection.lastProbeError ? 'red' : 'green'} mt="xs" size="xs">
