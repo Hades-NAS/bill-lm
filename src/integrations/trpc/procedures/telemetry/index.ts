@@ -74,7 +74,7 @@ export const telemetryRouter = {
 
       const avgDuration = roundToDecimals(
         callsArray.reduce((sum, call) => sum + call.duration, 0) /
-        callsArray.length,
+          callsArray.length,
       )
 
       return {

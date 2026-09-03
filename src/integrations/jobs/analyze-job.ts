@@ -2,8 +2,10 @@ import { Worker } from 'bullmq'
 import { DateTime } from 'luxon'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
-import { createEnvironmentLLMProvider } from '#/integrations/llm/llm-provider-factory'
+import { decryptProviderSecret } from '#/integrations/llm/byok-crypto.server'
+import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
 import { getServiceLogger } from '#/integrations/logger.server'
+import { prisma } from '#/integrations/prisma'
 import { redisConnection } from '#/integrations/redis'
 
 import { FireCollections } from '#/constants/firebase'
@@ -30,7 +32,7 @@ logger.info(
  * 4. Handle errors gracefully
  */
 export const jobHandler = async (job: Job<AnalyzeJobData>) => {
-  const { jobId, data } = job.data
+  const { jobId, data, credentialId, userId } = job.data
   const { billIds } = data
 
   try {
@@ -39,9 +41,42 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       preset: data.preset,
     })
 
-    // Resolve an immutable provider for this job only. The resolver currently
-    // uses the deployment credential; Phase 1 will resolve job.data.credentialId.
-    const provider = await createEnvironmentLLMProvider(env)
+    if (!credentialId) throw new Error('The job has no provider connection')
+
+    const [connection, collection] = await Promise.all([
+      prisma.providerConnection.findFirst({
+        where: { id: credentialId, userId, isActive: true, deletedAt: null },
+      }),
+
+      prisma.collection.findFirst({
+        where: { id: data.collectionId, userId, deletedAt: null },
+        select: { id: true },
+      }),
+    ])
+    if (!connection || !collection)
+      throw new Error('The job authorization is no longer valid')
+
+    const apiKey = decryptProviderSecret(
+      {
+        ciphertext: connection.secretCiphertext,
+        iv: connection.secretIv,
+        authTag: connection.secretAuthTag,
+      },
+      {
+        userId,
+        connectionId: connection.id,
+        provider: connection.provider.toLowerCase(),
+        version: connection.secretVersion,
+      },
+    )
+    const provider = new LLMProviderFactory().create({
+      provider: connection.provider.toLowerCase() as 'openai' | 'claude',
+      modelId: connection.modelId,
+      apiKey,
+      maxTokens: parseInt(env.LLM_MAX_TOKENS ?? '2048'),
+      timeout: parseInt(env.LLM_TIMEOUT_MS ?? '30000'),
+      agentInstructions: '',
+    })
     const useCase = createAnalyzeBillsUseCase(provider)
     const results = await useCase.execute(
       billIds,
@@ -70,9 +105,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 
     return true
   } catch (error) {
-    logger.error(`[Worker] Job ${jobId} failed`, {
-      error: error instanceof Error ? error.message : String(error),
-    })
+    logger.error(`[Worker] Job ${jobId} failed`)
 
     // Update error status in Firestore
     try {
@@ -81,16 +114,14 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         .doc(jobId)
         .update({
           status: 'failed',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: 'No se pudo completar el análisis.',
           updatedAt: DateTime.now().toJSDate(),
         })
     } catch (updateError) {
-      logger.error(`[Worker] Failed to update error status for job ${jobId}`, {
-        error:
-          updateError instanceof Error
-            ? updateError.message
-            : String(updateError),
-      })
+      logger.error(
+        `[Worker] Failed to update error status for job ${jobId}`,
+        {},
+      )
     }
 
     return null

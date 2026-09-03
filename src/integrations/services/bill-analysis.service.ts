@@ -23,8 +23,8 @@ import { roundToDecimals } from '#/utils/math'
 
 import { FireCollections } from '#/constants/firebase'
 
-import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
+import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
 import type { AnalyzedBill, AnalysisContext } from '#/schema/bill-analysis'
 import type { AnalyzeJobData } from '#/schema/collections'
 

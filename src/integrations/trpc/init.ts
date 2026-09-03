@@ -23,7 +23,6 @@ const t = initTRPC.context<TRPCContext>().create({
 export const createTRPCRouter = t.router
 export const publicProcedure = t.procedure
 
-
 const errorLoggingMiddleware = t.middleware(async ({ next, path }) => {
   try {
     return await next()

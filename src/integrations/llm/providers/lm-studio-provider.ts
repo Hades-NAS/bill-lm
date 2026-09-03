@@ -1,14 +1,9 @@
-import {
-  Agent,
-  run,
-  setTracingDisabled,
-} from '@openai/agents'
+import { Agent, run, setTracingDisabled } from '@openai/agents'
 import { OpenAIChatCompletionsModel } from '@openai/agents-openai'
 import { DateTime } from 'luxon'
 import OpenAI from 'openai'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
-
 
 import {
   AppError,
@@ -22,10 +17,7 @@ import { createTelemetryService } from '#/integrations/services/telemetry.servic
 import type { LLMPreset } from '#/config/llm-config'
 import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
 import type { LLMProviderConfig } from '#/schema/llm-provider'
-import type {
-  ContextProcess,
-  ILLMProvider,
-} from '../provider.interface'
+import type { ContextProcess, ILLMProvider } from '../provider.interface'
 
 import { env } from '#/env'
 
@@ -47,7 +39,9 @@ export class LMStudioProvider implements ILLMProvider {
   constructor(private config: LLMProviderConfig) {
     this.circuitBreaker = new CircuitBreaker(5, 60_000) // 5 failures, 60s timeout
 
-    const baseUrl = config.baseUrl ? `${config.baseUrl}:1234/v1` : 'http://localhost:1234/v1'
+    const baseUrl = config.baseUrl
+      ? `${config.baseUrl}:1234/v1`
+      : 'http://localhost:1234/v1'
 
     this.logger.info('Initializing LMStudioProvider with config', {
       baseUrl,
@@ -217,10 +211,13 @@ export class LMStudioProvider implements ILLMProvider {
     } catch (error) {
       const duration = Math.round(performance.now() - startTime)
 
-      this.logger.error(`LMStudioProvider failed to process message: ${error}`, {
-        message: prompt.slice(0, 100),
-        preset,
-      })
+      this.logger.error(
+        `LMStudioProvider failed to process message: ${error}`,
+        {
+          message: prompt.slice(0, 100),
+          preset,
+        },
+      )
 
       if (context) {
         await this.telemetryService.recordAgentCall({

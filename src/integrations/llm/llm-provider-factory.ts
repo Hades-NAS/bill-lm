@@ -1,3 +1,6 @@
+import { adminDb } from '#/integrations/firebase/firebase.server'
+
+import { FireCollections } from '#/constants/firebase'
 
 import { ClaudeProvider } from './providers/claude-provider'
 import { LMStudioProvider } from './providers/lm-studio-provider'
@@ -6,13 +9,12 @@ import { OpenAIProvider } from './providers/openai-provider'
 import { createBillPromptBuilder } from '../prompts/bill-prompt-builder'
 
 import type { LLMProviderConfig, LLMProviderType } from '#/schema/llm-provider'
-import type {
-  ILLMProvider,
-} from './provider.interface'
-import { getServiceLogger } from '@/integrations/logger.server'
+import type { ILLMProvider } from './provider.interface'
 import type { env } from '@/env'
 
 import { LLMProviderEnum } from '@/env'
+import { getServiceLogger } from '@/integrations/logger.server'
+
 
 const logger = getServiceLogger('LlmProviderFactory')
 
@@ -34,7 +36,8 @@ export class LLMProviderFactory {
   create(config: LLMProviderConfig): ILLMProvider {
     const baseConfig: LLMProviderConfig = {
       ...config,
-      agentInstructions: config.agentInstructions || this.promptBuilder.getAgentInstructions(),
+      agentInstructions:
+        config.agentInstructions || this.promptBuilder.getAgentInstructions(),
     }
 
     logger.info('Creating LLM provider for execution', {
@@ -58,7 +61,9 @@ export class LLMProviderFactory {
       case 'lm-studio':
       default:
         if (!baseConfig.baseUrl) {
-          throw new Error('An LM Studio base URL is required for this execution')
+          throw new Error(
+            'An LM Studio base URL is required for this execution',
+          )
         }
         return new LMStudioProvider(baseConfig)
     }
@@ -100,28 +105,26 @@ export async function createEnvironmentLLMProvider(
     timeout: parseInt(serverEnv.LLM_TIMEOUT_MS ?? '30000'),
   }
 
-  const config: LLMProviderConfig = provider === 'openai'
-    ? {
-        ...common,
-        modelId: serverEnv.OPENAI_MODEL_ID ?? 'gpt-4o-mini',
-        apiKey: serverEnv.OPENAI_API_KEY,
-        projectId: serverEnv.OPENAI_PROJECT_ID,
-        organization: serverEnv.OPENAI_ORGANIZATION,
-      }
-    : provider === 'claude'
+  const config: LLMProviderConfig =
+    provider === 'openai'
       ? {
           ...common,
-          modelId: serverEnv.CLAUDE_MODEL_ID ?? 'claude-opus-4-6',
-          apiKey: serverEnv.CLAUDE_API_KEY,
+          modelId: serverEnv.OPENAI_MODEL_ID ?? 'gpt-4o-mini',
+          apiKey: serverEnv.OPENAI_API_KEY,
+          projectId: serverEnv.OPENAI_PROJECT_ID,
+          organization: serverEnv.OPENAI_ORGANIZATION,
         }
-      : {
-          ...common,
-          modelId: serverEnv.MODEL_KEY ?? 'openai/gpt-oss-20b',
-          baseUrl: serverEnv.LLM_BASE_URL,
-        }
+      : provider === 'claude'
+        ? {
+            ...common,
+            modelId: serverEnv.CLAUDE_MODEL_ID ?? 'claude-opus-4-6',
+            apiKey: serverEnv.CLAUDE_API_KEY,
+          }
+        : {
+            ...common,
+            modelId: serverEnv.MODEL_KEY ?? 'openai/gpt-oss-20b',
+            baseUrl: serverEnv.LLM_BASE_URL,
+          }
 
   return new LLMProviderFactory().create(config)
 }
-import { adminDb } from '#/integrations/firebase/firebase.server'
-
-import { FireCollections } from '#/constants/firebase'

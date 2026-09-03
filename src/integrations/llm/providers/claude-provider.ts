@@ -3,13 +3,12 @@ import { DateTime } from 'luxon'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
 
-
 import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { createTelemetryService } from '#/integrations/services/telemetry.service'
 
 import type { LLMPreset } from '#/config/llm-config'
-import type { AnalyzeBillOutput } from '#/schema/bill-analysis';
+import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
 import type { LLMProviderConfig } from '#/schema/llm-provider'
 import type { ContextProcess, ILLMProvider } from '../provider.interface'
 
@@ -62,26 +61,12 @@ export class ClaudeProvider implements ILLMProvider {
     try {
       this.logger.debug('Checking Anthropic API connectivity')
 
-      return Promise.resolve(true)
-
-      // Send a simple test message with minimal tokens
-      // const response = await this.client.messages.create({
-      //   model: this.config.modelId,
-      //   max_tokens: 10,
-      //   system: 'You are a helpful assistant.',
-      //   messages: [
-      //     {
-      //       role: 'user',
-      //       content: 'ping',
-      //     },
-      //   ],
-      // })
-
-      // const isHealthy = response.stop_reason === 'end_turn'
-
-      // this.logger.debug(`Anthropic API connectivity check ${isHealthy ? 'healthy' : 'unhealthy'}`)
-
-      // return isHealthy
+      await this.client.messages.create({
+        model: this.config.modelId,
+        max_tokens: 1,
+        messages: [{ role: 'user', content: 'ping' }],
+      })
+      return true
     } catch (error) {
       this.logger.error('Failed to check Anthropic API health', { error })
       return false
@@ -94,7 +79,9 @@ export class ClaudeProvider implements ILLMProvider {
    */
   async isModelLoaded(): Promise<boolean> {
     // For cloud APIs, models are always available
-    this.logger.debug(`Model ${this.config.modelId} is always available in Claude API`)
+    this.logger.debug(
+      `Model ${this.config.modelId} is always available in Claude API`,
+    )
     return Promise.resolve(true)
   }
 
@@ -114,7 +101,7 @@ export class ClaudeProvider implements ILLMProvider {
   async process(
     prompt: string,
     preset: LLMPreset,
-    context?: ContextProcess
+    context?: ContextProcess,
   ): Promise<AnalyzeBillOutput | null> {
     const startTime = performance.now()
     let attempts = 0
@@ -122,81 +109,81 @@ export class ClaudeProvider implements ILLMProvider {
     const temperature = this.getTemperatureForPreset(preset)
 
     try {
-      return await this.circuitBreaker.execute(
-        async () => {
-          attempts++
+      return await this.circuitBreaker.execute(async () => {
+        attempts++
 
-          this.logger.info('Processing message with ClaudeProvider', { preset })
+        this.logger.info('Processing message with ClaudeProvider', { preset })
 
-          const response = await this.client.messages.create({
-            model: this.config.modelId,
-            max_tokens: this.config.maxTokens,
-            temperature,
-            output_config: {
-              format: {
-                schema: {
-                  percentage: { type: 'number' },
-                  reason: { type: 'string' },
-                },
-                type: 'json_schema'
-              }
-            },
-            system: this.agentInstructions,
-            messages: [
-              {
-                role: 'user',
-                content: prompt,
+        const response = await this.client.messages.create({
+          model: this.config.modelId,
+          max_tokens: this.config.maxTokens,
+          temperature,
+          output_config: {
+            format: {
+              schema: {
+                percentage: { type: 'number' },
+                reason: { type: 'string' },
               },
-            ],
+              type: 'json_schema',
+            },
+          },
+          system: this.agentInstructions,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        })
+
+        // Extract text from response
+        const textBlock = response.content.find(
+          (block) => block.type === 'text',
+        )
+        if (!textBlock) {
+          throw new Error('No text content in Claude response')
+        }
+
+        const text = textBlock.text
+
+        // Parse JSON and validate
+        const parsed = JSON.parse(text)
+        const validate = AnalyzeBillOutputSchema.safeParse(parsed)
+
+        if (!validate.success) {
+          this.logger.error('ClaudeProvider output validation failed', {
+            text: text.slice(0, 500),
+            errors: validate.error,
           })
+          throw new Error('ClaudeProvider output validation failed')
+        }
 
-          // Extract text from response
-          const textBlock = response.content.find((block) => block.type === 'text')
-          if (!textBlock) {
-            throw new Error('No text content in Claude response')
-          }
+        this.logger.info('ClaudeProvider processing completed', { preset })
 
-          const text = textBlock.text
+        const duration = Math.round(performance.now() - startTime)
 
-          // Parse JSON and validate
-          const parsed = JSON.parse(text)
-          const validate = AnalyzeBillOutputSchema.safeParse(parsed)
+        // Record telemetry
+        if (context) {
+          await this.telemetryService.recordAgentCall({
+            jobId: context.jobId,
+            billId: context.billId,
+            tokensInput: response.usage.input_tokens,
+            tokensOutput: response.usage.output_tokens,
+            tokensTotal:
+              response.usage.input_tokens + response.usage.output_tokens,
+            model: this.config.modelId,
+            preset,
+            temperature,
+            duration,
+            attempts,
+            status: 'success',
+            promptVersion: context.promptVersion,
+            timestamp: DateTime.now().toJSDate(),
+          })
+        }
 
-          if (!validate.success) {
-            this.logger.error('ClaudeProvider output validation failed', {
-              text: text.slice(0, 500),
-              errors: validate.error,
-            })
-            throw new Error('ClaudeProvider output validation failed')
-          }
-
-          this.logger.info('ClaudeProvider processing completed', { preset })
-
-          const duration = Math.round(performance.now() - startTime)
-
-          // Record telemetry
-          if (context) {
-            await this.telemetryService.recordAgentCall({
-              jobId: context.jobId,
-              billId: context.billId,
-              tokensInput: response.usage.input_tokens,
-              tokensOutput: response.usage.output_tokens,
-              tokensTotal: response.usage.input_tokens + response.usage.output_tokens,
-              model: this.config.modelId,
-              preset,
-              temperature,
-              duration,
-              attempts,
-              status: 'success',
-              promptVersion: context.promptVersion,
-              timestamp: DateTime.now().toJSDate(),
-            })
-          }
-
-          return validate.data
-        },
-        `ClaudeProvider.process (preset: ${preset})`
-      )
+        return validate.data
+      }, `ClaudeProvider.process (preset: ${preset})`)
     } catch (error) {
       const duration = Math.round(performance.now() - startTime)
 

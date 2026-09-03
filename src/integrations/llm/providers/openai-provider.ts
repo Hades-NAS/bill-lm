@@ -1,14 +1,9 @@
-import {
-  Agent,
-  run,
-  setTracingDisabled,
-} from '@openai/agents'
+import { Agent, run, setTracingDisabled } from '@openai/agents'
 import { OpenAIChatCompletionsModel } from '@openai/agents-openai'
 import { DateTime } from 'luxon'
 import { OpenAI } from 'openai'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
-
 
 import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { getServiceLogger } from '#/integrations/logger.server'
@@ -17,10 +12,7 @@ import { createTelemetryService } from '#/integrations/services/telemetry.servic
 import type { LLMPreset } from '#/config/llm-config'
 import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
 import type { LLMProviderConfig } from '#/schema/llm-provider'
-import type {
-  ContextProcess,
-  ILLMProvider,
-} from '../provider.interface'
+import type { ContextProcess, ILLMProvider } from '../provider.interface'
 
 setTracingDisabled(true)
 
@@ -75,10 +67,8 @@ export class OpenAIProvider implements ILLMProvider {
     try {
       this.logger.debug('Checking OpenAI API connectivity')
 
-      return Promise.resolve(true)
-      // Simple connectivity check by listing models
-      // const models = await this.client.models.list()
-      // const hasModels = models.data.length > 0
+      await this.client.models.retrieve(this.config.modelId)
+      return true
 
       // this.logger.debug(
       //   `OpenAI API connectivity check ${hasModels ? 'healthy' : 'unhealthy'}`,
@@ -97,9 +87,8 @@ export class OpenAIProvider implements ILLMProvider {
    */
   async isModelLoaded(): Promise<boolean> {
     try {
-      return Promise.resolve(true)
-      // const models = await this.client.models.list()
-      // const modelExists = models.data.some((m) => m.id === this.config.modelId)
+      await this.client.models.retrieve(this.config.modelId)
+      return true
 
       // this.logger.debug(
       //   `Model ${this.config.modelId} ${modelExists ? 'exists' : 'not found'} in OpenAI`,

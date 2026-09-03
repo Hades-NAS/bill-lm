@@ -29,8 +29,10 @@ describe('LLMProviderFactory execution isolation', () => {
       ),
     ])
 
-    const firstConfig = (first as unknown as { config: LLMProviderConfig }).config
-    const secondConfig = (second as unknown as { config: LLMProviderConfig }).config
+    const firstConfig = (first as unknown as { config: LLMProviderConfig })
+      .config
+    const secondConfig = (second as unknown as { config: LLMProviderConfig })
+      .config
     const firstClient = (first as unknown as { client: unknown }).client
     const secondClient = (second as unknown as { client: unknown }).client
 

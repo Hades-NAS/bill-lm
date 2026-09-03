@@ -55,4 +55,3 @@ export interface ILLMProvider {
 
   getTemperatureForPreset: (preset: LLMPreset) => number
 }
-

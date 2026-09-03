@@ -7,8 +7,8 @@ import { createTRPCClient, httpBatchStreamLink } from '@trpc/client'
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 import superjson from 'superjson'
 
-import { TRPCProvider } from '#/integrations/trpc/react'
 import { getFirebaseIdToken } from '#/integrations/firebase/firebase'
+import { TRPCProvider } from '#/integrations/trpc/react'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import type { ReactNode } from 'react'

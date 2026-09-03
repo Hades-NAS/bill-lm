@@ -8,22 +8,22 @@ export const logger = pino({
   level: isDevelopment ? 'debug' : 'info',
   transport: isDevelopment
     ? {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss Z',
-        ignore: 'pid,hostname',
-      },
-    }
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'HH:MM:ss Z',
+          ignore: 'pid,hostname',
+        },
+      }
     : {
-      target: 'pino-pretty',
-      options: {
-        colorize: false,
-        translateTime: 'yyyy-mm-dd HH:MM:ss Z',
-        ignore: 'hostname',
-        crlf: true,
+        target: 'pino-pretty',
+        options: {
+          colorize: false,
+          translateTime: 'yyyy-mm-dd HH:MM:ss Z',
+          ignore: 'hostname',
+          crlf: true,
+        },
       },
-    },
 })
 
 const secretKeyPattern = /^(api[-_]?key|authorization|secret|token|password)$/i
@@ -42,7 +42,9 @@ export function sanitizeLogValue(value: unknown): unknown {
     return Object.fromEntries(
       Object.entries(value).map(([key, nestedValue]) => [
         key,
-        secretKeyPattern.test(key) ? '[REDACTED]' : sanitizeLogValue(nestedValue),
+        secretKeyPattern.test(key)
+          ? '[REDACTED]'
+          : sanitizeLogValue(nestedValue),
       ]),
     )
   }

@@ -2,9 +2,9 @@ import { XMLParser } from 'fast-xml-parser'
 
 import { xmlBillContentSchema, xmlBillSchema } from '#/schema/bill'
 
-
 export function parseAndValidateInvoiceXML(xmlInput: Buffer | string) {
-  const xmlString = typeof xmlInput === 'string' ? xmlInput : xmlInput.toString('utf-8')
+  const xmlString =
+    typeof xmlInput === 'string' ? xmlInput : xmlInput.toString('utf-8')
 
   const xmlParser = new XMLParser({
     ignoreAttributes: false,

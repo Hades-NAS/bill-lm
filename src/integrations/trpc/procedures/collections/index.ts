@@ -8,8 +8,8 @@ import {
   GetCollectionByIdRequestSchema,
   GetCollectionsRequestSchema,
   UpdateCollectionSchema,
+  AnalyzeJobNotificationSchema,
 } from '#/schema/collections'
-
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
@@ -21,66 +21,26 @@ import { FireCollections } from '#/constants/firebase'
 import { privateProcedure } from '../../init'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
-import type { Principal } from '#/schema/auth-identity'
-import {
-  AnalyzeJobNotificationSchema,
-  type AnalyzeJobData,
-} from '#/schema/collections'
-import type { WhitelistConfig } from '#/schema/config'
+import type { AnalyzeJobData } from '#/schema/collections'
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
 
 const logger = getServiceLogger('Collections')
 
-
-const checkUserCanAnalyzeCollection = async (user: Principal) => {
-  const { userId, primaryEmail } = user
-
-  const whitelistSnap = await adminDb.collection(FireCollections.CONFIG_COLLECTION).doc("whitelist").get()
-
-  if (!whitelistSnap.exists) {
-    logger.warn('No whitelist config found in Firebase, denying access to analyze collection', {
-      userId,
-    })
-
+const resolveConnection = async (userId: string, requestedId?: string) => {
+  const connection = requestedId
+    ? await prisma.providerConnection.findFirst({
+        where: { id: requestedId, userId, isActive: true, deletedAt: null },
+      })
+    : await prisma.providerConnection.findFirst({
+        where: { userId, isActive: true, isDefault: true, deletedAt: null },
+      })
+  if (!connection)
     throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'Su cuenta no tiene permiso para realizar esta acción',
+      code: 'PRECONDITION_FAILED',
+      message: 'Configura una conexión de proveedor activa antes de analizar.',
     })
-  }
-
-  const whitelistConfig = whitelistSnap.data() as WhitelistConfig
-
-  if (!whitelistConfig.enabled) {
-    logger.info('Whitelist is disabled, allowing access to analyze collection', {
-      userId,
-    })
-
-    return true
-  }
-
-  if (userId && whitelistConfig.allowedUserIds.includes(userId)) {
-    logger.info('User ID is in whitelist, allowing access to analyze collection', {
-      userId,
-    })
-    return true
-  } else if (primaryEmail && whitelistConfig.allowedEmails.includes(primaryEmail)) {
-    logger.info('User email is in whitelist, allowing access to analyze collection', {
-      userId,
-      email: primaryEmail,
-    })
-    return true
-  }
-
-  logger.warn('User is not in whitelist, denying access to analyze collection', {
-    userId,
-    email: primaryEmail,
-  })
-  throw new TRPCError({
-    code: 'FORBIDDEN',
-    message: 'Su cuenta no tiene permiso para realizar esta acción',
-  })
+  return connection
 }
-
 
 export const collectionsRouter = {
   list: privateProcedure
@@ -115,9 +75,9 @@ export const collectionsRouter = {
           year: search.year ? search.year : undefined,
           createdAt: search.createdAt
             ? {
-              gte: search.createdAt.from,
-              lte: search.createdAt.to,
-            }
+                gte: search.createdAt.from,
+                lte: search.createdAt.to,
+              }
             : undefined,
         },
         orderBy,
@@ -239,7 +199,6 @@ export const collectionsRouter = {
       })
 
       return collection
-
     }),
   analyze: privateProcedure
     .input(AnalyzeCollectionRequestSchema)
@@ -251,7 +210,10 @@ export const collectionsRouter = {
         collectionId: data.collectionId,
       })
 
-      await checkUserCanAnalyzeCollection(principal)
+      const connection = await resolveConnection(
+        principal.userId,
+        data.credentialId,
+      )
 
       const { type, billIds } = data
 
@@ -339,7 +301,7 @@ export const collectionsRouter = {
       const payload: AnalyzeJobData = {
         jobId: crypto.randomUUID(),
         userId: principal.userId,
-        credentialId: null,
+        credentialId: connection.id,
         data: {
           collectionId: collection.id,
           collectionName: collection.name,
@@ -347,6 +309,7 @@ export const collectionsRouter = {
           preset: data.preset || 'balanced',
           type,
           billIds: billsToAnalyze.map((bill) => bill.id),
+          credentialId: connection.id,
         },
         percentage: 0,
         status: 'pending',
@@ -389,10 +352,16 @@ export const collectionsRouter = {
   checkUserCanAnalyze: privateProcedure
     .input(z.object({}).optional())
     .query(async ({ ctx }) => {
-      const result = await checkUserCanAnalyzeCollection(ctx.principal)
+      const result = await prisma.providerConnection.count({
+        where: {
+          userId: ctx.principal.userId,
+          isActive: true,
+          deletedAt: null,
+        },
+      })
 
       return {
-        canAnalyze: result,
+        canAnalyze: result > 0,
       }
     }),
 
@@ -409,11 +378,7 @@ export const collectionsRouter = {
         .collection(FireCollections.ANALYZE_COLLECTION)
         .where('firebaseUid', '==', ctx.principal.subject)
         .where('status', 'in', ['pending', 'in-progress'])
-        .where(
-          'updatedAt',
-          '<=',
-          DateTime.now().minus({ hours: 1 }).toJSDate(),
-        )
+        .where('updatedAt', '<=', DateTime.now().minus({ hours: 1 }).toJSDate())
         .get()
 
       const jobsToClear = [...finalizedJobs.docs, ...stuckedJobs.docs]
