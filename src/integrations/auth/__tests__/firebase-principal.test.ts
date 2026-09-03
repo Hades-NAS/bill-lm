@@ -91,7 +91,8 @@ describe('resolveFirebasePrincipal', () => {
         email_verified: true,
       }),
     }
-    const emptyRepository: AuthIdentityRepository & FirebaseIdentityProvisioner = {
+    const emptyRepository: AuthIdentityRepository &
+      FirebaseIdentityProvisioner = {
       ...repository,
       findIdentity: async () => null,
     }
@@ -121,7 +122,8 @@ describe('resolveFirebasePrincipal', () => {
         email_verified: false,
       }),
     }
-    const emptyRepository: AuthIdentityRepository & FirebaseIdentityProvisioner = {
+    const emptyRepository: AuthIdentityRepository &
+      FirebaseIdentityProvisioner = {
       ...repository,
       findIdentity: async () => null,
     }

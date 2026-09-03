@@ -27,10 +27,10 @@ function createRepository({
 
 describe('resolveAuthIdentity', () => {
   it('does not manufacture an internal user for an unknown provider subject', async () => {
-    const result = await resolveAuthIdentity(
-      createRepository(),
-      { provider: 'firebase', subject: 'unknown-subject' },
-    )
+    const result = await resolveAuthIdentity(createRepository(), {
+      provider: 'firebase',
+      subject: 'unknown-subject',
+    })
 
     expect(result).toEqual({ status: 'missing' })
   })
@@ -63,13 +63,13 @@ describe('resolveAuthIdentity', () => {
     const result = await resolveAuthIdentity(
       createRepository({
         identity: {
-        provider: 'firebase',
-        subject: 'disabled-firebase-user',
+          provider: 'firebase',
+          subject: 'disabled-firebase-user',
           userId: 'internal-user-id',
           disabledAt: new Date(),
         },
       }),
-        { provider: 'firebase', subject: 'disabled-firebase-user' },
+      { provider: 'firebase', subject: 'disabled-firebase-user' },
     )
 
     expect(result).toEqual({ status: 'disabled' })

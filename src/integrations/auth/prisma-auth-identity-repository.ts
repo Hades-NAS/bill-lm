@@ -1,17 +1,18 @@
-import { AuthProvider as PrismaAuthProvider } from '#/generated/prisma/enums'
 import { prisma } from '#/integrations/prisma'
 
-import type {
-  AuthIdentityRepository,
-  StoredAuthIdentity,
-} from './auth-identity-resolver'
-import type { FirebaseIdentityProvisioner } from './firebase-principal'
 import type {
   AuthIdentityLinkInput,
   AuthIdentityLookup,
   FirebaseIdentityProvisionInput,
   Principal,
 } from '#/schema/auth-identity'
+import type {
+  AuthIdentityRepository,
+  StoredAuthIdentity,
+} from './auth-identity-resolver'
+import type { FirebaseIdentityProvisioner } from './firebase-principal'
+
+import { AuthProvider as PrismaAuthProvider } from '#/generated/prisma/enums'
 
 function toPrismaProvider(): PrismaAuthProvider {
   return PrismaAuthProvider.FIREBASE

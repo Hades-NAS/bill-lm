@@ -6,12 +6,12 @@ import {
 
 import { resolveAuthIdentity } from './auth-identity-resolver'
 
-import type { AuthIdentityRepository } from './auth-identity-resolver'
 import type {
   AuthenticationFailureCode,
   FirebaseIdentityProvisionInput,
   Principal,
 } from '#/schema/auth-identity'
+import type { AuthIdentityRepository } from './auth-identity-resolver'
 
 export type FirebaseTokenVerifier = {
   verifyIdToken: (

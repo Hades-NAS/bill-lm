@@ -20,7 +20,9 @@ export type AuthIdentityRepository = {
     identity: AuthIdentityLookup,
   ) => Promise<StoredAuthIdentity | null>
   findUser: (userId: string) => Promise<{ primaryEmail: string | null } | null>
-  createIdentity: (identity: AuthIdentityLinkInput) => Promise<StoredAuthIdentity>
+  createIdentity: (
+    identity: AuthIdentityLinkInput,
+  ) => Promise<StoredAuthIdentity>
 }
 
 export class AuthIdentityConflictError extends Error {

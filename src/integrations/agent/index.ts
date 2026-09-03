@@ -1,8 +1,4 @@
-import {
-  Agent,
-  run,
-  setTracingDisabled,
-} from '@openai/agents'
+import { Agent, run, setTracingDisabled } from '@openai/agents'
 import { OpenAIChatCompletionsModel } from '@openai/agents-openai'
 import { DateTime } from 'luxon'
 import { OpenAI } from 'openai'
