@@ -4,8 +4,8 @@ import { Navigate, createFileRoute, Link, Outlet } from '@tanstack/react-router'
 
 import { useIsMobile } from '#/utils/mobile'
 
-import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
 import { useUserAuth } from '#/hooks/auth'
+import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
 
 import { NavbarJobsIndicator } from '#/components/navbar-jobs-indicator'
 import NavbarThemeIcon from '#/components/navbar-theme-icon'

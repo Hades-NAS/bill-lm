@@ -6,7 +6,10 @@ export type LLMProvider = z.infer<typeof LLMProviderEnum>
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development').optional(),
+    NODE_ENV: z
+      .enum(['development', 'production', 'test'])
+      .default('development')
+      .optional(),
 
     DATABASE_URL: z.string().min(1),
     GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
@@ -21,6 +24,9 @@ export const env = createEnv({
     REDIS_PORT: z.string().min(1).optional(),
 
     FAKE_ANALYZE: z.string().optional(),
+    // Root secret for server-side AES-256-GCM encryption of BYOK credentials.
+    // It must never be exposed through a VITE_ variable.
+    BYOK_ENCRYPTION_KEY: z.string().optional(),
 
     // LLM Provider selection
     LLM_PROVIDER: LLMProviderEnum.default('lm-studio'),
@@ -76,6 +82,7 @@ export const env = createEnv({
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PORT: process.env.REDIS_PORT,
     FAKE_ANALYZE: process.env.FAKE_ANALYZE,
+    BYOK_ENCRYPTION_KEY: process.env.BYOK_ENCRYPTION_KEY,
 
     // LLM Provider
     LLM_PROVIDER: process.env.LLM_PROVIDER,
@@ -98,14 +105,25 @@ export const env = createEnv({
     LLM_TIMEOUT_MS: process.env.LLM_TIMEOUT_MS,
 
     // Client vars
-    VITE_APP_TITLE: import.meta.env.VITE_APP_TITLE || process.env.VITE_APP_TITLE,
-    VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY,
-    VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.VITE_FIREBASE_AUTH_DOMAIN,
-    VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
-    VITE_FIREBASE_STORAGE_BUCKET: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || process.env.VITE_FIREBASE_STORAGE_BUCKET,
-    VITE_FIREBASE_MESSAGING_SENDER_ID: import.meta.env
-      .VITE_FIREBASE_MESSAGING_SENDER_ID || process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    VITE_FIREBASE_APP_ID: import.meta.env.VITE_FIREBASE_APP_ID || process.env.VITE_FIREBASE_APP_ID,
+    VITE_APP_TITLE:
+      import.meta.env.VITE_APP_TITLE || process.env.VITE_APP_TITLE,
+    VITE_FIREBASE_API_KEY:
+      import.meta.env.VITE_FIREBASE_API_KEY ||
+      process.env.VITE_FIREBASE_API_KEY,
+    VITE_FIREBASE_AUTH_DOMAIN:
+      import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ||
+      process.env.VITE_FIREBASE_AUTH_DOMAIN,
+    VITE_FIREBASE_PROJECT_ID:
+      import.meta.env.VITE_FIREBASE_PROJECT_ID ||
+      process.env.VITE_FIREBASE_PROJECT_ID,
+    VITE_FIREBASE_STORAGE_BUCKET:
+      import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ||
+      process.env.VITE_FIREBASE_STORAGE_BUCKET,
+    VITE_FIREBASE_MESSAGING_SENDER_ID:
+      import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ||
+      process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    VITE_FIREBASE_APP_ID:
+      import.meta.env.VITE_FIREBASE_APP_ID || process.env.VITE_FIREBASE_APP_ID,
   },
 
   /**

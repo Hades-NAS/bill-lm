@@ -15,9 +15,7 @@ export const AuthIdentityLinkInputSchema = AuthIdentityLookupSchema.extend({
   userId: z.string().min(1),
 })
 
-export type AuthIdentityLinkInput = z.infer<
-  typeof AuthIdentityLinkInputSchema
->
+export type AuthIdentityLinkInput = z.infer<typeof AuthIdentityLinkInputSchema>
 
 export const PrincipalSchema = AuthIdentityLinkInputSchema.extend({
   primaryEmail: z.string().email().optional(),

@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { sanitizeLogValue } from '#/integrations/logger.server'
-import { AgentTelemetrySchema } from '../telemetry'
+
 import {
   AnalyzeJobDataSchema,
   AnalyzeJobNotificationSchema,
 } from '../collections'
+import { AgentTelemetrySchema } from '../telemetry'
 
 const apiKey = 'sk-phase-zero-must-not-leak'
 
@@ -69,6 +70,8 @@ describe('BYOK secret boundary contracts', () => {
       apiKey: '[REDACTED]',
       nested: { token: '[REDACTED]' },
     })
-    expect(sanitizeLogValue(`provider rejected ${apiKey}`)).not.toContain(apiKey)
+    expect(sanitizeLogValue(`provider rejected ${apiKey}`)).not.toContain(
+      apiKey,
+    )
   })
 })

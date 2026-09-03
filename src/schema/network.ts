@@ -7,7 +7,10 @@ export type MutationOptions<TData = unknown> = {
   onBefore?: () => void
   onSuccess?: (data: TData) => void
   onError?: (error: TRPCClientErrorLike<any> | Error) => void
-  onSettled?: (data?: TData, error?: TRPCClientErrorLike<any> | Error | null) => void
+  onSettled?: (
+    data?: TData,
+    error?: TRPCClientErrorLike<any> | Error | null,
+  ) => void
 }
 
 export type QueryOptions = {

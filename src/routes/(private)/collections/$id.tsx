@@ -18,6 +18,7 @@ import {
   Modal,
   ThemeIcon,
   Textarea,
+  Alert,
 } from '@mantine/core'
 import { useListState, useViewportSize } from '@mantine/hooks'
 import { modals } from '@mantine/modals'
@@ -35,6 +36,8 @@ import {
 } from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
+
+import { useTRPC } from '#/integrations/trpc/react'
 
 import { getColorBillTargetType, getColorPercentage } from '#/utils/bill'
 import { useIsMobile } from '#/utils/mobile'
@@ -97,7 +100,6 @@ function CollectionDetailPage() {
 
   const modalInstId = React.useRef(`collection-detail-${collectionId}`)
 
-
   const [filter, setFilter] = React.useState<FilterValue>({
     field: 'name',
     type: 'text',
@@ -122,6 +124,13 @@ function CollectionDetailPage() {
   const collectionQuery = useGetCollectionByIdQuery(collectionId)
 
   const userCanAnalyzeQuery = useCheckCanAnalyzeCollectionQuery()
+  const trpc = useTRPC()
+  const connectionsQuery = useQuery(
+    trpc.providerConnections.list.queryOptions(),
+  )
+  const [credentialId, setCredentialId] = React.useState<string | null>(null)
+  const activeConnections =
+    connectionsQuery.data?.filter((connection) => connection.isActive) ?? []
 
   const analyzeCollectionMutation = useAnalyzeCollectionMutation()
 
@@ -287,6 +296,30 @@ function CollectionDetailPage() {
             . ¿Estás seguro de que deseas analizarlas?
           </Text>
         )}
+
+        {activeConnections.length === 0 ? (
+          <Alert color="orange" mt="md">
+            Necesitas una conexión activa para analizar.{' '}
+            <Link to="/user">Configurar proveedor</Link>
+          </Alert>
+        ) : activeConnections.length > 1 ? (
+          <Input
+            data={activeConnections.map((connection) => ({
+              value: connection.id,
+              label: `${connection.label} · ${connection.modelId}`,
+            }))}
+            label="Conexión"
+            mt="md"
+            typeInput="select"
+            value={
+              credentialId ??
+              activeConnections.find((connection) => connection.isDefault)
+                ?.id ??
+              activeConnections[0]?.id
+            }
+            onChange={(value) => setCredentialId(value)}
+          />
+        ) : null}
 
         <Input
           data={[
@@ -663,6 +696,10 @@ function CollectionDetailPage() {
       type,
       billIds: [],
       preset,
+      credentialId:
+        credentialId ??
+        activeConnections.find((connection) => connection.isDefault)?.id ??
+        activeConnections[0]?.id,
     })
   }
 

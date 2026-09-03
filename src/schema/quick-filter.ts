@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod'
 
 export const FilterFormSchema = z.object({
   textValue: z.string(),
@@ -7,6 +7,6 @@ export const FilterFormSchema = z.object({
   thresholdValue: z.number(),
   thresholdCondition: z.enum(['>', '<', '>=', '<=']),
   numberRangeValue: z.tuple([z.number(), z.number()]),
-});
+})
 
-export type FilterFormValues = z.infer<typeof FilterFormSchema>;
+export type FilterFormValues = z.infer<typeof FilterFormSchema>

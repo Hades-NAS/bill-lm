@@ -8,8 +8,8 @@ import { createBillAnalysisService } from '#/integrations/services/bill-analysis
 
 import { FireCollections } from '#/constants/firebase'
 
-import type { AnalysisResult } from '#/integrations/services/bill-analysis.service'
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
+import type { AnalysisResult } from '#/integrations/services/bill-analysis.service'
 import type { AnalyzeJobData, PresetType } from '#/schema/collections'
 
 const logger = getServiceLogger('AnalyzeBillsUseCase')
@@ -68,7 +68,9 @@ export class AnalyzeBillsUseCase {
       })
 
       // Create analysis service
-      const analysisService = createBillAnalysisService({ provider: this.provider })
+      const analysisService = createBillAnalysisService({
+        provider: this.provider,
+      })
 
       // Execute analysis
       const results = await analysisService.analyzeBills(
@@ -148,6 +150,8 @@ export class AnalyzeBillsUseCase {
 /**
  * Factory function to create use case instance
  */
-export function createAnalyzeBillsUseCase(provider: ILLMProvider): AnalyzeBillsUseCase {
+export function createAnalyzeBillsUseCase(
+  provider: ILLMProvider,
+): AnalyzeBillsUseCase {
   return new AnalyzeBillsUseCase(provider)
 }
