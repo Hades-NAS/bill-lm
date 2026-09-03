@@ -43,7 +43,8 @@ export const useCollectionCreateMutation = (
         notify.error({
           title: 'Error al crear colección',
           message:
-            error.message || 'Ocurrió un error al crear tu colección. Por favor, intenta de nuevo.',
+            error.message ||
+            'Ocurrió un error al crear tu colección. Por favor, intenta de nuevo.',
         })
       },
     }),
@@ -83,7 +84,8 @@ export const useCollectionUpdateMutation = (
         notify.error({
           title: 'Error al guardar colección',
           message:
-            error.message || 'Ocurrió un error al guardar tu colección. Por favor, intenta de nuevo.',
+            error.message ||
+            'Ocurrió un error al guardar tu colección. Por favor, intenta de nuevo.',
         })
       },
     }),
@@ -140,7 +142,8 @@ export const useAnalyzeCollectionMutation = (
         notify.error({
           title: 'Error al iniciar análisis',
           message:
-            error.message || 'Ocurrió un error al iniciar el análisis de tu colección. Por favor, intenta de nuevo.',
+            error.message ||
+            'Ocurrió un error al iniciar el análisis de tu colección. Por favor, intenta de nuevo.',
         })
       },
     }),

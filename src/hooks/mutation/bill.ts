@@ -107,11 +107,13 @@ export const useMarkAsReadMutation = (options: MutationOptions<void> = {}) => {
 
 type PreprocessBillResult = {
   bills: Array<FileWithPath>
-  errors: Array<{ file: FileWithPath, error: string }>
+  errors: Array<{ file: FileWithPath; error: string }>
 }
 
-export const usePreprocessBillMutation = (params: Partial<BillFormData>, options: MutationOptions<PreprocessBillResult> = {}) => {
-
+export const usePreprocessBillMutation = (
+  params: Partial<BillFormData>,
+  options: MutationOptions<PreprocessBillResult> = {},
+) => {
   return useMutation({
     mutationFn: async (bills: Array<FileWithPath>) => {
       const { personalIdNumber, professionalIdNumber } = params
@@ -130,7 +132,7 @@ export const usePreprocessBillMutation = (params: Partial<BillFormData>, options
         return results
       }
 
-      const billsData: Array<{ file: FileWithPath, factura: Factura }> = []
+      const billsData: Array<{ file: FileWithPath; factura: Factura }> = []
 
       for (const billFile of bills) {
         const buffer = await billFile.arrayBuffer()
@@ -146,7 +148,8 @@ export const usePreprocessBillMutation = (params: Partial<BillFormData>, options
       }
 
       billsData.forEach((bill) => {
-        const idBuyer = bill.factura.infoFactura.identificacionComprador.trim() || ''
+        const idBuyer =
+          bill.factura.infoFactura.identificacionComprador.trim() || ''
 
         if (idBuyer.length === 10) {
           if (idBuyer === personalIdNumber) {
