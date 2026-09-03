@@ -1,3 +1,9 @@
+## Available Research Tools
+
+- Context7 MCP tools available: resolve library ID before querying docs
+- Mintlify Index available for publisher-maintained technical documentation
+- Web search available for current information outside documentation indexes
+
 # AGENTS.md — bill-lm
 
 **Read this file first.** It is the navigation map for every AI agent working in this repository.
@@ -82,4 +88,4 @@ If implementing: ./docs/
 If orchestrating: Agent definition files in your provider's agents directory
 ```
 
-<!-- ahk:generated b834a473fe0a387f73e473f10be4fb622975c9e42ef1bfef32f41c59a1b5553e -->
+<!-- ahk:generated abdb85c2260a6cbd6e7c7b9197fdeda2ba79ac3d22a9df97b746ef86b73469e8 -->
