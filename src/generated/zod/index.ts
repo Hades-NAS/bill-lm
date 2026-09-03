@@ -1,14 +1,13 @@
 import { z } from 'zod'
-
 import type { Prisma } from '../prisma/client'
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // HELPER FUNCTIONS
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // ENUMS
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const TransactionIsolationLevelSchema = z.enum([
   'ReadUncommitted',
@@ -22,6 +21,19 @@ export const UserScalarFieldEnumSchema = z.enum([
   'primaryEmail',
   'createdAt',
   'updatedAt',
+])
+
+export const FiscalReferenceScalarFieldEnumSchema = z.enum([
+  'id',
+  'userId',
+  'name',
+  'sourceType',
+  'storagePath',
+  'contentHash',
+  'normalizedSize',
+  'createdAt',
+  'updatedAt',
+  'deletedAt',
 ])
 
 export const ProviderConnectionScalarFieldEnumSchema = z.enum([
@@ -113,6 +125,11 @@ export const QueryModeSchema = z.enum(['default', 'insensitive'])
 
 export const NullsOrderSchema = z.enum(['first', 'last'])
 
+export const FiscalReferenceSourceTypeSchema = z.enum(['MARKDOWN', 'PDF'])
+
+export type FiscalReferenceSourceTypeType =
+  `${z.infer<typeof FiscalReferenceSourceTypeSchema>}`
+
 export const ProviderConnectionProviderSchema = z.enum(['OPENAI', 'CLAUDE'])
 
 export type ProviderConnectionProviderType =
@@ -134,13 +151,13 @@ export const BillTargetTypeSchema = z.enum([
 
 export type BillTargetTypeType = `${z.infer<typeof BillTargetTypeSchema>}`
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // MODELS
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // USER SCHEMA
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const UserSchema = z.object({
   id: z.uuid(),
@@ -151,9 +168,32 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
+// FISCAL REFERENCE SCHEMA
+/////////////////////////////////////////
+
+/**
+ * Material fiscal aportado y autoaprobado por el usuario. No representa una
+ * fuente normativa oficial ni una validación jurídica.
+ */
+export const FiscalReferenceSchema = z.object({
+  sourceType: FiscalReferenceSourceTypeSchema,
+  id: z.uuid(),
+  userId: z.string(),
+  name: z.string(),
+  storagePath: z.string(),
+  contentHash: z.string(),
+  normalizedSize: z.number().int(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  deletedAt: z.coerce.date().nullable(),
+})
+
+export type FiscalReference = z.infer<typeof FiscalReferenceSchema>
+
+/////////////////////////////////////////
 // PROVIDER CONNECTION SCHEMA
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const ProviderConnectionSchema = z.object({
   provider: ProviderConnectionProviderSchema,
@@ -177,9 +217,9 @@ export const ProviderConnectionSchema = z.object({
 
 export type ProviderConnection = z.infer<typeof ProviderConnectionSchema>
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // AUTH IDENTITY SCHEMA
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const AuthIdentitySchema = z.object({
   provider: AuthProviderSchema,
@@ -195,9 +235,9 @@ export const AuthIdentitySchema = z.object({
 
 export type AuthIdentity = z.infer<typeof AuthIdentitySchema>
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // COLLECTION SCHEMA
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const CollectionSchema = z.object({
   id: z.uuid(),
@@ -215,9 +255,9 @@ export const CollectionSchema = z.object({
 
 export type Collection = z.infer<typeof CollectionSchema>
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // BILL HEADER SCHEMA
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const BillHeaderSchema = z.object({
   fileType: BillFileTypeSchema,
@@ -246,9 +286,9 @@ export const BillHeaderSchema = z.object({
 
 export type BillHeader = z.infer<typeof BillHeaderSchema>
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // BILL DETAIL SCHEMA
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const BillDetailSchema = z.object({
   id: z.uuid(),
@@ -264,12 +304,12 @@ export const BillDetailSchema = z.object({
 
 export type BillDetail = z.infer<typeof BillDetailSchema>
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // SELECT & INCLUDE
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 // USER
-// ------------------------------------------------------
+//------------------------------------------------------
 
 export const UserIncludeSchema: z.ZodType<Prisma.UserInclude> = z
   .object({
@@ -281,6 +321,9 @@ export const UserIncludeSchema: z.ZodType<Prisma.UserInclude> = z
       .optional(),
     providerConnections: z
       .union([z.boolean(), z.lazy(() => ProviderConnectionFindManyArgsSchema)])
+      .optional(),
+    fiscalReferences: z
+      .union([z.boolean(), z.lazy(() => FiscalReferenceFindManyArgsSchema)])
       .optional(),
     _count: z
       .union([z.boolean(), z.lazy(() => UserCountOutputTypeArgsSchema)])
@@ -308,6 +351,7 @@ export const UserCountOutputTypeSelectSchema: z.ZodType<Prisma.UserCountOutputTy
       collections: z.boolean().optional(),
       authIdentities: z.boolean().optional(),
       providerConnections: z.boolean().optional(),
+      fiscalReferences: z.boolean().optional(),
     })
     .strict()
 
@@ -326,14 +370,52 @@ export const UserSelectSchema: z.ZodType<Prisma.UserSelect> = z
     providerConnections: z
       .union([z.boolean(), z.lazy(() => ProviderConnectionFindManyArgsSchema)])
       .optional(),
+    fiscalReferences: z
+      .union([z.boolean(), z.lazy(() => FiscalReferenceFindManyArgsSchema)])
+      .optional(),
     _count: z
       .union([z.boolean(), z.lazy(() => UserCountOutputTypeArgsSchema)])
       .optional(),
   })
   .strict()
 
+// FISCAL REFERENCE
+//------------------------------------------------------
+
+export const FiscalReferenceIncludeSchema: z.ZodType<Prisma.FiscalReferenceInclude> =
+  z
+    .object({
+      user: z.union([z.boolean(), z.lazy(() => UserArgsSchema)]).optional(),
+    })
+    .strict()
+
+export const FiscalReferenceArgsSchema: z.ZodType<Prisma.FiscalReferenceDefaultArgs> =
+  z
+    .object({
+      select: z.lazy(() => FiscalReferenceSelectSchema).optional(),
+      include: z.lazy(() => FiscalReferenceIncludeSchema).optional(),
+    })
+    .strict()
+
+export const FiscalReferenceSelectSchema: z.ZodType<Prisma.FiscalReferenceSelect> =
+  z
+    .object({
+      id: z.boolean().optional(),
+      userId: z.boolean().optional(),
+      name: z.boolean().optional(),
+      sourceType: z.boolean().optional(),
+      storagePath: z.boolean().optional(),
+      contentHash: z.boolean().optional(),
+      normalizedSize: z.boolean().optional(),
+      createdAt: z.boolean().optional(),
+      updatedAt: z.boolean().optional(),
+      deletedAt: z.boolean().optional(),
+      user: z.union([z.boolean(), z.lazy(() => UserArgsSchema)]).optional(),
+    })
+    .strict()
+
 // PROVIDER CONNECTION
-// ------------------------------------------------------
+//------------------------------------------------------
 
 export const ProviderConnectionIncludeSchema: z.ZodType<Prisma.ProviderConnectionInclude> =
   z
@@ -375,7 +457,7 @@ export const ProviderConnectionSelectSchema: z.ZodType<Prisma.ProviderConnection
     .strict()
 
 // AUTH IDENTITY
-// ------------------------------------------------------
+//------------------------------------------------------
 
 export const AuthIdentityIncludeSchema: z.ZodType<Prisma.AuthIdentityInclude> =
   z
@@ -408,7 +490,7 @@ export const AuthIdentitySelectSchema: z.ZodType<Prisma.AuthIdentitySelect> = z
   .strict()
 
 // COLLECTION
-// ------------------------------------------------------
+//------------------------------------------------------
 
 export const CollectionIncludeSchema: z.ZodType<Prisma.CollectionInclude> = z
   .object({
@@ -467,7 +549,7 @@ export const CollectionSelectSchema: z.ZodType<Prisma.CollectionSelect> = z
   .strict()
 
 // BILL HEADER
-// ------------------------------------------------------
+//------------------------------------------------------
 
 export const BillHeaderIncludeSchema: z.ZodType<Prisma.BillHeaderInclude> = z
   .object({
@@ -541,7 +623,7 @@ export const BillHeaderSelectSchema: z.ZodType<Prisma.BillHeaderSelect> = z
   .strict()
 
 // BILL DETAIL
-// ------------------------------------------------------
+//------------------------------------------------------
 
 export const BillDetailIncludeSchema: z.ZodType<Prisma.BillDetailInclude> = z
   .object({
@@ -571,9 +653,9 @@ export const BillDetailSelectSchema: z.ZodType<Prisma.BillDetailSelect> = z
   })
   .strict()
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // INPUT TYPES
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> =
   z.strictObject({
@@ -611,6 +693,9 @@ export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> =
     providerConnections: z
       .lazy(() => ProviderConnectionListRelationFilterSchema)
       .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceListRelationFilterSchema)
+      .optional(),
   })
 
 export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWithRelationInput> =
@@ -632,6 +717,9 @@ export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWit
       .optional(),
     providerConnections: z
       .lazy(() => ProviderConnectionOrderByRelationAggregateInputSchema)
+      .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceOrderByRelationAggregateInputSchema)
       .optional(),
   })
 
@@ -677,6 +765,9 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
           .optional(),
         providerConnections: z
           .lazy(() => ProviderConnectionListRelationFilterSchema)
+          .optional(),
+        fiscalReferences: z
+          .lazy(() => FiscalReferenceListRelationFilterSchema)
           .optional(),
       }),
     )
@@ -737,6 +828,245 @@ export const UserScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.UserScal
         z.coerce.date(),
       ])
       .optional(),
+  })
+
+export const FiscalReferenceWhereInputSchema: z.ZodType<Prisma.FiscalReferenceWhereInput> =
+  z.strictObject({
+    AND: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereInputSchema),
+        z.lazy(() => FiscalReferenceWhereInputSchema).array(),
+      ])
+      .optional(),
+    OR: z
+      .lazy(() => FiscalReferenceWhereInputSchema)
+      .array()
+      .optional(),
+    NOT: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereInputSchema),
+        z.lazy(() => FiscalReferenceWhereInputSchema).array(),
+      ])
+      .optional(),
+    id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    userId: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    name: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => EnumFiscalReferenceSourceTypeFilterSchema),
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.lazy(() => StringFilterSchema), z.string()])
+      .optional(),
+    contentHash: z
+      .union([z.lazy(() => StringFilterSchema), z.string()])
+      .optional(),
+    normalizedSize: z
+      .union([z.lazy(() => IntFilterSchema), z.number()])
+      .optional(),
+    createdAt: z
+      .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+      .optional(),
+    updatedAt: z
+      .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+      .optional(),
+    deletedAt: z
+      .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+      .optional()
+      .nullable(),
+    user: z
+      .union([
+        z.lazy(() => UserScalarRelationFilterSchema),
+        z.lazy(() => UserWhereInputSchema),
+      ])
+      .optional(),
+  })
+
+export const FiscalReferenceOrderByWithRelationInputSchema: z.ZodType<Prisma.FiscalReferenceOrderByWithRelationInput> =
+  z.strictObject({
+    id: z.lazy(() => SortOrderSchema).optional(),
+    userId: z.lazy(() => SortOrderSchema).optional(),
+    name: z.lazy(() => SortOrderSchema).optional(),
+    sourceType: z.lazy(() => SortOrderSchema).optional(),
+    storagePath: z.lazy(() => SortOrderSchema).optional(),
+    contentHash: z.lazy(() => SortOrderSchema).optional(),
+    normalizedSize: z.lazy(() => SortOrderSchema).optional(),
+    createdAt: z.lazy(() => SortOrderSchema).optional(),
+    updatedAt: z.lazy(() => SortOrderSchema).optional(),
+    deletedAt: z
+      .union([
+        z.lazy(() => SortOrderSchema),
+        z.lazy(() => SortOrderInputSchema),
+      ])
+      .optional(),
+    user: z.lazy(() => UserOrderByWithRelationInputSchema).optional(),
+  })
+
+export const FiscalReferenceWhereUniqueInputSchema: z.ZodType<Prisma.FiscalReferenceWhereUniqueInput> =
+  z
+    .object({
+      id: z.uuid(),
+    })
+    .and(
+      z.strictObject({
+        id: z.uuid().optional(),
+        AND: z
+          .union([
+            z.lazy(() => FiscalReferenceWhereInputSchema),
+            z.lazy(() => FiscalReferenceWhereInputSchema).array(),
+          ])
+          .optional(),
+        OR: z
+          .lazy(() => FiscalReferenceWhereInputSchema)
+          .array()
+          .optional(),
+        NOT: z
+          .union([
+            z.lazy(() => FiscalReferenceWhereInputSchema),
+            z.lazy(() => FiscalReferenceWhereInputSchema).array(),
+          ])
+          .optional(),
+        userId: z
+          .union([z.lazy(() => StringFilterSchema), z.string()])
+          .optional(),
+        name: z
+          .union([z.lazy(() => StringFilterSchema), z.string()])
+          .optional(),
+        sourceType: z
+          .union([
+            z.lazy(() => EnumFiscalReferenceSourceTypeFilterSchema),
+            z.lazy(() => FiscalReferenceSourceTypeSchema),
+          ])
+          .optional(),
+        storagePath: z
+          .union([z.lazy(() => StringFilterSchema), z.string()])
+          .optional(),
+        contentHash: z
+          .union([z.lazy(() => StringFilterSchema), z.string()])
+          .optional(),
+        normalizedSize: z
+          .union([z.lazy(() => IntFilterSchema), z.number().int()])
+          .optional(),
+        createdAt: z
+          .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+          .optional(),
+        updatedAt: z
+          .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+          .optional(),
+        deletedAt: z
+          .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+          .optional()
+          .nullable(),
+        user: z
+          .union([
+            z.lazy(() => UserScalarRelationFilterSchema),
+            z.lazy(() => UserWhereInputSchema),
+          ])
+          .optional(),
+      }),
+    )
+
+export const FiscalReferenceOrderByWithAggregationInputSchema: z.ZodType<Prisma.FiscalReferenceOrderByWithAggregationInput> =
+  z.strictObject({
+    id: z.lazy(() => SortOrderSchema).optional(),
+    userId: z.lazy(() => SortOrderSchema).optional(),
+    name: z.lazy(() => SortOrderSchema).optional(),
+    sourceType: z.lazy(() => SortOrderSchema).optional(),
+    storagePath: z.lazy(() => SortOrderSchema).optional(),
+    contentHash: z.lazy(() => SortOrderSchema).optional(),
+    normalizedSize: z.lazy(() => SortOrderSchema).optional(),
+    createdAt: z.lazy(() => SortOrderSchema).optional(),
+    updatedAt: z.lazy(() => SortOrderSchema).optional(),
+    deletedAt: z
+      .union([
+        z.lazy(() => SortOrderSchema),
+        z.lazy(() => SortOrderInputSchema),
+      ])
+      .optional(),
+    _count: z
+      .lazy(() => FiscalReferenceCountOrderByAggregateInputSchema)
+      .optional(),
+    _avg: z
+      .lazy(() => FiscalReferenceAvgOrderByAggregateInputSchema)
+      .optional(),
+    _max: z
+      .lazy(() => FiscalReferenceMaxOrderByAggregateInputSchema)
+      .optional(),
+    _min: z
+      .lazy(() => FiscalReferenceMinOrderByAggregateInputSchema)
+      .optional(),
+    _sum: z
+      .lazy(() => FiscalReferenceSumOrderByAggregateInputSchema)
+      .optional(),
+  })
+
+export const FiscalReferenceScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.FiscalReferenceScalarWhereWithAggregatesInput> =
+  z.strictObject({
+    AND: z
+      .union([
+        z.lazy(() => FiscalReferenceScalarWhereWithAggregatesInputSchema),
+        z
+          .lazy(() => FiscalReferenceScalarWhereWithAggregatesInputSchema)
+          .array(),
+      ])
+      .optional(),
+    OR: z
+      .lazy(() => FiscalReferenceScalarWhereWithAggregatesInputSchema)
+      .array()
+      .optional(),
+    NOT: z
+      .union([
+        z.lazy(() => FiscalReferenceScalarWhereWithAggregatesInputSchema),
+        z
+          .lazy(() => FiscalReferenceScalarWhereWithAggregatesInputSchema)
+          .array(),
+      ])
+      .optional(),
+    id: z
+      .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+      .optional(),
+    userId: z
+      .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+      .optional(),
+    name: z
+      .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => EnumFiscalReferenceSourceTypeWithAggregatesFilterSchema),
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+      .optional(),
+    contentHash: z
+      .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+      .optional(),
+    normalizedSize: z
+      .union([z.lazy(() => IntWithAggregatesFilterSchema), z.number()])
+      .optional(),
+    createdAt: z
+      .union([
+        z.lazy(() => DateTimeWithAggregatesFilterSchema),
+        z.coerce.date(),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.lazy(() => DateTimeWithAggregatesFilterSchema),
+        z.coerce.date(),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),
+        z.coerce.date(),
+      ])
+      .optional()
+      .nullable(),
   })
 
 export const ProviderConnectionWhereInputSchema: z.ZodType<Prisma.ProviderConnectionWhereInput> =
@@ -2234,6 +2564,9 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> =
     providerConnections: z
       .lazy(() => ProviderConnectionCreateNestedManyWithoutUserInputSchema)
       .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceCreateNestedManyWithoutUserInputSchema)
+      .optional(),
   })
 
 export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreateInput> =
@@ -2251,6 +2584,11 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
     providerConnections: z
       .lazy(
         () => ProviderConnectionUncheckedCreateNestedManyWithoutUserInputSchema,
+      )
+      .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedCreateNestedManyWithoutUserInputSchema,
       )
       .optional(),
   })
@@ -2288,6 +2626,9 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> =
     providerConnections: z
       .lazy(() => ProviderConnectionUpdateManyWithoutUserNestedInputSchema)
       .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
   })
 
 export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdateInput> =
@@ -2323,6 +2664,11 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
     providerConnections: z
       .lazy(
         () => ProviderConnectionUncheckedUpdateManyWithoutUserNestedInputSchema,
+      )
+      .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedUpdateManyWithoutUserNestedInputSchema,
       )
       .optional(),
   })
@@ -2385,6 +2731,253 @@ export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedU
         z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
       ])
       .optional(),
+  })
+
+export const FiscalReferenceCreateInputSchema: z.ZodType<Prisma.FiscalReferenceCreateInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    name: z.string(),
+    sourceType: z.lazy(() => FiscalReferenceSourceTypeSchema),
+    storagePath: z.string(),
+    contentHash: z.string(),
+    normalizedSize: z.number().int(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+    user: z.lazy(() => UserCreateNestedOneWithoutFiscalReferencesInputSchema),
+  })
+
+export const FiscalReferenceUncheckedCreateInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedCreateInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    userId: z.string(),
+    name: z.string(),
+    sourceType: z.lazy(() => FiscalReferenceSourceTypeSchema),
+    storagePath: z.string(),
+    contentHash: z.string(),
+    normalizedSize: z.number().int(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+  })
+
+export const FiscalReferenceUpdateInputSchema: z.ZodType<Prisma.FiscalReferenceUpdateInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema,
+        ),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    contentHash: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    normalizedSize: z
+      .union([
+        z.number().int(),
+        z.lazy(() => IntFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    user: z
+      .lazy(() => UserUpdateOneRequiredWithoutFiscalReferencesNestedInputSchema)
+      .optional(),
+  })
+
+export const FiscalReferenceUncheckedUpdateInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedUpdateInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    userId: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema,
+        ),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    contentHash: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    normalizedSize: z
+      .union([
+        z.number().int(),
+        z.lazy(() => IntFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+  })
+
+export const FiscalReferenceCreateManyInputSchema: z.ZodType<Prisma.FiscalReferenceCreateManyInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    userId: z.string(),
+    name: z.string(),
+    sourceType: z.lazy(() => FiscalReferenceSourceTypeSchema),
+    storagePath: z.string(),
+    contentHash: z.string(),
+    normalizedSize: z.number().int(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+  })
+
+export const FiscalReferenceUpdateManyMutationInputSchema: z.ZodType<Prisma.FiscalReferenceUpdateManyMutationInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema,
+        ),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    contentHash: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    normalizedSize: z
+      .union([
+        z.number().int(),
+        z.lazy(() => IntFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+  })
+
+export const FiscalReferenceUncheckedUpdateManyInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedUpdateManyInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    userId: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema,
+        ),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    contentHash: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    normalizedSize: z
+      .union([
+        z.number().int(),
+        z.lazy(() => IntFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
   })
 
 export const ProviderConnectionCreateInputSchema: z.ZodType<Prisma.ProviderConnectionCreateInput> =
@@ -4068,6 +4661,13 @@ export const ProviderConnectionListRelationFilterSchema: z.ZodType<Prisma.Provid
     none: z.lazy(() => ProviderConnectionWhereInputSchema).optional(),
   })
 
+export const FiscalReferenceListRelationFilterSchema: z.ZodType<Prisma.FiscalReferenceListRelationFilter> =
+  z.strictObject({
+    every: z.lazy(() => FiscalReferenceWhereInputSchema).optional(),
+    some: z.lazy(() => FiscalReferenceWhereInputSchema).optional(),
+    none: z.lazy(() => FiscalReferenceWhereInputSchema).optional(),
+  })
+
 export const SortOrderInputSchema: z.ZodType<Prisma.SortOrderInput> =
   z.strictObject({
     sort: z.lazy(() => SortOrderSchema),
@@ -4085,6 +4685,11 @@ export const AuthIdentityOrderByRelationAggregateInputSchema: z.ZodType<Prisma.A
   })
 
 export const ProviderConnectionOrderByRelationAggregateInputSchema: z.ZodType<Prisma.ProviderConnectionOrderByRelationAggregateInput> =
+  z.strictObject({
+    _count: z.lazy(() => SortOrderSchema).optional(),
+  })
+
+export const FiscalReferenceOrderByRelationAggregateInputSchema: z.ZodType<Prisma.FiscalReferenceOrderByRelationAggregateInput> =
   z.strictObject({
     _count: z.lazy(() => SortOrderSchema).optional(),
   })
@@ -4179,29 +4784,24 @@ export const DateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeWithAg
     _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
   })
 
-export const EnumProviderConnectionProviderFilterSchema: z.ZodType<Prisma.EnumProviderConnectionProviderFilter> =
+export const EnumFiscalReferenceSourceTypeFilterSchema: z.ZodType<Prisma.EnumFiscalReferenceSourceTypeFilter> =
   z.strictObject({
-    equals: z.lazy(() => ProviderConnectionProviderSchema).optional(),
+    equals: z.lazy(() => FiscalReferenceSourceTypeSchema).optional(),
     in: z
-      .lazy(() => ProviderConnectionProviderSchema)
+      .lazy(() => FiscalReferenceSourceTypeSchema)
       .array()
       .optional(),
     notIn: z
-      .lazy(() => ProviderConnectionProviderSchema)
+      .lazy(() => FiscalReferenceSourceTypeSchema)
       .array()
       .optional(),
     not: z
       .union([
-        z.lazy(() => ProviderConnectionProviderSchema),
-        z.lazy(() => NestedEnumProviderConnectionProviderFilterSchema),
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(() => NestedEnumFiscalReferenceSourceTypeFilterSchema),
       ])
       .optional(),
   })
-
-export const BoolFilterSchema: z.ZodType<Prisma.BoolFilter> = z.strictObject({
-  equals: z.boolean().optional(),
-  not: z.union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)]).optional(),
-})
 
 export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.strictObject({
   equals: z.number().optional(),
@@ -4237,6 +4837,150 @@ export const UserScalarRelationFilterSchema: z.ZodType<Prisma.UserScalarRelation
     is: z.lazy(() => UserWhereInputSchema).optional(),
     isNot: z.lazy(() => UserWhereInputSchema).optional(),
   })
+
+export const FiscalReferenceCountOrderByAggregateInputSchema: z.ZodType<Prisma.FiscalReferenceCountOrderByAggregateInput> =
+  z.strictObject({
+    id: z.lazy(() => SortOrderSchema).optional(),
+    userId: z.lazy(() => SortOrderSchema).optional(),
+    name: z.lazy(() => SortOrderSchema).optional(),
+    sourceType: z.lazy(() => SortOrderSchema).optional(),
+    storagePath: z.lazy(() => SortOrderSchema).optional(),
+    contentHash: z.lazy(() => SortOrderSchema).optional(),
+    normalizedSize: z.lazy(() => SortOrderSchema).optional(),
+    createdAt: z.lazy(() => SortOrderSchema).optional(),
+    updatedAt: z.lazy(() => SortOrderSchema).optional(),
+    deletedAt: z.lazy(() => SortOrderSchema).optional(),
+  })
+
+export const FiscalReferenceAvgOrderByAggregateInputSchema: z.ZodType<Prisma.FiscalReferenceAvgOrderByAggregateInput> =
+  z.strictObject({
+    normalizedSize: z.lazy(() => SortOrderSchema).optional(),
+  })
+
+export const FiscalReferenceMaxOrderByAggregateInputSchema: z.ZodType<Prisma.FiscalReferenceMaxOrderByAggregateInput> =
+  z.strictObject({
+    id: z.lazy(() => SortOrderSchema).optional(),
+    userId: z.lazy(() => SortOrderSchema).optional(),
+    name: z.lazy(() => SortOrderSchema).optional(),
+    sourceType: z.lazy(() => SortOrderSchema).optional(),
+    storagePath: z.lazy(() => SortOrderSchema).optional(),
+    contentHash: z.lazy(() => SortOrderSchema).optional(),
+    normalizedSize: z.lazy(() => SortOrderSchema).optional(),
+    createdAt: z.lazy(() => SortOrderSchema).optional(),
+    updatedAt: z.lazy(() => SortOrderSchema).optional(),
+    deletedAt: z.lazy(() => SortOrderSchema).optional(),
+  })
+
+export const FiscalReferenceMinOrderByAggregateInputSchema: z.ZodType<Prisma.FiscalReferenceMinOrderByAggregateInput> =
+  z.strictObject({
+    id: z.lazy(() => SortOrderSchema).optional(),
+    userId: z.lazy(() => SortOrderSchema).optional(),
+    name: z.lazy(() => SortOrderSchema).optional(),
+    sourceType: z.lazy(() => SortOrderSchema).optional(),
+    storagePath: z.lazy(() => SortOrderSchema).optional(),
+    contentHash: z.lazy(() => SortOrderSchema).optional(),
+    normalizedSize: z.lazy(() => SortOrderSchema).optional(),
+    createdAt: z.lazy(() => SortOrderSchema).optional(),
+    updatedAt: z.lazy(() => SortOrderSchema).optional(),
+    deletedAt: z.lazy(() => SortOrderSchema).optional(),
+  })
+
+export const FiscalReferenceSumOrderByAggregateInputSchema: z.ZodType<Prisma.FiscalReferenceSumOrderByAggregateInput> =
+  z.strictObject({
+    normalizedSize: z.lazy(() => SortOrderSchema).optional(),
+  })
+
+export const EnumFiscalReferenceSourceTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumFiscalReferenceSourceTypeWithAggregatesFilter> =
+  z.strictObject({
+    equals: z.lazy(() => FiscalReferenceSourceTypeSchema).optional(),
+    in: z
+      .lazy(() => FiscalReferenceSourceTypeSchema)
+      .array()
+      .optional(),
+    notIn: z
+      .lazy(() => FiscalReferenceSourceTypeSchema)
+      .array()
+      .optional(),
+    not: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => NestedEnumFiscalReferenceSourceTypeWithAggregatesFilterSchema,
+        ),
+      ])
+      .optional(),
+    _count: z.lazy(() => NestedIntFilterSchema).optional(),
+    _min: z
+      .lazy(() => NestedEnumFiscalReferenceSourceTypeFilterSchema)
+      .optional(),
+    _max: z
+      .lazy(() => NestedEnumFiscalReferenceSourceTypeFilterSchema)
+      .optional(),
+  })
+
+export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> =
+  z.strictObject({
+    equals: z.number().optional(),
+    in: z.number().array().optional(),
+    notIn: z.number().array().optional(),
+    lt: z.number().optional(),
+    lte: z.number().optional(),
+    gt: z.number().optional(),
+    gte: z.number().optional(),
+    not: z
+      .union([z.number(), z.lazy(() => NestedIntWithAggregatesFilterSchema)])
+      .optional(),
+    _count: z.lazy(() => NestedIntFilterSchema).optional(),
+    _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+    _sum: z.lazy(() => NestedIntFilterSchema).optional(),
+    _min: z.lazy(() => NestedIntFilterSchema).optional(),
+    _max: z.lazy(() => NestedIntFilterSchema).optional(),
+  })
+
+export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> =
+  z.strictObject({
+    equals: z.coerce.date().optional().nullable(),
+    in: z.coerce.date().array().optional().nullable(),
+    notIn: z.coerce.date().array().optional().nullable(),
+    lt: z.coerce.date().optional(),
+    lte: z.coerce.date().optional(),
+    gt: z.coerce.date().optional(),
+    gte: z.coerce.date().optional(),
+    not: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema),
+      ])
+      .optional()
+      .nullable(),
+    _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+    _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+    _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  })
+
+export const EnumProviderConnectionProviderFilterSchema: z.ZodType<Prisma.EnumProviderConnectionProviderFilter> =
+  z.strictObject({
+    equals: z.lazy(() => ProviderConnectionProviderSchema).optional(),
+    in: z
+      .lazy(() => ProviderConnectionProviderSchema)
+      .array()
+      .optional(),
+    notIn: z
+      .lazy(() => ProviderConnectionProviderSchema)
+      .array()
+      .optional(),
+    not: z
+      .union([
+        z.lazy(() => ProviderConnectionProviderSchema),
+        z.lazy(() => NestedEnumProviderConnectionProviderFilterSchema),
+      ])
+      .optional(),
+  })
+
+export const BoolFilterSchema: z.ZodType<Prisma.BoolFilter> = z.strictObject({
+  equals: z.boolean().optional(),
+  not: z.union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)]).optional(),
+})
 
 export const ProviderConnectionCountOrderByAggregateInputSchema: z.ZodType<Prisma.ProviderConnectionCountOrderByAggregateInput> =
   z.strictObject({
@@ -4348,46 +5092,6 @@ export const BoolWithAggregatesFilterSchema: z.ZodType<Prisma.BoolWithAggregates
     _count: z.lazy(() => NestedIntFilterSchema).optional(),
     _min: z.lazy(() => NestedBoolFilterSchema).optional(),
     _max: z.lazy(() => NestedBoolFilterSchema).optional(),
-  })
-
-export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> =
-  z.strictObject({
-    equals: z.number().optional(),
-    in: z.number().array().optional(),
-    notIn: z.number().array().optional(),
-    lt: z.number().optional(),
-    lte: z.number().optional(),
-    gt: z.number().optional(),
-    gte: z.number().optional(),
-    not: z
-      .union([z.number(), z.lazy(() => NestedIntWithAggregatesFilterSchema)])
-      .optional(),
-    _count: z.lazy(() => NestedIntFilterSchema).optional(),
-    _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-    _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-    _min: z.lazy(() => NestedIntFilterSchema).optional(),
-    _max: z.lazy(() => NestedIntFilterSchema).optional(),
-  })
-
-export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> =
-  z.strictObject({
-    equals: z.coerce.date().optional().nullable(),
-    in: z.coerce.date().array().optional().nullable(),
-    notIn: z.coerce.date().array().optional().nullable(),
-    lt: z.coerce.date().optional(),
-    lte: z.coerce.date().optional(),
-    gt: z.coerce.date().optional(),
-    gte: z.coerce.date().optional(),
-    not: z
-      .union([
-        z.coerce.date(),
-        z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema),
-      ])
-      .optional()
-      .nullable(),
-    _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
-    _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
-    _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
   })
 
 export const EnumAuthProviderFilterSchema: z.ZodType<Prisma.EnumAuthProviderFilter> =
@@ -4949,6 +5653,37 @@ export const ProviderConnectionCreateNestedManyWithoutUserInputSchema: z.ZodType
       .optional(),
   })
 
+export const FiscalReferenceCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceCreateNestedManyWithoutUserInput> =
+  z.strictObject({
+    create: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema),
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema).array(),
+        z.lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    connectOrCreate: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    createMany: z
+      .lazy(() => FiscalReferenceCreateManyUserInputEnvelopeSchema)
+      .optional(),
+    connect: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+  })
+
 export const CollectionUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput> =
   z.strictObject({
     create: z
@@ -5030,6 +5765,37 @@ export const ProviderConnectionUncheckedCreateNestedManyWithoutUserInputSchema: 
       .union([
         z.lazy(() => ProviderConnectionWhereUniqueInputSchema),
         z.lazy(() => ProviderConnectionWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+  })
+
+export const FiscalReferenceUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedCreateNestedManyWithoutUserInput> =
+  z.strictObject({
+    create: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema),
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema).array(),
+        z.lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    connectOrCreate: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    createMany: z
+      .lazy(() => FiscalReferenceCreateManyUserInputEnvelopeSchema)
+      .optional(),
+    connect: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
       ])
       .optional(),
   })
@@ -5290,6 +6056,93 @@ export const ProviderConnectionUpdateManyWithoutUserNestedInputSchema: z.ZodType
       .optional(),
   })
 
+export const FiscalReferenceUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.FiscalReferenceUpdateManyWithoutUserNestedInput> =
+  z.strictObject({
+    create: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema),
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema).array(),
+        z.lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    connectOrCreate: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    upsert: z
+      .union([
+        z.lazy(
+          () => FiscalReferenceUpsertWithWhereUniqueWithoutUserInputSchema,
+        ),
+        z
+          .lazy(
+            () => FiscalReferenceUpsertWithWhereUniqueWithoutUserInputSchema,
+          )
+          .array(),
+      ])
+      .optional(),
+    createMany: z
+      .lazy(() => FiscalReferenceCreateManyUserInputEnvelopeSchema)
+      .optional(),
+    set: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    disconnect: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    delete: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    connect: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    update: z
+      .union([
+        z.lazy(
+          () => FiscalReferenceUpdateWithWhereUniqueWithoutUserInputSchema,
+        ),
+        z
+          .lazy(
+            () => FiscalReferenceUpdateWithWhereUniqueWithoutUserInputSchema,
+          )
+          .array(),
+      ])
+      .optional(),
+    updateMany: z
+      .union([
+        z.lazy(() => FiscalReferenceUpdateManyWithWhereWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceUpdateManyWithWhereWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    deleteMany: z
+      .union([
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema),
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema).array(),
+      ])
+      .optional(),
+  })
+
 export const CollectionUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput> =
   z.strictObject({
     create: z
@@ -5531,6 +6384,152 @@ export const ProviderConnectionUncheckedUpdateManyWithoutUserNestedInputSchema: 
       .optional(),
   })
 
+export const FiscalReferenceUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedUpdateManyWithoutUserNestedInput> =
+  z.strictObject({
+    create: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema),
+        z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema).array(),
+        z.lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    connectOrCreate: z
+      .union([
+        z.lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceCreateOrConnectWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    upsert: z
+      .union([
+        z.lazy(
+          () => FiscalReferenceUpsertWithWhereUniqueWithoutUserInputSchema,
+        ),
+        z
+          .lazy(
+            () => FiscalReferenceUpsertWithWhereUniqueWithoutUserInputSchema,
+          )
+          .array(),
+      ])
+      .optional(),
+    createMany: z
+      .lazy(() => FiscalReferenceCreateManyUserInputEnvelopeSchema)
+      .optional(),
+    set: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    disconnect: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    delete: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    connect: z
+      .union([
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+        z.lazy(() => FiscalReferenceWhereUniqueInputSchema).array(),
+      ])
+      .optional(),
+    update: z
+      .union([
+        z.lazy(
+          () => FiscalReferenceUpdateWithWhereUniqueWithoutUserInputSchema,
+        ),
+        z
+          .lazy(
+            () => FiscalReferenceUpdateWithWhereUniqueWithoutUserInputSchema,
+          )
+          .array(),
+      ])
+      .optional(),
+    updateMany: z
+      .union([
+        z.lazy(() => FiscalReferenceUpdateManyWithWhereWithoutUserInputSchema),
+        z
+          .lazy(() => FiscalReferenceUpdateManyWithWhereWithoutUserInputSchema)
+          .array(),
+      ])
+      .optional(),
+    deleteMany: z
+      .union([
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema),
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema).array(),
+      ])
+      .optional(),
+  })
+
+export const UserCreateNestedOneWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutFiscalReferencesInput> =
+  z.strictObject({
+    create: z
+      .union([
+        z.lazy(() => UserCreateWithoutFiscalReferencesInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutFiscalReferencesInputSchema),
+      ])
+      .optional(),
+    connectOrCreate: z
+      .lazy(() => UserCreateOrConnectWithoutFiscalReferencesInputSchema)
+      .optional(),
+    connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+  })
+
+export const EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumFiscalReferenceSourceTypeFieldUpdateOperationsInput> =
+  z.strictObject({
+    set: z.lazy(() => FiscalReferenceSourceTypeSchema).optional(),
+  })
+
+export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> =
+  z.strictObject({
+    set: z.number().optional(),
+    increment: z.number().optional(),
+    decrement: z.number().optional(),
+    multiply: z.number().optional(),
+    divide: z.number().optional(),
+  })
+
+export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> =
+  z.strictObject({
+    set: z.coerce.date().optional().nullable(),
+  })
+
+export const UserUpdateOneRequiredWithoutFiscalReferencesNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutFiscalReferencesNestedInput> =
+  z.strictObject({
+    create: z
+      .union([
+        z.lazy(() => UserCreateWithoutFiscalReferencesInputSchema),
+        z.lazy(() => UserUncheckedCreateWithoutFiscalReferencesInputSchema),
+      ])
+      .optional(),
+    connectOrCreate: z
+      .lazy(() => UserCreateOrConnectWithoutFiscalReferencesInputSchema)
+      .optional(),
+    upsert: z
+      .lazy(() => UserUpsertWithoutFiscalReferencesInputSchema)
+      .optional(),
+    connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+    update: z
+      .union([
+        z.lazy(
+          () => UserUpdateToOneWithWhereWithoutFiscalReferencesInputSchema,
+        ),
+        z.lazy(() => UserUpdateWithoutFiscalReferencesInputSchema),
+        z.lazy(() => UserUncheckedUpdateWithoutFiscalReferencesInputSchema),
+      ])
+      .optional(),
+  })
+
 export const UserCreateNestedOneWithoutProviderConnectionsInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutProviderConnectionsInput> =
   z.strictObject({
     create: z
@@ -5553,20 +6552,6 @@ export const EnumProviderConnectionProviderFieldUpdateOperationsInputSchema: z.Z
 export const BoolFieldUpdateOperationsInputSchema: z.ZodType<Prisma.BoolFieldUpdateOperationsInput> =
   z.strictObject({
     set: z.boolean().optional(),
-  })
-
-export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> =
-  z.strictObject({
-    set: z.number().optional(),
-    increment: z.number().optional(),
-    decrement: z.number().optional(),
-    multiply: z.number().optional(),
-    divide: z.number().optional(),
-  })
-
-export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> =
-  z.strictObject({
-    set: z.coerce.date().optional().nullable(),
   })
 
 export const UserUpdateOneRequiredWithoutProviderConnectionsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutProviderConnectionsNestedInput> =
@@ -6352,30 +7337,22 @@ export const NestedDateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDa
     _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
   })
 
-export const NestedEnumProviderConnectionProviderFilterSchema: z.ZodType<Prisma.NestedEnumProviderConnectionProviderFilter> =
+export const NestedEnumFiscalReferenceSourceTypeFilterSchema: z.ZodType<Prisma.NestedEnumFiscalReferenceSourceTypeFilter> =
   z.strictObject({
-    equals: z.lazy(() => ProviderConnectionProviderSchema).optional(),
+    equals: z.lazy(() => FiscalReferenceSourceTypeSchema).optional(),
     in: z
-      .lazy(() => ProviderConnectionProviderSchema)
+      .lazy(() => FiscalReferenceSourceTypeSchema)
       .array()
       .optional(),
     notIn: z
-      .lazy(() => ProviderConnectionProviderSchema)
+      .lazy(() => FiscalReferenceSourceTypeSchema)
       .array()
       .optional(),
     not: z
       .union([
-        z.lazy(() => ProviderConnectionProviderSchema),
-        z.lazy(() => NestedEnumProviderConnectionProviderFilterSchema),
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(() => NestedEnumFiscalReferenceSourceTypeFilterSchema),
       ])
-      .optional(),
-  })
-
-export const NestedBoolFilterSchema: z.ZodType<Prisma.NestedBoolFilter> =
-  z.strictObject({
-    equals: z.boolean().optional(),
-    not: z
-      .union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)])
       .optional(),
   })
 
@@ -6397,43 +7374,32 @@ export const NestedDateTimeNullableFilterSchema: z.ZodType<Prisma.NestedDateTime
       .nullable(),
   })
 
-export const NestedEnumProviderConnectionProviderWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumProviderConnectionProviderWithAggregatesFilter> =
+export const NestedEnumFiscalReferenceSourceTypeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumFiscalReferenceSourceTypeWithAggregatesFilter> =
   z.strictObject({
-    equals: z.lazy(() => ProviderConnectionProviderSchema).optional(),
+    equals: z.lazy(() => FiscalReferenceSourceTypeSchema).optional(),
     in: z
-      .lazy(() => ProviderConnectionProviderSchema)
+      .lazy(() => FiscalReferenceSourceTypeSchema)
       .array()
       .optional(),
     notIn: z
-      .lazy(() => ProviderConnectionProviderSchema)
+      .lazy(() => FiscalReferenceSourceTypeSchema)
       .array()
       .optional(),
     not: z
       .union([
-        z.lazy(() => ProviderConnectionProviderSchema),
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
         z.lazy(
-          () => NestedEnumProviderConnectionProviderWithAggregatesFilterSchema,
+          () => NestedEnumFiscalReferenceSourceTypeWithAggregatesFilterSchema,
         ),
       ])
       .optional(),
     _count: z.lazy(() => NestedIntFilterSchema).optional(),
     _min: z
-      .lazy(() => NestedEnumProviderConnectionProviderFilterSchema)
+      .lazy(() => NestedEnumFiscalReferenceSourceTypeFilterSchema)
       .optional(),
     _max: z
-      .lazy(() => NestedEnumProviderConnectionProviderFilterSchema)
+      .lazy(() => NestedEnumFiscalReferenceSourceTypeFilterSchema)
       .optional(),
-  })
-
-export const NestedBoolWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolWithAggregatesFilter> =
-  z.strictObject({
-    equals: z.boolean().optional(),
-    not: z
-      .union([z.boolean(), z.lazy(() => NestedBoolWithAggregatesFilterSchema)])
-      .optional(),
-    _count: z.lazy(() => NestedIntFilterSchema).optional(),
-    _min: z.lazy(() => NestedBoolFilterSchema).optional(),
-    _max: z.lazy(() => NestedBoolFilterSchema).optional(),
   })
 
 export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> =
@@ -6488,6 +7454,72 @@ export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.
     _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
     _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
     _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  })
+
+export const NestedEnumProviderConnectionProviderFilterSchema: z.ZodType<Prisma.NestedEnumProviderConnectionProviderFilter> =
+  z.strictObject({
+    equals: z.lazy(() => ProviderConnectionProviderSchema).optional(),
+    in: z
+      .lazy(() => ProviderConnectionProviderSchema)
+      .array()
+      .optional(),
+    notIn: z
+      .lazy(() => ProviderConnectionProviderSchema)
+      .array()
+      .optional(),
+    not: z
+      .union([
+        z.lazy(() => ProviderConnectionProviderSchema),
+        z.lazy(() => NestedEnumProviderConnectionProviderFilterSchema),
+      ])
+      .optional(),
+  })
+
+export const NestedBoolFilterSchema: z.ZodType<Prisma.NestedBoolFilter> =
+  z.strictObject({
+    equals: z.boolean().optional(),
+    not: z
+      .union([z.boolean(), z.lazy(() => NestedBoolFilterSchema)])
+      .optional(),
+  })
+
+export const NestedEnumProviderConnectionProviderWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumProviderConnectionProviderWithAggregatesFilter> =
+  z.strictObject({
+    equals: z.lazy(() => ProviderConnectionProviderSchema).optional(),
+    in: z
+      .lazy(() => ProviderConnectionProviderSchema)
+      .array()
+      .optional(),
+    notIn: z
+      .lazy(() => ProviderConnectionProviderSchema)
+      .array()
+      .optional(),
+    not: z
+      .union([
+        z.lazy(() => ProviderConnectionProviderSchema),
+        z.lazy(
+          () => NestedEnumProviderConnectionProviderWithAggregatesFilterSchema,
+        ),
+      ])
+      .optional(),
+    _count: z.lazy(() => NestedIntFilterSchema).optional(),
+    _min: z
+      .lazy(() => NestedEnumProviderConnectionProviderFilterSchema)
+      .optional(),
+    _max: z
+      .lazy(() => NestedEnumProviderConnectionProviderFilterSchema)
+      .optional(),
+  })
+
+export const NestedBoolWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolWithAggregatesFilter> =
+  z.strictObject({
+    equals: z.boolean().optional(),
+    not: z
+      .union([z.boolean(), z.lazy(() => NestedBoolWithAggregatesFilterSchema)])
+      .optional(),
+    _count: z.lazy(() => NestedIntFilterSchema).optional(),
+    _min: z.lazy(() => NestedBoolFilterSchema).optional(),
+    _max: z.lazy(() => NestedBoolFilterSchema).optional(),
   })
 
 export const NestedEnumAuthProviderFilterSchema: z.ZodType<Prisma.NestedEnumAuthProviderFilter> =
@@ -6824,6 +7856,50 @@ export const ProviderConnectionCreateManyUserInputEnvelopeSchema: z.ZodType<Pris
     skipDuplicates: z.boolean().optional(),
   })
 
+export const FiscalReferenceCreateWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceCreateWithoutUserInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    name: z.string(),
+    sourceType: z.lazy(() => FiscalReferenceSourceTypeSchema),
+    storagePath: z.string(),
+    contentHash: z.string(),
+    normalizedSize: z.number().int(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+  })
+
+export const FiscalReferenceUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedCreateWithoutUserInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    name: z.string(),
+    sourceType: z.lazy(() => FiscalReferenceSourceTypeSchema),
+    storagePath: z.string(),
+    contentHash: z.string(),
+    normalizedSize: z.number().int(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+  })
+
+export const FiscalReferenceCreateOrConnectWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceCreateOrConnectWithoutUserInput> =
+  z.strictObject({
+    where: z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+    create: z.union([
+      z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema),
+      z.lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema),
+    ]),
+  })
+
+export const FiscalReferenceCreateManyUserInputEnvelopeSchema: z.ZodType<Prisma.FiscalReferenceCreateManyUserInputEnvelope> =
+  z.strictObject({
+    data: z.union([
+      z.lazy(() => FiscalReferenceCreateManyUserInputSchema),
+      z.lazy(() => FiscalReferenceCreateManyUserInputSchema).array(),
+    ]),
+    skipDuplicates: z.boolean().optional(),
+  })
+
 export const CollectionUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.CollectionUpsertWithWhereUniqueWithoutUserInput> =
   z.strictObject({
     where: z.lazy(() => CollectionWhereUniqueInputSchema),
@@ -7078,6 +8154,224 @@ export const ProviderConnectionScalarWhereInputSchema: z.ZodType<Prisma.Provider
       .nullable(),
   })
 
+export const FiscalReferenceUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUpsertWithWhereUniqueWithoutUserInput> =
+  z.strictObject({
+    where: z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+    update: z.union([
+      z.lazy(() => FiscalReferenceUpdateWithoutUserInputSchema),
+      z.lazy(() => FiscalReferenceUncheckedUpdateWithoutUserInputSchema),
+    ]),
+    create: z.union([
+      z.lazy(() => FiscalReferenceCreateWithoutUserInputSchema),
+      z.lazy(() => FiscalReferenceUncheckedCreateWithoutUserInputSchema),
+    ]),
+  })
+
+export const FiscalReferenceUpdateWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUpdateWithWhereUniqueWithoutUserInput> =
+  z.strictObject({
+    where: z.lazy(() => FiscalReferenceWhereUniqueInputSchema),
+    data: z.union([
+      z.lazy(() => FiscalReferenceUpdateWithoutUserInputSchema),
+      z.lazy(() => FiscalReferenceUncheckedUpdateWithoutUserInputSchema),
+    ]),
+  })
+
+export const FiscalReferenceUpdateManyWithWhereWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUpdateManyWithWhereWithoutUserInput> =
+  z.strictObject({
+    where: z.lazy(() => FiscalReferenceScalarWhereInputSchema),
+    data: z.union([
+      z.lazy(() => FiscalReferenceUpdateManyMutationInputSchema),
+      z.lazy(() => FiscalReferenceUncheckedUpdateManyWithoutUserInputSchema),
+    ]),
+  })
+
+export const FiscalReferenceScalarWhereInputSchema: z.ZodType<Prisma.FiscalReferenceScalarWhereInput> =
+  z.strictObject({
+    AND: z
+      .union([
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema),
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema).array(),
+      ])
+      .optional(),
+    OR: z
+      .lazy(() => FiscalReferenceScalarWhereInputSchema)
+      .array()
+      .optional(),
+    NOT: z
+      .union([
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema),
+        z.lazy(() => FiscalReferenceScalarWhereInputSchema).array(),
+      ])
+      .optional(),
+    id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    userId: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    name: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => EnumFiscalReferenceSourceTypeFilterSchema),
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.lazy(() => StringFilterSchema), z.string()])
+      .optional(),
+    contentHash: z
+      .union([z.lazy(() => StringFilterSchema), z.string()])
+      .optional(),
+    normalizedSize: z
+      .union([z.lazy(() => IntFilterSchema), z.number()])
+      .optional(),
+    createdAt: z
+      .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+      .optional(),
+    updatedAt: z
+      .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
+      .optional(),
+    deletedAt: z
+      .union([z.lazy(() => DateTimeNullableFilterSchema), z.coerce.date()])
+      .optional()
+      .nullable(),
+  })
+
+export const UserCreateWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserCreateWithoutFiscalReferencesInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    primaryEmail: z.string().optional().nullable(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    collections: z
+      .lazy(() => CollectionCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    authIdentities: z
+      .lazy(() => AuthIdentityCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    providerConnections: z
+      .lazy(() => ProviderConnectionCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+  })
+
+export const UserUncheckedCreateWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutFiscalReferencesInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    primaryEmail: z.string().optional().nullable(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    collections: z
+      .lazy(() => CollectionUncheckedCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    authIdentities: z
+      .lazy(() => AuthIdentityUncheckedCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    providerConnections: z
+      .lazy(
+        () => ProviderConnectionUncheckedCreateNestedManyWithoutUserInputSchema,
+      )
+      .optional(),
+  })
+
+export const UserCreateOrConnectWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserCreateOrConnectWithoutFiscalReferencesInput> =
+  z.strictObject({
+    where: z.lazy(() => UserWhereUniqueInputSchema),
+    create: z.union([
+      z.lazy(() => UserCreateWithoutFiscalReferencesInputSchema),
+      z.lazy(() => UserUncheckedCreateWithoutFiscalReferencesInputSchema),
+    ]),
+  })
+
+export const UserUpsertWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserUpsertWithoutFiscalReferencesInput> =
+  z.strictObject({
+    update: z.union([
+      z.lazy(() => UserUpdateWithoutFiscalReferencesInputSchema),
+      z.lazy(() => UserUncheckedUpdateWithoutFiscalReferencesInputSchema),
+    ]),
+    create: z.union([
+      z.lazy(() => UserCreateWithoutFiscalReferencesInputSchema),
+      z.lazy(() => UserUncheckedCreateWithoutFiscalReferencesInputSchema),
+    ]),
+    where: z.lazy(() => UserWhereInputSchema).optional(),
+  })
+
+export const UserUpdateToOneWithWhereWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserUpdateToOneWithWhereWithoutFiscalReferencesInput> =
+  z.strictObject({
+    where: z.lazy(() => UserWhereInputSchema).optional(),
+    data: z.union([
+      z.lazy(() => UserUpdateWithoutFiscalReferencesInputSchema),
+      z.lazy(() => UserUncheckedUpdateWithoutFiscalReferencesInputSchema),
+    ]),
+  })
+
+export const UserUpdateWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserUpdateWithoutFiscalReferencesInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    primaryEmail: z
+      .union([
+        z.string(),
+        z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    collections: z
+      .lazy(() => CollectionUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
+    authIdentities: z
+      .lazy(() => AuthIdentityUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
+    providerConnections: z
+      .lazy(() => ProviderConnectionUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
+  })
+
+export const UserUncheckedUpdateWithoutFiscalReferencesInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutFiscalReferencesInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    primaryEmail: z
+      .union([
+        z.string(),
+        z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    collections: z
+      .lazy(() => CollectionUncheckedUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
+    authIdentities: z
+      .lazy(() => AuthIdentityUncheckedUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
+    providerConnections: z
+      .lazy(
+        () => ProviderConnectionUncheckedUpdateManyWithoutUserNestedInputSchema,
+      )
+      .optional(),
+  })
+
 export const UserCreateWithoutProviderConnectionsInputSchema: z.ZodType<Prisma.UserCreateWithoutProviderConnectionsInput> =
   z.strictObject({
     id: z.uuid().optional(),
@@ -7089,6 +8383,9 @@ export const UserCreateWithoutProviderConnectionsInputSchema: z.ZodType<Prisma.U
       .optional(),
     authIdentities: z
       .lazy(() => AuthIdentityCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceCreateNestedManyWithoutUserInputSchema)
       .optional(),
   })
 
@@ -7103,6 +8400,11 @@ export const UserUncheckedCreateWithoutProviderConnectionsInputSchema: z.ZodType
       .optional(),
     authIdentities: z
       .lazy(() => AuthIdentityUncheckedCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedCreateNestedManyWithoutUserInputSchema,
+      )
       .optional(),
   })
 
@@ -7167,6 +8469,9 @@ export const UserUpdateWithoutProviderConnectionsInputSchema: z.ZodType<Prisma.U
     authIdentities: z
       .lazy(() => AuthIdentityUpdateManyWithoutUserNestedInputSchema)
       .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
   })
 
 export const UserUncheckedUpdateWithoutProviderConnectionsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutProviderConnectionsInput> =
@@ -7199,6 +8504,11 @@ export const UserUncheckedUpdateWithoutProviderConnectionsInputSchema: z.ZodType
     authIdentities: z
       .lazy(() => AuthIdentityUncheckedUpdateManyWithoutUserNestedInputSchema)
       .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedUpdateManyWithoutUserNestedInputSchema,
+      )
+      .optional(),
   })
 
 export const UserCreateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserCreateWithoutAuthIdentitiesInput> =
@@ -7212,6 +8522,9 @@ export const UserCreateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserCr
       .optional(),
     providerConnections: z
       .lazy(() => ProviderConnectionCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceCreateNestedManyWithoutUserInputSchema)
       .optional(),
   })
 
@@ -7227,6 +8540,11 @@ export const UserUncheckedCreateWithoutAuthIdentitiesInputSchema: z.ZodType<Pris
     providerConnections: z
       .lazy(
         () => ProviderConnectionUncheckedCreateNestedManyWithoutUserInputSchema,
+      )
+      .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedCreateNestedManyWithoutUserInputSchema,
       )
       .optional(),
   })
@@ -7292,6 +8610,9 @@ export const UserUpdateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserUp
     providerConnections: z
       .lazy(() => ProviderConnectionUpdateManyWithoutUserNestedInputSchema)
       .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
   })
 
 export const UserUncheckedUpdateWithoutAuthIdentitiesInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutAuthIdentitiesInput> =
@@ -7326,6 +8647,11 @@ export const UserUncheckedUpdateWithoutAuthIdentitiesInputSchema: z.ZodType<Pris
         () => ProviderConnectionUncheckedUpdateManyWithoutUserNestedInputSchema,
       )
       .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedUpdateManyWithoutUserNestedInputSchema,
+      )
+      .optional(),
   })
 
 export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreateWithoutCollectionsInput> =
@@ -7339,6 +8665,9 @@ export const UserCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserCreat
       .optional(),
     providerConnections: z
       .lazy(() => ProviderConnectionCreateNestedManyWithoutUserInputSchema)
+      .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceCreateNestedManyWithoutUserInputSchema)
       .optional(),
   })
 
@@ -7354,6 +8683,11 @@ export const UserUncheckedCreateWithoutCollectionsInputSchema: z.ZodType<Prisma.
     providerConnections: z
       .lazy(
         () => ProviderConnectionUncheckedCreateNestedManyWithoutUserInputSchema,
+      )
+      .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedCreateNestedManyWithoutUserInputSchema,
       )
       .optional(),
   })
@@ -7493,6 +8827,9 @@ export const UserUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUpdat
     providerConnections: z
       .lazy(() => ProviderConnectionUpdateManyWithoutUserNestedInputSchema)
       .optional(),
+    fiscalReferences: z
+      .lazy(() => FiscalReferenceUpdateManyWithoutUserNestedInputSchema)
+      .optional(),
   })
 
 export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutCollectionsInput> =
@@ -7525,6 +8862,11 @@ export const UserUncheckedUpdateWithoutCollectionsInputSchema: z.ZodType<Prisma.
     providerConnections: z
       .lazy(
         () => ProviderConnectionUncheckedUpdateManyWithoutUserNestedInputSchema,
+      )
+      .optional(),
+    fiscalReferences: z
+      .lazy(
+        () => FiscalReferenceUncheckedUpdateManyWithoutUserNestedInputSchema,
       )
       .optional(),
   })
@@ -8261,6 +9603,19 @@ export const ProviderConnectionCreateManyUserInputSchema: z.ZodType<Prisma.Provi
     deletedAt: z.coerce.date().optional().nullable(),
   })
 
+export const FiscalReferenceCreateManyUserInputSchema: z.ZodType<Prisma.FiscalReferenceCreateManyUserInput> =
+  z.strictObject({
+    id: z.uuid().optional(),
+    name: z.string(),
+    sourceType: z.lazy(() => FiscalReferenceSourceTypeSchema),
+    storagePath: z.string(),
+    contentHash: z.string(),
+    normalizedSize: z.number().int(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+    deletedAt: z.coerce.date().optional().nullable(),
+  })
+
 export const CollectionUpdateWithoutUserInputSchema: z.ZodType<Prisma.CollectionUpdateWithoutUserInput> =
   z.strictObject({
     id: z
@@ -8812,6 +10167,153 @@ export const ProviderConnectionUncheckedUpdateManyWithoutUserInputSchema: z.ZodT
       .nullable(),
   })
 
+export const FiscalReferenceUpdateWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUpdateWithoutUserInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema,
+        ),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    contentHash: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    normalizedSize: z
+      .union([
+        z.number().int(),
+        z.lazy(() => IntFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+  })
+
+export const FiscalReferenceUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedUpdateWithoutUserInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema,
+        ),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    contentHash: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    normalizedSize: z
+      .union([
+        z.number().int(),
+        z.lazy(() => IntFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+  })
+
+export const FiscalReferenceUncheckedUpdateManyWithoutUserInputSchema: z.ZodType<Prisma.FiscalReferenceUncheckedUpdateManyWithoutUserInput> =
+  z.strictObject({
+    id: z
+      .union([z.uuid(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    name: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    sourceType: z
+      .union([
+        z.lazy(() => FiscalReferenceSourceTypeSchema),
+        z.lazy(
+          () => EnumFiscalReferenceSourceTypeFieldUpdateOperationsInputSchema,
+        ),
+      ])
+      .optional(),
+    storagePath: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    contentHash: z
+      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
+      .optional(),
+    normalizedSize: z
+      .union([
+        z.number().int(),
+        z.lazy(() => IntFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    createdAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    updatedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional(),
+    deletedAt: z
+      .union([
+        z.coerce.date(),
+        z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema),
+      ])
+      .optional()
+      .nullable(),
+  })
+
 export const BillHeaderCreateManyCollectionInputSchema: z.ZodType<Prisma.BillHeaderCreateManyCollectionInput> =
   z.strictObject({
     id: z.uuid().optional(),
@@ -9263,9 +10765,9 @@ export const BillDetailUncheckedUpdateManyWithoutBillInputSchema: z.ZodType<Pris
       .nullable(),
   })
 
-// ///////////////////////////////////////
+/////////////////////////////////////////
 // ARGS
-// ///////////////////////////////////////
+/////////////////////////////////////////
 
 export const UserFindFirstArgsSchema: z.ZodType<Prisma.UserFindFirstArgs> = z
   .object({
@@ -9373,6 +10875,129 @@ export const UserFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.UserFindUniqueOrT
       select: UserSelectSchema.optional(),
       include: UserIncludeSchema.optional(),
       where: UserWhereUniqueInputSchema,
+    })
+    .strict()
+
+export const FiscalReferenceFindFirstArgsSchema: z.ZodType<Prisma.FiscalReferenceFindFirstArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      where: FiscalReferenceWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          FiscalReferenceOrderByWithRelationInputSchema.array(),
+          FiscalReferenceOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: FiscalReferenceWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          FiscalReferenceScalarFieldEnumSchema,
+          FiscalReferenceScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict()
+
+export const FiscalReferenceFindFirstOrThrowArgsSchema: z.ZodType<Prisma.FiscalReferenceFindFirstOrThrowArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      where: FiscalReferenceWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          FiscalReferenceOrderByWithRelationInputSchema.array(),
+          FiscalReferenceOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: FiscalReferenceWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          FiscalReferenceScalarFieldEnumSchema,
+          FiscalReferenceScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict()
+
+export const FiscalReferenceFindManyArgsSchema: z.ZodType<Prisma.FiscalReferenceFindManyArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      where: FiscalReferenceWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          FiscalReferenceOrderByWithRelationInputSchema.array(),
+          FiscalReferenceOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: FiscalReferenceWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          FiscalReferenceScalarFieldEnumSchema,
+          FiscalReferenceScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict()
+
+export const FiscalReferenceAggregateArgsSchema: z.ZodType<Prisma.FiscalReferenceAggregateArgs> =
+  z
+    .object({
+      where: FiscalReferenceWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          FiscalReferenceOrderByWithRelationInputSchema.array(),
+          FiscalReferenceOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: FiscalReferenceWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict()
+
+export const FiscalReferenceGroupByArgsSchema: z.ZodType<Prisma.FiscalReferenceGroupByArgs> =
+  z
+    .object({
+      where: FiscalReferenceWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          FiscalReferenceOrderByWithAggregationInputSchema.array(),
+          FiscalReferenceOrderByWithAggregationInputSchema,
+        ])
+        .optional(),
+      by: FiscalReferenceScalarFieldEnumSchema.array(),
+      having: FiscalReferenceScalarWhereWithAggregatesInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict()
+
+export const FiscalReferenceFindUniqueArgsSchema: z.ZodType<Prisma.FiscalReferenceFindUniqueArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      where: FiscalReferenceWhereUniqueInputSchema,
+    })
+    .strict()
+
+export const FiscalReferenceFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.FiscalReferenceFindUniqueOrThrowArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      where: FiscalReferenceWhereUniqueInputSchema,
     })
     .strict()
 
@@ -10076,6 +11701,111 @@ export const UserDeleteManyArgsSchema: z.ZodType<Prisma.UserDeleteManyArgs> = z
     limit: z.number().optional(),
   })
   .strict()
+
+export const FiscalReferenceCreateArgsSchema: z.ZodType<Prisma.FiscalReferenceCreateArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      data: z.union([
+        FiscalReferenceCreateInputSchema,
+        FiscalReferenceUncheckedCreateInputSchema,
+      ]),
+    })
+    .strict()
+
+export const FiscalReferenceUpsertArgsSchema: z.ZodType<Prisma.FiscalReferenceUpsertArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      where: FiscalReferenceWhereUniqueInputSchema,
+      create: z.union([
+        FiscalReferenceCreateInputSchema,
+        FiscalReferenceUncheckedCreateInputSchema,
+      ]),
+      update: z.union([
+        FiscalReferenceUpdateInputSchema,
+        FiscalReferenceUncheckedUpdateInputSchema,
+      ]),
+    })
+    .strict()
+
+export const FiscalReferenceCreateManyArgsSchema: z.ZodType<Prisma.FiscalReferenceCreateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        FiscalReferenceCreateManyInputSchema,
+        FiscalReferenceCreateManyInputSchema.array(),
+      ]),
+      skipDuplicates: z.boolean().optional(),
+    })
+    .strict()
+
+export const FiscalReferenceCreateManyAndReturnArgsSchema: z.ZodType<Prisma.FiscalReferenceCreateManyAndReturnArgs> =
+  z
+    .object({
+      data: z.union([
+        FiscalReferenceCreateManyInputSchema,
+        FiscalReferenceCreateManyInputSchema.array(),
+      ]),
+      skipDuplicates: z.boolean().optional(),
+    })
+    .strict()
+
+export const FiscalReferenceDeleteArgsSchema: z.ZodType<Prisma.FiscalReferenceDeleteArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      where: FiscalReferenceWhereUniqueInputSchema,
+    })
+    .strict()
+
+export const FiscalReferenceUpdateArgsSchema: z.ZodType<Prisma.FiscalReferenceUpdateArgs> =
+  z
+    .object({
+      select: FiscalReferenceSelectSchema.optional(),
+      include: FiscalReferenceIncludeSchema.optional(),
+      data: z.union([
+        FiscalReferenceUpdateInputSchema,
+        FiscalReferenceUncheckedUpdateInputSchema,
+      ]),
+      where: FiscalReferenceWhereUniqueInputSchema,
+    })
+    .strict()
+
+export const FiscalReferenceUpdateManyArgsSchema: z.ZodType<Prisma.FiscalReferenceUpdateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        FiscalReferenceUpdateManyMutationInputSchema,
+        FiscalReferenceUncheckedUpdateManyInputSchema,
+      ]),
+      where: FiscalReferenceWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict()
+
+export const FiscalReferenceUpdateManyAndReturnArgsSchema: z.ZodType<Prisma.FiscalReferenceUpdateManyAndReturnArgs> =
+  z
+    .object({
+      data: z.union([
+        FiscalReferenceUpdateManyMutationInputSchema,
+        FiscalReferenceUncheckedUpdateManyInputSchema,
+      ]),
+      where: FiscalReferenceWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict()
+
+export const FiscalReferenceDeleteManyArgsSchema: z.ZodType<Prisma.FiscalReferenceDeleteManyArgs> =
+  z
+    .object({
+      where: FiscalReferenceWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict()
 
 export const ProviderConnectionCreateArgsSchema: z.ZodType<Prisma.ProviderConnectionCreateArgs> =
   z

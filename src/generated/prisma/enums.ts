@@ -8,6 +8,14 @@
  * 🟢 You can import this file directly.
  */
 
+export const FiscalReferenceSourceType = {
+  MARKDOWN: 'MARKDOWN',
+  PDF: 'PDF',
+} as const
+
+export type FiscalReferenceSourceType =
+  (typeof FiscalReferenceSourceType)[keyof typeof FiscalReferenceSourceType]
+
 export const ProviderConnectionProvider = {
   OPENAI: 'OPENAI',
   CLAUDE: 'CLAUDE',

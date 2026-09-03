@@ -180,6 +180,7 @@ export type UserWhereInput = {
   collections?: Prisma.CollectionListRelationFilter
   authIdentities?: Prisma.AuthIdentityListRelationFilter
   providerConnections?: Prisma.ProviderConnectionListRelationFilter
+  fiscalReferences?: Prisma.FiscalReferenceListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -190,6 +191,7 @@ export type UserOrderByWithRelationInput = {
   collections?: Prisma.CollectionOrderByRelationAggregateInput
   authIdentities?: Prisma.AuthIdentityOrderByRelationAggregateInput
   providerConnections?: Prisma.ProviderConnectionOrderByRelationAggregateInput
+  fiscalReferences?: Prisma.FiscalReferenceOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<
@@ -204,6 +206,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<
     collections?: Prisma.CollectionListRelationFilter
     authIdentities?: Prisma.AuthIdentityListRelationFilter
     providerConnections?: Prisma.ProviderConnectionListRelationFilter
+    fiscalReferences?: Prisma.FiscalReferenceListRelationFilter
   },
   'id'
 >
@@ -243,6 +246,7 @@ export type UserCreateInput = {
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   authIdentities?: Prisma.AuthIdentityCreateNestedManyWithoutUserInput
   providerConnections?: Prisma.ProviderConnectionCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -253,6 +257,7 @@ export type UserUncheckedCreateInput = {
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   authIdentities?: Prisma.AuthIdentityUncheckedCreateNestedManyWithoutUserInput
   providerConnections?: Prisma.ProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -263,6 +268,7 @@ export type UserUpdateInput = {
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   authIdentities?: Prisma.AuthIdentityUpdateManyWithoutUserNestedInput
   providerConnections?: Prisma.ProviderConnectionUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -273,6 +279,7 @@ export type UserUncheckedUpdateInput = {
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   authIdentities?: Prisma.AuthIdentityUncheckedUpdateManyWithoutUserNestedInput
   providerConnections?: Prisma.ProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -332,6 +339,32 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type UserCreateNestedOneWithoutFiscalReferencesInput = {
+  create?: Prisma.XOR<
+    Prisma.UserCreateWithoutFiscalReferencesInput,
+    Prisma.UserUncheckedCreateWithoutFiscalReferencesInput
+  >
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFiscalReferencesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutFiscalReferencesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.UserCreateWithoutFiscalReferencesInput,
+    Prisma.UserUncheckedCreateWithoutFiscalReferencesInput
+  >
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutFiscalReferencesInput
+  upsert?: Prisma.UserUpsertWithoutFiscalReferencesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.UserUpdateToOneWithWhereWithoutFiscalReferencesInput,
+      Prisma.UserUpdateWithoutFiscalReferencesInput
+    >,
+    Prisma.UserUncheckedUpdateWithoutFiscalReferencesInput
+  >
 }
 
 export type UserCreateNestedOneWithoutProviderConnectionsInput = {
@@ -412,6 +445,74 @@ export type UserUpdateOneRequiredWithoutCollectionsNestedInput = {
   >
 }
 
+export type UserCreateWithoutFiscalReferencesInput = {
+  id?: string
+  primaryEmail?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
+  authIdentities?: Prisma.AuthIdentityCreateNestedManyWithoutUserInput
+  providerConnections?: Prisma.ProviderConnectionCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutFiscalReferencesInput = {
+  id?: string
+  primaryEmail?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
+  authIdentities?: Prisma.AuthIdentityUncheckedCreateNestedManyWithoutUserInput
+  providerConnections?: Prisma.ProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutFiscalReferencesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.UserCreateWithoutFiscalReferencesInput,
+    Prisma.UserUncheckedCreateWithoutFiscalReferencesInput
+  >
+}
+
+export type UserUpsertWithoutFiscalReferencesInput = {
+  update: Prisma.XOR<
+    Prisma.UserUpdateWithoutFiscalReferencesInput,
+    Prisma.UserUncheckedUpdateWithoutFiscalReferencesInput
+  >
+  create: Prisma.XOR<
+    Prisma.UserCreateWithoutFiscalReferencesInput,
+    Prisma.UserUncheckedCreateWithoutFiscalReferencesInput
+  >
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutFiscalReferencesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<
+    Prisma.UserUpdateWithoutFiscalReferencesInput,
+    Prisma.UserUncheckedUpdateWithoutFiscalReferencesInput
+  >
+}
+
+export type UserUpdateWithoutFiscalReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  primaryEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
+  authIdentities?: Prisma.AuthIdentityUpdateManyWithoutUserNestedInput
+  providerConnections?: Prisma.ProviderConnectionUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutFiscalReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  primaryEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
+  authIdentities?: Prisma.AuthIdentityUncheckedUpdateManyWithoutUserNestedInput
+  providerConnections?: Prisma.ProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserCreateWithoutProviderConnectionsInput = {
   id?: string
   primaryEmail?: string | null
@@ -419,6 +520,7 @@ export type UserCreateWithoutProviderConnectionsInput = {
   updatedAt?: Date | string
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   authIdentities?: Prisma.AuthIdentityCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProviderConnectionsInput = {
@@ -428,6 +530,7 @@ export type UserUncheckedCreateWithoutProviderConnectionsInput = {
   updatedAt?: Date | string
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   authIdentities?: Prisma.AuthIdentityUncheckedCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProviderConnectionsInput = {
@@ -465,6 +568,7 @@ export type UserUpdateWithoutProviderConnectionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   authIdentities?: Prisma.AuthIdentityUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProviderConnectionsInput = {
@@ -474,6 +578,7 @@ export type UserUncheckedUpdateWithoutProviderConnectionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   authIdentities?: Prisma.AuthIdentityUncheckedUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuthIdentitiesInput = {
@@ -483,6 +588,7 @@ export type UserCreateWithoutAuthIdentitiesInput = {
   updatedAt?: Date | string
   collections?: Prisma.CollectionCreateNestedManyWithoutUserInput
   providerConnections?: Prisma.ProviderConnectionCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuthIdentitiesInput = {
@@ -492,6 +598,7 @@ export type UserUncheckedCreateWithoutAuthIdentitiesInput = {
   updatedAt?: Date | string
   collections?: Prisma.CollectionUncheckedCreateNestedManyWithoutUserInput
   providerConnections?: Prisma.ProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuthIdentitiesInput = {
@@ -529,6 +636,7 @@ export type UserUpdateWithoutAuthIdentitiesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   collections?: Prisma.CollectionUpdateManyWithoutUserNestedInput
   providerConnections?: Prisma.ProviderConnectionUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuthIdentitiesInput = {
@@ -538,6 +646,7 @@ export type UserUncheckedUpdateWithoutAuthIdentitiesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   collections?: Prisma.CollectionUncheckedUpdateManyWithoutUserNestedInput
   providerConnections?: Prisma.ProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCollectionsInput = {
@@ -547,6 +656,7 @@ export type UserCreateWithoutCollectionsInput = {
   updatedAt?: Date | string
   authIdentities?: Prisma.AuthIdentityCreateNestedManyWithoutUserInput
   providerConnections?: Prisma.ProviderConnectionCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCollectionsInput = {
@@ -556,6 +666,7 @@ export type UserUncheckedCreateWithoutCollectionsInput = {
   updatedAt?: Date | string
   authIdentities?: Prisma.AuthIdentityUncheckedCreateNestedManyWithoutUserInput
   providerConnections?: Prisma.ProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCollectionsInput = {
@@ -593,6 +704,7 @@ export type UserUpdateWithoutCollectionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authIdentities?: Prisma.AuthIdentityUpdateManyWithoutUserNestedInput
   providerConnections?: Prisma.ProviderConnectionUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCollectionsInput = {
@@ -602,6 +714,7 @@ export type UserUncheckedUpdateWithoutCollectionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authIdentities?: Prisma.AuthIdentityUncheckedUpdateManyWithoutUserNestedInput
   providerConnections?: Prisma.ProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+  fiscalReferences?: Prisma.FiscalReferenceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 /**
@@ -612,6 +725,7 @@ export type UserCountOutputType = {
   collections: number
   authIdentities: number
   providerConnections: number
+  fiscalReferences: number
 }
 
 export type UserCountOutputTypeSelect<
@@ -623,6 +737,7 @@ export type UserCountOutputTypeSelect<
   providerConnections?:
     | boolean
     | UserCountOutputTypeCountProviderConnectionsArgs
+  fiscalReferences?: boolean | UserCountOutputTypeCountFiscalReferencesArgs
 }
 
 /**
@@ -668,6 +783,16 @@ export type UserCountOutputTypeCountProviderConnectionsArgs<
   where?: Prisma.ProviderConnectionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountFiscalReferencesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.FiscalReferenceWhereInput
+}
+
 export type UserSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -680,6 +805,7 @@ export type UserSelect<
     collections?: boolean | Prisma.User$collectionsArgs<ExtArgs>
     authIdentities?: boolean | Prisma.User$authIdentitiesArgs<ExtArgs>
     providerConnections?: boolean | Prisma.User$providerConnectionsArgs<ExtArgs>
+    fiscalReferences?: boolean | Prisma.User$fiscalReferencesArgs<ExtArgs>
     _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
   },
   ExtArgs['result']['user']
@@ -732,6 +858,7 @@ export type UserInclude<
   collections?: boolean | Prisma.User$collectionsArgs<ExtArgs>
   authIdentities?: boolean | Prisma.User$authIdentitiesArgs<ExtArgs>
   providerConnections?: boolean | Prisma.User$providerConnectionsArgs<ExtArgs>
+  fiscalReferences?: boolean | Prisma.User$fiscalReferencesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<
@@ -752,6 +879,7 @@ export type $UserPayload<
     collections: Prisma.$CollectionPayload<ExtArgs>[]
     authIdentities: Prisma.$AuthIdentityPayload<ExtArgs>[]
     providerConnections: Prisma.$ProviderConnectionPayload<ExtArgs>[]
+    fiscalReferences: Prisma.$FiscalReferencePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1344,6 +1472,17 @@ export interface Prisma__UserClient<
       >
     | Null
   >
+  fiscalReferences<T extends Prisma.User$fiscalReferencesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.User$fiscalReferencesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$FiscalReferencePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1926,6 +2065,37 @@ export type User$providerConnectionsArgs<
   distinct?:
     | Prisma.ProviderConnectionScalarFieldEnum
     | Prisma.ProviderConnectionScalarFieldEnum[]
+}
+
+/**
+ * User.fiscalReferences
+ */
+export type User$fiscalReferencesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the FiscalReference
+   */
+  select?: Prisma.FiscalReferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FiscalReference
+   */
+  omit?: Prisma.FiscalReferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FiscalReferenceInclude<ExtArgs> | null
+  where?: Prisma.FiscalReferenceWhereInput
+  orderBy?:
+    | Prisma.FiscalReferenceOrderByWithRelationInput
+    | Prisma.FiscalReferenceOrderByWithRelationInput[]
+  cursor?: Prisma.FiscalReferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?:
+    | Prisma.FiscalReferenceScalarFieldEnum
+    | Prisma.FiscalReferenceScalarFieldEnum[]
 }
 
 /**

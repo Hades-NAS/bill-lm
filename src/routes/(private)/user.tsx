@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Container,
+  FileInput,
   Group,
   Modal,
   PasswordInput,
@@ -21,6 +22,7 @@ import React from 'react'
 import { Trash2 } from 'lucide-react'
 
 import { useTRPC } from '#/integrations/trpc/react'
+import { fileToBase64 } from '#/utils/file'
 
 export const Route = createFileRoute('/(private)/user')({
   component: UserPage,
@@ -30,6 +32,9 @@ function UserPage() {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const connections = useQuery(trpc.providerConnections.list.queryOptions())
+  const fiscalReferences = useQuery(
+    trpc.fiscalReferences.list.queryOptions(),
+  )
   const createConnection = useMutation(
     trpc.providerConnections.create.mutationOptions({
       onSuccess: () =>
@@ -62,6 +67,20 @@ function UserPage() {
       onSuccess: invalidateConnections,
     }),
   )
+  const invalidateFiscalReferences = () =>
+    queryClient.invalidateQueries({
+      queryKey: trpc.fiscalReferences.list.queryKey(),
+    })
+  const uploadFiscalReference = useMutation(
+    trpc.fiscalReferences.upload.mutationOptions({
+      onSuccess: invalidateFiscalReferences,
+    }),
+  )
+  const removeFiscalReference = useMutation(
+    trpc.fiscalReferences.remove.mutationOptions({
+      onSuccess: invalidateFiscalReferences,
+    }),
+  )
   const [provider, setProvider] = React.useState<'openai' | 'claude'>('openai')
   const [label, setLabel] = React.useState('')
   const [modelId, setModelId] = React.useState('gpt-4o-mini')
@@ -69,6 +88,8 @@ function UserPage() {
   const [createModalOpened, setCreateModalOpened] = React.useState(false)
   const [rotationId, setRotationId] = React.useState<string | null>(null)
   const [rotationKey, setRotationKey] = React.useState('')
+  const [fiscalReferenceFile, setFiscalReferenceFile] =
+    React.useState<File | null>(null)
 
   const closeCreateModal = () => {
     setCreateModalOpened(false)
@@ -187,6 +208,95 @@ function UserPage() {
               ))}
               {connections.data?.length === 0 && (
                 <Text c="dimmed">Aún no tienes una conexión configurada.</Text>
+              )}
+            </Stack>
+          </Card>
+          <Card withBorder>
+            <Stack>
+              <div>
+                <Title order={2}>Referencias fiscales</Title>
+                <Text c="dimmed" size="sm">
+                  Material autogestionado global para tus análisis. No se trata
+                  como normativa oficial ni como dictamen jurídico.
+                </Text>
+              </div>
+              <Alert color="blue">
+                Puedes mantener hasta tres archivos Markdown o PDFs con texto
+                seleccionable. Los PDFs se convierten a Markdown en el servidor.
+              </Alert>
+              <FileInput
+                accept=".md,.markdown,text/markdown,text/plain,application/pdf"
+                clearable
+                disabled={
+                  uploadFiscalReference.isPending ||
+                  (fiscalReferences.data?.length ?? 0) >= 3
+                }
+                label="Archivo de referencia"
+                placeholder="Selecciona un PDF o Markdown"
+                value={fiscalReferenceFile}
+                onChange={setFiscalReferenceFile}
+              />
+              <Group justify="flex-end">
+                <Button
+                  disabled={
+                    !fiscalReferenceFile ||
+                    (fiscalReferences.data?.length ?? 0) >= 3
+                  }
+                  loading={uploadFiscalReference.isPending}
+                  onClick={async () => {
+                    if (!fiscalReferenceFile) return
+                    const mimeType =
+                      fiscalReferenceFile.type === 'application/pdf'
+                        ? 'application/pdf'
+                        : fiscalReferenceFile.type === 'text/plain'
+                          ? 'text/plain'
+                          : 'text/markdown'
+                    uploadFiscalReference.mutate(
+                      {
+                        file: {
+                          name: fiscalReferenceFile.name,
+                          base64: await fileToBase64(fiscalReferenceFile),
+                          mimeType,
+                        },
+                      },
+                      { onSuccess: () => setFiscalReferenceFile(null) },
+                    )
+                  }}
+                >
+                  Agregar referencia
+                </Button>
+              </Group>
+              {uploadFiscalReference.error && (
+                <Alert color="red">
+                  {uploadFiscalReference.error.message}
+                </Alert>
+              )}
+              {fiscalReferences.data?.map((reference) => (
+                <Group key={reference.id} justify="space-between">
+                  <div>
+                    <Text fw={600}>{reference.name}</Text>
+                    <Text c="dimmed" size="sm">
+                      {reference.sourceType === 'PDF'
+                        ? 'PDF normalizado a Markdown'
+                        : 'Markdown normalizado'}
+                    </Text>
+                  </div>
+                  <ActionIcon
+                    aria-label={`Eliminar ${reference.name}`}
+                    color="red"
+                    loading={removeFiscalReference.isPending}
+                    onClick={() =>
+                      removeFiscalReference.mutate({ id: reference.id })
+                    }
+                  >
+                    <Trash2 size={16} />
+                  </ActionIcon>
+                </Group>
+              ))}
+              {fiscalReferences.data?.length === 0 && (
+                <Text c="dimmed">
+                  Aún no tienes referencias fiscales configuradas.
+                </Text>
               )}
             </Stack>
           </Card>

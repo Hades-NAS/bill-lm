@@ -68,6 +68,7 @@
     "minio": "^8.0.7",
     "nitro": "npm:nitro-nightly@latest",
     "openai": "^6.32.0",
+    "pdf-parse": "^2.4.5",
     "pino": "^9.0.0",
     "pino-pretty": "^13.0.0",
     "postcss": "^8.5.8",

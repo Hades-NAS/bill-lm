@@ -1,6 +1,6 @@
 # Flujo de análisis de facturas
 
-> Estado: flujo cloud con BYOK de Fase 1 implementado en código; ver [BYOK cloud](./byok-cloud.md) para el mapa técnico de credenciales, contratos y bifurcaciones.
+> Estado: flujo cloud con BYOK de Fase 1 y referencias fiscales autogestionadas de Fase 2-A implementados en código; ver [BYOK cloud](./byok-cloud.md) para el mapa técnico de credenciales, contratos y bifurcaciones.
 > Actualizado: 2026-09-03.
 >
 > Este documento describe qué ocurre desde el clic en **Analizar colección** hasta que se guardan el resultado y el progreso. La sección BYOK es comportamiento actual de código; aún falta comprobarlo contra servicios reales tras aplicar la migración.
@@ -11,12 +11,12 @@
 Usuario autenticado
   -> página de colección y modal Mantine
   -> tRPC collections.analyze
-  -> valida autorización + colección + selección de facturas
+  -> valida autorización + conexión BYOK + referencias fiscales + selección de facturas
   -> Firestore: notificación/progreso
   -> BullMQ/Redis: trabajo interno
   -> worker: proveedor LLM nuevo para ese job
   -> caso de uso + servicio de análisis
-  -> MinIO: XML original -> parser -> factura normalizada actual
+  -> MinIO: Markdown de referencias autogestionadas + XML original -> parser -> factura normalizada actual
   -> prompt -> proveedor LLM -> { percentage, reason }
   -> Prisma/PostgreSQL: actualiza BillHeader
   -> Firestore: progreso, telemetría y estado final
@@ -36,6 +36,7 @@ La aplicación no analiza directamente desde el navegador. Para que un clic pued
 | Proceso web               | Sirve UI y API tRPC.                                                                  | `bun run dev` o imagen server.                                                         |
 | Proceso worker            | Consume la misma cola y llama al proveedor.                                           | `bun run worker:dev` o imagen worker.                                                  |
 | Proveedor LLM cloud       | OpenAI o Claude, resuelto por `credentialId` en cada job.                             | `BYOK_ENCRYPTION_KEY` compartida por web/worker.                                       |
+| Referencias fiscales      | Material global autoaprobado del usuario, usado como contexto de prompt.              | Hasta tres Markdown o PDFs con texto; se normalizan y guardan en MinIO.               |
 
 El archivo que valida el contrato real de variables es `src/env.ts`. `.env.example` todavía usa nombres antiguos como `LLM_API_KEY` y menciona Clerk; no es una fuente fiable para el flujo actual. Debe alinearse en una tarea separada antes de usarlo como guía de despliegue.
 
@@ -65,17 +66,18 @@ El servidor sigue este orden:
 
 1. Deriva `principal` de la sesión Firebase verificada por el middleware tRPC.
 2. Ejecuta `resolveConnection`: acepta una conexión activa propia indicada por `credentialId`, o la predeterminada activa del usuario. Si no existe, responde `PRECONDITION_FAILED`.
-3. Busca la colección por `id` **y** `userId`; si no pertenece al usuario responde `NOT_FOUND`.
-4. Selecciona facturas según `type`:
+3. Exige al menos una referencia fiscal autogestionada activa del mismo usuario; si no existe, responde `PRECONDITION_FAILED`.
+4. Busca la colección por `id` **y** `userId`; si no pertenece al usuario responde `NOT_FOUND`.
+5. Selecciona facturas según `type`:
    - `all`: todas las de la colección;
    - `missing`: donde `percentage` y `reason` son `null`;
    - `analyzed`: donde alguno de esos dos campos ya tiene valor;
    - `specific`: solo IDs solicitados que pertenecen a la colección.
-5. Si no quedaron facturas, responde `BAD_REQUEST`.
-6. Construye `AnalyzeJobData` con IDs, instrucciones, preset, contadores iniciales y el `credentialId` de la conexión autorizada.
-7. Escribe una versión pública del job en Firestore `analyze-v1/{jobId}`. La variante pública elimina el `userId` interno y añade `firebaseUid` para que el navegador pueda suscribirse.
-8. Encola el payload interno en BullMQ con `AnalyzeQueue.add`.
-9. Devuelve al navegador únicamente `jobId`, `collectionId` y `collectionName`.
+6. Si no quedaron facturas, responde `BAD_REQUEST`.
+7. Construye `AnalyzeJobData` con IDs, instrucciones, preset, contadores iniciales y el `credentialId` de la conexión autorizada.
+8. Escribe una versión pública del job en Firestore `analyze-v1/{jobId}`. La variante pública elimina el `userId` interno y añade `firebaseUid` para que el navegador pueda suscribirse.
+9. Encola el payload interno en BullMQ con `AnalyzeQueue.add`.
+10. Devuelve al navegador únicamente `jobId`, `collectionId` y `collectionName`.
 
 ### Límite de secretos de Fase 0
 
@@ -87,8 +89,9 @@ El worker (`src/integrations/jobs/analyze-job.ts`) escucha `ANALYZE_QUEUE_NAME` 
 
 1. Extrae `jobId`, `billIds` y preset del payload.
 2. Busca conexión y colección con el mismo `userId`, exige conexión activa/no eliminada y descifra el secreto con AES-GCM.
-3. Construye un proveedor **nuevo** para este job. No hay singleton compartido entre jobs ni fallback a una key global.
-4. Construye `AnalyzeBillsUseCase(provider)` y ejecuta los IDs de factura.
+3. Vuelve a exigir referencias fiscales activas propias y descarga solo sus Markdown normalizados desde MinIO. El contenido no entra en Firestore, BullMQ ni telemetría.
+4. Construye un proveedor **nuevo** para este job. No hay singleton compartido entre jobs ni fallback a una key global.
+5. Construye `AnalyzeBillsUseCase(provider)` y ejecuta los IDs de factura con ese contexto autogestionado.
 5. Al terminar, marca el documento Firestore como `completed` si no hubo fallos o `failed` si hubo al menos uno.
 6. Si el caso de uso lanza un error, escribe `failed` y el mensaje de error en Firestore; el handler devuelve `null`.
 
@@ -112,7 +115,7 @@ El servicio ejecuta esta secuencia:
 3. Para cada factura, recupera el objeto de MinIO y ejecuta `parseAndValidateInvoiceXML`.
 4. Si el XML no puede leerse o validarse, agrega un resultado fallido para esa factura y continúa con las demás.
 5. Convierte XML válido en `ParsedBill`: proveedor, identificador/comprador, líneas, totales y tipo (`PERSONAL`, `PROFESSIONAL` u `OTHER`).
-6. Construye el prompt v1. Incluye proveedor, descripciones de ítems, totales, tipo de factura y, si es `PROFESSIONAL`, las instrucciones personalizadas de la colección.
+6. Construye el prompt v1. Incluye proveedor, descripciones de ítems, totales, tipo de factura, referencias fiscales autogestionadas y, si es `PROFESSIONAL`, las instrucciones personalizadas de la colección. No presenta esas referencias como normativa oficial ni como un dictamen jurídico.
 7. Invoca `provider.process` detrás de un circuit breaker. El resultado esperado es exactamente `{ percentage: 0..100, reason: string }`.
 8. Valida la salida Zod, agrega versión de prompt, preset y timestamp. Si falla la llamada, el output o la validación, registra fallo para esa factura y continúa.
 9. Tras procesar el lote, abre una transacción Prisma y actualiza los `BillHeader` exitosos con `percentage`, `reason` y `updatedAt`.
@@ -151,8 +154,9 @@ En el navegador, `useJobsSubscriptionManager` abre una única suscripción Fires
 
 - Aunque la carga acepta `application/pdf`, el worker intenta parsear el contenido como XML. PDF no está soportado de forma real.
 - `BillHeader.percentage` y `reason` son una proyección sobrescrita: no existe historial de `AnalysisRun`/`AnalysisResult` todavía.
-- El prompt incorpora reglas fijas de gastos personales 2026. No hay rulesets versionados ni verificación de vigencia.
-- Hay conexión cifrada, selección por ejecución, default y autorización por ownership. La UI de Ajustes todavía debe cablear controles para update/rotate/probe/remove, aunque la API ya los ofrece.
+- Fase 2-A no crea snapshots inmutables ni proveniencia histórica del Markdown usado por cada ejecución. Las referencias activas se vuelven a resolver al ejecutar el worker; el historial versionado pertenece a una fase posterior.
+- El prompt usa las referencias fiscales autogestionadas activas del usuario y las instrucciones de la colección. No hay rulesets oficiales/versionados ni verificación de vigencia en Fase 2-A.
+- Hay conexión cifrada, selección por ejecución, default y autorización por ownership. La UI de Ajustes ya permite crear, seleccionar como predeterminada, activar/desactivar, probar, rotar y eliminar conexiones.
 - El resultado no es dictamen tributario ni prueba de elegibilidad legal.
 
 ## Despliegue y operación

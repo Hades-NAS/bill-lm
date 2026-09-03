@@ -15,6 +15,7 @@ import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
 import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
+import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
 
 import { FireCollections } from '#/constants/firebase'
 
@@ -215,6 +216,16 @@ export const collectionsRouter = {
         data.credentialId,
       )
 
+      const fiscalReferenceCount = await prisma.fiscalReference.count({
+        where: { userId: principal.userId, deletedAt: null },
+      })
+      if (fiscalReferenceCount === 0)
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message:
+            'Agrega al menos una referencia fiscal autogestionada antes de analizar.',
+        })
+
       const { type, billIds } = data
 
       const collection = await prisma.collection.findUnique({
@@ -352,16 +363,24 @@ export const collectionsRouter = {
   checkUserCanAnalyze: privateProcedure
     .input(z.object({}).optional())
     .query(async ({ ctx }) => {
-      const result = await prisma.providerConnection.count({
-        where: {
-          userId: ctx.principal.userId,
-          isActive: true,
-          deletedAt: null,
-        },
-      })
+      const [connectionCount, fiscalReferenceCount] = await Promise.all([
+        prisma.providerConnection.count({
+          where: {
+            userId: ctx.principal.userId,
+            isActive: true,
+            deletedAt: null,
+          },
+        }),
+        prisma.fiscalReference.count({
+          where: { userId: ctx.principal.userId, deletedAt: null },
+        }),
+      ])
 
       return {
-        canAnalyze: result > 0,
+        canAnalyze: canAnalyzeWithRequirements(
+          connectionCount,
+          fiscalReferenceCount,
+        ),
       }
     }),
 

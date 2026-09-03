@@ -52,6 +52,12 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model FiscalReference
+ * Material fiscal aportado y autoaprobado por el usuario. No representa una
+ * fuente normativa oficial ni una validación jurídica.
+ */
+export type FiscalReference = Prisma.FiscalReferenceModel
+/**
  * Model ProviderConnection
  *
  */

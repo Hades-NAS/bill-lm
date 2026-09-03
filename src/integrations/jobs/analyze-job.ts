@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { decryptProviderSecret } from '#/integrations/llm/byok-crypto.server'
+import { loadActiveFiscalReferenceContext } from '#/integrations/fiscal-references/context.server'
 import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
@@ -43,7 +44,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 
     if (!credentialId) throw new Error('The job has no provider connection')
 
-    const [connection, collection] = await Promise.all([
+    const [connection, collection, fiscalReferences] = await Promise.all([
       prisma.providerConnection.findFirst({
         where: { id: credentialId, userId, isActive: true, deletedAt: null },
       }),
@@ -52,9 +53,12 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         where: { id: data.collectionId, userId, deletedAt: null },
         select: { id: true },
       }),
+      loadActiveFiscalReferenceContext(userId),
     ])
     if (!connection || !collection)
       throw new Error('The job authorization is no longer valid')
+    if (fiscalReferences.length === 0)
+      throw new Error('No active fiscal references are available for this job')
 
     const apiKey = decryptProviderSecret(
       {
@@ -82,6 +86,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       billIds,
       job.data,
       data.preset || 'balanced',
+      fiscalReferences,
     )
 
     const successCount = results.filter((r) => r.success).length

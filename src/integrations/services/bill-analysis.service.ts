@@ -82,6 +82,7 @@ export class BillAnalysisService {
     billIds: Array<string>,
     jobData: AnalyzeJobData,
     context: AnalysisContext,
+    fiscalReferences: Array<{ name: string; markdown: string }> = [],
   ): Promise<Array<AnalysisResult>> {
     this.logger.info('Starting bill analysis', {
       jobId: context.jobId,
@@ -110,6 +111,7 @@ export class BillAnalysisService {
         billsWithParsedData,
         jobData,
         context,
+        fiscalReferences,
       )
 
       // Step 5: Batch update database with results
@@ -233,6 +235,7 @@ export class BillAnalysisService {
     }>,
     jobData: AnalyzeJobData,
     context: AnalysisContext,
+    fiscalReferences: Array<{ name: string; markdown: string }>,
   ): Promise<Array<AnalysisResult>> {
     const results: Array<AnalysisResult> = []
 
@@ -250,7 +253,11 @@ export class BillAnalysisService {
 
       try {
         // Build prompt
-        const prompt = this.promptBuilder.build(jobData, parsedBill)
+        const prompt = this.promptBuilder.build(
+          jobData,
+          parsedBill,
+          fiscalReferences,
+        )
 
         // Call provider with circuit breaker protection
         const analysisOutput = await this.circuitBreaker.execute(

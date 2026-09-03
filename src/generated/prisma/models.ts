@@ -8,6 +8,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User.ts'
+export type * from './models/FiscalReference.ts'
 export type * from './models/ProviderConnection.ts'
 export type * from './models/AuthIdentity.ts'
 export type * from './models/Collection.ts'

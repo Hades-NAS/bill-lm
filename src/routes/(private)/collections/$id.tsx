@@ -128,6 +128,9 @@ function CollectionDetailPage() {
   const connectionsQuery = useQuery(
     trpc.providerConnections.list.queryOptions(),
   )
+  const fiscalReferencesQuery = useQuery(
+    trpc.fiscalReferences.list.queryOptions(),
+  )
   const [credentialId, setCredentialId] = React.useState<string | null>(null)
   const activeConnections =
     connectionsQuery.data?.filter((connection) => connection.isActive) ?? []
@@ -301,6 +304,11 @@ function CollectionDetailPage() {
           <Alert color="orange" mt="md">
             Necesitas una conexión activa para analizar.{' '}
             <Link to="/user">Configurar proveedor</Link>
+          </Alert>
+        ) : fiscalReferencesQuery.data?.length === 0 ? (
+          <Alert color="orange" mt="md">
+            Necesitas al menos una referencia fiscal autogestionada para
+            analizar. <Link to="/user">Configurar referencias</Link>
           </Alert>
         ) : activeConnections.length > 1 ? (
           <Input

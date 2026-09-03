@@ -43,6 +43,7 @@ export class AnalyzeBillsUseCase {
     billIds: Array<string>,
     jobData: AnalyzeJobData,
     preset: PresetType = 'balanced',
+    fiscalReferences: Array<{ name: string; markdown: string }> = [],
   ): Promise<Array<AnalysisResult>> {
     const { jobId, userId, data: jobDataPayload } = jobData
     const { collectionId, collectionName } = jobDataPayload
@@ -77,6 +78,7 @@ export class AnalyzeBillsUseCase {
         billIds,
         jobData,
         context,
+        fiscalReferences,
       )
 
       this.logger.info('AnalyzeBillsUseCase: analysis completed', {

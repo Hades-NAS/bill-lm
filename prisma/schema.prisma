@@ -24,8 +24,35 @@ model User {
   collections    Collection[]
   authIdentities AuthIdentity[]
   providerConnections ProviderConnection[]
+  fiscalReferences FiscalReference[]
 
   @@map("users")
+}
+
+enum FiscalReferenceSourceType {
+  MARKDOWN
+  PDF
+}
+
+/// Material fiscal aportado y autoaprobado por el usuario. No representa una
+/// fuente normativa oficial ni una validación jurídica.
+model FiscalReference {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  name String @db.VarChar(255)
+  sourceType FiscalReferenceSourceType
+  storagePath String @db.VarChar(500)
+  contentHash String @db.VarChar(64)
+  normalizedSize Int
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  @@index([userId, deletedAt], name: "fiscal_reference_user_deleted_idx")
+  @@map("fiscal_references")
 }
 
 enum ProviderConnectionProvider {

@@ -55,6 +55,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  FiscalReference: 'FiscalReference',
   ProviderConnection: 'ProviderConnection',
   AuthIdentity: 'AuthIdentity',
   Collection: 'Collection',
@@ -87,6 +88,22 @@ export const UserScalarFieldEnum = {
 
 export type UserScalarFieldEnum =
   (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+export const FiscalReferenceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  sourceType: 'sourceType',
+  storagePath: 'storagePath',
+  contentHash: 'contentHash',
+  normalizedSize: 'normalizedSize',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+} as const
+
+export type FiscalReferenceScalarFieldEnum =
+  (typeof FiscalReferenceScalarFieldEnum)[keyof typeof FiscalReferenceScalarFieldEnum]
 
 export const ProviderConnectionScalarFieldEnum = {
   id: 'id',

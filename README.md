@@ -53,6 +53,20 @@ bun --bun run check
 - Configure the `VITE_FIREBASE_*` variables in `.env.local`.
 - Habilita Email/Password y Google en Firebase Authentication.
 
+## Fase 2-A: referencias fiscales autogestionadas
+
+En **Configuración** cada usuario puede cargar hasta tres referencias globales
+para sus análisis. Aceptan Markdown o PDFs con texto seleccionable; el servidor
+normaliza el contenido a Markdown y lo guarda en MinIO. Son material aportado y
+autoaprobado por el usuario, no normativa oficial ni un dictamen jurídico. Se
+requiere al menos una referencia activa y una conexión BYOK activa antes de
+analizar una colección. Los PDFs escaneados sin texto se rechazan: OCR no forma
+parte de esta fase.
+
+Esta fase no crea `AnalysisRun` ni snapshots inmutables del material usado: una
+referencia eliminada deja de aplicarse a análisis futuros, pero todavía no hay
+proveniencia histórica por ejecución.
+
 ## T3Env
 
 - You can use T3Env to add type safety to your environment variables.

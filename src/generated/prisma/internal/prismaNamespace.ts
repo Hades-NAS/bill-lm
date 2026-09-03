@@ -413,6 +413,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never
 
 export const ModelName = {
   User: 'User',
+  FiscalReference: 'FiscalReference',
   ProviderConnection: 'ProviderConnection',
   AuthIdentity: 'AuthIdentity',
   Collection: 'Collection',
@@ -441,6 +442,7 @@ export type TypeMap<
   meta: {
     modelProps:
       | 'user'
+      | 'fiscalReference'
       | 'providerConnection'
       | 'authIdentity'
       | 'collection'
@@ -521,6 +523,82 @@ export type TypeMap<
           args: Prisma.UserCountArgs<ExtArgs>
           result:
             | runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType>
+            | number
+        }
+      }
+    }
+    FiscalReference: {
+      payload: Prisma.$FiscalReferencePayload<ExtArgs>
+      fields: Prisma.FiscalReferenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FiscalReferenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FiscalReferenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>
+        }
+        findFirst: {
+          args: Prisma.FiscalReferenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FiscalReferenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>
+        }
+        findMany: {
+          args: Prisma.FiscalReferenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>[]
+        }
+        create: {
+          args: Prisma.FiscalReferenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>
+        }
+        createMany: {
+          args: Prisma.FiscalReferenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FiscalReferenceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>[]
+        }
+        delete: {
+          args: Prisma.FiscalReferenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>
+        }
+        update: {
+          args: Prisma.FiscalReferenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>
+        }
+        deleteMany: {
+          args: Prisma.FiscalReferenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FiscalReferenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FiscalReferenceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>[]
+        }
+        upsert: {
+          args: Prisma.FiscalReferenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FiscalReferencePayload>
+        }
+        aggregate: {
+          args: Prisma.FiscalReferenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFiscalReference>
+        }
+        groupBy: {
+          args: Prisma.FiscalReferenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FiscalReferenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FiscalReferenceCountArgs<ExtArgs>
+          result:
+            | runtime.Types.Utils.Optional<Prisma.FiscalReferenceCountAggregateOutputType>
             | number
         }
       }
@@ -954,6 +1032,22 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum =
   (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
+export const FiscalReferenceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  sourceType: 'sourceType',
+  storagePath: 'storagePath',
+  contentHash: 'contentHash',
+  normalizedSize: 'normalizedSize',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+} as const
+
+export type FiscalReferenceScalarFieldEnum =
+  (typeof FiscalReferenceScalarFieldEnum)[keyof typeof FiscalReferenceScalarFieldEnum]
+
 export const ProviderConnectionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -1110,6 +1204,34 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<
 >
 
 /**
+ * Reference to a field of type 'FiscalReferenceSourceType'
+ */
+export type EnumFiscalReferenceSourceTypeFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, 'FiscalReferenceSourceType'>
+
+/**
+ * Reference to a field of type 'FiscalReferenceSourceType[]'
+ */
+export type ListEnumFiscalReferenceSourceTypeFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, 'FiscalReferenceSourceType[]'>
+
+/**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'Int'
+>
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'Int[]'
+>
+
+/**
  * Reference to a field of type 'ProviderConnectionProvider'
  */
 export type EnumProviderConnectionProviderFieldRefInput<$PrismaModel> =
@@ -1127,22 +1249,6 @@ export type ListEnumProviderConnectionProviderFieldRefInput<$PrismaModel> =
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'Boolean'
->
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'Int'
->
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'Int[]'
 >
 
 /**
@@ -1311,6 +1417,7 @@ export type PrismaClientOptions = (
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  fiscalReference?: Prisma.FiscalReferenceOmit
   providerConnection?: Prisma.ProviderConnectionOmit
   authIdentity?: Prisma.AuthIdentityOmit
   collection?: Prisma.CollectionOmit
