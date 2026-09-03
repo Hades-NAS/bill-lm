@@ -35,15 +35,15 @@ actividades económicas. No se solicita una API key durante el login.
 
 ## Estados y comportamiento
 
-| Estado | Respuesta visible |
-| --- | --- |
-| carga inicial | indicador discreto; no se muestra contenido privado hasta conocer la sesión |
-| enviando formulario | controles deshabilitados, botón con loader y ancho estable |
-| credenciales inválidas | mensaje bajo el campo relevante, sin revelar si existe una cuenta |
-| cuenta sin verificar | aviso accionable para reenviar el correo y continuar cuando se verifique |
-| recuperación enviada | confirmación neutral, sin revelar si el correo está registrado |
-| popup Google cancelado/bloqueado | aviso entendible y retorno al formulario |
-| sesión válida | se obtiene ID token Firebase y se navega a la ruta privada solicitada |
+| Estado                           | Respuesta visible                                                           |
+| -------------------------------- | --------------------------------------------------------------------------- |
+| carga inicial                    | indicador discreto; no se muestra contenido privado hasta conocer la sesión |
+| enviando formulario              | controles deshabilitados, botón con loader y ancho estable                  |
+| credenciales inválidas           | mensaje bajo el campo relevante, sin revelar si existe una cuenta           |
+| cuenta sin verificar             | aviso accionable para reenviar el correo y continuar cuando se verifique    |
+| recuperación enviada             | confirmación neutral, sin revelar si el correo está registrado              |
+| popup Google cancelado/bloqueado | aviso entendible y retorno al formulario                                    |
+| sesión válida                    | se obtiene ID token Firebase y se navega a la ruta privada solicitada       |
 
 Los mensajes de proveedor se traducen desde códigos Firebase hacia texto en
 español antes de llegar a la UI. Los contratos de formulario, códigos y estado

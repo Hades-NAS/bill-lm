@@ -1,26 +1,45 @@
 <h2>Tres formas de usar Bill-LM, un solo contrato de análisis</h2>
-<p class="subtitle">La diferencia está en quién ejecuta el modelo y dónde vive la infraestructura; las reglas, el formato del resultado y las validaciones deben ser compartidos.</p>
+<p class="subtitle">
+  La diferencia está en quién ejecuta el modelo y dónde vive la infraestructura;
+  las reglas, el formato del resultado y las validaciones deben ser compartidos.
+</p>
 
 <div class="options">
   <div class="option" data-choice="cloud-byok" onclick="toggleSelect(this)">
     <div class="letter">1</div>
     <div class="content">
       <h3>Cloud · BYOK</h3>
-      <p>Navegador → web actual → cola/worker → credencial cifrada del usuario → OpenAI o Claude. Sin whitelist; el backend valida ownership y una conexión utilizable.</p>
+      <p>
+        Navegador → web actual → cola/worker → credencial cifrada del usuario →
+        OpenAI o Claude. Sin whitelist; el backend valida ownership y una
+        conexión utilizable.
+      </p>
     </div>
   </div>
-  <div class="option" data-choice="local-subscription" onclick="toggleSelect(this)">
+  <div
+    class="option"
+    data-choice="local-subscription"
+    onclick="toggleSelect(this)"
+  >
     <div class="letter">2</div>
     <div class="content">
       <h3>Local · Suscripción/OAuth</h3>
-      <p>Codex, Claude Code u OpenCode autenticado → skill del proyecto → MCP Bill-LM → workspace local. El host usa la suscripción; Bill-LM nunca copia ni almacena el token OAuth.</p>
+      <p>
+        Codex, Claude Code u OpenCode autenticado → skill del proyecto → MCP
+        Bill-LM → workspace local. El host usa la suscripción; Bill-LM nunca
+        copia ni almacena el token OAuth.
+      </p>
     </div>
   </div>
   <div class="option" data-choice="local-gpu" onclick="toggleSelect(this)">
     <div class="letter">3</div>
     <div class="content">
       <h3>Local · GPU propia</h3>
-      <p>Runner Bill-LM → endpoint local compatible → modelo cargado → SQLite/JSONL → visor localhost. No requiere Clerk, Firebase, MinIO, Redis ni una CLI de agente.</p>
+      <p>
+        Runner Bill-LM → endpoint local compatible → modelo cargado →
+        SQLite/JSONL → visor localhost. No requiere Clerk, Firebase, MinIO,
+        Redis ni una CLI de agente.
+      </p>
     </div>
   </div>
 </div>
@@ -29,19 +48,53 @@
   <div class="mockup">
     <div class="mockup-header">Núcleo compartido propuesto</div>
     <div class="mockup-body">
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;text-align:center">
-        <div style="padding:14px;border:1px solid #d8dee9;border-radius:10px">Parser<br><small>XML → factura</small></div>
-        <div style="padding:14px;border:1px solid #d8dee9;border-radius:10px">Contexto<br><small>colección + reglas</small></div>
-        <div style="padding:14px;border:1px solid #d8dee9;border-radius:10px">Prompt<br><small>versionado</small></div>
-        <div style="padding:14px;border:1px solid #d8dee9;border-radius:10px">Resultado<br><small>schema validado</small></div>
-        <div style="padding:14px;border:1px solid #d8dee9;border-radius:10px">Historial<br><small>run + auditoría</small></div>
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 12px;
+          text-align: center;
+        "
+      >
+        <div
+          style="padding: 14px; border: 1px solid #d8dee9; border-radius: 10px"
+        >
+          Parser<br /><small>XML → factura</small>
+        </div>
+        <div
+          style="padding: 14px; border: 1px solid #d8dee9; border-radius: 10px"
+        >
+          Contexto<br /><small>colección + reglas</small>
+        </div>
+        <div
+          style="padding: 14px; border: 1px solid #d8dee9; border-radius: 10px"
+        >
+          Prompt<br /><small>versionado</small>
+        </div>
+        <div
+          style="padding: 14px; border: 1px solid #d8dee9; border-radius: 10px"
+        >
+          Resultado<br /><small>schema validado</small>
+        </div>
+        <div
+          style="padding: 14px; border: 1px solid #d8dee9; border-radius: 10px"
+        >
+          Historial<br /><small>run + auditoría</small>
+        </div>
       </div>
-      <p style="margin-top:18px;text-align:center">Adaptadores diferentes para nube, MCP y GPU; ninguna lógica fiscal duplicada por proveedor.</p>
+      <p style="margin-top: 18px; text-align: center">
+        Adaptadores diferentes para nube, MCP y GPU; ninguna lógica fiscal
+        duplicada por proveedor.
+      </p>
     </div>
   </div>
 </div>
 
 <div class="section">
   <h3>Instalación que tengo en mente</h3>
-  <p><strong>Primera versión:</strong> usuario técnico, setup guiado y <code>bill-lm doctor</code>. <strong>Evolución:</strong> binario o instalador que incluya el runner/MCP y arranque el visor local.</p>
+  <p>
+    <strong>Primera versión:</strong> usuario técnico, setup guiado y
+    <code>bill-lm doctor</code>. <strong>Evolución:</strong> binario o
+    instalador que incluya el runner/MCP y arranque el visor local.
+  </p>
 </div>

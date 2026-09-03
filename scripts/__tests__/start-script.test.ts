@@ -1,11 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-
 import { describe, expect, it } from 'vitest'
 
-const startScriptPath = fileURLToPath(
-  new URL('../start.sh', import.meta.url),
-)
+const startScriptPath = fileURLToPath(new URL('../start.sh', import.meta.url))
 
 describe('start.sh', () => {
   it('aplica solo migraciones versionadas salvo que la validación las omita', () => {

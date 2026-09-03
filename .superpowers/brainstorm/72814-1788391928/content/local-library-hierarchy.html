@@ -1,34 +1,67 @@
 <h2>“Workspace” = biblioteca local de Bill-LM</h2>
-<p class="subtitle">Un directorio elegido por el usuario contiene varias colecciones. Las facturas no se duplican por proveedor: Codex, Claude, OpenCode y GPU operan sobre la misma biblioteca.</p>
+<p class="subtitle">
+  Un directorio elegido por el usuario contiene varias colecciones. Las facturas
+  no se duplican por proveedor: Codex, Claude, OpenCode y GPU operan sobre la
+  misma biblioteca.
+</p>
 
 <div class="mockup">
   <div class="mockup-header">~/Documentos/Mis-Facturas/</div>
-  <div class="mockup-body" style="font-family:monospace;line-height:1.8">
-    <div><strong>├── bill-lm.yaml</strong> <span style="opacity:.65"># configuración general</span></div>
+  <div class="mockup-body" style="font-family: monospace; line-height: 1.8">
+    <div>
+      <strong>├── bill-lm.yaml</strong>
+      <span style="opacity: 0.65"># configuración general</span>
+    </div>
     <div><strong>├── collections/</strong></div>
-    <div style="padding-left:24px">├── gastos-personales-2026/</div>
-    <div style="padding-left:48px">├── collection.yaml</div>
-    <div style="padding-left:48px">└── source/ <span style="opacity:.65"># XML de esta colección</span></div>
-    <div style="padding-left:24px">└── actividad-profesional-2026/</div>
-    <div style="padding-left:48px">├── collection.yaml</div>
-    <div style="padding-left:48px">└── source/</div>
-    <div><strong>├── providers/</strong> <span style="opacity:.65"># adaptadores, no facturas</span></div>
-    <div style="padding-left:24px">├── codex/</div>
-    <div style="padding-left:24px">├── claude/</div>
-    <div style="padding-left:24px">└── opencode/</div>
-    <div><strong>├── .bill-lm/state.sqlite</strong> <span style="opacity:.65"># estado común</span></div>
-    <div><strong>└── exports/</strong> <span style="opacity:.65"># CSV / JSON</span></div>
+    <div style="padding-left: 24px">├── gastos-personales-2026/</div>
+    <div style="padding-left: 48px">├── collection.yaml</div>
+    <div style="padding-left: 48px">
+      └── source/ <span style="opacity: 0.65"># XML de esta colección</span>
+    </div>
+    <div style="padding-left: 24px">└── actividad-profesional-2026/</div>
+    <div style="padding-left: 48px">├── collection.yaml</div>
+    <div style="padding-left: 48px">└── source/</div>
+    <div>
+      <strong>├── providers/</strong>
+      <span style="opacity: 0.65"># adaptadores, no facturas</span>
+    </div>
+    <div style="padding-left: 24px">├── codex/</div>
+    <div style="padding-left: 24px">├── claude/</div>
+    <div style="padding-left: 24px">└── opencode/</div>
+    <div>
+      <strong>├── .bill-lm/state.sqlite</strong>
+      <span style="opacity: 0.65"># estado común</span>
+    </div>
+    <div>
+      <strong>└── exports/</strong>
+      <span style="opacity: 0.65"># CSV / JSON</span>
+    </div>
   </div>
 </div>
 
-<div class="section" style="margin-top:22px">
+<div class="section" style="margin-top: 22px">
   <h3>¿Qué es un perfil?</h3>
-  <p>Una forma disponible de analizar la misma biblioteca: <strong>“GPU de casa”</strong>, <strong>“Codex con mi suscripción”</strong> o <strong>“Claude Code”</strong>. No crea otra copia de las facturas.</p>
+  <p>
+    Una forma disponible de analizar la misma biblioteca:
+    <strong>“GPU de casa”</strong>,
+    <strong>“Codex con mi suscripción”</strong> o
+    <strong>“Claude Code”</strong>. No crea otra copia de las facturas.
+  </p>
 </div>
 
 <div class="options">
-  <div class="option" data-choice="library-many-collections" onclick="toggleSelect(this)">
+  <div
+    class="option"
+    data-choice="library-many-collections"
+    onclick="toggleSelect(this)"
+  >
     <div class="letter">✓</div>
-    <div class="content"><h3>Una biblioteca, varias colecciones</h3><p>El visor abre el directorio raíz, lista sus colecciones y permite analizarlas mediante cualquiera de los perfiles disponibles.</p></div>
+    <div class="content">
+      <h3>Una biblioteca, varias colecciones</h3>
+      <p>
+        El visor abre el directorio raíz, lista sus colecciones y permite
+        analizarlas mediante cualquiera de los perfiles disponibles.
+      </p>
+    </div>
   </div>
 </div>

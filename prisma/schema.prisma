@@ -23,8 +23,42 @@ model User {
   // Relaciones
   collections    Collection[]
   authIdentities AuthIdentity[]
+  providerConnections ProviderConnection[]
 
   @@map("users")
+}
+
+enum ProviderConnectionProvider {
+  OPENAI
+  CLAUDE
+}
+
+model ProviderConnection {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  provider ProviderConnectionProvider
+  label String @db.VarChar(100)
+  modelId String @db.VarChar(255)
+  isActive Boolean @default(true)
+  isDefault Boolean @default(false)
+
+  secretCiphertext String @db.Text
+  secretIv String @db.VarChar(64)
+  secretAuthTag String @db.VarChar(64)
+  secretVersion Int @default(1)
+  secretLastFour String @db.VarChar(4)
+
+  probedAt DateTime? @db.Timestamptz
+  lastProbeError String? @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  @@index([userId, isActive], name: "provider_connection_user_active_idx")
+  @@index([userId, deletedAt], name: "provider_connection_user_deleted_idx")
+  @@map("provider_connections")
 }
 
 enum AuthProvider {

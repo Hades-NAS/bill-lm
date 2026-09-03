@@ -19,16 +19,16 @@ La recomendación es evolucionar este repositorio con un núcleo de aplicación 
 
 La siguiente tabla separa lo que existe de lo que se propone. No debe leerse la columna objetivo como funcionalidad ya disponible.
 
-| Área | Comportamiento actual comprobado | Dirección objetivo |
-| --- | --- | --- |
-| Ingesta | Las mutaciones tRPC persisten metadatos con Prisma y objetos en MinIO. | Mantener ese adaptador cloud; en local copiar los originales a almacenamiento administrado. |
-| Autorización de análisis | La pantalla consulta una validación de whitelist antes de analizar. | Sustituirla por la comprobación de una conexión de proveedor utilizable y propiedad del usuario. |
-| Trabajo asíncrono | Se crea trabajo en Firestore y se despacha mediante BullMQ. | Conservarlo en cloud; usar `RunStore` y progreso local para SQLite. |
-| Proveedor LLM | `LLMProviderFactory` conserva una instancia global, decide proveedor desde Firebase/variables y crea OpenAI, Claude o LM Studio. | Resolver el cliente por ejecución y por usuario. No compartir claves ni cliente mutable entre trabajos. |
-| Servicio de análisis | `BillAnalysisService` carga modelo, lee Prisma/MinIO, parsea XML, construye prompt, invoca LLM y actualiza Firestore/Prisma. | Dividirlo en puertos y servicios de aplicación. |
-| Ajustes | La ruta `/user` es un placeholder. | Crear una sección de conexiones de proveedor para BYOK cloud. |
-| Resultados | Los datos analizados se actualizan sobre `BillHeader`. | Conservar una proyección actual para compatibilidad cloud y añadir historial versionado de ejecuciones/resultados. |
-| Filtros actuales | La colección filtra por nombre de archivo y por un umbral de porcentaje. | Añadir búsqueda por número, emisor/RUC y rangos reales de confianza, fecha y monto. |
+| Área                     | Comportamiento actual comprobado                                                                                                 | Dirección objetivo                                                                                                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Ingesta                  | Las mutaciones tRPC persisten metadatos con Prisma y objetos en MinIO.                                                           | Mantener ese adaptador cloud; en local copiar los originales a almacenamiento administrado.                        |
+| Autorización de análisis | La pantalla consulta una validación de whitelist antes de analizar.                                                              | Sustituirla por la comprobación de una conexión de proveedor utilizable y propiedad del usuario.                   |
+| Trabajo asíncrono        | Se crea trabajo en Firestore y se despacha mediante BullMQ.                                                                      | Conservarlo en cloud; usar `RunStore` y progreso local para SQLite.                                                |
+| Proveedor LLM            | `LLMProviderFactory` conserva una instancia global, decide proveedor desde Firebase/variables y crea OpenAI, Claude o LM Studio. | Resolver el cliente por ejecución y por usuario. No compartir claves ni cliente mutable entre trabajos.            |
+| Servicio de análisis     | `BillAnalysisService` carga modelo, lee Prisma/MinIO, parsea XML, construye prompt, invoca LLM y actualiza Firestore/Prisma.     | Dividirlo en puertos y servicios de aplicación.                                                                    |
+| Ajustes                  | La ruta `/user` es un placeholder.                                                                                               | Crear una sección de conexiones de proveedor para BYOK cloud.                                                      |
+| Resultados               | Los datos analizados se actualizan sobre `BillHeader`.                                                                           | Conservar una proyección actual para compatibilidad cloud y añadir historial versionado de ejecuciones/resultados. |
+| Filtros actuales         | La colección filtra por nombre de archivo y por un umbral de porcentaje.                                                         | Añadir búsqueda por número, emisor/RUC y rangos reales de confianza, fecha y monto.                                |
 
 El patrón global actual requiere atención especial: `LLMProviderFactory` devuelve un singleton y el proveedor OpenAI usa configuración de cliente global. En un proceso concurrente, cambiar un cliente por defecto para una clave BYOK puede cruzar usuarios. La implementación BYOK no debe llamar a `setDefaultOpenAIClient` ni mantener una fábrica global con secretos de un usuario. También se debe confirmar la compatibilidad del manifiesto y lockfile antes de adoptar APIs recientes de clientes de agentes.
 
@@ -162,17 +162,17 @@ Las colecciones no son dueñas exclusivas de la factura. El modelo destino usa u
 
 `EconomicActivity` es una entidad creada por el usuario y reutilizable entre colecciones; cada cambio crea una `EconomicActivityRevision` inmutable. Es independiente de cualquier catálogo oficial: si en el futuro existe un catálogo, este podrá sugerir datos o referencias, pero no reemplaza la actividad definida ni reescribe sus revisiones históricas. Cada revisión almacena estos campos y su función:
 
-| Campo | Propósito |
-| --- | --- |
-| `displayName` | Nombre breve para que el usuario identifique la actividad en el visor. |
-| `registeredActivityCode` opcional | Código declarado por el usuario si dispone de uno; no se inventa ni se exige. |
-| `registeredActivityName` | Nombre registrado o declarado de la actividad, separado de la etiqueta breve. |
-| `activityDescription` | Explica qué bienes o servicios ofrece y el contexto económico relevante. |
-| `necessaryPurchases` | Describe compras/insumos que el usuario considera necesarios; aporta contexto, no elegibilidad automática. |
-| `revenueVatTreatment` | Tratamiento de IVA que el usuario declara para sus ingresos. |
-| `revenueVatTreatmentOther` condicional | Justificación breve obligatoria cuando el tratamiento es `other`. |
-| `mixedUseDescription` | Explica uso mixto personal/profesional cuando corresponda. |
-| `additionalFacts` | Hechos adicionales acotados que pueden faltar para interpretar la actividad. |
+| Campo                                  | Propósito                                                                                                  |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `displayName`                          | Nombre breve para que el usuario identifique la actividad en el visor.                                     |
+| `registeredActivityCode` opcional      | Código declarado por el usuario si dispone de uno; no se inventa ni se exige.                              |
+| `registeredActivityName`               | Nombre registrado o declarado de la actividad, separado de la etiqueta breve.                              |
+| `activityDescription`                  | Explica qué bienes o servicios ofrece y el contexto económico relevante.                                   |
+| `necessaryPurchases`                   | Describe compras/insumos que el usuario considera necesarios; aporta contexto, no elegibilidad automática. |
+| `revenueVatTreatment`                  | Tratamiento de IVA que el usuario declara para sus ingresos.                                               |
+| `revenueVatTreatmentOther` condicional | Justificación breve obligatoria cuando el tratamiento es `other`.                                          |
+| `mixedUseDescription`                  | Explica uso mixto personal/profesional cuando corresponda.                                                 |
+| `additionalFacts`                      | Hechos adicionales acotados que pueden faltar para interpretar la actividad.                               |
 
 `revenueVatTreatment` usa exactamente: `taxed_nonzero`, `zero_with_credit`, `zero_without_credit`, `mixed`, `export`, `unknown` u `other`. Solo `other` habilita y exige `revenueVatTreatmentOther`; `unknown` conserva incertidumbre y no debe convertirse en una suposición fiscal. La actividad da contexto para evaluar evidencia, pero no prueba por sí misma la relación fiscal de una factura.
 
@@ -231,10 +231,10 @@ El comportamiento actual solo cubre tabla de colección, detalle, carga, selecci
 
 La biblioteca guarda varios perfiles no secretos y uno predeterminado. Una ejecución puede elegir otro sin cambiar el predeterminado. Ejemplos: `gpu-casa`, `codex-personal`, `claude-pro`.
 
-| Tipo de perfil | Datos guardados | Acción del visor en v1 |
-| --- | --- | --- |
-| `local-endpoint` | Protocolo, URL base completa, modelo, etiqueta, referencia a secreto opcional. | Habilita “Analizar” después de comprobar endpoint y modelo. |
-| `agent-host` | Host (`codex`, `claude-code`, `opencode`), etiqueta y capacidades. | Muestra “Ver cómo iniciar” y “Copiar comando”; observa el agente mediante MCP. |
+| Tipo de perfil   | Datos guardados                                                                | Acción del visor en v1                                                         |
+| ---------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `local-endpoint` | Protocolo, URL base completa, modelo, etiqueta, referencia a secreto opcional. | Habilita “Analizar” después de comprobar endpoint y modelo.                    |
+| `agent-host`     | Host (`codex`, `claude-code`, `opencode`), etiqueta y capacidades.             | Muestra “Ver cómo iniciar” y “Copiar comando”; observa el agente mediante MCP. |
 
 El sistema no intenta descubrir ni leer tokens OAuth. Un probe declara si una CLI está disponible/autenticada y si el servidor MCP responde; otro confirma endpoint, modelo y compatibilidad local. `bill-lm doctor` lista fallos concretos y siguientes pasos. Deben existir README separados para OAuth/agentes y GPU local, incluidos prerrequisitos, instalación, autenticación, modelos compatibles y recuperación de errores.
 
@@ -282,15 +282,15 @@ Si el endpoint pide clave, el perfil guarda una referencia a variable de entorno
 
 La separación propuesta preserva el flujo cloud mientras permite que el daemon, MCP y runner GPU usen el mismo caso de uso.
 
-| Puerto de aplicación | Responsabilidad | Adaptador cloud actual/futuro | Adaptador local futuro |
-| --- | --- | --- | --- |
-| `InvoiceSource` | Localizar y leer un original autorizado. | Prisma + MinIO. | SQLite + filesystem `objects/`. |
-| `InvoiceParser` | Parsear y normalizar XML/PDF. | `parseAndValidateInvoiceXML` y transformaciones. | Mismo parser. |
-| `PromptBuilder` | Construir mensajes y versión de prompt. | `bill-prompt-builder`. | Mismo builder versionado. |
-| `LLMCompletionPort` | Resolver cliente y obtener salida. | OpenAI/Claude por conexión BYOK. | Endpoint OpenAI-compatible o agente MCP. |
-| `AnalysisValidator` | Validar schema, tipos y semántica básica. | Esquemas `bill-analysis`. | Mismo validador. |
-| `AnalysisSink` | Guardar resultado/proyección. | Prisma; transición a historial. | SQLite. |
-| `RunStore` / `ProgressSink` | Crear run, leases, estados y eventos. | BullMQ + Firestore. | SQLite + SSE o WebSocket. |
+| Puerto de aplicación        | Responsabilidad                           | Adaptador cloud actual/futuro                    | Adaptador local futuro                   |
+| --------------------------- | ----------------------------------------- | ------------------------------------------------ | ---------------------------------------- |
+| `InvoiceSource`             | Localizar y leer un original autorizado.  | Prisma + MinIO.                                  | SQLite + filesystem `objects/`.          |
+| `InvoiceParser`             | Parsear y normalizar XML/PDF.             | `parseAndValidateInvoiceXML` y transformaciones. | Mismo parser.                            |
+| `PromptBuilder`             | Construir mensajes y versión de prompt.   | `bill-prompt-builder`.                           | Mismo builder versionado.                |
+| `LLMCompletionPort`         | Resolver cliente y obtener salida.        | OpenAI/Claude por conexión BYOK.                 | Endpoint OpenAI-compatible o agente MCP. |
+| `AnalysisValidator`         | Validar schema, tipos y semántica básica. | Esquemas `bill-analysis`.                        | Mismo validador.                         |
+| `AnalysisSink`              | Guardar resultado/proyección.             | Prisma; transición a historial.                  | SQLite.                                  |
+| `RunStore` / `ProgressSink` | Crear run, leases, estados y eventos.     | BullMQ + Firestore.                              | SQLite + SSE o WebSocket.                |
 
 ### Datos normalizados, envelope y resultado V2
 
@@ -377,18 +377,18 @@ El JSONL no contiene secretos ni contenido sensible innecesario. Las exportacion
 
 ## Riesgos y pruebas necesarias
 
-| Riesgo | Control y prueba |
-| --- | --- |
-| Fuga o cruce de API keys BYOK | Pruebas de concurrencia, inspección de logs/payloads y AAD por usuario/conexión. |
-| Doble procesamiento por agentes | Leases, idempotency key, unique constraints y pruebas de carrera. |
-| Corrupción tras corte de energía | Importación atómica, journal SQLite, recuperación y backup/restore con hashes. |
-| ZIP/XML hostil o expansivo | Extracción en temporal controlado, allowlist, límites de tamaño/ratio/entradas y rechazo de traversal/enlaces. |
-| Prompt injection desde facturas | Separar instrucciones de datos, schema estricto, herramientas mínimas y fixtures maliciosos. |
-| Perfil o actividad reescribe historia | Revisiones inmutables y snapshots de perfil/actividades/colección/ruleset en cada run. |
-| IVA confundido con gasto/rebaja | Propósito singular, resultado V2 por área y tests que exigen ruleset/evidencia. |
-| Diferencias entre endpoints locales | Probe por capacidad, adaptadores separados y matriz de compatibilidad. |
-| Cambios de proveedor | Pin de versiones, pruebas de contrato y consulta de documentación actual antes de integrar. |
-| Reglas tributarias desactualizadas | Ruleset con fuente, versión y vigencia; revisión humana/legal antes de presentar una conclusión fiscal. |
+| Riesgo                                | Control y prueba                                                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Fuga o cruce de API keys BYOK         | Pruebas de concurrencia, inspección de logs/payloads y AAD por usuario/conexión.                               |
+| Doble procesamiento por agentes       | Leases, idempotency key, unique constraints y pruebas de carrera.                                              |
+| Corrupción tras corte de energía      | Importación atómica, journal SQLite, recuperación y backup/restore con hashes.                                 |
+| ZIP/XML hostil o expansivo            | Extracción en temporal controlado, allowlist, límites de tamaño/ratio/entradas y rechazo de traversal/enlaces. |
+| Prompt injection desde facturas       | Separar instrucciones de datos, schema estricto, herramientas mínimas y fixtures maliciosos.                   |
+| Perfil o actividad reescribe historia | Revisiones inmutables y snapshots de perfil/actividades/colección/ruleset en cada run.                         |
+| IVA confundido con gasto/rebaja       | Propósito singular, resultado V2 por área y tests que exigen ruleset/evidencia.                                |
+| Diferencias entre endpoints locales   | Probe por capacidad, adaptadores separados y matriz de compatibilidad.                                         |
+| Cambios de proveedor                  | Pin de versiones, pruebas de contrato y consulta de documentación actual antes de integrar.                    |
+| Reglas tributarias desactualizadas    | Ruleset con fuente, versión y vigencia; revisión humana/legal antes de presentar una conclusión fiscal.        |
 
 ## Próxima iteración: arquitectura de prompt y operación de rulesets SRI
 

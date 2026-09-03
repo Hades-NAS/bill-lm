@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-
 import { describe, expect, it } from 'vitest'
 
 const workflowPath = fileURLToPath(
@@ -28,5 +27,14 @@ describe('deploy workflow', () => {
     expect(workflow).toContain('run: bash health.sh')
     expect(workflow).toContain('needs: [quality, validate-health, build]')
     expect(workflow).toContain('QUALITY_RESULT: ${{ needs.quality.result }}')
+  })
+
+  it('no pasa API keys de proveedores a builds ni imágenes', () => {
+    const workflow = readFileSync(workflowPath, 'utf8')
+
+    expect(workflow).not.toContain('OPENAI_API_KEY')
+    expect(workflow).not.toContain('CLAUDE_API_KEY')
+    expect(workflow).not.toContain('--build-arg DATABASE_URL')
+    expect(workflow).toContain('BYOK_ENCRYPTION_KEY=${{ secrets.BYOK_ENCRYPTION_KEY }}')
   })
 })
