@@ -54,6 +54,7 @@ jobs:
       - name: Run quality gate
         env:
           PLAYWRIGHT_PORT: '3100'
+          GOOGLE_APPLICATION_CREDENTIALS: /home/cardor/secrets/bill-lm/bill-lm-firebase.json
         run: bash health.sh
 
   build:
@@ -201,7 +202,7 @@ jobs:
             -e MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
             -e REDIS_HOST=${{ env.REDIS_HOST }} \
             -e MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
-            -e GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
+            -e GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/bill-lm-service-account.json \
             -e FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             -e FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
             -e VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
@@ -255,7 +256,7 @@ jobs:
             -e MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }} \
             -e REDIS_HOST=${{ env.REDIS_HOST }} \
             -e MINIO_BUCKET_NAME=${{ env.MINIO_BUCKET_NAME }} \
-            -e GOOGLE_APPLICATION_CREDENTIALS=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} \
+            -e GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/bill-lm-service-account.json \
             -e FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             -e FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
             -e VITE_FIREBASE_API_KEY=${{ env.VITE_FIREBASE_API_KEY }} \
