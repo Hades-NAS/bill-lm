@@ -32,6 +32,23 @@ env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 jobs:
+  quality:
+    name: Quality Gate
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.5'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run quality gate
+        run: bash health.sh
+
   build:
     name: Build Docker Images
     runs-on: self-hosted
@@ -275,7 +292,7 @@ jobs:
 
   push-to-registry:
     name: Push Docker Images to Registry
-    needs: [validate-health, build]
+    needs: [quality, validate-health, build]
     runs-on: self-hosted
 
     steps:
@@ -367,14 +384,15 @@ jobs:
 
   notify-deployment-failure:
     name: Notify Deployment Failure
-    needs: [build, validate-health, push-to-registry]
-    if: ${{ always() && (needs.build.result == 'failure' || needs.validate-health.result == 'failure' || needs.push-to-registry.result == 'failure') }}
+    needs: [quality, build, validate-health, push-to-registry]
+    if: ${{ always() && (needs.quality.result == 'failure' || needs.build.result == 'failure' || needs.validate-health.result == 'failure' || needs.push-to-registry.result == 'failure') }}
     runs-on: self-hosted
 
     steps:
       - name: Send optional Discord failure alert
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          QUALITY_RESULT: ${{ needs.quality.result }}
           BUILD_RESULT: ${{ needs.build.result }}
           VALIDATE_HEALTH_RESULT: ${{ needs.validate-health.result }}
           PUSH_TO_REGISTRY_RESULT: ${{ needs.push-to-registry.result }}
@@ -384,6 +402,7 @@ jobs:
             && command -v jq >/dev/null 2>&1 \
             && command -v curl >/dev/null 2>&1; then
             payload="$(jq -n \
+              --arg quality "$QUALITY_RESULT" \
               --arg build "$BUILD_RESULT" \
               --arg validateHealth "$VALIDATE_HEALTH_RESULT" \
               --arg pushToRegistry "$PUSH_TO_REGISTRY_RESULT" \
@@ -394,6 +413,7 @@ jobs:
                   url: $runUrl,
                   color: 15158332,
                   fields: [
+                    { name: "Quality", value: $quality },
                     { name: "Build", value: $build },
                     { name: "Validate health", value: $validateHealth },
                     { name: "Push to registry", value: $pushToRegistry }
@@ -414,8 +434,8 @@ jobs:
 
   notify-deployment-success:
     name: Notify Deployment Success
-    needs: [build, push-to-registry]
-    if: ${{ needs.build.result == 'success' && needs.push-to-registry.result == 'success' }}
+    needs: [quality, build, push-to-registry]
+    if: ${{ needs.quality.result == 'success' && needs.build.result == 'success' && needs.push-to-registry.result == 'success' }}
     runs-on: self-hosted
 
     steps:

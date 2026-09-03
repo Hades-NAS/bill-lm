@@ -17,4 +17,13 @@ describe('deploy workflow', () => {
     expect(workflow).toContain('allowed_mentions: { parse: [] }')
     expect(workflow).toContain('>> "$GITHUB_STEP_SUMMARY"')
   })
+
+  it('ejecuta calidad y construcción en paralelo antes de publicar imágenes', () => {
+    const workflow = readFileSync(workflowPath, 'utf8')
+
+    expect(workflow).toContain('  quality:')
+    expect(workflow).toContain('run: bash health.sh')
+    expect(workflow).toContain('needs: [quality, validate-health, build]')
+    expect(workflow).toContain('QUALITY_RESULT: ${{ needs.quality.result }}')
+  })
 })
