@@ -295,6 +295,26 @@ export const collectionsRouter = {
         orderBy: { revision: 'desc' },
       })
     }),
+  listAnalysisRuns: privateProcedure
+    .input(GetCollectionByIdRequestSchema)
+    .query(async ({ input, ctx }) => {
+      const collection = await prisma.collection.findFirst({
+        where: { id: input.id, userId: ctx.principal.userId },
+        select: { id: true },
+      })
+      if (!collection)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Colección no encontrada.' })
+      return prisma.analysisRun.findMany({
+        where: { collectionId: collection.id, userId: ctx.principal.userId },
+        select: {
+          id: true, status: true, blockCode: true, blockMessage: true,
+          provider: true, modelId: true, promptVersion: true, createdAt: true,
+          completedAt: true,
+          results: { select: { billId: true, purpose: true, classification: true, resultSnapshot: true, createdAt: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+    }),
   createContextRevision: privateProcedure
     .input(CollectionContextInputSchema)
     .mutation(async ({ input, ctx }) => {

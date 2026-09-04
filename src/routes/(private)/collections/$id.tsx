@@ -134,6 +134,9 @@ function CollectionDetailPage() {
   const contextRevisionsQuery = useQuery(
     trpc.collections.listContextRevisions.queryOptions({ id: collectionId }),
   )
+  const analysisRunsQuery = useQuery(
+    trpc.collections.listAnalysisRuns.queryOptions({ id: collectionId }),
+  )
   const createContextRevision = useMutation(
     trpc.collections.createContextRevision.mutationOptions({
       onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.collections.listContextRevisions.queryKey({ id: collectionId }) }),
@@ -590,6 +593,13 @@ function CollectionDetailPage() {
               </Card>
 
               <Box>
+                <Card withBorder mb="md" padding="md" radius="md">
+                  <Group justify="space-between" mb="sm">
+                    <Title order={2}>Historial de análisis</Title>
+                    <Badge variant="light">{analysisRunsQuery.data?.length ?? 0} runs</Badge>
+                  </Group>
+                  {analysisRunsQuery.isPending ? <Skeleton height={54} /> : analysisRunsQuery.data?.length ? <Stack gap="xs">{analysisRunsQuery.data.slice(0, 5).map((run) => <Box key={run.id} p="xs" style={{ borderBottom: '1px solid var(--mantine-color-default-border)' }}><Group justify="space-between"><Text fw={600}>{run.status === 'blocked' ? 'Bloqueado' : `Run ${run.status}`}</Text><Text c="dimmed" size="sm">{run.createdAt.toLocaleString('es-EC')}</Text></Group>{run.blockMessage && <Text c="red" size="sm">{run.blockMessage}</Text>}<Text c="dimmed" size="sm">{run.results.length} resultados · {run.provider ?? 'sin proveedor'} {run.modelId ?? ''}</Text></Box>)}</Stack> : <Text c="dimmed" size="sm">Aún no hay ejecuciones. Los bloqueos y resultados aparecerán aquí.</Text>}
+                </Card>
                 <Card withBorder padding="md" radius="md" shadow="sm">
                   <Flex
                     align="flex-start"
