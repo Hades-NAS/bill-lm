@@ -1,6 +1,6 @@
 import { ActionIcon, Divider, Menu, Tooltip } from '@mantine/core'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
-import { LibraryBig, LogOutIcon, Settings, Telescope, User } from 'lucide-react'
+import { BriefcaseBusiness, LibraryBig, LogOutIcon, Settings, Telescope, User } from 'lucide-react'
 
 import { signOutFromFirebase } from '#/integrations/firebase/auth'
 
@@ -47,6 +47,13 @@ const NavbarUserIcon = () => {
           Trabajos
         </Menu.Item>
         <Menu.Label>Cuenta</Menu.Label>
+        <Menu.Item
+          fw={pathname === '/profiles' ? 700 : undefined}
+          leftSection={<BriefcaseBusiness size={18} />}
+          onClick={() => navigate({ to: '/profiles' })}
+        >
+          Perfiles y actividades
+        </Menu.Item>
         <Menu.Item
           fw={pathname === '/user' ? 700 : undefined}
           leftSection={<Settings size={18} />}

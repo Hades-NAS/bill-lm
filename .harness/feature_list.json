@@ -109,7 +109,7 @@
     "description": "Crear contratos Zod versionados para actividad económica, revisión de perfil, propósito de colección, periodos civiles, bloqueo, AnalysisRun y AnalysisResult. No incluye rulesets oficiales.",
     "acceptance": [
       "Los propósitos ejecutables son vat_credit, business_income_tax y personal_expenses; other no es ejecutable.",
-      "Actividades, perfil, colección, referencia fiscal, factura, parser, prompt y resultado tienen contratos/versiones explícitos.",
+      "Actividades, perfil, colección, factura, parser, prompt y resultado tienen contratos/versiones explícitos.",
       "Los bloqueos tienen códigos estables y mensajes accionables.",
       "No se reemplaza todavía la proyección legacy percentage/reason."
     ],
@@ -171,25 +171,25 @@
     "id": "F2-06",
     "title": "Persistir runs y resultados históricos con snapshots",
     "status": "pending",
-    "description": "Crear AnalysisRun y AnalysisResult inmutables e idempotentes; fijar hashes/identificadores de contexto, incluyendo referencias autogestionadas en el momento de encolar.",
+    "description": "Crear AnalysisRun y AnalysisResult inmutables e idempotentes; fijar hashes/identificadores de contexto, perfil, actividades, factura, parser, prompt y proveedor. El modelado de referencias SRI y archivos queda fuera de alcance.",
     "acceptance": [
       "Una misma solicitud con mismos inputs y snapshots reutiliza el mismo run; un cambio de contexto crea otro.",
       "Cada resultado se persiste por run y factura, incluyendo éxito, fallo o bloqueo estructurado.",
-      "El run fija IDs/hashes de perfil, actividades, colección, referencias, factura, parser, prompt, proveedor/modelo y conexión opaca.",
-      "Eliminar o cambiar una referencia después de encolar no cambia el contexto de un run existente.",
+      "El run fija IDs/hashes de perfil, actividades, colección, factura, parser, prompt, proveedor/modelo y conexión opaca.",
+      "Cambiar perfil, actividad o contexto después de encolar no altera un run existente.",
       "BillHeader.percentage/reason se conserva como proyección compatible solo tras resultado exitoso."
     ],
     "dependsOn": ["F2-01", "F2-04", "F2-05"]
   },
   {
     "id": "F2-07",
-    "title": "Aplicar gate autogestionado antes de cola y en worker",
+    "title": "Aplicar gate de contexto antes de cola y en worker",
     "status": "pending",
-    "description": "Reemplazar el gate mínimo actual por uno versionado que exige propósito, periodo, perfil/actividad y al menos una referencia autogestionada snapshot; no incluye ruleset oficial.",
+    "description": "Reemplazar el gate mínimo actual por uno versionado que exige conexión activa, propósito, periodo y perfil/actividad; no incluye rulesets, referencias SRI ni archivos aportados por usuario.",
     "acceptance": [
       "Si falta contexto, se persiste AnalysisRun BLOCKED con código accionable y no se llama a BullMQ ni al LLM.",
       "El worker vuelve a validar propiedad, estado y snapshots antes de invocar al proveedor.",
-      "BullMQ, Firestore y logs no reciben texto de referencias ni secretos.",
+      "BullMQ, Firestore y logs no reciben secretos ni datos personales innecesarios.",
       "No existe bypass desde frontend."
     ],
     "dependsOn": ["F2-06"]
@@ -203,7 +203,7 @@
       "El resultado distingue aplicabilidad, evaluación, evidencia, incertidumbre y porcentaje aplicable cuando corresponde.",
       "Cada run llena solo el brazo de su propósito; no rellena áreas no aplicables.",
       "Fallos, bloqueos y needs_review no pisan la proyección legacy.",
-      "Las referencias autogestionadas se nombran como contexto aportado por usuario, no normativa oficial."
+      "El resultado declara sus incertidumbres y no se presenta como conclusión oficial del SRI."
     ],
     "dependsOn": ["F2-06", "F2-07"]
   },
@@ -211,11 +211,11 @@
     "id": "F2-09",
     "title": "Exponer historial de análisis y contexto fijado",
     "status": "pending",
-    "description": "Añadir tRPC/UI protegida para listar runs de colección, ver resultados por factura, bloqueos y referencias/versiones usadas sin exponer archivos ni secretos.",
+    "description": "Añadir tRPC/UI protegida para listar runs de colección, ver resultados por factura, bloqueos y versiones de contexto sin exponer datos sensibles ni secretos.",
     "acceptance": [
       "Un usuario solo ve historial de sus colecciones y facturas.",
       "La UI distingue resultado actual, histórico, fallo y bloqueo con causa accionable.",
-      "Se muestran nombres/huellas de referencias y versiones de contexto, nunca su contenido secreto ni API keys.",
+      "Se muestran versiones de contexto y proveedor/modelo, nunca datos sensibles ni API keys.",
       "La pantalla legacy de facturas continúa mostrando percentage/reason durante la transición."
     ],
     "dependsOn": ["F2-08", "UI-05", "UI-06"]
@@ -226,8 +226,8 @@
     "status": "pending",
     "description": "Cubrir contratos, ownership, idempotencia, snapshots, gates, resultados parciales y compatibilidad; preparar rollout/rollback sin aplicar migraciones fuera del flujo autorizado.",
     "acceptance": [
-      "Pruebas verifican que cambios posteriores de actividad/referencia no alteran un run histórico.",
-      "Pruebas verifican gate doble antes de cola y antes de LLM, y ausencia de secretos/texto fuente en cola/logs.",
+      "Pruebas verifican que cambios posteriores de actividad o contexto no alteran un run histórico.",
+      "Pruebas verifican gate doble antes de cola y antes de LLM, y ausencia de secretos en cola/logs.",
       "Migraciones se aplican con db:deploy sobre entorno autorizado, con status previo y plan de rollback aditivo.",
       "Health, pruebas focalizadas y evidencia manual autenticada pasan antes de cerrar."
     ],

@@ -25,8 +25,116 @@ model User {
   authIdentities AuthIdentity[]
   providerConnections ProviderConnection[]
   fiscalReferences FiscalReference[]
+  economicActivities EconomicActivity[]
+  economicActivityRevisions EconomicActivityRevision[]
+  taxpayerProfiles TaxpayerProfile[]
+  taxpayerProfileRevisions TaxpayerProfileRevision[]
+  taxpayerProfileActivityRevisions TaxpayerProfileActivityRevision[]
 
   @@map("users")
+}
+
+/// Actividad económica reutilizable y definida por el usuario. No representa
+/// un catálogo oficial ni permite inferir hechos tributarios.
+model EconomicActivity {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  revisions EconomicActivityRevision[]
+
+  @@unique([id, userId], name: "economic_activity_id_user_key")
+  @@index([userId, deletedAt], name: "economic_activity_user_deleted_idx")
+  @@map("economic_activities")
+}
+
+/// Cada edición de una actividad crea una revisión inmutable.
+model EconomicActivityRevision {
+  id String @id @default(uuid())
+  activityId String
+  userId String
+  activity EconomicActivity @relation(fields: [activityId, userId], references: [id, userId], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  revision Int
+  displayName String @db.VarChar(120)
+  registeredActivityCode String? @db.VarChar(100)
+  registeredActivityName String @db.VarChar(500)
+  activityDescription String @db.Text
+  necessaryPurchases String? @db.Text
+  revenueVatTreatment String @db.VarChar(50)
+  revenueVatTreatmentOther String? @db.Text
+  mixedUseDescription String? @db.Text
+  additionalFacts String? @db.Text
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  profileActivityRevisions TaxpayerProfileActivityRevision[]
+
+  @@unique([activityId, revision], name: "economic_activity_revision_number_key")
+  @@unique([id, userId], name: "economic_activity_revision_id_user_key")
+  @@index([userId, activityId], name: "economic_activity_revision_user_activity_idx")
+  @@map("economic_activity_revisions")
+}
+
+/// Perfil aportado por el usuario, independiente de fuentes normativas.
+model TaxpayerProfile {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  revisions TaxpayerProfileRevision[]
+
+  @@unique([id, userId], name: "taxpayer_profile_id_user_key")
+  @@index([userId, deletedAt], name: "taxpayer_profile_user_deleted_idx")
+  @@map("taxpayer_profiles")
+}
+
+model TaxpayerProfileRevision {
+  id String @id @default(uuid())
+  taxpayerProfileId String
+  userId String
+  taxpayerProfile TaxpayerProfile @relation(fields: [taxpayerProfileId, userId], references: [id, userId], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  revision Int
+  displayName String @db.VarChar(120)
+  personalIdNumber String? @db.VarChar(10)
+  professionalIdNumber String? @db.VarChar(13)
+  additionalFacts String? @db.Text
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  activities TaxpayerProfileActivityRevision[]
+
+  @@unique([taxpayerProfileId, revision], name: "taxpayer_profile_revision_number_key")
+  @@unique([id, userId], name: "taxpayer_profile_revision_id_user_key")
+  @@index([userId, taxpayerProfileId], name: "taxpayer_profile_revision_user_profile_idx")
+  @@map("taxpayer_profile_revisions")
+}
+
+/// Fija las revisiones de actividad usadas por una revisión de perfil y exige
+/// que todos los registros pertenezcan al mismo usuario mediante FKs compuestas.
+model TaxpayerProfileActivityRevision {
+  id String @id @default(uuid())
+  userId String
+  taxpayerProfileRevisionId String
+  economicActivityRevisionId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  taxpayerProfileRevision TaxpayerProfileRevision @relation(fields: [taxpayerProfileRevisionId, userId], references: [id, userId], onDelete: Restrict)
+  economicActivityRevision EconomicActivityRevision @relation(fields: [economicActivityRevisionId, userId], references: [id, userId], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  @@unique([taxpayerProfileRevisionId, economicActivityRevisionId], name: "taxpayer_profile_activity_revision_unique")
+  @@index([userId, taxpayerProfileRevisionId], name: "taxpayer_profile_activity_user_profile_idx")
+  @@map("taxpayer_profile_activity_revisions")
 }
 
 enum FiscalReferenceSourceType {
