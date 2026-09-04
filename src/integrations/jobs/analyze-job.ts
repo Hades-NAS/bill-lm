@@ -101,6 +101,29 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       fiscalReferences,
     )
 
+    const runContext = await prisma.collectionContextRevision.findFirst({
+      where: { id: run.collectionContextRevisionId, userId },
+    })
+    if (!runContext) throw new Error('The analysis context is no longer valid')
+    await prisma.analysisResult.createMany({
+      data: results.map((result) => ({
+        runId: run.id,
+        billId: result.billId,
+        purpose: runContext.purpose,
+        classification: result.success ? 'needs_review' : 'ineligible',
+        resultSnapshot: {
+          schemaVersion: 'v2',
+          runId: run.id,
+          invoiceId: result.billId,
+          purpose: runContext.purpose,
+          classification: result.success ? 'needs_review' : 'ineligible',
+          reasoning: result.success ? (result.analysis?.reason ?? '') : (result.error ?? 'Error de análisis'),
+          uncertainties: result.success ? ['Resultado legacy pendiente de adaptación por propósito.'] : [result.error ?? 'Error de análisis'],
+        },
+      })),
+      skipDuplicates: true,
+    })
+
     const successCount = results.filter((r) => r.success).length
     const failureCount = results.length - successCount
 
