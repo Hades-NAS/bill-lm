@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1",
+  "jurisdiction": "EC",
+  "issuer": "Servicio de Rentas Internas",
+  "sourceIds": [
+    "ec-sri-lrti",
+    "ec-sri-rlrti",
+    "ec-sri-ir-natural-person-guide",
+    "ec-sri-ir-rimpe-guide",
+    "ec-sri-vat-form-guide"
+  ],
+  "activeRulesets": []
+}
