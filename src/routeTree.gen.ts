@@ -17,6 +17,7 @@ import { Route as publicSignInRouteImport } from './routes/(public)/sign-in'
 import { Route as publicForgotPasswordRouteImport } from './routes/(public)/forgot-password'
 import { Route as privateUserRouteImport } from './routes/(private)/user'
 import { Route as privateProfilesRouteImport } from './routes/(private)/profiles'
+import { Route as privateAccountRouteImport } from './routes/(private)/account'
 import { Route as privateJobsIndexRouteImport } from './routes/(private)/jobs/index'
 import { Route as privateCollectionsIndexRouteImport } from './routes/(private)/collections/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
@@ -60,6 +61,11 @@ const privateProfilesRoute = privateProfilesRouteImport.update({
   path: '/profiles',
   getParentRoute: () => privateRouteRoute,
 } as any)
+const privateAccountRoute = privateAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => privateRouteRoute,
+} as any)
 const privateJobsIndexRoute = privateJobsIndexRouteImport.update({
   id: '/jobs/',
   path: '/jobs/',
@@ -82,6 +88,7 @@ const privateCollectionsIdRoute = privateCollectionsIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/account': typeof privateAccountRoute
   '/profiles': typeof privateProfilesRoute
   '/user': typeof privateUserRoute
   '/forgot-password': typeof publicForgotPasswordRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/jobs/': typeof privateJobsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/account': typeof privateAccountRoute
   '/profiles': typeof privateProfilesRoute
   '/user': typeof privateUserRoute
   '/forgot-password': typeof publicForgotPasswordRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(private)': typeof privateRouteRouteWithChildren
   '/(public)': typeof publicRouteRouteWithChildren
+  '/(private)/account': typeof privateAccountRoute
   '/(private)/profiles': typeof privateProfilesRoute
   '/(private)/user': typeof privateUserRoute
   '/(public)/forgot-password': typeof publicForgotPasswordRoute
@@ -123,6 +132,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/account'
     | '/profiles'
     | '/user'
     | '/forgot-password'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/account'
     | '/profiles'
     | '/user'
     | '/forgot-password'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/(private)'
     | '/(public)'
+    | '/(private)/account'
     | '/(private)/profiles'
     | '/(private)/user'
     | '/(public)/forgot-password'
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof privateProfilesRouteImport
       parentRoute: typeof privateRouteRoute
     }
+    '/(private)/account': {
+      id: '/(private)/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof privateAccountRouteImport
+      parentRoute: typeof privateRouteRoute
+    }
     '/(private)/jobs/': {
       id: '/(private)/jobs/'
       path: '/jobs'
@@ -257,6 +276,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface privateRouteRouteChildren {
+  privateAccountRoute: typeof privateAccountRoute
   privateProfilesRoute: typeof privateProfilesRoute
   privateUserRoute: typeof privateUserRoute
   privateCollectionsIdRoute: typeof privateCollectionsIdRoute
@@ -265,6 +285,7 @@ interface privateRouteRouteChildren {
 }
 
 const privateRouteRouteChildren: privateRouteRouteChildren = {
+  privateAccountRoute: privateAccountRoute,
   privateProfilesRoute: privateProfilesRoute,
   privateUserRoute: privateUserRoute,
   privateCollectionsIdRoute: privateCollectionsIdRoute,
