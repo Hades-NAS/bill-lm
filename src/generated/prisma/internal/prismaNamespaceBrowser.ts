@@ -65,6 +65,10 @@ export const ModelName = {
   Collection: 'Collection',
   BillHeader: 'BillHeader',
   CollectionBillMembership: 'CollectionBillMembership',
+  TaxRuleSource: 'TaxRuleSource',
+  TaxRuleSet: 'TaxRuleSet',
+  TaxRuleFragment: 'TaxRuleFragment',
+  TaxRuleSetFragment: 'TaxRuleSetFragment',
   BillDetail: 'BillDetail'
 } as const
 
@@ -300,6 +304,66 @@ export const CollectionBillMembershipScalarFieldEnum = {
 } as const
 
 export type CollectionBillMembershipScalarFieldEnum = (typeof CollectionBillMembershipScalarFieldEnum)[keyof typeof CollectionBillMembershipScalarFieldEnum]
+
+
+export const TaxRuleSourceScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  issuer: 'issuer',
+  officialUrl: 'officialUrl',
+  jurisdiction: 'jurisdiction',
+  originalStoragePath: 'originalStoragePath',
+  derivedMarkdownPath: 'derivedMarkdownPath',
+  contentHash: 'contentHash',
+  reviewStatus: 'reviewStatus',
+  reviewedBy: 'reviewedBy',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type TaxRuleSourceScalarFieldEnum = (typeof TaxRuleSourceScalarFieldEnum)[keyof typeof TaxRuleSourceScalarFieldEnum]
+
+
+export const TaxRuleSetScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  purpose: 'purpose',
+  taxRegime: 'taxRegime',
+  vatFilingFrequency: 'vatFilingFrequency',
+  effectiveFrom: 'effectiveFrom',
+  effectiveTo: 'effectiveTo',
+  contentHash: 'contentHash',
+  reviewStatus: 'reviewStatus',
+  reviewedBy: 'reviewedBy',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type TaxRuleSetScalarFieldEnum = (typeof TaxRuleSetScalarFieldEnum)[keyof typeof TaxRuleSetScalarFieldEnum]
+
+
+export const TaxRuleFragmentScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  articleOrSection: 'articleOrSection',
+  contentHash: 'contentHash',
+  contentMarkdown: 'contentMarkdown',
+  purposes: 'purposes',
+  taxRegimes: 'taxRegimes',
+  effectiveFrom: 'effectiveFrom',
+  effectiveTo: 'effectiveTo'
+} as const
+
+export type TaxRuleFragmentScalarFieldEnum = (typeof TaxRuleFragmentScalarFieldEnum)[keyof typeof TaxRuleFragmentScalarFieldEnum]
+
+
+export const TaxRuleSetFragmentScalarFieldEnum = {
+  id: 'id',
+  ruleSetId: 'ruleSetId',
+  fragmentId: 'fragmentId'
+} as const
+
+export type TaxRuleSetFragmentScalarFieldEnum = (typeof TaxRuleSetFragmentScalarFieldEnum)[keyof typeof TaxRuleSetFragmentScalarFieldEnum]
 
 
 export const BillDetailScalarFieldEnum = {

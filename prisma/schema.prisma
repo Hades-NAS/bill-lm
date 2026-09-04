@@ -366,6 +366,67 @@ model CollectionBillMembership {
   @@map("collection_bill_memberships")
 }
 
+model TaxRuleSource {
+  id String @id @default(uuid())
+  title String @db.VarChar(500)
+  issuer String @db.VarChar(255)
+  officialUrl String @db.VarChar(1000)
+  jurisdiction String @db.VarChar(100)
+  originalStoragePath String @db.VarChar(500)
+  derivedMarkdownPath String? @db.VarChar(500)
+  contentHash String @db.VarChar(64)
+  reviewStatus String @default("draft") @db.VarChar(20)
+  reviewedBy String? @db.VarChar(255)
+  reviewedAt DateTime? @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  fragments TaxRuleFragment[]
+  @@map("tax_rule_sources")
+}
+
+model TaxRuleSet {
+  id String @id @default(uuid())
+  version Int
+  purpose String @db.VarChar(50)
+  taxRegime String @db.VarChar(50)
+  vatFilingFrequency String @db.VarChar(20)
+  effectiveFrom DateTime @db.Date
+  effectiveTo DateTime? @db.Date
+  contentHash String @db.VarChar(64)
+  reviewStatus String @default("draft") @db.VarChar(20)
+  reviewedBy String? @db.VarChar(255)
+  reviewedAt DateTime? @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  fragments TaxRuleSetFragment[]
+  @@unique([purpose, taxRegime, vatFilingFrequency, effectiveFrom, version], name: "tax_ruleset_version_key")
+  @@index([purpose, taxRegime, vatFilingFrequency, reviewStatus], name: "tax_ruleset_selector_idx")
+  @@map("tax_rule_sets")
+}
+
+model TaxRuleFragment {
+  id String @id @default(uuid())
+  sourceId String
+  articleOrSection String @db.VarChar(255)
+  contentHash String @db.VarChar(64)
+  contentMarkdown String @db.Text
+  purposes String[]
+  taxRegimes String[]
+  effectiveFrom DateTime @db.Date
+  effectiveTo DateTime? @db.Date
+  source TaxRuleSource @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  ruleSets TaxRuleSetFragment[]
+  @@map("tax_rule_fragments")
+}
+
+model TaxRuleSetFragment {
+  id String @id @default(uuid())
+  ruleSetId String
+  fragmentId String
+  ruleSet TaxRuleSet @relation(fields: [ruleSetId], references: [id], onDelete: Cascade)
+  fragment TaxRuleFragment @relation(fields: [fragmentId], references: [id], onDelete: Restrict)
+  @@unique([ruleSetId, fragmentId], name: "tax_ruleset_fragment_unique")
+  @@map("tax_rule_set_fragments")
+}
+
 model BillDetail {
   id          String @id @default(uuid())
   description String @db.VarChar(255)

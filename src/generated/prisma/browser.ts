@@ -91,6 +91,26 @@ export type BillHeader = Prisma.BillHeaderModel
  */
 export type CollectionBillMembership = Prisma.CollectionBillMembershipModel
 /**
+ * Model TaxRuleSource
+ * 
+ */
+export type TaxRuleSource = Prisma.TaxRuleSourceModel
+/**
+ * Model TaxRuleSet
+ * 
+ */
+export type TaxRuleSet = Prisma.TaxRuleSetModel
+/**
+ * Model TaxRuleFragment
+ * 
+ */
+export type TaxRuleFragment = Prisma.TaxRuleFragmentModel
+/**
+ * Model TaxRuleSetFragment
+ * 
+ */
+export type TaxRuleSetFragment = Prisma.TaxRuleSetFragmentModel
+/**
  * Model BillDetail
  * 
  */

@@ -398,6 +398,10 @@ export const ModelName = {
   Collection: 'Collection',
   BillHeader: 'BillHeader',
   CollectionBillMembership: 'CollectionBillMembership',
+  TaxRuleSource: 'TaxRuleSource',
+  TaxRuleSet: 'TaxRuleSet',
+  TaxRuleFragment: 'TaxRuleFragment',
+  TaxRuleSetFragment: 'TaxRuleSetFragment',
   BillDetail: 'BillDetail'
 } as const
 
@@ -414,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "collectionContextRevision" | "collectionContextActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "collectionBillMembership" | "billDetail"
+    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "collectionContextRevision" | "collectionContextActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "collectionBillMembership" | "taxRuleSource" | "taxRuleSet" | "taxRuleFragment" | "taxRuleSetFragment" | "billDetail"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1454,6 +1458,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TaxRuleSource: {
+      payload: Prisma.$TaxRuleSourcePayload<ExtArgs>
+      fields: Prisma.TaxRuleSourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TaxRuleSourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TaxRuleSourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>
+        }
+        findFirst: {
+          args: Prisma.TaxRuleSourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TaxRuleSourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>
+        }
+        findMany: {
+          args: Prisma.TaxRuleSourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>[]
+        }
+        create: {
+          args: Prisma.TaxRuleSourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>
+        }
+        createMany: {
+          args: Prisma.TaxRuleSourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TaxRuleSourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>[]
+        }
+        delete: {
+          args: Prisma.TaxRuleSourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>
+        }
+        update: {
+          args: Prisma.TaxRuleSourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.TaxRuleSourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TaxRuleSourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TaxRuleSourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>[]
+        }
+        upsert: {
+          args: Prisma.TaxRuleSourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSourcePayload>
+        }
+        aggregate: {
+          args: Prisma.TaxRuleSourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTaxRuleSource>
+        }
+        groupBy: {
+          args: Prisma.TaxRuleSourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleSourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TaxRuleSourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleSourceCountAggregateOutputType> | number
+        }
+      }
+    }
+    TaxRuleSet: {
+      payload: Prisma.$TaxRuleSetPayload<ExtArgs>
+      fields: Prisma.TaxRuleSetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TaxRuleSetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TaxRuleSetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>
+        }
+        findFirst: {
+          args: Prisma.TaxRuleSetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TaxRuleSetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>
+        }
+        findMany: {
+          args: Prisma.TaxRuleSetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>[]
+        }
+        create: {
+          args: Prisma.TaxRuleSetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>
+        }
+        createMany: {
+          args: Prisma.TaxRuleSetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TaxRuleSetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>[]
+        }
+        delete: {
+          args: Prisma.TaxRuleSetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>
+        }
+        update: {
+          args: Prisma.TaxRuleSetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>
+        }
+        deleteMany: {
+          args: Prisma.TaxRuleSetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TaxRuleSetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TaxRuleSetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>[]
+        }
+        upsert: {
+          args: Prisma.TaxRuleSetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetPayload>
+        }
+        aggregate: {
+          args: Prisma.TaxRuleSetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTaxRuleSet>
+        }
+        groupBy: {
+          args: Prisma.TaxRuleSetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleSetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TaxRuleSetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleSetCountAggregateOutputType> | number
+        }
+      }
+    }
+    TaxRuleFragment: {
+      payload: Prisma.$TaxRuleFragmentPayload<ExtArgs>
+      fields: Prisma.TaxRuleFragmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TaxRuleFragmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TaxRuleFragmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>
+        }
+        findFirst: {
+          args: Prisma.TaxRuleFragmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TaxRuleFragmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>
+        }
+        findMany: {
+          args: Prisma.TaxRuleFragmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>[]
+        }
+        create: {
+          args: Prisma.TaxRuleFragmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>
+        }
+        createMany: {
+          args: Prisma.TaxRuleFragmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TaxRuleFragmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>[]
+        }
+        delete: {
+          args: Prisma.TaxRuleFragmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>
+        }
+        update: {
+          args: Prisma.TaxRuleFragmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.TaxRuleFragmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TaxRuleFragmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TaxRuleFragmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.TaxRuleFragmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleFragmentPayload>
+        }
+        aggregate: {
+          args: Prisma.TaxRuleFragmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTaxRuleFragment>
+        }
+        groupBy: {
+          args: Prisma.TaxRuleFragmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleFragmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TaxRuleFragmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleFragmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    TaxRuleSetFragment: {
+      payload: Prisma.$TaxRuleSetFragmentPayload<ExtArgs>
+      fields: Prisma.TaxRuleSetFragmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TaxRuleSetFragmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TaxRuleSetFragmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>
+        }
+        findFirst: {
+          args: Prisma.TaxRuleSetFragmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TaxRuleSetFragmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>
+        }
+        findMany: {
+          args: Prisma.TaxRuleSetFragmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>[]
+        }
+        create: {
+          args: Prisma.TaxRuleSetFragmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>
+        }
+        createMany: {
+          args: Prisma.TaxRuleSetFragmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TaxRuleSetFragmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>[]
+        }
+        delete: {
+          args: Prisma.TaxRuleSetFragmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>
+        }
+        update: {
+          args: Prisma.TaxRuleSetFragmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.TaxRuleSetFragmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TaxRuleSetFragmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TaxRuleSetFragmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.TaxRuleSetFragmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TaxRuleSetFragmentPayload>
+        }
+        aggregate: {
+          args: Prisma.TaxRuleSetFragmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTaxRuleSetFragment>
+        }
+        groupBy: {
+          args: Prisma.TaxRuleSetFragmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleSetFragmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TaxRuleSetFragmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TaxRuleSetFragmentCountAggregateOutputType> | number
+        }
+      }
+    }
     BillDetail: {
       payload: Prisma.$BillDetailPayload<ExtArgs>
       fields: Prisma.BillDetailFieldRefs
@@ -1785,6 +2085,66 @@ export const CollectionBillMembershipScalarFieldEnum = {
 export type CollectionBillMembershipScalarFieldEnum = (typeof CollectionBillMembershipScalarFieldEnum)[keyof typeof CollectionBillMembershipScalarFieldEnum]
 
 
+export const TaxRuleSourceScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  issuer: 'issuer',
+  officialUrl: 'officialUrl',
+  jurisdiction: 'jurisdiction',
+  originalStoragePath: 'originalStoragePath',
+  derivedMarkdownPath: 'derivedMarkdownPath',
+  contentHash: 'contentHash',
+  reviewStatus: 'reviewStatus',
+  reviewedBy: 'reviewedBy',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type TaxRuleSourceScalarFieldEnum = (typeof TaxRuleSourceScalarFieldEnum)[keyof typeof TaxRuleSourceScalarFieldEnum]
+
+
+export const TaxRuleSetScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  purpose: 'purpose',
+  taxRegime: 'taxRegime',
+  vatFilingFrequency: 'vatFilingFrequency',
+  effectiveFrom: 'effectiveFrom',
+  effectiveTo: 'effectiveTo',
+  contentHash: 'contentHash',
+  reviewStatus: 'reviewStatus',
+  reviewedBy: 'reviewedBy',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type TaxRuleSetScalarFieldEnum = (typeof TaxRuleSetScalarFieldEnum)[keyof typeof TaxRuleSetScalarFieldEnum]
+
+
+export const TaxRuleFragmentScalarFieldEnum = {
+  id: 'id',
+  sourceId: 'sourceId',
+  articleOrSection: 'articleOrSection',
+  contentHash: 'contentHash',
+  contentMarkdown: 'contentMarkdown',
+  purposes: 'purposes',
+  taxRegimes: 'taxRegimes',
+  effectiveFrom: 'effectiveFrom',
+  effectiveTo: 'effectiveTo'
+} as const
+
+export type TaxRuleFragmentScalarFieldEnum = (typeof TaxRuleFragmentScalarFieldEnum)[keyof typeof TaxRuleFragmentScalarFieldEnum]
+
+
+export const TaxRuleSetFragmentScalarFieldEnum = {
+  id: 'id',
+  ruleSetId: 'ruleSetId',
+  fragmentId: 'fragmentId'
+} as const
+
+export type TaxRuleSetFragmentScalarFieldEnum = (typeof TaxRuleSetFragmentScalarFieldEnum)[keyof typeof TaxRuleSetFragmentScalarFieldEnum]
+
+
 export const BillDetailScalarFieldEnum = {
   id: 'id',
   description: 'description',
@@ -2071,6 +2431,10 @@ export type GlobalOmitConfig = {
   collection?: Prisma.CollectionOmit
   billHeader?: Prisma.BillHeaderOmit
   collectionBillMembership?: Prisma.CollectionBillMembershipOmit
+  taxRuleSource?: Prisma.TaxRuleSourceOmit
+  taxRuleSet?: Prisma.TaxRuleSetOmit
+  taxRuleFragment?: Prisma.TaxRuleFragmentOmit
+  taxRuleSetFragment?: Prisma.TaxRuleSetFragmentOmit
   billDetail?: Prisma.BillDetailOmit
 }
 
