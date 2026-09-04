@@ -7,6 +7,18 @@ const CivilDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Usa una fecha civil YYYY-MM-DD')
 const OptionalTextSchema = z.string().trim().max(4_000).optional()
+const OptionalPersonalIdNumberSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{10}$/)
+  .or(z.literal(''))
+  .optional()
+const OptionalProfessionalIdNumberSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{13}$/)
+  .or(z.literal(''))
+  .optional()
 
 export const TaxPurposeSchema = z.enum([
   'vat_credit',
@@ -42,7 +54,12 @@ export const VatFilingFrequencySchema = z.enum([
 ])
 export type VatFilingFrequency = z.infer<typeof VatFilingFrequencySchema>
 
-export const TaxRuleReviewStatusSchema = z.enum(['draft', 'reviewed', 'active', 'retired'])
+export const TaxRuleReviewStatusSchema = z.enum([
+  'draft',
+  'reviewed',
+  'active',
+  'retired',
+])
 
 export const EconomicActivityRevisionInputSchema = z
   .object({
@@ -83,22 +100,38 @@ export type EconomicActivityRevision = z.infer<
   typeof EconomicActivityRevisionSchema
 >
 
-export const TaxpayerProfileRevisionInputSchema = z.object({
-  displayName: z.string().trim().min(1).max(120),
-  personalIdNumber: z.string().trim().regex(/^\d{10}$/).optional(),
-  professionalIdNumber: z.string().trim().regex(/^\d{13}$/).optional(),
-  hasEmploymentIncome: z.boolean(),
-  hasRuc: z.boolean(),
-  taxRegime: TaxRegimeSchema,
-  vatFilingFrequency: VatFilingFrequencySchema,
-  activityRevisionIds: z.array(IdSchema).max(20),
-  additionalFacts: OptionalTextSchema,
-}).superRefine((value, ctx) => {
-  if (!value.hasRuc && value.activityRevisionIds.length > 0)
-    ctx.addIssue({ code: 'custom', path: ['activityRevisionIds'], message: 'Un perfil sin RUC no puede incluir actividades económicas.' })
-  if (!value.hasRuc && value.vatFilingFrequency !== 'none')
-    ctx.addIssue({ code: 'custom', path: ['vatFilingFrequency'], message: 'Un perfil sin RUC debe indicar que no tiene obligación de IVA.' })
-})
+export const TaxpayerProfileRevisionDataSchema = z
+  .object({
+    displayName: z.string().trim().min(1).max(120),
+    personalIdNumber: OptionalPersonalIdNumberSchema,
+    professionalIdNumber: OptionalProfessionalIdNumberSchema,
+    hasEmploymentIncome: z.boolean(),
+    hasRuc: z.boolean(),
+    taxRegime: TaxRegimeSchema,
+    vatFilingFrequency: VatFilingFrequencySchema,
+    additionalFacts: OptionalTextSchema,
+  })
+  .superRefine((value, ctx) => {
+    if (!value.hasRuc && value.vatFilingFrequency !== 'none')
+      ctx.addIssue({
+        code: 'custom',
+        path: ['vatFilingFrequency'],
+        message:
+          'Un perfil sin RUC debe indicar que no tiene obligación de IVA.',
+      })
+  })
+
+export const TaxpayerProfileRevisionInputSchema =
+  TaxpayerProfileRevisionDataSchema.extend({
+    activityRevisionIds: z.array(IdSchema).max(20),
+  }).superRefine((value, ctx) => {
+    if (!value.hasRuc && value.activityRevisionIds.length > 0)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['activityRevisionIds'],
+        message: 'Un perfil sin RUC no puede incluir actividades económicas.',
+      })
+  })
 export type TaxpayerProfileRevisionInput = z.infer<
   typeof TaxpayerProfileRevisionInputSchema
 >
@@ -162,15 +195,46 @@ export function collectionContextBlocks(
     context.purpose === 'vat_credit' ||
     context.purpose === 'business_income_tax'
   if (requiresActivities && !profile.hasRuc)
-    blocks.push({ code: 'MISSING_TAXPAYER_PROFILE', message: 'Este propósito requiere un perfil con RUC.', actionLabel: 'Revisar perfil', actionPath: '/profiles' })
+    blocks.push({
+      code: 'MISSING_TAXPAYER_PROFILE',
+      message: 'Este propósito requiere un perfil con RUC.',
+      actionLabel: 'Revisar perfil',
+      actionPath: '/profiles',
+    })
   if (requiresActivities && context.activityRevisionIds.length === 0)
-    blocks.push({ code: 'MISSING_ECONOMIC_ACTIVITY', message: 'Selecciona al menos una actividad económica.', actionLabel: 'Configurar actividades', actionPath: '/profiles' })
-  if (context.purpose === 'personal_expenses' && context.activityRevisionIds.length > 0)
-    blocks.push({ code: 'UNRESOLVED_ANALYSIS_CONFIGURATION', message: 'Los gastos personales no usan actividades económicas.', actionLabel: 'Ajustar contexto', actionPath: '/collections' })
+    blocks.push({
+      code: 'MISSING_ECONOMIC_ACTIVITY',
+      message: 'Selecciona al menos una actividad económica.',
+      actionLabel: 'Configurar actividades',
+      actionPath: '/profiles',
+    })
+  if (
+    context.purpose === 'personal_expenses' &&
+    context.activityRevisionIds.length > 0
+  )
+    blocks.push({
+      code: 'UNRESOLVED_ANALYSIS_CONFIGURATION',
+      message: 'Los gastos personales no usan actividades económicas.',
+      actionLabel: 'Ajustar contexto',
+      actionPath: '/collections',
+    })
   if (context.purpose === 'vat_credit' && profile.taxRegime === 'unknown')
-    blocks.push({ code: 'UNRESOLVED_TAX_REGIME', message: 'Resuelve el régimen tributario antes de analizar IVA.', actionLabel: 'Revisar perfil', actionPath: '/profiles' })
-  if (context.purpose === 'vat_credit' && profile.vatFilingFrequency === 'unknown')
-    blocks.push({ code: 'UNRESOLVED_VAT_FREQUENCY', message: 'Resuelve la periodicidad de IVA antes de analizar.', actionLabel: 'Revisar perfil', actionPath: '/profiles' })
+    blocks.push({
+      code: 'UNRESOLVED_TAX_REGIME',
+      message: 'Resuelve el régimen tributario antes de analizar IVA.',
+      actionLabel: 'Revisar perfil',
+      actionPath: '/profiles',
+    })
+  if (
+    context.purpose === 'vat_credit' &&
+    profile.vatFilingFrequency === 'unknown'
+  )
+    blocks.push({
+      code: 'UNRESOLVED_VAT_FREQUENCY',
+      message: 'Resuelve la periodicidad de IVA antes de analizar.',
+      actionLabel: 'Revisar perfil',
+      actionPath: '/profiles',
+    })
   return blocks
 }
 
@@ -187,7 +251,10 @@ export type CollectionContextRevision = z.infer<
 
 export const InvoiceAnalysisSnapshotSchema = z.object({
   id: IdSchema,
-  contentHash: z.string().regex(/^[a-f0-9]{64}$/i).optional(),
+  contentHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/i)
+    .optional(),
   number: z.string().min(1).max(255),
   billType: z.enum(['PERSONAL', 'PROFESSIONAL', 'OTHER']),
   totalAmount: z.number().nonnegative(),

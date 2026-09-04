@@ -8,6 +8,7 @@ import {
   TAX_ANALYSIS_SCHEMA_VERSION,
   TaxAnalysisResultV2Schema,
   TaxpayerProfileRevisionInputSchema,
+  TaxpayerProfileRevisionDataSchema,
 } from '../tax-analysis-v2'
 
 const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
@@ -45,22 +46,42 @@ describe('tax analysis v2 contracts', () => {
   })
 
   it('allows an employee profile without activities and rejects activities without RUC', () => {
-    expect(TaxpayerProfileRevisionInputSchema.safeParse({
-      displayName: 'Relación de dependencia',
-      hasEmploymentIncome: true,
-      hasRuc: false,
-      taxRegime: 'unknown',
-      vatFilingFrequency: 'none',
-      activityRevisionIds: [],
-    }).success).toBe(true)
-    expect(TaxpayerProfileRevisionInputSchema.safeParse({
-      displayName: 'Inconsistente',
-      hasEmploymentIncome: false,
-      hasRuc: false,
-      taxRegime: 'unknown',
-      vatFilingFrequency: 'monthly',
-      activityRevisionIds: [id],
-    }).success).toBe(false)
+    expect(
+      TaxpayerProfileRevisionInputSchema.safeParse({
+        displayName: 'Relación de dependencia',
+        hasEmploymentIncome: true,
+        hasRuc: false,
+        taxRegime: 'unknown',
+        vatFilingFrequency: 'none',
+        activityRevisionIds: [],
+      }).success,
+    ).toBe(true)
+    expect(
+      TaxpayerProfileRevisionInputSchema.safeParse({
+        displayName: 'Inconsistente',
+        hasEmploymentIncome: false,
+        hasRuc: false,
+        taxRegime: 'unknown',
+        vatFilingFrequency: 'monthly',
+        activityRevisionIds: [id],
+      }).success,
+    ).toBe(false)
+  })
+
+  it('validates the profile data step independently from activity selection', () => {
+    expect(
+      TaxpayerProfileRevisionDataSchema.safeParse({
+        displayName: 'Asalariado',
+        personalIdNumber: '0102030405',
+        professionalIdNumber: '',
+        hasEmploymentIncome: true,
+        hasRuc: false,
+        taxRegime: 'unknown',
+        vatFilingFrequency: 'none',
+        activityRevisionIds: ['550e8400-e29b-41d4-a716-446655440000'],
+        additionalFacts: '',
+      }).success,
+    ).toBe(true)
   })
 
   it('blocks IVA until the profile and activity facts are resolved', () => {

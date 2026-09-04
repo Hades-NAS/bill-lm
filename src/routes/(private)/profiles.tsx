@@ -1,11 +1,14 @@
 import {
+  ActionIcon,
   Alert,
   Badge,
   Box,
   Button,
   Card,
   Container,
+  Divider,
   Group,
+  List,
   Modal,
   MultiSelect,
   Select,
@@ -17,15 +20,18 @@ import {
   Text,
   TextInput,
   Textarea,
+  Tooltip,
   Title,
 } from '@mantine/core'
+import { modals } from '@mantine/modals'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { FilePenLine, Plus } from 'lucide-react'
+import { CircleHelp, FilePenLine, Info, Plus } from 'lucide-react'
 import React from 'react'
 
 import {
   EconomicActivityRevisionInputSchema,
+  TaxpayerProfileRevisionDataSchema,
   TaxpayerProfileRevisionInputSchema,
 } from '#/schema/tax-analysis-v2'
 
@@ -68,11 +74,155 @@ const blankProfile: TaxpayerProfileRevisionInput = {
   additionalFacts: '',
 }
 
+type GuideItem = {
+  title: string
+  description: string
+  example?: string
+}
+
+function openGuide(title: string, introduction: string, items: GuideItem[]) {
+  modals.open({
+    centered: true,
+    size: 'lg',
+    title,
+    children: (
+      <Stack gap="md">
+        <Text>{introduction}</Text>
+        <Divider />
+        <List spacing="md" withPadding>
+          {items.map((item) => (
+            <List.Item key={item.title}>
+              <Stack gap={2}>
+                <Text fw={700}>{item.title}</Text>
+                <Text size="sm">{item.description}</Text>
+                {item.example && (
+                  <Text c="dimmed" size="sm">
+                    Ejemplo: {item.example}
+                  </Text>
+                )}
+              </Stack>
+            </List.Item>
+          ))}
+        </List>
+      </Stack>
+    ),
+  })
+}
+
+function openActivityGuide() {
+  openGuide(
+    'Guía de actividades económicas',
+    'Registra las actividades con las que generas ingresos. No reemplazan el catálogo del SRI ni crean una declaración.',
+    [
+      {
+        title: 'Actividad económica',
+        description:
+          'Describe una fuente de ingresos o un servicio que declaras. La usarás para explicar qué compras guardan relación con tu negocio.',
+        example: 'Desarrollo de software, venta de alimentos o transporte.',
+      },
+      {
+        title: 'Revisión',
+        description:
+          'Crea una nueva versión cuando cambia la actividad, su tratamiento de IVA o los gastos necesarios. Las configuraciones anteriores conservan la versión que usaron.',
+        example:
+          'Cambias de desarrollo web a desarrollo y soporte de infraestructura.',
+      },
+      {
+        title: 'Tratamiento de IVA',
+        description:
+          'Indica cómo facturas tus ingresos. Si no tienes certeza, selecciona “Aún no lo sé” y completa el dato antes de analizar IVA.',
+      },
+    ],
+  )
+}
+
+function openProfileGuide() {
+  openGuide(
+    'Guía del perfil tributario',
+    'El perfil reúne tus identificadores y las actividades que usarás al configurar un análisis. Puedes crear más de uno si manejas realidades tributarias distintas.',
+    [
+      {
+        title: 'Nombre del perfil',
+        description:
+          'Usa un nombre que te permita reconocer esta configuración al elegirla en una colección.',
+        example: 'Servicios de programación 2026.',
+      },
+      {
+        title: 'Ingresos en relación de dependencia',
+        description:
+          'Márcalo si también recibes sueldo como empleado. El sistema lo conserva como contexto para tus análisis.',
+      },
+      {
+        title: 'RUC, régimen y periodicidad de IVA',
+        description:
+          'Completa estos datos si el perfil tiene RUC. Determinan qué análisis y reglas tributarias pueden aplicarse.',
+      },
+      {
+        title: 'Actividades',
+        description:
+          'Selecciona las revisiones que representan tu actividad actual. Los gastos personales no requieren actividades.',
+      },
+      {
+        title: 'Revisión',
+        description:
+          'Cada cambio guarda una versión nueva. Las facturas analizadas antes mantienen el perfil y las actividades que tenían en ese momento.',
+      },
+    ],
+  )
+}
+
+function HelpLabel({ label, hint }: { label: string; hint: string }) {
+  return (
+    <Group gap={4} wrap="nowrap">
+      <Text component="span" inherit>
+        {label}
+      </Text>
+      <Tooltip label={hint} multiline openDelay={800} withArrow w={240}>
+        <ActionIcon
+          aria-label={`Ayuda sobre ${label}`}
+          color="violet"
+          radius="xl"
+          size="xs"
+          variant="subtle"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <CircleHelp size={14} strokeWidth={1.9} />
+        </ActionIcon>
+      </Tooltip>
+    </Group>
+  )
+}
+
+function SectionHelpButton({
+  onClick,
+  title,
+}: {
+  onClick: () => void
+  title: string
+}) {
+  return (
+    <Tooltip label={`Ver guía sobre ${title}`} openDelay={800} withArrow>
+      <ActionIcon
+        aria-label={`Ver guía sobre ${title}`}
+        color="violet"
+        radius="xl"
+        size="md"
+        variant="light"
+        onClick={onClick}
+      >
+        <Info size={18} strokeWidth={1.9} />
+      </ActionIcon>
+    </Tooltip>
+  )
+}
+
 function ProfilesPage() {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const isMobile = useIsMobile()
-  const activities = useQuery(trpc.taxpayerProfiles.listActivities.queryOptions())
+  const activities = useQuery(
+    trpc.taxpayerProfiles.listActivities.queryOptions(),
+  )
   const profiles = useQuery(trpc.taxpayerProfiles.listProfiles.queryOptions())
   const invalidate = () =>
     Promise.all([
@@ -84,16 +234,24 @@ function ProfilesPage() {
       }),
     ])
   const createActivity = useMutation(
-    trpc.taxpayerProfiles.createActivity.mutationOptions({ onSuccess: invalidate }),
+    trpc.taxpayerProfiles.createActivity.mutationOptions({
+      onSuccess: invalidate,
+    }),
   )
   const reviseActivity = useMutation(
-    trpc.taxpayerProfiles.reviseActivity.mutationOptions({ onSuccess: invalidate }),
+    trpc.taxpayerProfiles.reviseActivity.mutationOptions({
+      onSuccess: invalidate,
+    }),
   )
   const createProfile = useMutation(
-    trpc.taxpayerProfiles.createProfile.mutationOptions({ onSuccess: invalidate }),
+    trpc.taxpayerProfiles.createProfile.mutationOptions({
+      onSuccess: invalidate,
+    }),
   )
   const reviseProfile = useMutation(
-    trpc.taxpayerProfiles.reviseProfile.mutationOptions({ onSuccess: invalidate }),
+    trpc.taxpayerProfiles.reviseProfile.mutationOptions({
+      onSuccess: invalidate,
+    }),
   )
   const [activityId, setActivityId] = React.useState<string | null>(null)
   const [profileId, setProfileId] = React.useState<string | null>(null)
@@ -107,7 +265,12 @@ function ProfilesPage() {
   const activityOptions = (activities.data ?? []).flatMap((activity) => {
     const revision = activity.revisions[0]
     return revision
-      ? [{ value: revision.id, label: `${revision.displayName} · rev. ${revision.revision}` }]
+      ? [
+          {
+            value: revision.id,
+            label: `${revision.displayName} · rev. ${revision.revision}`,
+          },
+        ]
       : []
   })
   const activity = activities.data?.find((item) => item.id === activityId)
@@ -120,8 +283,8 @@ function ProfilesPage() {
           <div>
             <Title order={1}>Perfiles y actividades</Title>
             <Text c="dimmed" mt={6}>
-              Describe tu realidad de negocio. Cada cambio crea una revisión para
-              conservar el contexto de análisis anterior.
+              Describe tu realidad de negocio. Cada cambio crea una revisión
+              para conservar el contexto de análisis anterior.
             </Text>
           </div>
 
@@ -139,12 +302,21 @@ function ProfilesPage() {
           <section>
             <Group justify="space-between" mb="md">
               <div>
-                <Title order={2}>Actividades económicas</Title>
+                <Group gap="xs">
+                  <Title order={2}>Actividades económicas</Title>
+                  <SectionHelpButton
+                    title="actividades económicas"
+                    onClick={openActivityGuide}
+                  />
+                </Group>
                 <Text c="dimmed" size="sm">
                   Son actividades que declaras; no es un catálogo oficial.
                 </Text>
               </div>
-              <Button leftSection={<Plus size={18} />} onClick={() => setActivityId('new')}>
+              <Button
+                leftSection={<Plus size={18} />}
+                onClick={() => setActivityId('new')}
+              >
                 Agregar actividad
               </Button>
             </Group>
@@ -168,7 +340,9 @@ function ProfilesPage() {
                               {revision.registeredActivityName}
                             </Text>
                           </div>
-                          <Badge variant="light">Rev. {revision.revision}</Badge>
+                          <Badge variant="light">
+                            Rev. {revision.revision}
+                          </Badge>
                         </Group>
                         <Text lineClamp={2} size="sm">
                           {revision.activityDescription}
@@ -188,7 +362,11 @@ function ProfilesPage() {
               </SimpleGrid>
             ) : (
               <EmptyState
-                action={<Button onClick={() => setActivityId('new')}>Agregar actividad</Button>}
+                action={
+                  <Button onClick={() => setActivityId('new')}>
+                    Agregar actividad
+                  </Button>
+                }
                 description="Empieza con la actividad que mejor describe cómo generas ingresos."
                 title="Aún no tienes actividades"
               />
@@ -198,9 +376,16 @@ function ProfilesPage() {
           <section>
             <Group justify="space-between" mb="md">
               <div>
-                <Title order={2}>Perfiles tributarios</Title>
+                <Group gap="xs">
+                  <Title order={2}>Perfiles tributarios</Title>
+                  <SectionHelpButton
+                    title="perfiles tributarios"
+                    onClick={openProfileGuide}
+                  />
+                </Group>
                 <Text c="dimmed" size="sm">
-                  Un perfil agrupa identificadores y las revisiones de actividades que usarás.
+                  Un perfil agrupa identificadores y las revisiones de
+                  actividades que usarás.
                 </Text>
               </div>
               <Button
@@ -224,13 +409,24 @@ function ProfilesPage() {
                         <div>
                           <Group gap="xs">
                             <Text fw={700}>{revision.displayName}</Text>
-                            <Badge variant="light">Rev. {revision.revision}</Badge>
+                            <Badge variant="light">
+                              Rev. {revision.revision}
+                            </Badge>
                           </Group>
                           <Text c="dimmed" mt={4} size="sm">
-                            {revision.activities.map(({ economicActivityRevision }) => economicActivityRevision.displayName).join(', ')}
+                            {revision.activities
+                              .map(
+                                ({ economicActivityRevision }) =>
+                                  economicActivityRevision.displayName,
+                              )
+                              .join(', ')}
                           </Text>
                         </div>
-                        <Button size="xs" variant="light" onClick={() => setProfileId(item.id)}>
+                        <Button
+                          size="xs"
+                          variant="light"
+                          onClick={() => setProfileId(item.id)}
+                        >
                           Crear nueva revisión
                         </Button>
                       </Group>
@@ -240,7 +436,13 @@ function ProfilesPage() {
               </Stack>
             ) : (
               <EmptyState
-                action={activityOptions.length ? <Button onClick={() => setProfileId('new')}>Agregar perfil</Button> : undefined}
+                action={
+                  activityOptions.length ? (
+                    <Button onClick={() => setProfileId('new')}>
+                      Agregar perfil
+                    </Button>
+                  ) : undefined
+                }
                 description={
                   activityOptions.length
                     ? 'Crea un perfil y selecciona las actividades que correspondan.'
@@ -260,8 +462,15 @@ function ProfilesPage() {
         opened={activityId !== null}
         onClose={() => setActivityId(null)}
         onSubmit={(value) => {
-          if (activityId && activityId !== 'new') reviseActivity.mutate({ id: activityId, ...value }, { onSuccess: () => setActivityId(null) })
-          else createActivity.mutate(value, { onSuccess: () => setActivityId(null) })
+          if (activityId && activityId !== 'new')
+            reviseActivity.mutate(
+              { id: activityId, ...value },
+              { onSuccess: () => setActivityId(null) },
+            )
+          else
+            createActivity.mutate(value, {
+              onSuccess: () => setActivityId(null),
+            })
         }}
       />
       <ProfileModal
@@ -272,8 +481,13 @@ function ProfilesPage() {
         profile={profile}
         onClose={() => setProfileId(null)}
         onSubmit={(value) => {
-          if (profileId && profileId !== 'new') reviseProfile.mutate({ id: profileId, ...value }, { onSuccess: () => setProfileId(null) })
-          else createProfile.mutate(value, { onSuccess: () => setProfileId(null) })
+          if (profileId && profileId !== 'new')
+            reviseProfile.mutate(
+              { id: profileId, ...value },
+              { onSuccess: () => setProfileId(null) },
+            )
+          else
+            createProfile.mutate(value, { onSuccess: () => setProfileId(null) })
         }}
       />
     </Box>
@@ -318,7 +532,8 @@ function ActivityModal({
             ...revision,
             registeredActivityCode: revision.registeredActivityCode ?? '',
             necessaryPurchases: revision.necessaryPurchases ?? '',
-            revenueVatTreatment: revision.revenueVatTreatment as EconomicActivityRevisionInput['revenueVatTreatment'],
+            revenueVatTreatment:
+              revision.revenueVatTreatment as EconomicActivityRevisionInput['revenueVatTreatment'],
             revenueVatTreatmentOther: revision.revenueVatTreatmentOther ?? '',
             mixedUseDescription: revision.mixedUseDescription ?? '',
             additionalFacts: revision.additionalFacts ?? '',
@@ -327,22 +542,139 @@ function ActivityModal({
     )
     setError(null)
   }, [activity, opened])
-  const update = <K extends keyof EconomicActivityRevisionInput>(key: K, next: EconomicActivityRevisionInput[K]) => setValue((current) => ({ ...current, [key]: next }))
+  const update = <K extends keyof EconomicActivityRevisionInput>(
+    key: K,
+    next: EconomicActivityRevisionInput[K],
+  ) => setValue((current) => ({ ...current, [key]: next }))
   return (
-    <Modal centered fullScreen={fullScreen} opened={opened} size="lg" title={activity ? 'Nueva revisión de actividad' : 'Agregar actividad'} onClose={onClose}>
+    <Modal
+      centered
+      fullScreen={fullScreen}
+      opened={opened}
+      size="lg"
+      title={
+        <Group gap="xs">
+          <Text fw={600}>
+            {activity ? 'Nueva revisión de actividad' : 'Agregar actividad'}
+          </Text>
+          <SectionHelpButton
+            title="este formulario"
+            onClick={openActivityGuide}
+          />
+        </Group>
+      }
+      onClose={onClose}
+    >
       <Stack gap="sm">
-        <Text size="sm">No modificaremos la revisión anterior; esta versión se usará en configuraciones nuevas.</Text>
-        <TextInput label="Nombre para reconocerla" value={value.displayName} onChange={(event) => update('displayName', event.currentTarget.value)} />
-        <TextInput label="Nombre de actividad registrada" value={value.registeredActivityName} onChange={(event) => update('registeredActivityName', event.currentTarget.value)} />
-        <TextInput label="Código registrado (opcional)" value={value.registeredActivityCode} onChange={(event) => update('registeredActivityCode', event.currentTarget.value)} />
-        <Textarea autosize label="¿En qué consiste esta actividad?" minRows={3} value={value.activityDescription} onChange={(event) => update('activityDescription', event.currentTarget.value)} />
-        <Textarea autosize label="Compras o gastos necesarios (opcional)" minRows={2} value={value.necessaryPurchases} onChange={(event) => update('necessaryPurchases', event.currentTarget.value)} />
-        <Select data={[{ value: 'taxed_nonzero', label: 'Gravada con IVA' }, { value: 'zero_with_credit', label: 'Tarifa 0% con crédito' }, { value: 'zero_without_credit', label: 'Tarifa 0% sin crédito' }, { value: 'mixed', label: 'Uso mixto' }, { value: 'export', label: 'Exportación' }, { value: 'unknown', label: 'Aún no lo sé' }, { value: 'other', label: 'Otro' }]} label="Tratamiento de ingresos/IVA" value={value.revenueVatTreatment} onChange={(next) => update('revenueVatTreatment', (next ?? 'unknown') as EconomicActivityRevisionInput['revenueVatTreatment'])} />
-        {value.revenueVatTreatment === 'other' && <Textarea label="Describe el tratamiento" value={value.revenueVatTreatmentOther} onChange={(event) => update('revenueVatTreatmentOther', event.currentTarget.value)} />}
-        {value.revenueVatTreatment === 'mixed' && <Textarea label="Explica el uso mixto (opcional)" value={value.mixedUseDescription} onChange={(event) => update('mixedUseDescription', event.currentTarget.value)} />}
-        <Textarea autosize label="Datos adicionales (opcional)" minRows={2} value={value.additionalFacts} onChange={(event) => update('additionalFacts', event.currentTarget.value)} />
+        <Text size="sm">
+          No modificaremos la revisión anterior; esta versión se usará en
+          configuraciones nuevas.
+        </Text>
+        <TextInput
+          label="Nombre para reconocerla"
+          value={value.displayName}
+          onChange={(event) => update('displayName', event.currentTarget.value)}
+        />
+        <TextInput
+          label="Nombre de actividad registrada"
+          value={value.registeredActivityName}
+          onChange={(event) =>
+            update('registeredActivityName', event.currentTarget.value)
+          }
+        />
+        <TextInput
+          label="Código registrado (opcional)"
+          value={value.registeredActivityCode}
+          onChange={(event) =>
+            update('registeredActivityCode', event.currentTarget.value)
+          }
+        />
+        <Textarea
+          autosize
+          label="¿En qué consiste esta actividad?"
+          minRows={3}
+          value={value.activityDescription}
+          onChange={(event) =>
+            update('activityDescription', event.currentTarget.value)
+          }
+        />
+        <Textarea
+          autosize
+          label="Compras o gastos necesarios (opcional)"
+          minRows={2}
+          value={value.necessaryPurchases}
+          onChange={(event) =>
+            update('necessaryPurchases', event.currentTarget.value)
+          }
+        />
+        <Select
+          data={[
+            { value: 'taxed_nonzero', label: 'Gravada con IVA' },
+            { value: 'zero_with_credit', label: 'Tarifa 0% con crédito' },
+            { value: 'zero_without_credit', label: 'Tarifa 0% sin crédito' },
+            { value: 'mixed', label: 'Uso mixto' },
+            { value: 'export', label: 'Exportación' },
+            { value: 'unknown', label: 'Aún no lo sé' },
+            { value: 'other', label: 'Otro' },
+          ]}
+          label="Tratamiento de ingresos/IVA"
+          value={value.revenueVatTreatment}
+          onChange={(next) =>
+            update(
+              'revenueVatTreatment',
+              (next ??
+                'unknown') as EconomicActivityRevisionInput['revenueVatTreatment'],
+            )
+          }
+        />
+        {value.revenueVatTreatment === 'other' && (
+          <Textarea
+            label="Describe el tratamiento"
+            value={value.revenueVatTreatmentOther}
+            onChange={(event) =>
+              update('revenueVatTreatmentOther', event.currentTarget.value)
+            }
+          />
+        )}
+        {value.revenueVatTreatment === 'mixed' && (
+          <Textarea
+            label="Explica el uso mixto (opcional)"
+            value={value.mixedUseDescription}
+            onChange={(event) =>
+              update('mixedUseDescription', event.currentTarget.value)
+            }
+          />
+        )}
+        <Textarea
+          autosize
+          label="Datos adicionales (opcional)"
+          minRows={2}
+          value={value.additionalFacts}
+          onChange={(event) =>
+            update('additionalFacts', event.currentTarget.value)
+          }
+        />
         {error && <Alert color="red">{error}</Alert>}
-        <Group justify="flex-end"><Button variant="default" onClick={onClose}>Cancelar</Button><Button loading={loading} onClick={() => { const parsed = EconomicActivityRevisionInputSchema.safeParse(value); if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Revisa los campos requeridos.'); onSubmit(parsed.data) }}>Guardar revisión</Button></Group>
+        <Group justify="flex-end">
+          <Button variant="default" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            loading={loading}
+            onClick={() => {
+              const parsed =
+                EconomicActivityRevisionInputSchema.safeParse(value)
+              if (!parsed.success)
+                return setError(
+                  parsed.error.issues[0]?.message ??
+                    'Revisa los campos requeridos.',
+                )
+              onSubmit(parsed.data)
+            }}
+          >
+            Guardar revisión
+          </Button>
+        </Group>
       </Stack>
     </Modal>
   )
@@ -382,22 +714,258 @@ function ProfileModal({
   const [error, setError] = React.useState<string | null>(null)
   React.useEffect(() => {
     const revision = profile?.revisions[0]
-    setValue(revision ? { ...blankProfile, ...revision, personalIdNumber: revision.personalIdNumber ?? '', professionalIdNumber: revision.professionalIdNumber ?? '', taxRegime: revision.taxRegime as TaxpayerProfileRevisionInput['taxRegime'], vatFilingFrequency: revision.vatFilingFrequency as TaxpayerProfileRevisionInput['vatFilingFrequency'], additionalFacts: revision.additionalFacts ?? '', activityRevisionIds: revision.activities.map((item) => item.economicActivityRevisionId) } : blankProfile)
+    setValue(
+      revision
+        ? {
+            ...blankProfile,
+            ...revision,
+            personalIdNumber: revision.personalIdNumber ?? '',
+            professionalIdNumber: revision.professionalIdNumber ?? '',
+            taxRegime:
+              revision.taxRegime as TaxpayerProfileRevisionInput['taxRegime'],
+            vatFilingFrequency:
+              revision.vatFilingFrequency as TaxpayerProfileRevisionInput['vatFilingFrequency'],
+            additionalFacts: revision.additionalFacts ?? '',
+            activityRevisionIds: revision.activities.map(
+              (item) => item.economicActivityRevisionId,
+            ),
+          }
+        : blankProfile,
+    )
     setStep(0)
     setError(null)
   }, [opened, profile])
   const next = () => {
-    const parsed = TaxpayerProfileRevisionInputSchema.omit({ activityRevisionIds: true }).safeParse(value)
-    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Revisa los datos del perfil.')
-    setError(null); setStep(1)
+    const parsed = TaxpayerProfileRevisionDataSchema.safeParse(value)
+    if (!parsed.success)
+      return setError(
+        parsed.error.issues[0]?.message ?? 'Revisa los datos del perfil.',
+      )
+    setError(null)
+    setStep(1)
   }
   return (
-    <Modal centered fullScreen={fullScreen} opened={opened} size="md" title={profile ? 'Nueva revisión de perfil' : 'Agregar perfil'} onClose={onClose}>
+    <Modal
+      centered
+      fullScreen={fullScreen}
+      opened={opened}
+      size="md"
+      title={
+        <Group gap="xs">
+          <Text fw={600}>
+            {profile ? 'Nueva revisión de perfil' : 'Agregar perfil'}
+          </Text>
+          <SectionHelpButton
+            title="este formulario"
+            onClick={openProfileGuide}
+          />
+        </Group>
+      }
+      onClose={onClose}
+    >
       <Stack gap="md">
-        <Stepper active={step} size="sm"><Stepper.Step label="Datos" /><Stepper.Step label="Actividades" /></Stepper>
-        {step === 0 ? <Stack gap="sm"><TextInput label="Nombre del perfil" value={value.displayName} onChange={(event) => setValue((current) => ({ ...current, displayName: event.currentTarget.value }))} /><Switch checked={value.hasEmploymentIncome} label="También tengo ingresos en relación de dependencia" onChange={(event) => setValue((current) => ({ ...current, hasEmploymentIncome: event.currentTarget.checked }))} /><Switch checked={value.hasRuc} label="Tengo RUC" onChange={(event) => setValue((current) => ({ ...current, hasRuc: event.currentTarget.checked, vatFilingFrequency: event.currentTarget.checked ? current.vatFilingFrequency : 'none' }))} /><TextInput label="Cédula (opcional)" maxLength={10} value={value.personalIdNumber} onChange={(event) => setValue((current) => ({ ...current, personalIdNumber: event.currentTarget.value }))} /><TextInput disabled={!value.hasRuc} label="RUC (opcional)" maxLength={13} value={value.professionalIdNumber} onChange={(event) => setValue((current) => ({ ...current, professionalIdNumber: event.currentTarget.value }))} /><Select data={[{ value: 'general', label: 'General' }, { value: 'rimpe_entrepreneur', label: 'RIMPE emprendedor' }, { value: 'rimpe_popular_business', label: 'RIMPE negocio popular' }, { value: 'unknown', label: 'Aún no lo sé' }]} disabled={!value.hasRuc} label="Régimen tributario" value={value.taxRegime} onChange={(next) => setValue((current) => ({ ...current, taxRegime: (next ?? 'unknown') as TaxpayerProfileRevisionInput['taxRegime'] }))} /><Select data={[{ value: 'none', label: 'Sin obligación de IVA' }, { value: 'monthly', label: 'Mensual' }, { value: 'semiannual', label: 'Semestral' }, { value: 'unknown', label: 'Aún no lo sé' }]} disabled={!value.hasRuc} label="Periodicidad de IVA" value={value.vatFilingFrequency} onChange={(next) => setValue((current) => ({ ...current, vatFilingFrequency: (next ?? 'none') as TaxpayerProfileRevisionInput['vatFilingFrequency'] }))} /><Textarea label="Datos adicionales (opcional)" value={value.additionalFacts} onChange={(event) => setValue((current) => ({ ...current, additionalFacts: event.currentTarget.value }))} /></Stack> : <Stack gap="sm"><Text size="sm">Selecciona actividades solo si este perfil tiene RUC. Para gastos personales no serán necesarias.</Text><MultiSelect disabled={!value.hasRuc} data={activityOptions} label="Actividades" value={value.activityRevisionIds} onChange={(next) => setValue((current) => ({ ...current, activityRevisionIds: next }))} /></Stack>}
+        <Stepper active={step} size="sm">
+          <Stepper.Step label="Datos" />
+          <Stepper.Step label="Actividades" />
+        </Stepper>
+        {step === 0 ? (
+          <Stack gap="sm">
+            <TextInput
+              label={
+                <HelpLabel
+                  hint="Usa un nombre que reconocerás al elegir este perfil en una colección."
+                  label="Nombre del perfil"
+                />
+              }
+              value={value.displayName}
+              onChange={(event) =>
+                setValue((current) => ({
+                  ...current,
+                  displayName: event.currentTarget.value,
+                }))
+              }
+            />
+            <Switch
+              checked={value.hasEmploymentIncome}
+              label={
+                <HelpLabel
+                  hint="Márcalo si además recibes sueldo como empleado."
+                  label="También tengo ingresos en relación de dependencia"
+                />
+              }
+              onChange={(event) =>
+                setValue((current) => ({
+                  ...current,
+                  hasEmploymentIncome: event.currentTarget.checked,
+                }))
+              }
+            />
+            <Switch
+              checked={value.hasRuc}
+              label={
+                <HelpLabel
+                  hint="Actívalo si este perfil declara actividades con RUC."
+                  label="Tengo RUC"
+                />
+              }
+              onChange={(event) =>
+                setValue((current) => ({
+                  ...current,
+                  hasRuc: event.currentTarget.checked,
+                  vatFilingFrequency: event.currentTarget.checked
+                    ? current.vatFilingFrequency
+                    : 'none',
+                }))
+              }
+            />
+            <TextInput
+              label={
+                <HelpLabel
+                  hint="Ingresa los 10 dígitos de tu cédula si quieres guardarla en este perfil."
+                  label="Cédula (opcional)"
+                />
+              }
+              maxLength={10}
+              value={value.personalIdNumber}
+              onChange={(event) =>
+                setValue((current) => ({
+                  ...current,
+                  personalIdNumber: event.currentTarget.value,
+                }))
+              }
+            />
+            <TextInput
+              disabled={!value.hasRuc}
+              label={
+                <HelpLabel
+                  hint="Ingresa los 13 dígitos del RUC asociado a este perfil."
+                  label="RUC (opcional)"
+                />
+              }
+              maxLength={13}
+              value={value.professionalIdNumber}
+              onChange={(event) =>
+                setValue((current) => ({
+                  ...current,
+                  professionalIdNumber: event.currentTarget.value,
+                }))
+              }
+            />
+            <Select
+              data={[
+                { value: 'general', label: 'General' },
+                { value: 'rimpe_entrepreneur', label: 'RIMPE emprendedor' },
+                {
+                  value: 'rimpe_popular_business',
+                  label: 'RIMPE negocio popular',
+                },
+                { value: 'unknown', label: 'Aún no lo sé' },
+              ]}
+              disabled={!value.hasRuc}
+              label={
+                <HelpLabel
+                  hint="Elige el régimen que figura en tu RUC. Si no lo conoces, marca “Aún no lo sé”."
+                  label="Régimen tributario"
+                />
+              }
+              value={value.taxRegime}
+              onChange={(next) =>
+                setValue((current) => ({
+                  ...current,
+                  taxRegime: (next ??
+                    'unknown') as TaxpayerProfileRevisionInput['taxRegime'],
+                }))
+              }
+            />
+            <Select
+              data={[
+                { value: 'none', label: 'Sin obligación de IVA' },
+                { value: 'monthly', label: 'Mensual' },
+                { value: 'semiannual', label: 'Semestral' },
+                { value: 'unknown', label: 'Aún no lo sé' },
+              ]}
+              disabled={!value.hasRuc}
+              label={
+                <HelpLabel
+                  hint="Indica cada cuánto presentas IVA. Este dato se usa al configurar análisis de IVA."
+                  label="Periodicidad de IVA"
+                />
+              }
+              value={value.vatFilingFrequency}
+              onChange={(next) =>
+                setValue((current) => ({
+                  ...current,
+                  vatFilingFrequency: (next ??
+                    'none') as TaxpayerProfileRevisionInput['vatFilingFrequency'],
+                }))
+              }
+            />
+            <Textarea
+              label={
+                <HelpLabel
+                  hint="Anota un dato que ayude a interpretar este perfil, sin incluir claves ni información sensible."
+                  label="Datos adicionales (opcional)"
+                />
+              }
+              value={value.additionalFacts}
+              onChange={(event) =>
+                setValue((current) => ({
+                  ...current,
+                  additionalFacts: event.currentTarget.value,
+                }))
+              }
+            />
+          </Stack>
+        ) : (
+          <Stack gap="sm">
+            <Text size="sm">
+              Selecciona actividades solo si este perfil tiene RUC. Para gastos
+              personales no serán necesarias.
+            </Text>
+            <MultiSelect
+              disabled={!value.hasRuc}
+              data={activityOptions}
+              label={
+                <HelpLabel
+                  hint="Selecciona las actividades que representa este perfil en la actualidad."
+                  label="Actividades"
+                />
+              }
+              value={value.activityRevisionIds}
+              onChange={(next) =>
+                setValue((current) => ({
+                  ...current,
+                  activityRevisionIds: next,
+                }))
+              }
+            />
+          </Stack>
+        )}
         {error && <Alert color="red">{error}</Alert>}
-        <Group justify="space-between"><Button variant="default" onClick={step ? () => setStep(0) : onClose}>{step ? 'Atrás' : 'Cancelar'}</Button>{step === 0 ? <Button onClick={next}>Continuar</Button> : <Button loading={loading} onClick={() => { const parsed = TaxpayerProfileRevisionInputSchema.safeParse(value); if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Revisa las actividades seleccionadas.'); onSubmit(parsed.data) }}>Guardar revisión</Button>}</Group>
+        <Group justify="space-between">
+          <Button variant="default" onClick={step ? () => setStep(0) : onClose}>
+            {step ? 'Atrás' : 'Cancelar'}
+          </Button>
+          {step === 0 ? (
+            <Button onClick={next}>Continuar</Button>
+          ) : (
+            <Button
+              loading={loading}
+              onClick={() => {
+                const parsed =
+                  TaxpayerProfileRevisionInputSchema.safeParse(value)
+                if (!parsed.success)
+                  return setError(
+                    parsed.error.issues[0]?.message ??
+                      'Revisa las actividades seleccionadas.',
+                  )
+                onSubmit(parsed.data)
+              }}
+            >
+              Guardar revisión
+            </Button>
+          )}
+        </Group>
       </Stack>
     </Modal>
   )
