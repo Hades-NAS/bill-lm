@@ -42,6 +42,10 @@ export type TaxpayerProfileRevisionMinAggregateOutputType = {
   displayName: string | null
   personalIdNumber: string | null
   professionalIdNumber: string | null
+  hasEmploymentIncome: boolean | null
+  hasRuc: boolean | null
+  taxRegime: string | null
+  vatFilingFrequency: string | null
   additionalFacts: string | null
   createdAt: Date | null
 }
@@ -54,6 +58,10 @@ export type TaxpayerProfileRevisionMaxAggregateOutputType = {
   displayName: string | null
   personalIdNumber: string | null
   professionalIdNumber: string | null
+  hasEmploymentIncome: boolean | null
+  hasRuc: boolean | null
+  taxRegime: string | null
+  vatFilingFrequency: string | null
   additionalFacts: string | null
   createdAt: Date | null
 }
@@ -66,6 +74,10 @@ export type TaxpayerProfileRevisionCountAggregateOutputType = {
   displayName: number
   personalIdNumber: number
   professionalIdNumber: number
+  hasEmploymentIncome: number
+  hasRuc: number
+  taxRegime: number
+  vatFilingFrequency: number
   additionalFacts: number
   createdAt: number
   _all: number
@@ -88,6 +100,10 @@ export type TaxpayerProfileRevisionMinAggregateInputType = {
   displayName?: true
   personalIdNumber?: true
   professionalIdNumber?: true
+  hasEmploymentIncome?: true
+  hasRuc?: true
+  taxRegime?: true
+  vatFilingFrequency?: true
   additionalFacts?: true
   createdAt?: true
 }
@@ -100,6 +116,10 @@ export type TaxpayerProfileRevisionMaxAggregateInputType = {
   displayName?: true
   personalIdNumber?: true
   professionalIdNumber?: true
+  hasEmploymentIncome?: true
+  hasRuc?: true
+  taxRegime?: true
+  vatFilingFrequency?: true
   additionalFacts?: true
   createdAt?: true
 }
@@ -112,6 +132,10 @@ export type TaxpayerProfileRevisionCountAggregateInputType = {
   displayName?: true
   personalIdNumber?: true
   professionalIdNumber?: true
+  hasEmploymentIncome?: true
+  hasRuc?: true
+  taxRegime?: true
+  vatFilingFrequency?: true
   additionalFacts?: true
   createdAt?: true
   _all?: true
@@ -211,6 +235,10 @@ export type TaxpayerProfileRevisionGroupByOutputType = {
   displayName: string
   personalIdNumber: string | null
   professionalIdNumber: string | null
+  hasEmploymentIncome: boolean
+  hasRuc: boolean
+  taxRegime: string
+  vatFilingFrequency: string
   additionalFacts: string | null
   createdAt: Date
   _count: TaxpayerProfileRevisionCountAggregateOutputType | null
@@ -246,6 +274,10 @@ export type TaxpayerProfileRevisionWhereInput = {
   displayName?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
   personalIdNumber?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
   professionalIdNumber?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
+  hasEmploymentIncome?: Prisma.BoolFilter<"TaxpayerProfileRevision"> | boolean
+  hasRuc?: Prisma.BoolFilter<"TaxpayerProfileRevision"> | boolean
+  taxRegime?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
+  vatFilingFrequency?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
   additionalFacts?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
   createdAt?: Prisma.DateTimeFilter<"TaxpayerProfileRevision"> | Date | string
   taxpayerProfile?: Prisma.XOR<Prisma.TaxpayerProfileScalarRelationFilter, Prisma.TaxpayerProfileWhereInput>
@@ -261,6 +293,10 @@ export type TaxpayerProfileRevisionOrderByWithRelationInput = {
   displayName?: Prisma.SortOrder
   personalIdNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   professionalIdNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  hasEmploymentIncome?: Prisma.SortOrder
+  hasRuc?: Prisma.SortOrder
+  taxRegime?: Prisma.SortOrder
+  vatFilingFrequency?: Prisma.SortOrder
   additionalFacts?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   taxpayerProfile?: Prisma.TaxpayerProfileOrderByWithRelationInput
@@ -281,6 +317,10 @@ export type TaxpayerProfileRevisionWhereUniqueInput = Prisma.AtLeast<{
   displayName?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
   personalIdNumber?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
   professionalIdNumber?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
+  hasEmploymentIncome?: Prisma.BoolFilter<"TaxpayerProfileRevision"> | boolean
+  hasRuc?: Prisma.BoolFilter<"TaxpayerProfileRevision"> | boolean
+  taxRegime?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
+  vatFilingFrequency?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
   additionalFacts?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
   createdAt?: Prisma.DateTimeFilter<"TaxpayerProfileRevision"> | Date | string
   taxpayerProfile?: Prisma.XOR<Prisma.TaxpayerProfileScalarRelationFilter, Prisma.TaxpayerProfileWhereInput>
@@ -296,6 +336,10 @@ export type TaxpayerProfileRevisionOrderByWithAggregationInput = {
   displayName?: Prisma.SortOrder
   personalIdNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   professionalIdNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  hasEmploymentIncome?: Prisma.SortOrder
+  hasRuc?: Prisma.SortOrder
+  taxRegime?: Prisma.SortOrder
+  vatFilingFrequency?: Prisma.SortOrder
   additionalFacts?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.TaxpayerProfileRevisionCountOrderByAggregateInput
@@ -316,6 +360,10 @@ export type TaxpayerProfileRevisionScalarWhereWithAggregatesInput = {
   displayName?: Prisma.StringWithAggregatesFilter<"TaxpayerProfileRevision"> | string
   personalIdNumber?: Prisma.StringNullableWithAggregatesFilter<"TaxpayerProfileRevision"> | string | null
   professionalIdNumber?: Prisma.StringNullableWithAggregatesFilter<"TaxpayerProfileRevision"> | string | null
+  hasEmploymentIncome?: Prisma.BoolWithAggregatesFilter<"TaxpayerProfileRevision"> | boolean
+  hasRuc?: Prisma.BoolWithAggregatesFilter<"TaxpayerProfileRevision"> | boolean
+  taxRegime?: Prisma.StringWithAggregatesFilter<"TaxpayerProfileRevision"> | string
+  vatFilingFrequency?: Prisma.StringWithAggregatesFilter<"TaxpayerProfileRevision"> | string
   additionalFacts?: Prisma.StringNullableWithAggregatesFilter<"TaxpayerProfileRevision"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TaxpayerProfileRevision"> | Date | string
 }
@@ -326,6 +374,10 @@ export type TaxpayerProfileRevisionCreateInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
   taxpayerProfile: Prisma.TaxpayerProfileCreateNestedOneWithoutRevisionsInput
@@ -341,6 +393,10 @@ export type TaxpayerProfileRevisionUncheckedCreateInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
@@ -352,6 +408,10 @@ export type TaxpayerProfileRevisionUpdateInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   taxpayerProfile?: Prisma.TaxpayerProfileUpdateOneRequiredWithoutRevisionsNestedInput
@@ -367,6 +427,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
@@ -380,6 +444,10 @@ export type TaxpayerProfileRevisionCreateManyInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
 }
@@ -390,6 +458,10 @@ export type TaxpayerProfileRevisionUpdateManyMutationInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -402,6 +474,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateManyInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -434,6 +510,10 @@ export type TaxpayerProfileRevisionCountOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   personalIdNumber?: Prisma.SortOrder
   professionalIdNumber?: Prisma.SortOrder
+  hasEmploymentIncome?: Prisma.SortOrder
+  hasRuc?: Prisma.SortOrder
+  taxRegime?: Prisma.SortOrder
+  vatFilingFrequency?: Prisma.SortOrder
   additionalFacts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -450,6 +530,10 @@ export type TaxpayerProfileRevisionMaxOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   personalIdNumber?: Prisma.SortOrder
   professionalIdNumber?: Prisma.SortOrder
+  hasEmploymentIncome?: Prisma.SortOrder
+  hasRuc?: Prisma.SortOrder
+  taxRegime?: Prisma.SortOrder
+  vatFilingFrequency?: Prisma.SortOrder
   additionalFacts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -462,6 +546,10 @@ export type TaxpayerProfileRevisionMinOrderByAggregateInput = {
   displayName?: Prisma.SortOrder
   personalIdNumber?: Prisma.SortOrder
   professionalIdNumber?: Prisma.SortOrder
+  hasEmploymentIncome?: Prisma.SortOrder
+  hasRuc?: Prisma.SortOrder
+  taxRegime?: Prisma.SortOrder
+  vatFilingFrequency?: Prisma.SortOrder
   additionalFacts?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -559,6 +647,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateManyWithoutTaxpayerProfileNest
   deleteMany?: Prisma.TaxpayerProfileRevisionScalarWhereInput | Prisma.TaxpayerProfileRevisionScalarWhereInput[]
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type TaxpayerProfileRevisionCreateNestedOneWithoutActivitiesInput = {
   create?: Prisma.XOR<Prisma.TaxpayerProfileRevisionCreateWithoutActivitiesInput, Prisma.TaxpayerProfileRevisionUncheckedCreateWithoutActivitiesInput>
   connectOrCreate?: Prisma.TaxpayerProfileRevisionCreateOrConnectWithoutActivitiesInput
@@ -579,6 +671,10 @@ export type TaxpayerProfileRevisionCreateWithoutUserInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
   taxpayerProfile: Prisma.TaxpayerProfileCreateNestedOneWithoutRevisionsInput
@@ -592,6 +688,10 @@ export type TaxpayerProfileRevisionUncheckedCreateWithoutUserInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
@@ -634,6 +734,10 @@ export type TaxpayerProfileRevisionScalarWhereInput = {
   displayName?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
   personalIdNumber?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
   professionalIdNumber?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
+  hasEmploymentIncome?: Prisma.BoolFilter<"TaxpayerProfileRevision"> | boolean
+  hasRuc?: Prisma.BoolFilter<"TaxpayerProfileRevision"> | boolean
+  taxRegime?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
+  vatFilingFrequency?: Prisma.StringFilter<"TaxpayerProfileRevision"> | string
   additionalFacts?: Prisma.StringNullableFilter<"TaxpayerProfileRevision"> | string | null
   createdAt?: Prisma.DateTimeFilter<"TaxpayerProfileRevision"> | Date | string
 }
@@ -644,6 +748,10 @@ export type TaxpayerProfileRevisionCreateWithoutTaxpayerProfileInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutTaxpayerProfileRevisionsInput
@@ -656,6 +764,10 @@ export type TaxpayerProfileRevisionUncheckedCreateWithoutTaxpayerProfileInput = 
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
@@ -693,6 +805,10 @@ export type TaxpayerProfileRevisionCreateWithoutActivitiesInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
   taxpayerProfile: Prisma.TaxpayerProfileCreateNestedOneWithoutRevisionsInput
@@ -707,6 +823,10 @@ export type TaxpayerProfileRevisionUncheckedCreateWithoutActivitiesInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
 }
@@ -733,6 +853,10 @@ export type TaxpayerProfileRevisionUpdateWithoutActivitiesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   taxpayerProfile?: Prisma.TaxpayerProfileUpdateOneRequiredWithoutRevisionsNestedInput
@@ -747,6 +871,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateWithoutActivitiesInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -758,6 +886,10 @@ export type TaxpayerProfileRevisionCreateManyUserInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
 }
@@ -768,6 +900,10 @@ export type TaxpayerProfileRevisionUpdateWithoutUserInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   taxpayerProfile?: Prisma.TaxpayerProfileUpdateOneRequiredWithoutRevisionsNestedInput
@@ -781,6 +917,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateWithoutUserInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
@@ -793,6 +933,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateManyWithoutUserInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -803,6 +947,10 @@ export type TaxpayerProfileRevisionCreateManyTaxpayerProfileInput = {
   displayName: string
   personalIdNumber?: string | null
   professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
 }
@@ -813,6 +961,10 @@ export type TaxpayerProfileRevisionUpdateWithoutTaxpayerProfileInput = {
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutTaxpayerProfileRevisionsNestedInput
@@ -825,6 +977,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateWithoutTaxpayerProfileInput = 
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
@@ -836,6 +992,10 @@ export type TaxpayerProfileRevisionUncheckedUpdateManyWithoutTaxpayerProfileInpu
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
   personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -879,6 +1039,10 @@ export type TaxpayerProfileRevisionSelect<ExtArgs extends runtime.Types.Extensio
   displayName?: boolean
   personalIdNumber?: boolean
   professionalIdNumber?: boolean
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: boolean
+  vatFilingFrequency?: boolean
   additionalFacts?: boolean
   createdAt?: boolean
   taxpayerProfile?: boolean | Prisma.TaxpayerProfileDefaultArgs<ExtArgs>
@@ -895,6 +1059,10 @@ export type TaxpayerProfileRevisionSelectCreateManyAndReturn<ExtArgs extends run
   displayName?: boolean
   personalIdNumber?: boolean
   professionalIdNumber?: boolean
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: boolean
+  vatFilingFrequency?: boolean
   additionalFacts?: boolean
   createdAt?: boolean
   taxpayerProfile?: boolean | Prisma.TaxpayerProfileDefaultArgs<ExtArgs>
@@ -909,6 +1077,10 @@ export type TaxpayerProfileRevisionSelectUpdateManyAndReturn<ExtArgs extends run
   displayName?: boolean
   personalIdNumber?: boolean
   professionalIdNumber?: boolean
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: boolean
+  vatFilingFrequency?: boolean
   additionalFacts?: boolean
   createdAt?: boolean
   taxpayerProfile?: boolean | Prisma.TaxpayerProfileDefaultArgs<ExtArgs>
@@ -923,11 +1095,15 @@ export type TaxpayerProfileRevisionSelectScalar = {
   displayName?: boolean
   personalIdNumber?: boolean
   professionalIdNumber?: boolean
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: boolean
+  vatFilingFrequency?: boolean
   additionalFacts?: boolean
   createdAt?: boolean
 }
 
-export type TaxpayerProfileRevisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "taxpayerProfileId" | "userId" | "revision" | "displayName" | "personalIdNumber" | "professionalIdNumber" | "additionalFacts" | "createdAt", ExtArgs["result"]["taxpayerProfileRevision"]>
+export type TaxpayerProfileRevisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "taxpayerProfileId" | "userId" | "revision" | "displayName" | "personalIdNumber" | "professionalIdNumber" | "hasEmploymentIncome" | "hasRuc" | "taxRegime" | "vatFilingFrequency" | "additionalFacts" | "createdAt", ExtArgs["result"]["taxpayerProfileRevision"]>
 export type TaxpayerProfileRevisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   taxpayerProfile?: boolean | Prisma.TaxpayerProfileDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -958,6 +1134,10 @@ export type $TaxpayerProfileRevisionPayload<ExtArgs extends runtime.Types.Extens
     displayName: string
     personalIdNumber: string | null
     professionalIdNumber: string | null
+    hasEmploymentIncome: boolean
+    hasRuc: boolean
+    taxRegime: string
+    vatFilingFrequency: string
     additionalFacts: string | null
     createdAt: Date
   }, ExtArgs["result"]["taxpayerProfileRevision"]>
@@ -1393,6 +1573,10 @@ export interface TaxpayerProfileRevisionFieldRefs {
   readonly displayName: Prisma.FieldRef<"TaxpayerProfileRevision", 'String'>
   readonly personalIdNumber: Prisma.FieldRef<"TaxpayerProfileRevision", 'String'>
   readonly professionalIdNumber: Prisma.FieldRef<"TaxpayerProfileRevision", 'String'>
+  readonly hasEmploymentIncome: Prisma.FieldRef<"TaxpayerProfileRevision", 'Boolean'>
+  readonly hasRuc: Prisma.FieldRef<"TaxpayerProfileRevision", 'Boolean'>
+  readonly taxRegime: Prisma.FieldRef<"TaxpayerProfileRevision", 'String'>
+  readonly vatFilingFrequency: Prisma.FieldRef<"TaxpayerProfileRevision", 'String'>
   readonly additionalFacts: Prisma.FieldRef<"TaxpayerProfileRevision", 'String'>
   readonly createdAt: Prisma.FieldRef<"TaxpayerProfileRevision", 'DateTime'>
 }

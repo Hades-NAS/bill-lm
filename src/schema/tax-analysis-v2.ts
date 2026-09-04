@@ -26,6 +26,22 @@ export const RevenueVatTreatmentSchema = z.enum([
 ])
 export type RevenueVatTreatment = z.infer<typeof RevenueVatTreatmentSchema>
 
+export const TaxRegimeSchema = z.enum([
+  'general',
+  'rimpe_entrepreneur',
+  'rimpe_popular_business',
+  'unknown',
+])
+export type TaxRegime = z.infer<typeof TaxRegimeSchema>
+
+export const VatFilingFrequencySchema = z.enum([
+  'none',
+  'monthly',
+  'semiannual',
+  'unknown',
+])
+export type VatFilingFrequency = z.infer<typeof VatFilingFrequencySchema>
+
 export const EconomicActivityRevisionInputSchema = z
   .object({
     displayName: z.string().trim().min(1).max(120),
@@ -69,8 +85,17 @@ export const TaxpayerProfileRevisionInputSchema = z.object({
   displayName: z.string().trim().min(1).max(120),
   personalIdNumber: z.string().trim().regex(/^\d{10}$/).optional(),
   professionalIdNumber: z.string().trim().regex(/^\d{13}$/).optional(),
-  activityRevisionIds: z.array(IdSchema).min(1).max(20),
+  hasEmploymentIncome: z.boolean(),
+  hasRuc: z.boolean(),
+  taxRegime: TaxRegimeSchema,
+  vatFilingFrequency: VatFilingFrequencySchema,
+  activityRevisionIds: z.array(IdSchema).max(20),
   additionalFacts: OptionalTextSchema,
+}).superRefine((value, ctx) => {
+  if (!value.hasRuc && value.activityRevisionIds.length > 0)
+    ctx.addIssue({ code: 'custom', path: ['activityRevisionIds'], message: 'Un perfil sin RUC no puede incluir actividades económicas.' })
+  if (!value.hasRuc && value.vatFilingFrequency !== 'none')
+    ctx.addIssue({ code: 'custom', path: ['vatFilingFrequency'], message: 'Un perfil sin RUC debe indicar que no tiene obligación de IVA.' })
 })
 export type TaxpayerProfileRevisionInput = z.infer<
   typeof TaxpayerProfileRevisionInputSchema
@@ -194,15 +219,42 @@ export type TaxAnalysisClassification = z.infer<
   typeof TaxAnalysisClassificationSchema
 >
 
-export const TaxAnalysisResultV2Schema = z.object({
+const TaxAnalysisResultBaseSchema = z.object({
   schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
   runId: IdSchema,
   invoiceId: IdSchema,
   purpose: TaxPurposeSchema,
   classification: TaxAnalysisClassificationSchema,
-  deductiblePercentage: z.number().min(0).max(100),
   reasoning: z.string().trim().min(1).max(10_000),
   uncertainties: z.array(z.string().trim().min(1).max(1_000)).max(20),
   createdAt: z.date(),
 })
+export const TaxAnalysisResultV2Schema = z.discriminatedUnion('purpose', [
+  TaxAnalysisResultBaseSchema.extend({
+    purpose: z.literal('vat_credit'),
+    relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
+    invoiceVatAmount: z.number().nonnegative(),
+    potentialCreditableVatAmount: z.number().nonnegative().optional(),
+    creditablePercentage: z.number().min(0).max(100).optional(),
+    creditType: z.enum(['total', 'partial', 'none', 'undetermined']),
+    proportionalityRequired: z.boolean(),
+    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  }),
+  TaxAnalysisResultBaseSchema.extend({
+    purpose: z.literal('business_income_tax'),
+    relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
+    businessUsePercentage: z.number().min(0).max(100).optional(),
+    potentialExpenseAmount: z.number().nonnegative().optional(),
+    mixedUseDetected: z.boolean(),
+    substantiationIssues: z.array(z.string().trim().min(1).max(1_000)).max(20),
+    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  }),
+  TaxAnalysisResultBaseSchema.extend({
+    purpose: z.literal('personal_expenses'),
+    personalExpenseCategory: z.string().trim().min(1).max(120).optional(),
+    potentialEligibleAmount: z.number().nonnegative().optional(),
+    beneficiaryRelationship: z.string().trim().min(1).max(500).optional(),
+    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  }),
+])
 export type TaxAnalysisResultV2 = z.infer<typeof TaxAnalysisResultV2Schema>

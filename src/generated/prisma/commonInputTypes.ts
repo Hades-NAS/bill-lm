@@ -162,6 +162,19 @@ export type IntWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedIntFilter<$PrismaModel>
 }
 
+export type BoolFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
+}
+
+export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedBoolFilter<$PrismaModel>
+  _max?: Prisma.NestedBoolFilter<$PrismaModel>
+}
+
 export type EnumFiscalReferenceSourceTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.FiscalReferenceSourceType | Prisma.EnumFiscalReferenceSourceTypeFieldRefInput<$PrismaModel>
   in?: $Enums.FiscalReferenceSourceType[] | Prisma.ListEnumFiscalReferenceSourceTypeFieldRefInput<$PrismaModel>
@@ -186,11 +199,6 @@ export type EnumProviderConnectionProviderFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumProviderConnectionProviderFilter<$PrismaModel> | $Enums.ProviderConnectionProvider
 }
 
-export type BoolFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
-}
-
 export type EnumProviderConnectionProviderWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ProviderConnectionProvider | Prisma.EnumProviderConnectionProviderFieldRefInput<$PrismaModel>
   in?: $Enums.ProviderConnectionProvider[] | Prisma.ListEnumProviderConnectionProviderFieldRefInput<$PrismaModel>
@@ -199,14 +207,6 @@ export type EnumProviderConnectionProviderWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumProviderConnectionProviderFilter<$PrismaModel>
   _max?: Prisma.NestedEnumProviderConnectionProviderFilter<$PrismaModel>
-}
-
-export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedBoolFilter<$PrismaModel>
-  _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
 export type EnumAuthProviderFilter<$PrismaModel = never> = {
@@ -475,6 +475,19 @@ export type NestedFloatFilter<$PrismaModel = never> = {
   not?: Prisma.NestedFloatFilter<$PrismaModel> | number
 }
 
+export type NestedBoolFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
+}
+
+export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedBoolFilter<$PrismaModel>
+  _max?: Prisma.NestedBoolFilter<$PrismaModel>
+}
+
 export type NestedEnumFiscalReferenceSourceTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.FiscalReferenceSourceType | Prisma.EnumFiscalReferenceSourceTypeFieldRefInput<$PrismaModel>
   in?: $Enums.FiscalReferenceSourceType[] | Prisma.ListEnumFiscalReferenceSourceTypeFieldRefInput<$PrismaModel>
@@ -499,11 +512,6 @@ export type NestedEnumProviderConnectionProviderFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumProviderConnectionProviderFilter<$PrismaModel> | $Enums.ProviderConnectionProvider
 }
 
-export type NestedBoolFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
-}
-
 export type NestedEnumProviderConnectionProviderWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ProviderConnectionProvider | Prisma.EnumProviderConnectionProviderFieldRefInput<$PrismaModel>
   in?: $Enums.ProviderConnectionProvider[] | Prisma.ListEnumProviderConnectionProviderFieldRefInput<$PrismaModel>
@@ -512,14 +520,6 @@ export type NestedEnumProviderConnectionProviderWithAggregatesFilter<$PrismaMode
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumProviderConnectionProviderFilter<$PrismaModel>
   _max?: Prisma.NestedEnumProviderConnectionProviderFilter<$PrismaModel>
-}
-
-export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedBoolFilter<$PrismaModel>
-  _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
 export type NestedEnumAuthProviderFilter<$PrismaModel = never> = {

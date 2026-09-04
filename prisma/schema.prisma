@@ -108,6 +108,10 @@ model TaxpayerProfileRevision {
   displayName String @db.VarChar(120)
   personalIdNumber String? @db.VarChar(10)
   professionalIdNumber String? @db.VarChar(13)
+  hasEmploymentIncome Boolean @default(false)
+  hasRuc Boolean @default(false)
+  taxRegime String @default("unknown") @db.VarChar(50)
+  vatFilingFrequency String @default("none") @db.VarChar(20)
   additionalFacts String? @db.Text
 
   createdAt DateTime @default(now()) @db.Timestamptz

@@ -671,10 +671,6 @@ export type EnumProviderConnectionProviderFieldUpdateOperationsInput = {
   set?: $Enums.ProviderConnectionProvider
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type ProviderConnectionCreateWithoutUserInput = {
   id?: string
   provider: $Enums.ProviderConnectionProvider

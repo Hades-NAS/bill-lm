@@ -13,6 +13,7 @@ import {
   Skeleton,
   Stack,
   Stepper,
+  Switch,
   Text,
   TextInput,
   Textarea,
@@ -59,6 +60,10 @@ const blankProfile: TaxpayerProfileRevisionInput = {
   displayName: '',
   personalIdNumber: '',
   professionalIdNumber: '',
+  hasEmploymentIncome: false,
+  hasRuc: false,
+  taxRegime: 'unknown',
+  vatFilingFrequency: 'none',
   activityRevisionIds: [],
   additionalFacts: '',
 }
@@ -361,6 +366,10 @@ function ProfileModal({
       displayName: string
       personalIdNumber: string | null
       professionalIdNumber: string | null
+      hasEmploymentIncome: boolean
+      hasRuc: boolean
+      taxRegime: string
+      vatFilingFrequency: string
       additionalFacts: string | null
       activities: Array<{ economicActivityRevisionId: string }>
     }>
@@ -373,7 +382,7 @@ function ProfileModal({
   const [error, setError] = React.useState<string | null>(null)
   React.useEffect(() => {
     const revision = profile?.revisions[0]
-    setValue(revision ? { ...blankProfile, ...revision, personalIdNumber: revision.personalIdNumber ?? '', professionalIdNumber: revision.professionalIdNumber ?? '', additionalFacts: revision.additionalFacts ?? '', activityRevisionIds: revision.activities.map((item) => item.economicActivityRevisionId) } : blankProfile)
+    setValue(revision ? { ...blankProfile, ...revision, personalIdNumber: revision.personalIdNumber ?? '', professionalIdNumber: revision.professionalIdNumber ?? '', taxRegime: revision.taxRegime as TaxpayerProfileRevisionInput['taxRegime'], vatFilingFrequency: revision.vatFilingFrequency as TaxpayerProfileRevisionInput['vatFilingFrequency'], additionalFacts: revision.additionalFacts ?? '', activityRevisionIds: revision.activities.map((item) => item.economicActivityRevisionId) } : blankProfile)
     setStep(0)
     setError(null)
   }, [opened, profile])
@@ -386,7 +395,7 @@ function ProfileModal({
     <Modal centered fullScreen={fullScreen} opened={opened} size="md" title={profile ? 'Nueva revisión de perfil' : 'Agregar perfil'} onClose={onClose}>
       <Stack gap="md">
         <Stepper active={step} size="sm"><Stepper.Step label="Datos" /><Stepper.Step label="Actividades" /></Stepper>
-        {step === 0 ? <Stack gap="sm"><TextInput label="Nombre del perfil" value={value.displayName} onChange={(event) => setValue((current) => ({ ...current, displayName: event.currentTarget.value }))} /><TextInput label="Cédula (opcional)" maxLength={10} value={value.personalIdNumber} onChange={(event) => setValue((current) => ({ ...current, personalIdNumber: event.currentTarget.value }))} /><TextInput label="RUC (opcional)" maxLength={13} value={value.professionalIdNumber} onChange={(event) => setValue((current) => ({ ...current, professionalIdNumber: event.currentTarget.value }))} /><Textarea label="Datos adicionales (opcional)" value={value.additionalFacts} onChange={(event) => setValue((current) => ({ ...current, additionalFacts: event.currentTarget.value }))} /></Stack> : <Stack gap="sm"><Text size="sm">Selecciona las revisiones de actividades que este perfil usa actualmente.</Text><MultiSelect data={activityOptions} label="Actividades" value={value.activityRevisionIds} onChange={(next) => setValue((current) => ({ ...current, activityRevisionIds: next }))} /></Stack>}
+        {step === 0 ? <Stack gap="sm"><TextInput label="Nombre del perfil" value={value.displayName} onChange={(event) => setValue((current) => ({ ...current, displayName: event.currentTarget.value }))} /><Switch checked={value.hasEmploymentIncome} label="También tengo ingresos en relación de dependencia" onChange={(event) => setValue((current) => ({ ...current, hasEmploymentIncome: event.currentTarget.checked }))} /><Switch checked={value.hasRuc} label="Tengo RUC" onChange={(event) => setValue((current) => ({ ...current, hasRuc: event.currentTarget.checked, vatFilingFrequency: event.currentTarget.checked ? current.vatFilingFrequency : 'none' }))} /><TextInput label="Cédula (opcional)" maxLength={10} value={value.personalIdNumber} onChange={(event) => setValue((current) => ({ ...current, personalIdNumber: event.currentTarget.value }))} /><TextInput disabled={!value.hasRuc} label="RUC (opcional)" maxLength={13} value={value.professionalIdNumber} onChange={(event) => setValue((current) => ({ ...current, professionalIdNumber: event.currentTarget.value }))} /><Select data={[{ value: 'general', label: 'General' }, { value: 'rimpe_entrepreneur', label: 'RIMPE emprendedor' }, { value: 'rimpe_popular_business', label: 'RIMPE negocio popular' }, { value: 'unknown', label: 'Aún no lo sé' }]} disabled={!value.hasRuc} label="Régimen tributario" value={value.taxRegime} onChange={(next) => setValue((current) => ({ ...current, taxRegime: (next ?? 'unknown') as TaxpayerProfileRevisionInput['taxRegime'] }))} /><Select data={[{ value: 'none', label: 'Sin obligación de IVA' }, { value: 'monthly', label: 'Mensual' }, { value: 'semiannual', label: 'Semestral' }, { value: 'unknown', label: 'Aún no lo sé' }]} disabled={!value.hasRuc} label="Periodicidad de IVA" value={value.vatFilingFrequency} onChange={(next) => setValue((current) => ({ ...current, vatFilingFrequency: (next ?? 'none') as TaxpayerProfileRevisionInput['vatFilingFrequency'] }))} /><Textarea label="Datos adicionales (opcional)" value={value.additionalFacts} onChange={(event) => setValue((current) => ({ ...current, additionalFacts: event.currentTarget.value }))} /></Stack> : <Stack gap="sm"><Text size="sm">Selecciona actividades solo si este perfil tiene RUC. Para gastos personales no serán necesarias.</Text><MultiSelect disabled={!value.hasRuc} data={activityOptions} label="Actividades" value={value.activityRevisionIds} onChange={(next) => setValue((current) => ({ ...current, activityRevisionIds: next }))} /></Stack>}
         {error && <Alert color="red">{error}</Alert>}
         <Group justify="space-between"><Button variant="default" onClick={step ? () => setStep(0) : onClose}>{step ? 'Atrás' : 'Cancelar'}</Button>{step === 0 ? <Button onClick={next}>Continuar</Button> : <Button loading={loading} onClick={() => { const parsed = TaxpayerProfileRevisionInputSchema.safeParse(value); if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Revisa las actividades seleccionadas.'); onSubmit(parsed.data) }}>Guardar revisión</Button>}</Group>
       </Stack>

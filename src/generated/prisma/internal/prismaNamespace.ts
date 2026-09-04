@@ -1402,6 +1402,10 @@ export const TaxpayerProfileRevisionScalarFieldEnum = {
   displayName: 'displayName',
   personalIdNumber: 'personalIdNumber',
   professionalIdNumber: 'professionalIdNumber',
+  hasEmploymentIncome: 'hasEmploymentIncome',
+  hasRuc: 'hasRuc',
+  taxRegime: 'taxRegime',
+  vatFilingFrequency: 'vatFilingFrequency',
   additionalFacts: 'additionalFacts',
   createdAt: 'createdAt'
 } as const
@@ -1607,6 +1611,13 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'FiscalReferenceSourceType'
  */
 export type EnumFiscalReferenceSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FiscalReferenceSourceType'>
@@ -1631,13 +1642,6 @@ export type EnumProviderConnectionProviderFieldRefInput<$PrismaModel> = FieldRef
  * Reference to a field of type 'ProviderConnectionProvider[]'
  */
 export type ListEnumProviderConnectionProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProviderConnectionProvider[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 

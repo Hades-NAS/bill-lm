@@ -141,6 +141,10 @@ export const TaxpayerProfileRevisionScalarFieldEnum = {
   displayName: 'displayName',
   personalIdNumber: 'personalIdNumber',
   professionalIdNumber: 'professionalIdNumber',
+  hasEmploymentIncome: 'hasEmploymentIncome',
+  hasRuc: 'hasRuc',
+  taxRegime: 'taxRegime',
+  vatFilingFrequency: 'vatFilingFrequency',
   additionalFacts: 'additionalFacts',
   createdAt: 'createdAt'
 } as const

@@ -136,6 +136,10 @@ export const taxpayerProfilesRouter = {
             displayName: input.displayName,
             personalIdNumber: input.personalIdNumber,
             professionalIdNumber: input.professionalIdNumber,
+            hasEmploymentIncome: input.hasEmploymentIncome,
+            hasRuc: input.hasRuc,
+            taxRegime: input.taxRegime,
+            vatFilingFrequency: input.vatFilingFrequency,
             additionalFacts: input.additionalFacts,
           },
         })
@@ -171,6 +175,10 @@ export const taxpayerProfilesRouter = {
             displayName: revisionInput.displayName,
             personalIdNumber: revisionInput.personalIdNumber,
             professionalIdNumber: revisionInput.professionalIdNumber,
+            hasEmploymentIncome: revisionInput.hasEmploymentIncome,
+            hasRuc: revisionInput.hasRuc,
+            taxRegime: revisionInput.taxRegime,
+            vatFilingFrequency: revisionInput.vatFilingFrequency,
             additionalFacts: revisionInput.additionalFacts,
           },
         })

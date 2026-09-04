@@ -6,6 +6,7 @@ import {
   EconomicActivityRevisionInputSchema,
   TAX_ANALYSIS_SCHEMA_VERSION,
   TaxAnalysisResultV2Schema,
+  TaxpayerProfileRevisionInputSchema,
 } from '../tax-analysis-v2'
 
 const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
@@ -42,6 +43,25 @@ describe('tax analysis v2 contracts', () => {
     ).toBe(false)
   })
 
+  it('allows an employee profile without activities and rejects activities without RUC', () => {
+    expect(TaxpayerProfileRevisionInputSchema.safeParse({
+      displayName: 'Relación de dependencia',
+      hasEmploymentIncome: true,
+      hasRuc: false,
+      taxRegime: 'unknown',
+      vatFilingFrequency: 'none',
+      activityRevisionIds: [],
+    }).success).toBe(true)
+    expect(TaxpayerProfileRevisionInputSchema.safeParse({
+      displayName: 'Inconsistente',
+      hasEmploymentIncome: false,
+      hasRuc: false,
+      taxRegime: 'unknown',
+      vatFilingFrequency: 'monthly',
+      activityRevisionIds: [id],
+    }).success).toBe(false)
+  })
+
   it('keeps blocks actionable and results independently versioned', () => {
     expect(
       AnalysisBlockSchema.safeParse({
@@ -59,9 +79,9 @@ describe('tax analysis v2 contracts', () => {
         invoiceId: id,
         purpose: 'personal_expenses',
         classification: 'needs_review',
-        deductiblePercentage: 50,
         reasoning: 'El contexto disponible no permite confirmar el caso.',
         uncertainties: ['Falta evidencia adicional.'],
+        missingEvidence: ['No se conoce el beneficiario.'],
         createdAt: new Date(),
       }).success,
     ).toBe(true)
