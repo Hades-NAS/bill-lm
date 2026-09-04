@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   runTaxRuleBatch,
+  runTaxRulePipeline,
   summarizeTaxRuleBatch,
   TaxRuleCommandError,
 } from '../command-runner'
@@ -33,5 +34,52 @@ describe('tax rule command runner', () => {
       status: 'failed',
       message: 'No se pudo procesar la fuente. Revisa que el paso anterior haya terminado y vuelve a intentarlo.',
     })
+  })
+
+  it('runs every stage per source, stops only the failed source, and preserves progress', async () => {
+    const calls: string[] = []
+    const results = await runTaxRulePipeline(
+      [{ id: 'first' }, { id: 'second' }],
+      [
+        {
+          name: 'check',
+          run: async (source) => {
+            calls.push(`check:${source.id}`)
+            return 'checked'
+          },
+        },
+        {
+          name: 'fetch',
+          run: async (source) => {
+            calls.push(`fetch:${source.id}`)
+            if (source.id === 'first') throw new TaxRuleCommandError('No se pudo descargar la fuente oficial.')
+            return 'fetched'
+          },
+        },
+      ],
+    )
+
+    expect(calls).toEqual(['check:first', 'fetch:first', 'check:second', 'fetch:second'])
+    expect(results).toEqual([
+      {
+        sourceId: 'first',
+        status: 'failed',
+        detail: {
+          failedStage: 'fetch',
+          stages: [{ name: 'check', status: 'completed', detail: 'checked' }],
+        },
+        message: 'No se pudo descargar la fuente oficial.',
+      },
+      {
+        sourceId: 'second',
+        status: 'completed',
+        detail: {
+          stages: [
+            { name: 'check', status: 'completed', detail: 'checked' },
+            { name: 'fetch', status: 'completed', detail: 'fetched' },
+          ],
+        },
+      },
+    ])
   })
 })

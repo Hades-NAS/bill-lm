@@ -30,6 +30,10 @@ activa.
 check → fetch → extract → split → diff → revisión humana
 ```
 
+Para ejecutar los cinco pasos técnicos sobre todas las fuentes en un solo
+comando, usa `bun run rules:sri:run`. La revisión humana sigue siendo un paso
+separado y obligatorio.
+
 1. Usa `check` para comparar el PDF oficial disponible con el último hash
    observado localmente.
 2. Abre la página oficial del SRI y localiza el PDF exacto que quieres revisar.
@@ -68,6 +72,31 @@ El resultado por fuente puede ser:
 Si la consulta falla, el lote la reporta como `failed` con un mensaje seguro.
 Reintenta después; no concluyas que la norma dejó de existir por un fallo de
 red.
+
+### `bun run rules:sri:run [--source <id>]`
+
+Ejecuta, en este orden, `check`, `fetch`, `extract`, `split` y `diff`. Para
+cada fuente completa una etapa antes de empezar la siguiente; si una falla, no
+ejecuta los pasos posteriores para esa fuente y continúa con las demás. El
+resultado JSON indica la etapa fallida y las que sí terminaron.
+
+Ejecuta todo el lote:
+
+```bash
+bun run rules:sri:run
+```
+
+Para repetir el flujo de una sola fuente:
+
+```bash
+bun run rules:sri:run --source ec-sri-rlrti
+```
+
+El comando puede volver a descargar originales aunque `check` informe
+`unchanged`; esto deja el caché y los metadatos observados actualizados. No
+acepta `--url`, no publica material, no modifica manifiestos ni la base de
+datos. Si necesitas cambiar un enlace, usa primero `rules:sri:fetch --source`
+con `--url`, revisa el resultado y luego ejecuta `run`.
 
 ### `bun run rules:sri:fetch [--source <id>] [--url <pdf-sri>]`
 

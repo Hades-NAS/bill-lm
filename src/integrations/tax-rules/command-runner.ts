@@ -14,6 +14,17 @@ export type TaxRuleBatchResult = {
   message?: string
 }
 
+export type TaxRulePipelineStage<T extends { id: string }> = {
+  name: string
+  run: (source: T) => Promise<unknown>
+}
+
+type TaxRulePipelineStageResult = {
+  name: string
+  status: 'completed'
+  detail: unknown
+}
+
 export function taxRuleUserFacingError(error: unknown) {
   if (error instanceof TaxRuleCommandError || error instanceof TaxRuleAcquisitionError)
     return error.message
@@ -40,6 +51,47 @@ export async function runTaxRuleBatch<T extends { id: string }>(
       })
     }
   }
+  return results
+}
+
+/** Runs every stage for one source before continuing with the next source. */
+export async function runTaxRulePipeline<T extends { id: string }>(
+  sources: T[],
+  stages: TaxRulePipelineStage<T>[],
+): Promise<TaxRuleBatchResult[]> {
+  const results: TaxRuleBatchResult[] = []
+
+  for (const source of sources) {
+    const completedStages: TaxRulePipelineStageResult[] = []
+    let failed = false
+
+    for (const stage of stages) {
+      try {
+        completedStages.push({
+          name: stage.name,
+          status: 'completed',
+          detail: await stage.run(source),
+        })
+      } catch (error) {
+        results.push({
+          sourceId: source.id,
+          status: 'failed',
+          detail: { failedStage: stage.name, stages: completedStages },
+          message: taxRuleUserFacingError(error),
+        })
+        failed = true
+        break
+      }
+    }
+
+    if (!failed)
+      results.push({
+        sourceId: source.id,
+        status: 'completed',
+        detail: { stages: completedStages },
+      })
+  }
+
   return results
 }
 

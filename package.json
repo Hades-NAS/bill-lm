@@ -20,6 +20,7 @@
     "rules:sri:extract": "bun run scripts/tax-rules.ts extract",
     "rules:sri:split": "bun run scripts/tax-rules.ts split",
     "rules:sri:diff": "bun run scripts/tax-rules.ts diff",
+    "rules:sri:run": "bun run scripts/tax-rules.ts run",
     "rules:sri:review": "bun run scripts/tax-rules.ts review",
     "post-cta-init": "bunx --bun create-db@latest --user-agent tanstack/tsrouter",
     "db:gen": "dotenv -e .env -- prisma generate",

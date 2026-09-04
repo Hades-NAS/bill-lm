@@ -54,6 +54,7 @@ describe('official rule acquisition', () => {
         }),
       )
       expect(result.path).toMatch(/originals\/ec-sri-lrti-[a-f0-9]{64}\.pdf$/)
+      expect(result).not.toHaveProperty('buffer')
       await expect(readFile(result.path)).resolves.toEqual(Buffer.from('%PDF-1.7\nexample'))
     } finally {
       await rm(directory, { recursive: true, force: true })

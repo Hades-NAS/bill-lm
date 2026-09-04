@@ -14,6 +14,7 @@ import {
 } from '#/integrations/tax-rules/contracts'
 import {
   runTaxRuleBatch,
+  runTaxRulePipeline,
   summarizeTaxRuleBatch,
   TaxRuleCommandError,
   taxRuleUserFacingError,
@@ -139,6 +140,32 @@ async function runBatch(
   if (summary.failed > 0) process.exitCode = 1
 }
 
+async function runAll() {
+  if (option('--url'))
+    throw new TaxRuleCommandError('rules:sri:run no acepta --url. Actualiza primero la fuente puntual con rules:sri:fetch --source <id> --url <pdf-sri>.')
+
+  const sources = await selectedSources()
+  const results = await runTaxRulePipeline(sources, [
+    {
+      name: 'check',
+      run: async (source) => {
+        const observed = await loadObservedDownloadRecord(source.id)
+        const result = await checkTaxRuleSource(source, observed?.contentHash)
+        if (result.status === 'source-unresolved')
+          throw new TaxRuleCommandError(`La fuente “${source.id}” todavía no tiene un PDF resuelto. Registra un enlace oficial antes de ejecutar el flujo completo.`)
+        return result
+      },
+    },
+    { name: 'fetch', run: fetchSource },
+    { name: 'extract', run: extractSource },
+    { name: 'split', run: splitSource },
+    { name: 'diff', run: diffSource },
+  ])
+  const summary = summarizeTaxRuleBatch(results)
+  console.log(JSON.stringify({ command: 'run', summary, results }, null, 2))
+  if (summary.failed > 0) process.exitCode = 1
+}
+
 async function fetchSource(source: Awaited<ReturnType<typeof loadSources>>[number]) {
   const urlOverride = option('--url')
   if (urlOverride && !option('--source'))
@@ -253,10 +280,11 @@ async function main() {
   else if (command === 'extract') await runBatch(command, extractSource)
   else if (command === 'split') await runBatch(command, splitSource)
   else if (command === 'diff') await runBatch(command, diffSource)
+  else if (command === 'run') await runAll()
   else if (command === 'review') await runReview()
   else
     throw new TaxRuleCommandError(
-      'Usa uno de: check, fetch, extract, split, diff o review. Consulta el README de rulesets para los argumentos requeridos.',
+      'Usa uno de: check, fetch, extract, split, diff, run o review. Consulta el README de rulesets para los argumentos requeridos.',
     )
 }
 

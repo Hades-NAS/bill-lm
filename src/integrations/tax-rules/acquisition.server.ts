@@ -129,7 +129,8 @@ export async function fetchTaxRuleSource(
   const temporaryPath = `${path}.${crypto.randomUUID()}.tmp`
   await writeFile(temporaryPath, downloaded.buffer)
   await rename(temporaryPath, path)
-  return { path, ...downloaded }
+  const { buffer: _buffer, ...metadata } = downloaded
+  return { path, ...metadata }
 }
 
 export async function extractTaxRulePdf(pdf: Buffer) {
