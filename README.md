@@ -53,6 +53,14 @@ bun --bun run check
 - Configure the `VITE_FIREBASE_*` variables in `.env.local`.
 - Habilita Email/Password y Google en Firebase Authentication.
 
+## Rulesets tributarios oficiales
+
+La guía operativa para consultar fuentes del SRI, descargar PDFs oficiales,
+extraer texto, generar borradores y revisarlos está en
+[resources/tax-rules/ec/sri/README.md](resources/tax-rules/ec/sri/README.md).
+El material descargado no se activa por sí solo: una persona responsable debe
+revisarlo y aprobarlo antes de que pueda formar parte de un ruleset.
+
 ## Fase 2-A: referencias fiscales autogestionadas
 
 En **Configuración** cada usuario puede cargar hasta tres referencias globales
