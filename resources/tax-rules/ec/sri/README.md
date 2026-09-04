@@ -30,7 +30,8 @@ activa.
 check → fetch → extract → split → diff → revisión humana
 ```
 
-1. Usa `check` para saber si la página oficial sigue disponible.
+1. Usa `check` para comparar el PDF oficial disponible con el último hash
+   observado localmente.
 2. Abre la página oficial del SRI y localiza el PDF exacto que quieres revisar.
 3. Usa `fetch` con ese enlace PDF. El comando conserva el original y calcula
    su hash.
@@ -46,21 +47,27 @@ Ejecuta los comandos desde la raíz del proyecto.
 
 ### `bun run rules:sri:check`
 
-Consulta las páginas de descubrimiento registradas en `sources/` mediante
-HTTPS y el host `www.sri.gob.ec`. Sirve para detectar fuentes inaccesibles o
-que todavía no tienen un PDF resuelto.
+Consulta el PDF resuelto de cada fuente mediante HTTPS y el host
+`www.sri.gob.ec`, sin escribirlo en el caché. Calcula su hash en memoria y lo
+compara con el último original descargado. Sirve para detectar fuentes
+inaccesibles, enlaces aún no resueltos y contenido potencialmente actualizado.
 
 No descarga ni guarda el PDF. Tampoco cambia manifiestos, reglas, bundles o la
 base de datos.
 
 El resultado por fuente puede ser:
 
-- `source-unresolved`: la fuente aún no tiene un PDF con hash conocido. Busca
-  el enlace exacto desde la página oficial antes de descargarlo.
-- `update-candidate`: existe un hash anterior, pero hace falta descargar y
-  comparar el nuevo contenido antes de afirmar que no cambió.
-- `source-unavailable`: no se pudo consultar la página. Reintenta después; no
-  concluyas que la norma dejó de existir por un fallo de red.
+- `source-unresolved`: la fuente aún no tiene un PDF resuelto. Busca el enlace
+  exacto desde la página oficial antes de descargarlo.
+- `unchanged`: el hash del PDF oficial coincide con el último original local.
+  Aun así, no confirma por sí solo su vigencia jurídica.
+- `update-candidate`: el PDF oficial difiere del último original local, o no
+  existe un hash local. Ejecuta `fetch`, `extract`, `split` y revisión humana
+  antes de concluir que cambió una regla.
+
+Si la consulta falla, el lote la reporta como `failed` con un mensaje seguro.
+Reintenta después; no concluyas que la norma dejó de existir por un fallo de
+red.
 
 ### `bun run rules:sri:fetch [--source <id>] [--url <pdf-sri>]`
 
@@ -78,9 +85,11 @@ bun run rules:sri:fetch \
 
 El comando acepta solamente `https://www.sri.gob.ec`, sigue hasta tres
 redirecciones dentro de ese host, exige `application/pdf`, comprueba la firma
-`%PDF-`, limita el archivo a 20 MB y calcula SHA-256. Guarda el PDF de forma
-atómica en `.cache/tax-rules/ec/sri/originals/` y registra sus metadatos en
-`.cache/tax-rules/ec/sri/downloads/`.
+`%PDF-`, limita el archivo a 20 MB, usa un límite de espera de 30 segundos y
+calcula SHA-256. Guarda el PDF de forma atómica en
+`.cache/tax-rules/ec/sri/originals/` y registra sus metadatos técnicos
+(tipo, tamaño declarado y última modificación cuando el servidor los entrega)
+en `.cache/tax-rules/ec/sri/downloads/`.
 
 No copies un enlace de Google Drive, correo, WhatsApp u otro dominio. No
 edites el PDF descargado. Si el hash no coincide más adelante, vuelve a
@@ -100,9 +109,11 @@ SRI.
 ### `bun run rules:sri:split [--source <id>]`
 
 Divide el Markdown extraído en borradores. Para leyes y reglamentos busca
-encabezados de artículos, como `Art. 10.-`; para guías usa títulos en
-mayúsculas. Cada borrador incluye páginas, offsets, hash de la fuente y estado
-`draft`.
+encabezados de artículos, como `Art. 10.-`. Las guías y formularios se dejan
+intencionalmente como una sola sección `ambiguous` hasta tener una estrategia
+de división específica por fuente: sus títulos no son una estructura fiable
+para producir reglas automáticamente. Cada borrador incluye páginas, offsets,
+hash de la fuente y estado `draft` o `ambiguous`.
 
 El resultado se escribe en `.cache/tax-rules/ec/sri/sections/drafts/`. Si el
 comando no reconoce una estructura segura, produce una sola sección con estado
@@ -125,7 +136,10 @@ El resultado separa:
 - `unchanged`: texto y páginas coinciden.
 
 El comando no modifica secciones revisadas ni marca una regla como vigente.
-Sin `--source`, prepara la comparación para todas las fuentes.
+Guarda cada comparación de forma atómica en `.cache/tax-rules/ec/sri/diffs/`.
+El nombre incluye hashes de borradores y secciones revisadas, por lo que una
+revisión puede reproducir exactamente qué se comparó. Sin `--source`, prepara
+la comparación para todas las fuentes.
 
 ## Errores y ejecución por lote
 

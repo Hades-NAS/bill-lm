@@ -7,7 +7,6 @@ import type {
 
 const PAGE_MARKER = /^<!-- page (\d+) of \d+ -->$/m
 const ARTICLE_HEADING = /^(Art(?:ículo)?\.?\s*\d+[A-Za-z.-]*\s*(?:[-–—:.]|$).*)$/im
-const GUIDE_HEADING = /^([A-ZÁÉÍÓÚÜÑ][A-ZÁÉÍÓÚÜÑ0-9 ,;:()\-/]{7,})$/m
 
 type SplitSource = {
   id: string
@@ -48,29 +47,34 @@ function pageRange(markdown: string, start: number, end: number) {
 function headingMatches(sourceKind: SplitSource['sourceKind'], markdown: string) {
   const matcher = sourceKind === 'law' || sourceKind === 'regulation'
     ? ARTICLE_HEADING
-    : GUIDE_HEADING
+    : /$^/
   return [...markdown.matchAll(new RegExp(matcher, 'gim'))]
 }
 
-export function splitTaxRuleSource(source: SplitSource, markdown: string): DraftTaxRuleSection[] {
-  const matches = headingMatches(source.sourceKind, markdown)
-  if (!matches.length) {
-    return [{
-      schemaVersion: '1',
-      id: `${source.id}-unresolved-structure`,
-      sourceId: source.id,
-      articleOrSection: 'Estructura no identificada',
-      sourcePages: [1],
-      sourceStartOffset: 0,
-      sourceEndOffset: markdown.length,
-      sourceContentHash: source.contentHash,
-      splitterVersion: '1',
-      reviewStatus: 'ambiguous',
-      markdown,
-    }]
+function ambiguousSection(source: SplitSource, markdown: string, reason: string): DraftTaxRuleSection {
+  return {
+    schemaVersion: '1',
+    id: `${source.id}-unresolved-structure`,
+    sourceId: source.id,
+    articleOrSection: reason,
+    sourcePages: [1],
+    sourceStartOffset: 0,
+    sourceEndOffset: markdown.length,
+    sourceContentHash: source.contentHash,
+    splitterVersion: '1',
+    reviewStatus: 'ambiguous',
+    markdown,
   }
+}
 
-  return matches.map((match, index) => {
+export function splitTaxRuleSource(source: SplitSource, markdown: string): DraftTaxRuleSection[] {
+  if (source.sourceKind === 'guide' || source.sourceKind === 'form_guide')
+    return [ambiguousSection(source, markdown, 'La guía requiere una estrategia de división específica')]
+  const matches = headingMatches(source.sourceKind, markdown)
+  if (!matches.length)
+    return [ambiguousSection(source, markdown, 'Estructura no identificada')]
+
+  const sections = matches.map((match, index) => {
     const start = match.index ?? 0
     const end = matches[index + 1]?.index ?? markdown.length
     const articleOrSection = match[1]?.trim() ?? 'Sección sin título'
@@ -86,6 +90,18 @@ export function splitTaxRuleSource(source: SplitSource, markdown: string): Draft
       splitterVersion: '1' as const,
       reviewStatus: 'draft' as const,
       markdown: markdown.slice(start, end).trim(),
+    }
+  })
+  const seen = new Map<string, number>()
+  return sections.map((section) => {
+    const occurrence = (seen.get(section.id) ?? 0) + 1
+    seen.set(section.id, occurrence)
+    if (occurrence === 1) return section
+    return {
+      ...section,
+      id: `${section.id}-part-${occurrence}`,
+      reviewStatus: 'ambiguous' as const,
+      articleOrSection: `${section.articleOrSection} (repetido; revisar límites)`,
     }
   })
 }

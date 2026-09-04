@@ -25,6 +25,22 @@ describe('tax rule sectioning', () => {
     ])
   })
 
+  it('keeps guides ambiguous until they have a source-specific splitter', () => {
+    const guide = { ...source, id: 'ec-sri-ir-rimpe-guide', sourceKind: 'guide' as const }
+    expect(splitTaxRuleSource(guide, '1. Introducción\nTexto\n2. Declaración\nTexto')).toMatchObject([
+      { reviewStatus: 'ambiguous', articleOrSection: 'La guía requiere una estrategia de división específica' },
+    ])
+  })
+
+  it('keeps repeated articles unique and marks later occurrences ambiguous', () => {
+    const [first, repeated] = splitTaxRuleSource(source, 'Art. 1.- Uno\nA\nArt. 1.- Uno\nB')
+    expect(first.id).toBe('ec-sri-rlrti-art-1-uno')
+    expect(repeated).toMatchObject({
+      id: 'ec-sri-rlrti-art-1-uno-part-2',
+      reviewStatus: 'ambiguous',
+    })
+  })
+
   it('distinguishes textual changes from page-only changes', () => {
     const [draft] = splitTaxRuleSource(source, 'Art. 10.- Base imponible\nTexto A')
     const reviewed = {

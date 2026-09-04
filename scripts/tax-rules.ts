@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'
 
 import {
@@ -31,6 +31,9 @@ type DownloadRecord = {
   contentHash: string
   size: number
   retrievedAt: string
+  contentType?: string
+  contentLength?: number | null
+  lastModified?: string | null
 }
 
 function option(name: string) {
@@ -73,6 +76,20 @@ async function loadDownloadRecord(sourceId: string): Promise<DownloadRecord> {
   } catch {
     throw new TaxRuleCommandError(`No hay un original descargado para “${sourceId}”. Ejecuta primero rules:sri:fetch.`)
   }
+}
+
+async function loadObservedDownloadRecord(sourceId: string): Promise<DownloadRecord | null> {
+  try {
+    return await loadDownloadRecord(sourceId)
+  } catch {
+    return null
+  }
+}
+
+async function writeAtomically(path: string, value: string) {
+  const temporaryPath = `${path}.${crypto.randomUUID()}.tmp`
+  await writeFile(temporaryPath, value, 'utf8')
+  await rename(temporaryPath, path)
 }
 
 async function readJsonFiles(directory: string): Promise<unknown[]> {
@@ -142,7 +159,7 @@ async function fetchSource(source: Awaited<ReturnType<typeof loadSources>>[numbe
   }
   const metadataPath = join(cacheRoot, 'downloads', `${source.id}.json`)
   await mkdir(join(cacheRoot, 'downloads'), { recursive: true })
-  await writeFile(metadataPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8')
+  await writeAtomically(metadataPath, `${JSON.stringify(record, null, 2)}\n`)
   return record
 }
 
@@ -160,7 +177,7 @@ async function extractSource(source: Awaited<ReturnType<typeof loadSources>>[num
     `${basename(record.path, '.pdf')}.md`,
   )
   await mkdir(join(cacheRoot, 'extracted'), { recursive: true })
-  await writeFile(outputPath, markdown, 'utf8')
+  await writeAtomically(outputPath, markdown)
   return { path: outputPath, sourceContentHash: contentHash }
 }
 
@@ -183,16 +200,28 @@ async function splitSource(source: Awaited<ReturnType<typeof loadSources>>[numbe
     `${basename(record.path, '.pdf')}.json`,
   )
   await mkdir(join(cacheRoot, 'sections', 'drafts'), { recursive: true })
-  await writeFile(outputPath, `${JSON.stringify(drafts, null, 2)}\n`, 'utf8')
+  await writeAtomically(outputPath, `${JSON.stringify(drafts, null, 2)}\n`)
   return { path: outputPath, sections: drafts.length }
 }
 
 async function diffSource(source: Awaited<ReturnType<typeof loadSources>>[number]) {
-  const diff = diffTaxRuleSections(
-    await loadDrafts(source.id),
-    await loadReviewedSections(source.id),
-  )
-  return diff
+  const drafts = await loadDrafts(source.id)
+  const reviewed = await loadReviewedSections(source.id)
+  const draftHash = createHash('sha256').update(JSON.stringify(drafts)).digest('hex')
+  const reviewedHash = createHash('sha256').update(JSON.stringify(reviewed)).digest('hex')
+  const output = {
+    sourceId: source.id,
+    generatedAt: new Date().toISOString(),
+    sourceContentHash: drafts[0]?.sourceContentHash ?? null,
+    draftHash: `sha256:${draftHash}`,
+    reviewedHash: `sha256:${reviewedHash}`,
+    reviewedSectionCount: reviewed.length,
+    ...diffTaxRuleSections(drafts, reviewed),
+  }
+  const outputPath = join(cacheRoot, 'diffs', `${source.id}-${draftHash}-${reviewedHash}.json`)
+  await mkdir(join(cacheRoot, 'diffs'), { recursive: true })
+  await writeAtomically(outputPath, `${JSON.stringify(output, null, 2)}\n`)
+  return { path: outputPath, ...output }
 }
 
 async function runReview() {
@@ -216,7 +245,10 @@ async function runReview() {
 
 async function main() {
   const command = process.argv[2]
-  if (command === 'check') await runBatch(command, checkTaxRuleSource)
+  if (command === 'check') await runBatch(command, async (source) => {
+    const observed = await loadObservedDownloadRecord(source.id)
+    return checkTaxRuleSource(source, observed?.contentHash)
+  })
   else if (command === 'fetch') await runBatch(command, fetchSource)
   else if (command === 'extract') await runBatch(command, extractSource)
   else if (command === 'split') await runBatch(command, splitSource)
