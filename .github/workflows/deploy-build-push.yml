@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: bill-lm-deploy
+  cancel-in-progress: false
+
 env:
   ENVIRONMENT: prod
   DATABASE_URL: ${{ secrets.DATABASE_URL }}

@@ -10,6 +10,14 @@ const workerDockerfilePath = fileURLToPath(
 )
 
 describe('deploy workflow', () => {
+  it('serializa despliegues para evitar carreras sobre imágenes y el NAS', () => {
+    const workflow = readFileSync(workflowPath, 'utf8')
+
+    expect(workflow).toContain('concurrency:')
+    expect(workflow).toContain('group: bill-lm-deploy')
+    expect(workflow).toContain('cancel-in-progress: false')
+  })
+
   it('notifica de forma opcional los resultados de despliegue por Discord', () => {
     const workflow = readFileSync(workflowPath, 'utf8')
 
