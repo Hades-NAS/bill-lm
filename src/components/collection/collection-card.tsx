@@ -63,9 +63,9 @@ export const CollectionCard = (props: Props) => {
                 <ExternalLink size={16} />
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Eliminar colección">
+            <Tooltip label="Archivar colección">
               <ActionIcon
-                aria-label="Eliminar colección"
+                aria-label="Archivar colección"
                 color="red"
                 disabled={deleteCollectionMutation.isPending}
                 variant="light"
@@ -79,11 +79,11 @@ export const CollectionCard = (props: Props) => {
 
             <ConfModal
               confirmColor="red"
-              confirmText="Eliminar colección"
-              consequence="Se eliminarán también las facturas asociadas y sus resultados actuales."
+              confirmText="Archivar colección"
+              consequence="La colección dejará de mostrarse, pero se conservarán sus facturas, contexto y resultados."
               loading={deleteCollectionMutation.isPending}
               opened={confirmDelete}
-              title="Eliminar colección"
+              title="Archivar colección"
               variant="destructive"
               onCancel={() => {
                 handlers.close()
@@ -93,9 +93,8 @@ export const CollectionCard = (props: Props) => {
               }}
             >
               <Text>
-                Se eliminará la colección <b>{data.name}</b> y todas las
-                facturas asociadas a ella. Esta acción no se puede deshacer ni
-                conservará los análisis actuales.
+                Se archivará la colección <b>{data.name}</b>. Ya no aparecerá
+                en tu lista, pero su historial quedará conservado.
               </Text>
             </ConfModal>
           </Flex>

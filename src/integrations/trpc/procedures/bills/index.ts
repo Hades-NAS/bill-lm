@@ -47,6 +47,7 @@ export const billsRouter = {
         where: {
           id: collectionId,
           userId: principal.userId,
+          deletedAt: null,
         },
       })
 
@@ -223,10 +224,11 @@ export const billsRouter = {
         billIds,
       })
 
-      const collection = await prisma.collection.findUnique({
+      const collection = await prisma.collection.findFirst({
         where: {
           id: collectionId,
           userId: principal.userId,
+          deletedAt: null,
         },
       })
 
@@ -238,7 +240,7 @@ export const billsRouter = {
 
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Collection not found',
+          message: 'Colección no encontrada.',
         })
       }
 
@@ -302,6 +304,7 @@ export const billsRouter = {
           id: billId,
           collection: {
             userId: principal.userId,
+            deletedAt: null,
           },
         },
         include: {
@@ -319,7 +322,7 @@ export const billsRouter = {
 
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Bill not found',
+          message: 'Factura no encontrada.',
         })
       }
 

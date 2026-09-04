@@ -128,6 +128,7 @@ export const collectionsRouter = {
       const collections = await prisma.collection.findMany({
         where: {
           userId: principal.userId,
+          deletedAt: null,
           name: search.name
             ? { contains: search.name, mode: 'insensitive' }
             : undefined,
@@ -198,11 +199,17 @@ export const collectionsRouter = {
         collectionId: data.id,
       })
 
+      const existingCollection = await prisma.collection.findFirst({
+        where: { id: data.id, userId: principal.userId, deletedAt: null },
+        select: { id: true },
+      })
+      if (!existingCollection)
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'La colección no existe o fue archivada.',
+        })
       const collection = await prisma.collection.update({
-        where: {
-          id: data.id,
-          userId: principal.userId,
-        },
+        where: { id: existingCollection.id, userId: principal.userId },
         data,
       })
 
@@ -223,11 +230,13 @@ export const collectionsRouter = {
         collectionId: input.id,
       })
 
-      const result = await prisma.collection.deleteMany({
+      const result = await prisma.collection.updateMany({
         where: {
           id: input.id,
           userId: principal.userId,
+          deletedAt: null,
         },
+        data: { deletedAt: new Date() },
       })
 
       if (result.count === 0) {
@@ -237,7 +246,7 @@ export const collectionsRouter = {
         })
       }
 
-      logger.info('Deleted collection for user', {
+      logger.info('Archived collection for user', {
         userId: principal.userId,
         collectionId: input.id,
       })
@@ -254,11 +263,8 @@ export const collectionsRouter = {
         collectionId: data.id,
       })
 
-      const collection = await prisma.collection.findUnique({
-        where: {
-          id: data.id,
-          userId: principal.userId,
-        },
+      const collection = await prisma.collection.findFirst({
+        where: { id: data.id, userId: principal.userId, deletedAt: null },
         include: {
           bills: {
             orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -273,7 +279,7 @@ export const collectionsRouter = {
 
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Collection not found',
+          message: 'Colección no encontrada.',
         })
       }
 
@@ -288,7 +294,7 @@ export const collectionsRouter = {
     .input(GetCollectionByIdRequestSchema)
     .query(async ({ input, ctx }) => {
       const collection = await prisma.collection.findFirst({
-        where: { id: input.id, userId: ctx.principal.userId },
+        where: { id: input.id, userId: ctx.principal.userId, deletedAt: null },
         select: { id: true },
       })
       if (!collection)
@@ -311,7 +317,7 @@ export const collectionsRouter = {
     .input(GetCollectionByIdRequestSchema)
     .query(async ({ input, ctx }) => {
       const collection = await prisma.collection.findFirst({
-        where: { id: input.id, userId: ctx.principal.userId },
+        where: { id: input.id, userId: ctx.principal.userId, deletedAt: null },
         select: { id: true },
       })
       if (!collection)
@@ -348,7 +354,11 @@ export const collectionsRouter = {
     .input(CollectionContextInputSchema)
     .mutation(async ({ input, ctx }) => {
       const collection = await prisma.collection.findFirst({
-        where: { id: input.collectionId, userId: ctx.principal.userId },
+        where: {
+          id: input.collectionId,
+          userId: ctx.principal.userId,
+          deletedAt: null,
+        },
         select: { id: true },
       })
       const profile = await prisma.taxpayerProfileRevision.findFirst({
@@ -466,10 +476,11 @@ export const collectionsRouter = {
 
       const { type, billIds } = data
 
-      const collection = await prisma.collection.findUnique({
+      const collection = await prisma.collection.findFirst({
         where: {
           id: data.collectionId,
           userId: principal.userId,
+          deletedAt: null,
         },
       })
 
@@ -481,7 +492,7 @@ export const collectionsRouter = {
 
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Collection not found',
+          message: 'Colección no encontrada.',
         })
       }
 

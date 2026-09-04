@@ -107,8 +107,8 @@ export const useCollectionDeleteMutation = (
         )
         options.onSuccess?.(data.id)
         notify.success({
-          title: 'Colección eliminada',
-          message: 'La colección y sus facturas asociadas fueron eliminadas.',
+          title: 'Colección archivada',
+          message: 'La colección dejó de mostrarse, pero su historial se conserva.',
         })
       },
       onError: (error) => {
