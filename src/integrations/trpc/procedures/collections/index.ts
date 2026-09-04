@@ -68,6 +68,29 @@ const isCompatibleVatPeriod = (
   return semesterStart && semesterEnd && start.day === 1 && end.day === end.endOf('month').day && start.year === end.year
 }
 
+const persistBlockedRun = (input: {
+  userId: string
+  collectionId: string
+  code: string
+  message: string
+  contextRevisionId?: string
+  taxpayerProfileRevisionId?: string
+}) =>
+  prisma.analysisRun.create({
+    data: {
+      userId: input.userId,
+      collectionId: input.collectionId,
+      collectionContextRevisionId: input.contextRevisionId,
+      taxpayerProfileRevisionId: input.taxpayerProfileRevisionId,
+      promptVersion: 'v2',
+      inputSnapshot: { schemaVersion: 'v2', blockCode: input.code },
+      idempotencyKey: crypto.randomUUID(),
+      status: 'blocked',
+      blockCode: input.code,
+      blockMessage: input.message,
+    },
+  })
+
 export const collectionsRouter = {
   list: privateProcedure
     .input(GetCollectionsRequestSchema)
@@ -319,16 +342,6 @@ export const collectionsRouter = {
         data.credentialId,
       )
 
-      const fiscalReferenceCount = await prisma.fiscalReference.count({
-        where: { userId: principal.userId, deletedAt: null },
-      })
-      if (fiscalReferenceCount === 0)
-        throw new TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message:
-            'Agrega al menos una referencia fiscal autogestionada antes de analizar.',
-        })
-
       const { type, billIds } = data
 
       const collection = await prisma.collection.findUnique({
@@ -347,6 +360,49 @@ export const collectionsRouter = {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Collection not found',
+        })
+      }
+
+      const context = await prisma.collectionContextRevision.findFirst({
+        where: { collectionId: collection.id, userId: principal.userId },
+        include: { taxpayerProfileRevision: true, activities: true },
+        orderBy: { revision: 'desc' },
+      })
+      if (!context) {
+        await persistBlockedRun({
+          userId: principal.userId,
+          collectionId: collection.id,
+          code: 'MISSING_COLLECTION_CONTEXT',
+          message: 'Configura el propósito, período y perfil de la colección antes de analizar.',
+        })
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Configura el propósito, período y perfil de la colección antes de analizar.',
+        })
+      }
+      const contextBlocks = collectionContextBlocks(
+        {
+          purpose: context.purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
+          period: { startDate: context.periodStartDate.toISOString().slice(0, 10), endDate: context.periodEndDate.toISOString().slice(0, 10) },
+          taxpayerProfileRevisionId: context.taxpayerProfileRevisionId,
+          activityRevisionIds: context.activities.map((activity) => activity.economicActivityRevisionId),
+          notes: context.notes ?? undefined,
+        },
+        TaxpayerProfileContextSchema.parse(context.taxpayerProfileRevision),
+      )
+      if (contextBlocks.length) {
+        const message = contextBlocks.map((block) => block.message).join(' ')
+        await persistBlockedRun({
+          userId: principal.userId,
+          collectionId: collection.id,
+          contextRevisionId: context.id,
+          taxpayerProfileRevisionId: context.taxpayerProfileRevisionId,
+          code: contextBlocks[0].code,
+          message,
+        })
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message,
         })
       }
 

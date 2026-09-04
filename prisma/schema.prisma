@@ -431,12 +431,12 @@ model AnalysisRun {
   id String @id @default(uuid())
   collectionId String
   userId String
-  collectionContextRevisionId String
-  taxpayerProfileRevisionId String
-  ruleSetId String
-  providerConnectionId String
-  provider String @db.VarChar(50)
-  modelId String @db.VarChar(255)
+  collectionContextRevisionId String?
+  taxpayerProfileRevisionId String?
+  ruleSetId String?
+  providerConnectionId String?
+  provider String? @db.VarChar(50)
+  modelId String? @db.VarChar(255)
   promptVersion String @db.VarChar(100)
   inputSnapshot Json
   idempotencyKey String @db.VarChar(255)

@@ -225,12 +225,12 @@ export type AnalysisRunGroupByOutputType = {
   id: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId: string | null
+  taxpayerProfileRevisionId: string | null
+  ruleSetId: string | null
+  providerConnectionId: string | null
+  provider: string | null
+  modelId: string | null
   promptVersion: string
   inputSnapshot: runtime.JsonValue
   idempotencyKey: string
@@ -267,12 +267,12 @@ export type AnalysisRunWhereInput = {
   id?: Prisma.StringFilter<"AnalysisRun"> | string
   collectionId?: Prisma.StringFilter<"AnalysisRun"> | string
   userId?: Prisma.StringFilter<"AnalysisRun"> | string
-  collectionContextRevisionId?: Prisma.StringFilter<"AnalysisRun"> | string
-  taxpayerProfileRevisionId?: Prisma.StringFilter<"AnalysisRun"> | string
-  ruleSetId?: Prisma.StringFilter<"AnalysisRun"> | string
-  providerConnectionId?: Prisma.StringFilter<"AnalysisRun"> | string
-  provider?: Prisma.StringFilter<"AnalysisRun"> | string
-  modelId?: Prisma.StringFilter<"AnalysisRun"> | string
+  collectionContextRevisionId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  taxpayerProfileRevisionId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  ruleSetId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  providerConnectionId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  provider?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  modelId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
   promptVersion?: Prisma.StringFilter<"AnalysisRun"> | string
   inputSnapshot?: Prisma.JsonFilter<"AnalysisRun">
   idempotencyKey?: Prisma.StringFilter<"AnalysisRun"> | string
@@ -290,12 +290,12 @@ export type AnalysisRunOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   collectionId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  collectionContextRevisionId?: Prisma.SortOrder
-  taxpayerProfileRevisionId?: Prisma.SortOrder
-  ruleSetId?: Prisma.SortOrder
-  providerConnectionId?: Prisma.SortOrder
-  provider?: Prisma.SortOrder
-  modelId?: Prisma.SortOrder
+  collectionContextRevisionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  taxpayerProfileRevisionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ruleSetId?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerConnectionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  provider?: Prisma.SortOrderInput | Prisma.SortOrder
+  modelId?: Prisma.SortOrderInput | Prisma.SortOrder
   promptVersion?: Prisma.SortOrder
   inputSnapshot?: Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
@@ -317,12 +317,12 @@ export type AnalysisRunWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.AnalysisRunWhereInput | Prisma.AnalysisRunWhereInput[]
   collectionId?: Prisma.StringFilter<"AnalysisRun"> | string
   userId?: Prisma.StringFilter<"AnalysisRun"> | string
-  collectionContextRevisionId?: Prisma.StringFilter<"AnalysisRun"> | string
-  taxpayerProfileRevisionId?: Prisma.StringFilter<"AnalysisRun"> | string
-  ruleSetId?: Prisma.StringFilter<"AnalysisRun"> | string
-  providerConnectionId?: Prisma.StringFilter<"AnalysisRun"> | string
-  provider?: Prisma.StringFilter<"AnalysisRun"> | string
-  modelId?: Prisma.StringFilter<"AnalysisRun"> | string
+  collectionContextRevisionId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  taxpayerProfileRevisionId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  ruleSetId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  providerConnectionId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  provider?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
+  modelId?: Prisma.StringNullableFilter<"AnalysisRun"> | string | null
   promptVersion?: Prisma.StringFilter<"AnalysisRun"> | string
   inputSnapshot?: Prisma.JsonFilter<"AnalysisRun">
   idempotencyKey?: Prisma.StringFilter<"AnalysisRun"> | string
@@ -340,12 +340,12 @@ export type AnalysisRunOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   collectionId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  collectionContextRevisionId?: Prisma.SortOrder
-  taxpayerProfileRevisionId?: Prisma.SortOrder
-  ruleSetId?: Prisma.SortOrder
-  providerConnectionId?: Prisma.SortOrder
-  provider?: Prisma.SortOrder
-  modelId?: Prisma.SortOrder
+  collectionContextRevisionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  taxpayerProfileRevisionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ruleSetId?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerConnectionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  provider?: Prisma.SortOrderInput | Prisma.SortOrder
+  modelId?: Prisma.SortOrderInput | Prisma.SortOrder
   promptVersion?: Prisma.SortOrder
   inputSnapshot?: Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
@@ -367,12 +367,12 @@ export type AnalysisRunScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
   collectionId?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
   userId?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
-  collectionContextRevisionId?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
-  taxpayerProfileRevisionId?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
-  ruleSetId?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
-  providerConnectionId?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
-  provider?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
-  modelId?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
+  collectionContextRevisionId?: Prisma.StringNullableWithAggregatesFilter<"AnalysisRun"> | string | null
+  taxpayerProfileRevisionId?: Prisma.StringNullableWithAggregatesFilter<"AnalysisRun"> | string | null
+  ruleSetId?: Prisma.StringNullableWithAggregatesFilter<"AnalysisRun"> | string | null
+  providerConnectionId?: Prisma.StringNullableWithAggregatesFilter<"AnalysisRun"> | string | null
+  provider?: Prisma.StringNullableWithAggregatesFilter<"AnalysisRun"> | string | null
+  modelId?: Prisma.StringNullableWithAggregatesFilter<"AnalysisRun"> | string | null
   promptVersion?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
   inputSnapshot?: Prisma.JsonWithAggregatesFilter<"AnalysisRun">
   idempotencyKey?: Prisma.StringWithAggregatesFilter<"AnalysisRun"> | string
@@ -388,12 +388,12 @@ export type AnalysisRunCreateInput = {
   id?: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId?: string | null
+  taxpayerProfileRevisionId?: string | null
+  ruleSetId?: string | null
+  providerConnectionId?: string | null
+  provider?: string | null
+  modelId?: string | null
   promptVersion: string
   inputSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey: string
@@ -411,12 +411,12 @@ export type AnalysisRunUncheckedCreateInput = {
   id?: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId?: string | null
+  taxpayerProfileRevisionId?: string | null
+  ruleSetId?: string | null
+  providerConnectionId?: string | null
+  provider?: string | null
+  modelId?: string | null
   promptVersion: string
   inputSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey: string
@@ -434,12 +434,12 @@ export type AnalysisRunUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -457,12 +457,12 @@ export type AnalysisRunUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -480,12 +480,12 @@ export type AnalysisRunCreateManyInput = {
   id?: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId?: string | null
+  taxpayerProfileRevisionId?: string | null
+  ruleSetId?: string | null
+  providerConnectionId?: string | null
+  provider?: string | null
+  modelId?: string | null
   promptVersion: string
   inputSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey: string
@@ -501,12 +501,12 @@ export type AnalysisRunUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -522,12 +522,12 @@ export type AnalysisRunUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -642,12 +642,12 @@ export type AnalysisRunCreateWithoutInvoicesInput = {
   id?: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId?: string | null
+  taxpayerProfileRevisionId?: string | null
+  ruleSetId?: string | null
+  providerConnectionId?: string | null
+  provider?: string | null
+  modelId?: string | null
   promptVersion: string
   inputSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey: string
@@ -664,12 +664,12 @@ export type AnalysisRunUncheckedCreateWithoutInvoicesInput = {
   id?: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId?: string | null
+  taxpayerProfileRevisionId?: string | null
+  ruleSetId?: string | null
+  providerConnectionId?: string | null
+  provider?: string | null
+  modelId?: string | null
   promptVersion: string
   inputSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey: string
@@ -702,12 +702,12 @@ export type AnalysisRunUpdateWithoutInvoicesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -724,12 +724,12 @@ export type AnalysisRunUncheckedUpdateWithoutInvoicesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -746,12 +746,12 @@ export type AnalysisRunCreateWithoutResultsInput = {
   id?: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId?: string | null
+  taxpayerProfileRevisionId?: string | null
+  ruleSetId?: string | null
+  providerConnectionId?: string | null
+  provider?: string | null
+  modelId?: string | null
   promptVersion: string
   inputSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey: string
@@ -768,12 +768,12 @@ export type AnalysisRunUncheckedCreateWithoutResultsInput = {
   id?: string
   collectionId: string
   userId: string
-  collectionContextRevisionId: string
-  taxpayerProfileRevisionId: string
-  ruleSetId: string
-  providerConnectionId: string
-  provider: string
-  modelId: string
+  collectionContextRevisionId?: string | null
+  taxpayerProfileRevisionId?: string | null
+  ruleSetId?: string | null
+  providerConnectionId?: string | null
+  provider?: string | null
+  modelId?: string | null
   promptVersion: string
   inputSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey: string
@@ -806,12 +806,12 @@ export type AnalysisRunUpdateWithoutResultsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -828,12 +828,12 @@ export type AnalysisRunUncheckedUpdateWithoutResultsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  collectionContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  taxpayerProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
-  ruleSetId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
-  provider?: Prisma.StringFieldUpdateOperationsInput | string
-  modelId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionContextRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxpayerProfileRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ruleSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerConnectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   promptVersion?: Prisma.StringFieldUpdateOperationsInput | string
   inputSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
@@ -992,12 +992,12 @@ export type $AnalysisRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: string
     collectionId: string
     userId: string
-    collectionContextRevisionId: string
-    taxpayerProfileRevisionId: string
-    ruleSetId: string
-    providerConnectionId: string
-    provider: string
-    modelId: string
+    collectionContextRevisionId: string | null
+    taxpayerProfileRevisionId: string | null
+    ruleSetId: string | null
+    providerConnectionId: string | null
+    provider: string | null
+    modelId: string | null
     promptVersion: string
     inputSnapshot: runtime.JsonValue
     idempotencyKey: string
