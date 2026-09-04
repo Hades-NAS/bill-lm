@@ -405,6 +405,22 @@ export const collectionsRouter = {
           message,
         })
       }
+      const ruleSet = await prisma.taxRuleSet.findFirst({
+        where: {
+          purpose: context.purpose,
+          taxRegime: context.taxpayerProfileRevision.taxRegime,
+          vatFilingFrequency: context.taxpayerProfileRevision.vatFilingFrequency,
+          reviewStatus: 'active',
+          effectiveFrom: { lte: context.periodStartDate },
+          OR: [{ effectiveTo: null }, { effectiveTo: { gte: context.periodEndDate } }],
+        },
+        orderBy: { effectiveFrom: 'desc' },
+      })
+      if (!ruleSet) {
+        const message = 'No existe un ruleset oficial activo para este contexto y período.'
+        await persistBlockedRun({ userId: principal.userId, collectionId: collection.id, contextRevisionId: context.id, taxpayerProfileRevisionId: context.taxpayerProfileRevisionId, code: 'MISSING_APPLICABLE_RULESET', message })
+        throw new TRPCError({ code: 'PRECONDITION_FAILED', message })
+      }
 
       let billsToAnalyze: Array<{ id: string }> = []
 
@@ -468,10 +484,29 @@ export const collectionsRouter = {
         })
       }
 
+      const analysisRun = await prisma.analysisRun.create({
+        data: {
+          userId: principal.userId,
+          collectionId: collection.id,
+          collectionContextRevisionId: context.id,
+          taxpayerProfileRevisionId: context.taxpayerProfileRevisionId,
+          ruleSetId: ruleSet.id,
+          providerConnectionId: connection.id,
+          provider: connection.provider,
+          modelId: connection.modelId,
+          promptVersion: 'v2',
+          inputSnapshot: { schemaVersion: 'v2', collectionContextRevisionId: context.id, taxpayerProfileRevisionId: context.taxpayerProfileRevisionId, activityRevisionIds: context.activities.map((activity) => activity.economicActivityRevisionId), ruleSetId: ruleSet.id, providerConnectionId: connection.id },
+          idempotencyKey: crypto.randomUUID(),
+          status: 'queued',
+          invoices: { create: billsToAnalyze.map((bill) => ({ billId: bill.id, snapshot: { id: bill.id } })) },
+        },
+      })
+
       const payload: AnalyzeJobData = {
         jobId: crypto.randomUUID(),
         userId: principal.userId,
         credentialId: connection.id,
+        analysisRunId: analysisRun.id,
         data: {
           collectionId: collection.id,
           collectionName: collection.name,

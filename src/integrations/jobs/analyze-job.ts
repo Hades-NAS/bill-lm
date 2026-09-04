@@ -43,6 +43,18 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
     })
 
     if (!credentialId) throw new Error('The job has no provider connection')
+    if (!job.data.analysisRunId) throw new Error('The job has no analysis run')
+
+    const run = await prisma.analysisRun.findFirst({
+      where: { id: job.data.analysisRunId, userId, status: 'queued' },
+    })
+    if (!run) throw new Error('The analysis run is no longer eligible')
+    if (!run.ruleSetId || !run.collectionContextRevisionId)
+      throw new Error('The analysis run has incomplete context')
+    await prisma.analysisRun.update({
+      where: { id: run.id },
+      data: { status: 'running', startedAt: new Date() },
+    })
 
     const [connection, collection, fiscalReferences] = await Promise.all([
       prisma.providerConnection.findFirst({
@@ -107,10 +119,19 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         percentage: 100,
         updatedAt: DateTime.now().toJSDate(),
       })
+    await prisma.analysisRun.update({
+      where: { id: run.id },
+      data: { status: failureCount === 0 ? 'completed' : 'failed', completedAt: new Date() },
+    })
 
     return true
   } catch (error) {
     logger.error(`[Worker] Job ${jobId} failed`)
+    if (job.data.analysisRunId)
+      await prisma.analysisRun.updateMany({
+        where: { id: job.data.analysisRunId, userId, status: { in: ['queued', 'running'] } },
+        data: { status: 'failed', completedAt: new Date() },
+      })
 
     // Update error status in Firestore
     try {
