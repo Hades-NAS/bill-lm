@@ -85,8 +85,9 @@ altere análisis sin aprobación explícita.
 
 Los hashes del pipeline usan `sha256:` seguido de 64 caracteres hexadecimales:
 71 caracteres en total. La migración amplía de 64 a 71 las columnas
-`contentHash` de `TaxRuleSource`, `TaxRuleFragment` y `TaxRuleSet`, y actualiza
-los campos Prisma correspondientes. No transforma ni elimina datos.
+`contentHash` de `FiscalReference`, `TaxRuleSource`, `TaxRuleFragment` y
+`TaxRuleSet`, y actualiza los campos Prisma correspondientes. No transforma ni
+elimina datos.
 
 ## Consumo por la aplicación
 

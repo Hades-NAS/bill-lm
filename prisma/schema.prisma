@@ -194,7 +194,7 @@ model FiscalReference {
   name String @db.VarChar(255)
   sourceType FiscalReferenceSourceType
   storagePath String @db.VarChar(500)
-  contentHash String @db.VarChar(64)
+  contentHash String @db.VarChar(71)
   normalizedSize Int
 
   createdAt DateTime @default(now()) @db.Timestamptz
@@ -364,7 +364,7 @@ model TaxRuleSource {
   jurisdiction String @db.VarChar(100)
   originalStoragePath String @db.VarChar(500)
   derivedMarkdownPath String? @db.VarChar(500)
-  contentHash String @db.VarChar(64)
+  contentHash String @db.VarChar(71)
   reviewStatus String @default("draft") @db.VarChar(20)
   reviewedBy String? @db.VarChar(255)
   reviewedAt DateTime? @db.Timestamptz
@@ -381,7 +381,7 @@ model TaxRuleSet {
   vatFilingFrequency String @db.VarChar(20)
   effectiveFrom DateTime @db.Date
   effectiveTo DateTime? @db.Date
-  contentHash String @db.VarChar(64)
+  contentHash String @db.VarChar(71)
   reviewStatus String @default("draft") @db.VarChar(20)
   reviewedBy String? @db.VarChar(255)
   reviewedAt DateTime? @db.Timestamptz
@@ -396,7 +396,7 @@ model TaxRuleFragment {
   id String @id @default(uuid())
   sourceId String
   articleOrSection String @db.VarChar(255)
-  contentHash String @db.VarChar(64)
+  contentHash String @db.VarChar(71)
   contentMarkdown String @db.Text
   purposes String[]
   taxRegimes String[]
