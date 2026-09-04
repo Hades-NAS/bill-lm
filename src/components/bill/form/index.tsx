@@ -1,4 +1,4 @@
-import { Alert, Box, Flex, Modal, Text } from '@mantine/core'
+import { Alert, Box, Flex, Group, Modal, Text } from '@mantine/core'
 import { FileWarningIcon } from 'lucide-react'
 import React from 'react'
 
@@ -16,6 +16,10 @@ import {
 } from '#/hooks/mutation/bill'
 
 import ConfModal from '#/components/shared/conf-modal'
+import {
+  ContextGuideButton,
+  openContextGuide,
+} from '#/components/shared/context-help'
 import { DropzoneInput } from '#/components/shared/dropzone'
 
 import type {
@@ -36,6 +40,30 @@ export type BillFormData = {
 }
 
 const MAX_BILLS = 10
+
+function openBillUploadGuide() {
+  openContextGuide({
+    title: 'Guía para subir facturas',
+    introduction:
+      'Sube los XML de comprobantes electrónicos que pertenecen a esta colección. El sistema los lee antes de guardarlos.',
+    items: [
+      {
+        title: 'Archivo admitido',
+        description:
+          'Usa el XML original del comprobante electrónico. Una foto o PDF no contiene el mismo detalle estructurado.',
+      },
+      {
+        title: 'Preprocesamiento',
+        description:
+          'El sistema extrae los datos principales y te avisa si un archivo no puede procesarse.',
+      },
+      {
+        title: 'Límite',
+        description: 'Puedes subir hasta diez facturas por vez.',
+      },
+    ],
+  })
+}
 
 const BillAddForm = (props: ModalPageProps<BillFormData>) => {
   const {
@@ -215,9 +243,15 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
         opened={Boolean(opened)}
         size={size}
         title={
-          <Text fw="bolder" size="lg">
-            Agregar facturas
-          </Text>
+          <Group gap="xs">
+            <Text fw="bolder" size="lg">
+              Agregar facturas
+            </Text>
+            <ContextGuideButton
+              title="subir facturas"
+              onClick={openBillUploadGuide}
+            />
+          </Group>
         }
         onClose={() => {
           if (form.state.isDirty) {

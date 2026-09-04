@@ -26,6 +26,10 @@ import { useGetCollectionsQuery } from '#/hooks/query/collection'
 import { CollectionCard } from '#/components/collection/collection-card'
 import CollectionForm from '#/components/collection/form'
 import { EmptyState } from '#/components/shared/empty-state'
+import {
+  ContextGuideButton,
+  openContextGuide,
+} from '#/components/shared/context-help'
 import { LoaderText } from '#/components/shared/loader-text'
 import { QuickFilter } from '#/components/shared/quick-filter'
 
@@ -60,6 +64,32 @@ const defaultFilter: FilterValue = {
   value: '',
 }
 
+function openCollectionsGuide() {
+  openContextGuide({
+    title: 'Guía de colecciones',
+    introduction:
+      'Una colección organiza facturas que quieres revisar juntas. Puedes separarlas por período, actividad o propósito tributario.',
+    items: [
+      {
+        title: 'Organización',
+        description:
+          'Crea una colección para un conjunto que necesites consultar o analizar de forma independiente.',
+        example: 'Facturas personales de 2026 o IVA de enero.',
+      },
+      {
+        title: 'Contexto de análisis',
+        description:
+          'Dentro de cada colección eliges el perfil, las actividades, el propósito y el período que aplican al análisis.',
+      },
+      {
+        title: 'Facturas',
+        description:
+          'Sube comprobantes XML. La colección conserva sus facturas y sus ejecuciones de análisis por separado.',
+      },
+    ],
+  })
+}
+
 function CollectionsListPage() {
   const [modalCollectionForm, setCollectionForm] =
     useModal<CollectionBaseType>()
@@ -92,9 +122,13 @@ function CollectionsListPage() {
       <Stack gap={32}>
         <Group justify="space-between">
           <div>
-            <Title mb={8} order={1}>
-              Mis colecciones
-            </Title>
+            <Group gap="xs" mb={8}>
+              <Title order={1}>Mis colecciones</Title>
+              <ContextGuideButton
+                title="colecciones"
+                onClick={openCollectionsGuide}
+              />
+            </Group>
             <Text c="dimmed">Administra tus colecciones de facturas</Text>
           </div>
 

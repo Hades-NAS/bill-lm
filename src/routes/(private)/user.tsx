@@ -28,10 +28,66 @@ import { useTRPC } from '#/integrations/trpc/react'
 import { fileToBase64 } from '#/utils/file'
 
 import ConfModal from '#/components/shared/conf-modal'
+import {
+  ContextGuideButton,
+  FieldHelpLabel,
+  openContextGuide,
+} from '#/components/shared/context-help'
 
 export const Route = createFileRoute('/(private)/user')({
   component: UserPage,
 })
+
+function openConnectionsGuide() {
+  openContextGuide({
+    title: 'Guía de conexiones de proveedor',
+    introduction:
+      'Una conexión guarda la forma en que Bill-LM usa tu proveedor de IA. La clave se cifra en el servidor y no vuelve al navegador.',
+    items: [
+      {
+        title: 'Proveedor y modelo',
+        description:
+          'Elige el servicio y el modelo que procesarán tus facturas. Puedes conservar varias conexiones para usos distintos.',
+        example: 'OpenAI con gpt-4o-mini para pruebas cotidianas.',
+      },
+      {
+        title: 'Clave de API',
+        description:
+          'Autoriza el uso de tu cuenta del proveedor. Rótala si la reemplazas o sospechas que se expuso.',
+      },
+      {
+        title: 'Conexión predeterminada',
+        description:
+          'El sistema la propone al iniciar un análisis. Puedes elegir otra conexión activa en cada colección.',
+      },
+    ],
+  })
+}
+
+function openFiscalReferencesGuide() {
+  openContextGuide({
+    title: 'Guía de referencias fiscales',
+    introduction:
+      'Estas referencias aportan contexto global a tus análisis. No sustituyen normativa oficial ni asesoría profesional.',
+    items: [
+      {
+        title: 'Alcance global',
+        description:
+          'Cada referencia puede usarse en cualquier colección y en análisis futuros de tu cuenta.',
+      },
+      {
+        title: 'Formato',
+        description:
+          'Puedes subir Markdown, texto plano o un PDF con texto seleccionable. El servidor convierte los PDF a Markdown y limpia el contenido.',
+      },
+      {
+        title: 'Límite',
+        description:
+          'Mantén hasta tres documentos. Reemplaza uno cuando ya no represente tu contexto actual.',
+      },
+    ],
+  })
+}
 
 function UserPage() {
   const trpc = useTRPC()
@@ -166,7 +222,13 @@ function UserPage() {
           <Box>
             <Stack gap="md">
               <Group justify="space-between">
-                <Title order={2}>Conexiones de proveedor</Title>
+                <Group gap="xs">
+                  <Title order={2}>Conexiones de proveedor</Title>
+                  <ContextGuideButton
+                    title="conexiones de proveedor"
+                    onClick={openConnectionsGuide}
+                  />
+                </Group>
                 <Button onClick={() => setCreateModalOpened(true)}>
                   Agregar conexión
                 </Button>
@@ -318,7 +380,13 @@ function UserPage() {
             <Stack gap="md">
               <Group align="flex-start" justify="space-between">
                 <div>
-                  <Title order={2}>Referencias fiscales</Title>
+                  <Group gap="xs">
+                    <Title order={2}>Referencias fiscales</Title>
+                    <ContextGuideButton
+                      title="referencias fiscales"
+                      onClick={openFiscalReferencesGuide}
+                    />
+                  </Group>
                   <Text c="dimmed" size="sm">
                     Material autogestionado global para tus análisis. No se
                     trata como normativa oficial ni como dictamen jurídico.
@@ -406,7 +474,15 @@ function UserPage() {
           <Modal
             centered
             opened={fiscalReferenceModalOpened}
-            title="Agregar referencia fiscal"
+            title={
+              <Group gap="xs">
+                <Text fw={600}>Agregar referencia fiscal</Text>
+                <ContextGuideButton
+                  title="referencias fiscales"
+                  onClick={openFiscalReferencesGuide}
+                />
+              </Group>
+            }
             onClose={closeFiscalReferenceModal}
           >
             <Stack>
@@ -420,7 +496,12 @@ function UserPage() {
                 clearable
                 accept=".md,.markdown,text/markdown,text/plain,application/pdf"
                 disabled={uploadFiscalReference.isPending}
-                label="Archivo de referencia"
+                label={
+                  <FieldHelpLabel
+                    hint="Usa un documento que explique tu contexto fiscal. Evita claves, contraseñas y datos que no quieras enviar al análisis."
+                    label="Archivo de referencia"
+                  />
+                }
                 placeholder="Selecciona un PDF o Markdown"
                 value={fiscalReferenceFile}
                 onChange={setFiscalReferenceFile}
@@ -478,7 +559,15 @@ function UserPage() {
           <Modal
             centered
             opened={createModalOpened}
-            title="Agregar conexión"
+            title={
+              <Group gap="xs">
+                <Text fw={600}>Agregar conexión</Text>
+                <ContextGuideButton
+                  title="conexiones de proveedor"
+                  onClick={openConnectionsGuide}
+                />
+              </Group>
+            }
             onClose={closeCreateModal}
           >
             <Stack>
@@ -487,7 +576,12 @@ function UserPage() {
                   { value: 'openai', label: 'OpenAI' },
                   { value: 'claude', label: 'Claude' },
                 ]}
-                label="Proveedor"
+                label={
+                  <FieldHelpLabel
+                    hint="Elige el proveedor que emitió tu API key."
+                    label="Proveedor"
+                  />
+                }
                 value={provider}
                 onChange={(value) => {
                   const next = value as 'openai' | 'claude'
@@ -498,18 +592,33 @@ function UserPage() {
                 }}
               />
               <TextInput
-                label="Nombre"
+                label={
+                  <FieldHelpLabel
+                    hint="Usa un nombre para reconocer esta conexión al analizar una colección."
+                    label="Nombre"
+                  />
+                }
                 placeholder="Trabajo"
                 value={label}
                 onChange={(event) => setLabel(event.currentTarget.value)}
               />
               <TextInput
-                label="Modelo"
+                label={
+                  <FieldHelpLabel
+                    hint="Escribe el identificador del modelo habilitado en tu cuenta del proveedor."
+                    label="Modelo"
+                  />
+                }
                 value={modelId}
                 onChange={(event) => setModelId(event.currentTarget.value)}
               />
               <PasswordInput
-                label="API key"
+                label={
+                  <FieldHelpLabel
+                    hint="La clave se cifra antes de guardarse. No se muestra de nuevo después de crear la conexión."
+                    label="API key"
+                  />
+                }
                 value={apiKey}
                 onChange={(event) => setApiKey(event.currentTarget.value)}
               />
@@ -541,7 +650,15 @@ function UserPage() {
           <Modal
             centered
             opened={rotationId !== null}
-            title="Rotar API key"
+            title={
+              <Group gap="xs">
+                <Text fw={600}>Rotar API key</Text>
+                <ContextGuideButton
+                  title="conexiones de proveedor"
+                  onClick={openConnectionsGuide}
+                />
+              </Group>
+            }
             onClose={closeRotationModal}
           >
             <Stack>
@@ -549,7 +666,12 @@ function UserPage() {
                 La clave anterior dejará de usarse para futuras ejecuciones.
               </Text>
               <PasswordInput
-                label="Nueva API key"
+                label={
+                  <FieldHelpLabel
+                    hint="Reemplaza la clave guardada. Las ejecuciones futuras usarán la nueva clave."
+                    label="Nueva API key"
+                  />
+                }
                 value={rotationKey}
                 onChange={(event) => setRotationKey(event.currentTarget.value)}
               />

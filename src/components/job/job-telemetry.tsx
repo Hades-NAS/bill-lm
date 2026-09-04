@@ -25,9 +25,33 @@ import {
 import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
 import { NumberDisplay } from '#/components/shared/number-display'
+import {
+  ContextGuideButton,
+  openContextGuide,
+} from '#/components/shared/context-help'
 
 import type { AnalyzeJobData } from '#/schema/collections'
 import type { ModalPageProps } from '#/schema/page'
+
+function openTelemetryGuide() {
+  openContextGuide({
+    title: 'Guía de telemetría',
+    introduction:
+      'La telemetría registra el avance y los eventos técnicos de una ejecución para que puedas entender qué ocurrió.',
+    items: [
+      {
+        title: 'Estado y duración',
+        description:
+          'Indican si el trabajo terminó, falló o continúa en proceso, y cuánto tardó cada parte disponible.',
+      },
+      {
+        title: 'Llamadas del agente',
+        description:
+          'Muestran las etapas registradas durante el análisis. Úsalas para identificar un bloqueo o un error reportado.',
+      },
+    ],
+  })
+}
 
 const JobTelemetryPage = (props: ModalPageProps<string>) => {
   const {
@@ -345,9 +369,15 @@ const JobTelemetryPage = (props: ModalPageProps<string>) => {
         opened={Boolean(opened)}
         size={size}
         title={
-          <Text fw="bolder" size="lg">
-            Telemetría del Job
-          </Text>
+          <Flex align="center" gap="xs">
+            <Text fw="bolder" size="lg">
+              Telemetría del trabajo
+            </Text>
+            <ContextGuideButton
+              title="la telemetría"
+              onClick={openTelemetryGuide}
+            />
+          </Flex>
         }
         onClose={() => outerOnClose?.()}
       >

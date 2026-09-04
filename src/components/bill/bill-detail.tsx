@@ -25,8 +25,37 @@ import { useGetBillDetailQuery } from '#/hooks/query/bill'
 import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
 import { NumberDisplay } from '#/components/shared/number-display'
+import {
+  ContextGuideButton,
+  openContextGuide,
+} from '#/components/shared/context-help'
 
 import type { ModalPageProps } from '#/schema/page'
+
+function openBillDetailGuide() {
+  openContextGuide({
+    title: 'Guía del detalle de factura',
+    introduction:
+      'Este detalle muestra la información extraída del XML de un comprobante que pertenece a una colección.',
+    items: [
+      {
+        title: 'Datos del comprobante',
+        description:
+          'Revisa emisor, receptor, fecha, totales y tipo de factura antes de usarla en un análisis.',
+      },
+      {
+        title: 'Productos o servicios',
+        description:
+          'Muestra el detalle reportado por el XML, como descripción, cantidad y valor unitario.',
+      },
+      {
+        title: 'Análisis',
+        description:
+          'Los resultados tributarios se guardan por ejecución y conservan el contexto aplicado en ese momento.',
+      },
+    ],
+  })
+}
 
 const BillDetailPage = (props: ModalPageProps<string>) => {
   const {
@@ -256,9 +285,15 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
         scrollAreaComponent={ScrollArea.Autosize}
         size={size}
         title={
-          <Text fw="bolder" size="lg">
-            Detalle de factura
-          </Text>
+          <Flex align="center" gap="xs">
+            <Text fw="bolder" size="lg">
+              Detalle de factura
+            </Text>
+            <ContextGuideButton
+              title="el detalle de factura"
+              onClick={openBillDetailGuide}
+            />
+          </Flex>
         }
         onClose={() => outerOnClose?.()}
       >

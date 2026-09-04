@@ -64,6 +64,11 @@ import BillDetailPage from '#/components/bill/bill-detail'
 import BillAddForm from '#/components/bill/form'
 import CollectionForm from '#/components/collection/form'
 import ConfModal from '#/components/shared/conf-modal'
+import {
+  ContextGuideButton,
+  FieldHelpLabel,
+  openContextGuide,
+} from '#/components/shared/context-help'
 import { EmptyState } from '#/components/shared/empty-state'
 import Input from '#/components/shared/input'
 import { NumberDisplay } from '#/components/shared/number-display'
@@ -98,6 +103,81 @@ const filterFields: Array<FilterField> = [
   },
 ]
 
+function openAnalysisContextGuide() {
+  openContextGuide({
+    title: 'Guía del contexto de análisis',
+    introduction:
+      'El contexto indica cómo interpretar las facturas de esta colección. Cada cambio crea una revisión para preservar los análisis anteriores.',
+    items: [
+      {
+        title: 'Propósito',
+        description:
+          'Define el tipo de análisis: IVA, impuesto a la renta de actividades económicas o gastos personales.',
+      },
+      {
+        title: 'Período',
+        description: 'Delimita las fechas que cubre esta revisión de contexto.',
+        example: 'Del 1 al 30 de septiembre de 2026.',
+      },
+      {
+        title: 'Perfil y actividades',
+        description:
+          'Selecciona la configuración tributaria vigente. Los gastos personales no usan actividades económicas.',
+      },
+      {
+        title: 'Revisión',
+        description:
+          'Al guardar, el sistema conserva una versión nueva. Los resultados anteriores siguen vinculados a la versión que usaron.',
+      },
+    ],
+  })
+}
+
+function openAnalysisHistoryGuide() {
+  openContextGuide({
+    title: 'Guía del historial de análisis',
+    introduction:
+      'Cada ejecución guarda el contexto, las facturas, la conexión y las referencias usadas en ese momento.',
+    items: [
+      {
+        title: 'Ejecución bloqueada',
+        description:
+          'Aparece cuando falta configuración necesaria. El sistema no llama al modelo en ese caso.',
+      },
+      {
+        title: 'Resultado',
+        description:
+          'Muestra cuántas facturas procesó la ejecución y el proveedor o modelo usado.',
+      },
+    ],
+  })
+}
+
+function openInvoicesGuide() {
+  openContextGuide({
+    title: 'Guía de facturas',
+    introduction:
+      'Las facturas pertenecen a esta colección y se analizan con el contexto que configures para ella.',
+    items: [
+      {
+        title: 'Carga',
+        description:
+          'Sube el XML original de cada comprobante electrónico. Puedes cargar hasta diez por vez.',
+      },
+      {
+        title: 'Selección',
+        description:
+          'Selecciona una o más facturas para eliminarlas. La eliminación no modifica ejecuciones que ya terminaron.',
+      },
+      {
+        title: 'Resultados',
+        description:
+          'Cada análisis conserva un resultado por factura junto con el contexto usado.',
+      },
+    ],
+  })
+}
+
 function CollectionDetailPage() {
   const { id: collectionId } = Route.useParams()
 
@@ -129,8 +209,12 @@ function CollectionDetailPage() {
   const userCanAnalyzeQuery = useCheckCanAnalyzeCollectionQuery()
   const trpc = useTRPC()
   const queryClient = useQueryClient()
-  const profilesQuery = useQuery(trpc.taxpayerProfiles.listProfiles.queryOptions())
-  const activitiesQuery = useQuery(trpc.taxpayerProfiles.listActivities.queryOptions())
+  const profilesQuery = useQuery(
+    trpc.taxpayerProfiles.listProfiles.queryOptions(),
+  )
+  const activitiesQuery = useQuery(
+    trpc.taxpayerProfiles.listActivities.queryOptions(),
+  )
   const contextRevisionsQuery = useQuery(
     trpc.collections.listContextRevisions.queryOptions({ id: collectionId }),
   )
@@ -139,15 +223,30 @@ function CollectionDetailPage() {
   )
   const createContextRevision = useMutation(
     trpc.collections.createContextRevision.mutationOptions({
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.collections.listContextRevisions.queryKey({ id: collectionId }) }),
+      onSuccess: () =>
+        queryClient.invalidateQueries({
+          queryKey: trpc.collections.listContextRevisions.queryKey({
+            id: collectionId,
+          }),
+        }),
     }),
   )
   const [contextModalOpened, setContextModalOpened] = React.useState(false)
-  const [purpose, setPurpose] = React.useState<'vat_credit' | 'business_income_tax' | 'personal_expenses'>('personal_expenses')
-  const [profileRevisionId, setProfileRevisionId] = React.useState<string | null>(null)
-  const [activityRevisionIds, setActivityRevisionIds] = React.useState<string[]>([])
-  const [periodStartDate, setPeriodStartDate] = React.useState(`${collectionQuery.data?.year ?? DateTime.now().year}-01-01`)
-  const [periodEndDate, setPeriodEndDate] = React.useState(`${collectionQuery.data?.year ?? DateTime.now().year}-12-31`)
+  const [purpose, setPurpose] = React.useState<
+    'vat_credit' | 'business_income_tax' | 'personal_expenses'
+  >('personal_expenses')
+  const [profileRevisionId, setProfileRevisionId] = React.useState<
+    string | null
+  >(null)
+  const [activityRevisionIds, setActivityRevisionIds] = React.useState<
+    string[]
+  >([])
+  const [periodStartDate, setPeriodStartDate] = React.useState(
+    `${collectionQuery.data?.year ?? DateTime.now().year}-01-01`,
+  )
+  const [periodEndDate, setPeriodEndDate] = React.useState(
+    `${collectionQuery.data?.year ?? DateTime.now().year}-12-31`,
+  )
   const connectionsQuery = useQuery(
     trpc.providerConnections.list.queryOptions(),
   )
@@ -242,16 +341,143 @@ function CollectionDetailPage() {
         }}
       />
 
-      <Modal centered fullScreen={isMobile} opened={contextModalOpened} title="Configurar contexto de análisis" onClose={() => setContextModalOpened(false)}>
+      <Modal
+        centered
+        fullScreen={isMobile}
+        opened={contextModalOpened}
+        title={
+          <Group gap="xs">
+            <Text fw={600}>Configurar contexto de análisis</Text>
+            <ContextGuideButton
+              title="el contexto de análisis"
+              onClick={openAnalysisContextGuide}
+            />
+          </Group>
+        }
+        onClose={() => setContextModalOpened(false)}
+      >
         <Stack gap="sm">
-          <Alert color="blue">El contexto se guarda como una nueva revisión; los análisis anteriores no cambian.</Alert>
-          <Select data={[{ value: 'vat_credit', label: 'Declaración de IVA' }, { value: 'business_income_tax', label: 'IR: gastos de actividades económicas' }, { value: 'personal_expenses', label: 'IR: gastos personales' }]} label="Propósito" value={purpose} onChange={(value) => { const next = (value ?? 'personal_expenses') as typeof purpose; setPurpose(next); if (next === 'personal_expenses') setActivityRevisionIds([]) }} />
-          <TextInput label="Inicio del período" type="date" value={periodStartDate} onChange={(event) => setPeriodStartDate(event.currentTarget.value)} />
-          <TextInput label="Fin del período" type="date" value={periodEndDate} onChange={(event) => setPeriodEndDate(event.currentTarget.value)} />
-          <Select data={(profilesQuery.data ?? []).flatMap((profile) => profile.revisions[0] ? [{ value: profile.revisions[0].id, label: `${profile.revisions[0].displayName} · rev. ${profile.revisions[0].revision}` }] : [])} label="Perfil tributario" value={profileRevisionId} onChange={setProfileRevisionId} />
-          <MultiSelect data={(activitiesQuery.data ?? []).flatMap((activity) => activity.revisions[0] ? [{ value: activity.revisions[0].id, label: activity.revisions[0].displayName }] : [])} disabled={purpose === 'personal_expenses'} label="Actividades económicas" value={activityRevisionIds} onChange={setActivityRevisionIds} />
-          {createContextRevision.error && <Alert color="red">{createContextRevision.error.message}</Alert>}
-          <Group justify="space-between"><Text c="dimmed" size="sm">{contextRevisionsQuery.data?.[0] ? `Revisión actual: ${contextRevisionsQuery.data[0].revision}` : 'Aún no hay contexto.'}</Text><Button disabled={!profileRevisionId} loading={createContextRevision.isPending} onClick={() => { if (!profileRevisionId) return; createContextRevision.mutate({ collectionId, purpose, period: { startDate: periodStartDate, endDate: periodEndDate }, taxpayerProfileRevisionId: profileRevisionId, activityRevisionIds }, { onSuccess: () => setContextModalOpened(false) }) }}>Guardar contexto</Button></Group>
+          <Alert color="blue">
+            El contexto se guarda como una nueva revisión; los análisis
+            anteriores no cambian.
+          </Alert>
+          <Select
+            data={[
+              { value: 'vat_credit', label: 'Declaración de IVA' },
+              {
+                value: 'business_income_tax',
+                label: 'IR: gastos de actividades económicas',
+              },
+              { value: 'personal_expenses', label: 'IR: gastos personales' },
+            ]}
+            label={
+              <FieldHelpLabel
+                hint="Define el tipo de cálculo que quieres preparar para esta colección."
+                label="Propósito"
+              />
+            }
+            value={purpose}
+            onChange={(value) => {
+              const next = (value ?? 'personal_expenses') as typeof purpose
+              setPurpose(next)
+              if (next === 'personal_expenses') setActivityRevisionIds([])
+            }}
+          />
+          <TextInput
+            label={
+              <FieldHelpLabel
+                hint="Indica la primera fecha que cubre esta revisión de contexto."
+                label="Inicio del período"
+              />
+            }
+            type="date"
+            value={periodStartDate}
+            onChange={(event) => setPeriodStartDate(event.currentTarget.value)}
+          />
+          <TextInput
+            label={
+              <FieldHelpLabel
+                hint="Indica la última fecha que cubre esta revisión de contexto."
+                label="Fin del período"
+              />
+            }
+            type="date"
+            value={periodEndDate}
+            onChange={(event) => setPeriodEndDate(event.currentTarget.value)}
+          />
+          <Select
+            data={(profilesQuery.data ?? []).flatMap((profile) =>
+              profile.revisions[0]
+                ? [
+                    {
+                      value: profile.revisions[0].id,
+                      label: `${profile.revisions[0].displayName} · rev. ${profile.revisions[0].revision}`,
+                    },
+                  ]
+                : [],
+            )}
+            label={
+              <FieldHelpLabel
+                hint="Elige el perfil tributario vigente para este análisis."
+                label="Perfil tributario"
+              />
+            }
+            value={profileRevisionId}
+            onChange={setProfileRevisionId}
+          />
+          <MultiSelect
+            data={(activitiesQuery.data ?? []).flatMap((activity) =>
+              activity.revisions[0]
+                ? [
+                    {
+                      value: activity.revisions[0].id,
+                      label: activity.revisions[0].displayName,
+                    },
+                  ]
+                : [],
+            )}
+            disabled={purpose === 'personal_expenses'}
+            label={
+              <FieldHelpLabel
+                hint="Selecciona las actividades vinculadas al IVA o al impuesto a la renta de tu negocio."
+                label="Actividades económicas"
+              />
+            }
+            value={activityRevisionIds}
+            onChange={setActivityRevisionIds}
+          />
+          {createContextRevision.error && (
+            <Alert color="red">{createContextRevision.error.message}</Alert>
+          )}
+          <Group justify="space-between">
+            <Text c="dimmed" size="sm">
+              {contextRevisionsQuery.data?.[0]
+                ? `Revisión actual: ${contextRevisionsQuery.data[0].revision}`
+                : 'Aún no hay contexto.'}
+            </Text>
+            <Button
+              disabled={!profileRevisionId}
+              loading={createContextRevision.isPending}
+              onClick={() => {
+                if (!profileRevisionId) return
+                createContextRevision.mutate(
+                  {
+                    collectionId,
+                    purpose,
+                    period: {
+                      startDate: periodStartDate,
+                      endDate: periodEndDate,
+                    },
+                    taxpayerProfileRevisionId: profileRevisionId,
+                    activityRevisionIds,
+                  },
+                  { onSuccess: () => setContextModalOpened(false) },
+                )
+              }}
+            >
+              Guardar contexto
+            </Button>
+          </Group>
         </Stack>
       </Modal>
 
@@ -311,9 +537,15 @@ function CollectionDetailPage() {
         opened={!!analyzeModal.opened}
         size="lg"
         title={
-          <Text fw="bolder" size="lg">
-            Analizar colección
-          </Text>
+          <Group gap="xs">
+            <Text fw="bolder" size="lg">
+              Analizar colección
+            </Text>
+            <ContextGuideButton
+              title="el contexto de análisis"
+              onClick={openAnalysisContextGuide}
+            />
+          </Group>
         }
         onClose={() => {
           setAnalyzeModal({ opened: false })
@@ -378,7 +610,12 @@ function CollectionDetailPage() {
               value: connection.id,
               label: `${connection.label} · ${connection.modelId}`,
             }))}
-            label="Conexión"
+            label={
+              <FieldHelpLabel
+                hint="Elige qué conexión activa procesará esta ejecución. El resultado guardará proveedor y modelo usados."
+                label="Conexión"
+              />
+            }
             mt="md"
             typeInput="select"
             value={
@@ -418,7 +655,9 @@ function CollectionDetailPage() {
           {billsCalcQuery.data && billsCalcQuery.data.notAnalyzed && (
             <Button
               color="violet"
-              disabled={!analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze}
+              disabled={
+                !analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze
+              }
               loading={isAnalyzing}
               onClick={analyzeByType.bind(null, 'all')}
             >
@@ -428,7 +667,9 @@ function CollectionDetailPage() {
           {billsCalcQuery.data && billsCalcQuery.data.partialAnalyzed && (
             <Button
               color="violet"
-              disabled={!analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze}
+              disabled={
+                !analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze
+              }
               loading={isAnalyzing}
               variant={billsCalcQuery.data.fullAnalyzed ? 'light' : 'filled'}
               onClick={analyzeByType.bind(null, 'missing')}
@@ -441,7 +682,9 @@ function CollectionDetailPage() {
               billsCalcQuery.data.partialAnalyzed) && (
               <Button
                 color="violet"
-                disabled={!analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze}
+                disabled={
+                  !analysisConfigReady || !userCanAnalyzeQuery.data?.canAnalyze
+                }
                 loading={isAnalyzing}
                 onClick={analyzeByType.bind(null, 'all')}
               >
@@ -595,10 +838,59 @@ function CollectionDetailPage() {
               <Box>
                 <Card withBorder mb="md" padding="md" radius="md">
                   <Group justify="space-between" mb="sm">
-                    <Title order={2}>Historial de análisis</Title>
-                    <Badge variant="light">{analysisRunsQuery.data?.length ?? 0} runs</Badge>
+                    <Group gap="xs">
+                      <Title order={2}>Historial de análisis</Title>
+                      <ContextGuideButton
+                        title="el historial de análisis"
+                        onClick={openAnalysisHistoryGuide}
+                      />
+                    </Group>
+                    <Badge variant="light">
+                      {analysisRunsQuery.data?.length ?? 0} runs
+                    </Badge>
                   </Group>
-                  {analysisRunsQuery.isPending ? <Skeleton height={54} /> : analysisRunsQuery.data?.length ? <Stack gap="xs">{analysisRunsQuery.data.slice(0, 5).map((run) => <Box key={run.id} p="xs" style={{ borderBottom: '1px solid var(--mantine-color-default-border)' }}><Group justify="space-between"><Text fw={600}>{run.status === 'blocked' ? 'Bloqueado' : `Run ${run.status}`}</Text><Text c="dimmed" size="sm">{run.createdAt.toLocaleString('es-EC')}</Text></Group>{run.blockMessage && <Text c="red" size="sm">{run.blockMessage}</Text>}<Text c="dimmed" size="sm">{run.results.length} resultados · {run.provider ?? 'sin proveedor'} {run.modelId ?? ''}</Text></Box>)}</Stack> : <Text c="dimmed" size="sm">Aún no hay ejecuciones. Los bloqueos y resultados aparecerán aquí.</Text>}
+                  {analysisRunsQuery.isPending ? (
+                    <Skeleton height={54} />
+                  ) : analysisRunsQuery.data?.length ? (
+                    <Stack gap="xs">
+                      {analysisRunsQuery.data.slice(0, 5).map((run) => (
+                        <Box
+                          key={run.id}
+                          p="xs"
+                          style={{
+                            borderBottom:
+                              '1px solid var(--mantine-color-default-border)',
+                          }}
+                        >
+                          <Group justify="space-between">
+                            <Text fw={600}>
+                              {run.status === 'blocked'
+                                ? 'Bloqueado'
+                                : `Run ${run.status}`}
+                            </Text>
+                            <Text c="dimmed" size="sm">
+                              {run.createdAt.toLocaleString('es-EC')}
+                            </Text>
+                          </Group>
+                          {run.blockMessage && (
+                            <Text c="red" size="sm">
+                              {run.blockMessage}
+                            </Text>
+                          )}
+                          <Text c="dimmed" size="sm">
+                            {run.results.length} resultados ·{' '}
+                            {run.provider ?? 'sin proveedor'}{' '}
+                            {run.modelId ?? ''}
+                          </Text>
+                        </Box>
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Text c="dimmed" size="sm">
+                      Aún no hay ejecuciones. Los bloqueos y resultados
+                      aparecerán aquí.
+                    </Text>
+                  )}
                 </Card>
                 <Card withBorder padding="md" radius="md" shadow="sm">
                   <Flex
@@ -614,7 +906,13 @@ function CollectionDetailPage() {
                     mih={52}
                   >
                     <Stack gap={8}>
-                      <Title order={2}>Facturas</Title>
+                      <Group gap="xs">
+                        <Title order={2}>Facturas</Title>
+                        <ContextGuideButton
+                          title="subir facturas"
+                          onClick={openInvoicesGuide}
+                        />
+                      </Group>
                       <Group>
                         <Badge color="violet">
                           {billsCalcQuery.data?.analyzed || 0} analizadas
@@ -695,78 +993,79 @@ function CollectionDetailPage() {
                           minWidth={700}
                           px={0}
                         >
-                        <Table highlightOnHover striped px={0}>
-                          <Table.Thead>
-                            <Table.Tr>
-                              <Table.Th w="3%">
-                                <Checkbox
-                                  aria-label="Select all rows"
-                                  checked={
-                                    collectionQuery.data &&
-                                    collectionQuery.data.bills.length > 0 &&
-                                    selectedRows.length ===
-                                      collectionQuery.data.bills.length
-                                  }
-                                  indeterminate={
-                                    selectedRows.length > 0 &&
-                                    collectionQuery.data &&
-                                    selectedRows.length <
-                                      collectionQuery.data.bills.length
-                                  }
-                                  onChange={(event) => {
-                                    if (!collectionQuery.data) return
-
-                                    const checked = event.currentTarget.checked
-
-                                    if (checked) {
-                                      handlerSelectRows.setState(
-                                        collectionQuery.data.bills.map(
-                                          (b) => b.id,
-                                        ),
-                                      )
-                                    } else {
-                                      handlerSelectRows.setState([])
+                          <Table highlightOnHover striped px={0}>
+                            <Table.Thead>
+                              <Table.Tr>
+                                <Table.Th w="3%">
+                                  <Checkbox
+                                    aria-label="Select all rows"
+                                    checked={
+                                      collectionQuery.data &&
+                                      collectionQuery.data.bills.length > 0 &&
+                                      selectedRows.length ===
+                                        collectionQuery.data.bills.length
                                     }
-                                  }}
-                                />
-                              </Table.Th>
-                              <Table.Th w="12%">Archivo</Table.Th>
-                              <Table.Th w="10%">Secuencial</Table.Th>
-                              <Table.Th w="11%">Tipo</Table.Th>
-                              <Table.Th w="10%">Fecha</Table.Th>
-                              <Table.Th w="8%">Subtotal</Table.Th>
-                              <Table.Th w="8%">Impuestos</Table.Th>
-                              <Table.Th w="8%">Total</Table.Th>
-                              <Table.Th w="10%">
-                                <TextWithIcon
-                                  multiLine
-                                  iconPosition="right"
-                                  maxWidth={400}
-                                  openDelay={500}
-                                  tooltip={
-                                    'Porcentaje de confianza de que esta factura es deducible según el análisis de IA. Un porcentaje más alto indica una mayor confianza en la deducibilidad de la factura.'
-                                  }
-                                >
-                                  <TextWithIcon.Text inherit>
-                                    Porcentaje
-                                  </TextWithIcon.Text>
-                                  <TextWithIcon.Icon
-                                    c="violet"
-                                    size="xs"
-                                    variant="transparent"
+                                    indeterminate={
+                                      selectedRows.length > 0 &&
+                                      collectionQuery.data &&
+                                      selectedRows.length <
+                                        collectionQuery.data.bills.length
+                                    }
+                                    onChange={(event) => {
+                                      if (!collectionQuery.data) return
+
+                                      const checked =
+                                        event.currentTarget.checked
+
+                                      if (checked) {
+                                        handlerSelectRows.setState(
+                                          collectionQuery.data.bills.map(
+                                            (b) => b.id,
+                                          ),
+                                        )
+                                      } else {
+                                        handlerSelectRows.setState([])
+                                      }
+                                    }}
+                                  />
+                                </Table.Th>
+                                <Table.Th w="12%">Archivo</Table.Th>
+                                <Table.Th w="10%">Secuencial</Table.Th>
+                                <Table.Th w="11%">Tipo</Table.Th>
+                                <Table.Th w="10%">Fecha</Table.Th>
+                                <Table.Th w="8%">Subtotal</Table.Th>
+                                <Table.Th w="8%">Impuestos</Table.Th>
+                                <Table.Th w="8%">Total</Table.Th>
+                                <Table.Th w="10%">
+                                  <TextWithIcon
+                                    multiLine
+                                    iconPosition="right"
+                                    maxWidth={400}
+                                    openDelay={500}
+                                    tooltip={
+                                      'Porcentaje de confianza de que esta factura es deducible según el análisis de IA. Un porcentaje más alto indica una mayor confianza en la deducibilidad de la factura.'
+                                    }
                                   >
-                                    <ThemeIcon size="xs">
-                                      <HelpCircle size={18} />
-                                    </ThemeIcon>
-                                  </TextWithIcon.Icon>
-                                </TextWithIcon>
-                              </Table.Th>
-                              <Table.Th>Razonamiento</Table.Th>
-                              <Table.Th w="8%" />
-                            </Table.Tr>
-                          </Table.Thead>
-                          <Table.Tbody>{rowsMemo}</Table.Tbody>
-                        </Table>
+                                    <TextWithIcon.Text inherit>
+                                      Porcentaje
+                                    </TextWithIcon.Text>
+                                    <TextWithIcon.Icon
+                                      c="violet"
+                                      size="xs"
+                                      variant="transparent"
+                                    >
+                                      <ThemeIcon size="xs">
+                                        <HelpCircle size={18} />
+                                      </ThemeIcon>
+                                    </TextWithIcon.Icon>
+                                  </TextWithIcon>
+                                </Table.Th>
+                                <Table.Th>Razonamiento</Table.Th>
+                                <Table.Th w="8%" />
+                              </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>{rowsMemo}</Table.Tbody>
+                          </Table>
                         </Table.ScrollContainer>
                       )}
                     </QuickFilter>
@@ -889,7 +1188,9 @@ function CollectionDetailPage() {
                 color="violet"
                 size="sm"
                 variant="subtle"
-                onClick={() => setBillDetailModal({ opened: true, data: bill.id })}
+                onClick={() =>
+                  setBillDetailModal({ opened: true, data: bill.id })
+                }
               >
                 <NotepadText size={16} />
               </ActionIcon>
@@ -999,7 +1300,9 @@ function CollectionDetailPage() {
                 <Button
                   size="xs"
                   variant="subtle"
-                  onClick={() => setBillDetailModal({ opened: true, data: bill.id })}
+                  onClick={() =>
+                    setBillDetailModal({ opened: true, data: bill.id })
+                  }
                 >
                   {bill.reason ? 'Ver razonamiento' : 'Ver detalle'}
                 </Button>

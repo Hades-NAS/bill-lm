@@ -30,6 +30,10 @@ import { useGetUserJobsQuery } from '#/hooks/query/telemetry'
 
 import JobTelemetryPage from '#/components/job/job-telemetry'
 import { EmptyState } from '#/components/shared/empty-state'
+import {
+  ContextGuideButton,
+  openContextGuide,
+} from '#/components/shared/context-help'
 import { LoaderText } from '#/components/shared/loader-text'
 import { useIsMobile } from '#/utils/mobile'
 
@@ -64,6 +68,31 @@ const getStatusLabel = (status: string) => {
   return labels[status] || status
 }
 
+function openJobsGuide() {
+  openContextGuide({
+    title: 'Guía de trabajos',
+    introduction:
+      'Cada trabajo representa una ejecución de análisis de una colección. Esta pantalla permite revisar su estado y la telemetría disponible.',
+    items: [
+      {
+        title: 'Estados',
+        description:
+          'Pendiente y en progreso indican que el trabajo sigue en cola o ejecutándose. Completado terminó. Fallido o con error requiere revisar el detalle.',
+      },
+      {
+        title: 'Progreso',
+        description:
+          'Muestra el avance reportado para las facturas incluidas en el trabajo.',
+      },
+      {
+        title: 'Detalle',
+        description:
+          'Abre la telemetría para consultar eventos y mensajes del trabajo.',
+      },
+    ],
+  })
+}
+
 function JobsListPage() {
   const [jobTelemetryModal, setJobTelemetryModal] = useModal<string>()
 
@@ -83,9 +112,10 @@ function JobsListPage() {
     <Box py={40}>
       <Stack gap={32}>
         <div>
-          <Title mb={8} order={1}>
-            Mis trabajos
-          </Title>
+          <Group gap="xs" mb={8}>
+            <Title order={1}>Mis trabajos</Title>
+            <ContextGuideButton title="trabajos" onClick={openJobsGuide} />
+          </Group>
           <Text c="dimmed">Historial de análisis y telemetría de trabajos</Text>
         </div>
 
@@ -131,8 +161,8 @@ function JobsListPage() {
                         value={job.percentage || 0}
                       />
                       <Text c="dimmed" size="xs">
-                        {Math.round(job.percentage || 0)}% · {job.data.billIds.length}{' '}
-                        factura(s)
+                        {Math.round(job.percentage || 0)}% ·{' '}
+                        {job.data.billIds.length} factura(s)
                       </Text>
                     </Stack>
                   </Card>
@@ -140,60 +170,62 @@ function JobsListPage() {
               </Stack>
             ) : (
               <Table.ScrollContainer minWidth={700}>
-              <Table highlightOnHover striped>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Colección</Table.Th>
-                    <Table.Th>Estado</Table.Th>
-                    <Table.Th>Progreso</Table.Th>
-                    <Table.Th>Actualizado</Table.Th>
-                    <Table.Th>Acciones</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {jobsQuery.data.map((job) => (
-                    <Table.Tr key={job.jobId}>
-                      <Table.Td>
-                        <Text>{job.data.collectionName || 'N/A'}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Badge
-                          color={getStatusColor(job.status)}
-                          variant="filled"
-                        >
-                          {getStatusLabel(job.status)}
-                        </Badge>
-                      </Table.Td>
-                      <Table.Td>
-                        <Flex align="center" gap="xs">
-                          <Progress
-                            aria-label={`Progreso: ${Math.round(job.percentage || 0)}%`}
-                            style={{ flex: 1 }}
-                            value={job.percentage || 0}
-                          />
-                          <Text size="sm">{Math.round(job.percentage || 0)}%</Text>
-                        </Flex>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text>{formatRelativeTime(job.updatedAt)}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Group gap={0}>
-                          <Tooltip label="Ver telemetría">
-                            <ActionIcon
-                              aria-label={`Ver telemetría de ${job.data.collectionName || 'la colección'}`}
-                              variant="subtle"
-                              onClick={() => handleViewTelemetry(job.jobId)}
-                            >
-                              <Eye size={16} />
-                            </ActionIcon>
-                          </Tooltip>
-                        </Group>
-                      </Table.Td>
+                <Table highlightOnHover striped>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Colección</Table.Th>
+                      <Table.Th>Estado</Table.Th>
+                      <Table.Th>Progreso</Table.Th>
+                      <Table.Th>Actualizado</Table.Th>
+                      <Table.Th>Acciones</Table.Th>
                     </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {jobsQuery.data.map((job) => (
+                      <Table.Tr key={job.jobId}>
+                        <Table.Td>
+                          <Text>{job.data.collectionName || 'N/A'}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Badge
+                            color={getStatusColor(job.status)}
+                            variant="filled"
+                          >
+                            {getStatusLabel(job.status)}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td>
+                          <Flex align="center" gap="xs">
+                            <Progress
+                              aria-label={`Progreso: ${Math.round(job.percentage || 0)}%`}
+                              style={{ flex: 1 }}
+                              value={job.percentage || 0}
+                            />
+                            <Text size="sm">
+                              {Math.round(job.percentage || 0)}%
+                            </Text>
+                          </Flex>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text>{formatRelativeTime(job.updatedAt)}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Group gap={0}>
+                            <Tooltip label="Ver telemetría">
+                              <ActionIcon
+                                aria-label={`Ver telemetría de ${job.data.collectionName || 'la colección'}`}
+                                variant="subtle"
+                                onClick={() => handleViewTelemetry(job.jobId)}
+                              >
+                                <Eye size={16} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
+                        </Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
               </Table.ScrollContainer>
             )}
           </Paper>

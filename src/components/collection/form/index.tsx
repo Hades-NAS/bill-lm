@@ -14,6 +14,11 @@ import {
 } from '#/hooks/mutation/collection'
 
 import ConfModal from '#/components/shared/conf-modal'
+import {
+  ContextGuideButton,
+  FieldHelpLabel,
+  openContextGuide,
+} from '#/components/shared/context-help'
 
 import type { CollectionBaseType } from '#/integrations/trpc/procedures/collections'
 import type {
@@ -29,6 +34,32 @@ const defaultValues: CreateCollectionType = {
   personalIdNumber: '',
   professionalIdNumber: '',
   year: DateTime.now().year,
+}
+
+function openCollectionFormGuide() {
+  openContextGuide({
+    title: 'Guía de la colección',
+    introduction:
+      'Una colección reúne facturas de un período o propósito. Después podrás definir el contexto tributario y analizar sus documentos.',
+    items: [
+      {
+        title: 'Nombre y descripción',
+        description:
+          'Usa un nombre que identifique el período o el uso de las facturas.',
+        example: 'Facturas de septiembre de 2026.',
+      },
+      {
+        title: 'Año',
+        description:
+          'Sirve como referencia para organizar la colección. El contexto de análisis define las fechas exactas.',
+      },
+      {
+        title: 'Cédula, RUC e instrucciones',
+        description:
+          'Completa los identificadores que pueden aparecer en las facturas. Las instrucciones añaden contexto para procesarlas.',
+      },
+    ],
+  })
 }
 
 const CollectionForm = (
@@ -116,7 +147,12 @@ const CollectionForm = (
               <form.AppField
                 children={(field) => (
                   <field.Input
-                    label="Nombre"
+                    label={
+                      <FieldHelpLabel
+                        hint="Usa un nombre que reconocerás al buscar o analizar esta colección."
+                        label="Nombre"
+                      />
+                    }
                     placeholder="Ingrese el nombre de la colección"
                     typeInput="text"
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -128,7 +164,12 @@ const CollectionForm = (
               <form.AppField
                 children={(field) => (
                   <field.Input
-                    label="Descripción"
+                    label={
+                      <FieldHelpLabel
+                        hint="Resume qué facturas reúne la colección y para qué período o uso la creaste."
+                        label="Descripción"
+                      />
+                    }
                     placeholder="Ingrese una descripción"
                     typeInput="textarea"
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -140,7 +181,12 @@ const CollectionForm = (
               <form.AppField
                 children={(field) => (
                   <field.Input
-                    label="Año"
+                    label={
+                      <FieldHelpLabel
+                        hint="Organiza la colección por año. El contexto de análisis define el rango exacto de fechas."
+                        label="Año"
+                      />
+                    }
                     placeholder="Ingrese el año"
                     typeInput="number"
                     onChange={(value) => field.handleChange(value)}
@@ -157,7 +203,12 @@ const CollectionForm = (
                 <form.AppField
                   children={(field) => (
                     <field.Input
-                      label="Cédula"
+                      label={
+                        <FieldHelpLabel
+                          hint="Ingresa la cédula que puede aparecer en las facturas personales de esta colección."
+                          label="Cédula"
+                        />
+                      }
                       maxLength={10}
                       placeholder="Cédula personal"
                       style={{ flex: 1 }}
@@ -171,7 +222,12 @@ const CollectionForm = (
                 <form.AppField
                   children={(field) => (
                     <field.Input
-                      label="RUC (opcional)"
+                      label={
+                        <FieldHelpLabel
+                          hint="Ingresa el RUC si las facturas corresponden a una actividad profesional o negocio."
+                          label="RUC (opcional)"
+                        />
+                      }
                       maxLength={13}
                       placeholder="RUC profesional"
                       style={{ flex: 1 }}
@@ -187,7 +243,12 @@ const CollectionForm = (
                 children={(field) => (
                   <field.Input
                     autosize
-                    label="Instrucciones (opcional)"
+                    label={
+                      <FieldHelpLabel
+                        hint="Explica un criterio útil para interpretar las facturas. No incluyas claves ni información sensible."
+                        label="Instrucciones (opcional)"
+                      />
+                    }
                     minRows={4}
                     placeholder="Instrucciones para facturas emitidas a RUC"
                     typeInput="textarea"
@@ -219,9 +280,15 @@ const CollectionForm = (
         opened={Boolean(opened)}
         size={size}
         title={
-          <Text fw="bolder" size="lg">
-            {data ? 'Editar colección' : 'Crear colección'}
-          </Text>
+          <Flex align="center" gap="xs">
+            <Text fw="bolder" size="lg">
+              {data ? 'Editar colección' : 'Crear colección'}
+            </Text>
+            <ContextGuideButton
+              title="este formulario"
+              onClick={openCollectionFormGuide}
+            />
+          </Flex>
         }
         onClose={() => {
           if (form.state.isDirty) {

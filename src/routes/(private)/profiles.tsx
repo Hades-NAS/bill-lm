@@ -1,14 +1,11 @@
 import {
-  ActionIcon,
   Alert,
   Badge,
   Box,
   Button,
   Card,
   Container,
-  Divider,
   Group,
-  List,
   Modal,
   MultiSelect,
   Select,
@@ -20,13 +17,11 @@ import {
   Text,
   TextInput,
   Textarea,
-  Tooltip,
   Title,
 } from '@mantine/core'
-import { modals } from '@mantine/modals'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { CircleHelp, FilePenLine, Info, Plus } from 'lucide-react'
+import { FilePenLine, Plus } from 'lucide-react'
 import React from 'react'
 
 import {
@@ -40,6 +35,11 @@ import { useTRPC } from '#/integrations/trpc/react'
 import { useIsMobile } from '#/utils/mobile'
 
 import { EmptyState } from '#/components/shared/empty-state'
+import {
+  ContextGuideButton,
+  FieldHelpLabel,
+  openContextGuide,
+} from '#/components/shared/context-help'
 
 import type {
   EconomicActivityRevisionInput,
@@ -74,46 +74,12 @@ const blankProfile: TaxpayerProfileRevisionInput = {
   additionalFacts: '',
 }
 
-type GuideItem = {
-  title: string
-  description: string
-  example?: string
-}
-
-function openGuide(title: string, introduction: string, items: GuideItem[]) {
-  modals.open({
-    centered: true,
-    size: 'lg',
-    title,
-    children: (
-      <Stack gap="md">
-        <Text>{introduction}</Text>
-        <Divider />
-        <List spacing="md" withPadding>
-          {items.map((item) => (
-            <List.Item key={item.title}>
-              <Stack gap={2}>
-                <Text fw={700}>{item.title}</Text>
-                <Text size="sm">{item.description}</Text>
-                {item.example && (
-                  <Text c="dimmed" size="sm">
-                    Ejemplo: {item.example}
-                  </Text>
-                )}
-              </Stack>
-            </List.Item>
-          ))}
-        </List>
-      </Stack>
-    ),
-  })
-}
-
 function openActivityGuide() {
-  openGuide(
-    'Guía de actividades económicas',
-    'Registra las actividades con las que generas ingresos. No reemplazan el catálogo del SRI ni crean una declaración.',
-    [
+  openContextGuide({
+    title: 'Guía de actividades económicas',
+    introduction:
+      'Registra las actividades con las que generas ingresos. No reemplazan el catálogo del SRI ni crean una declaración.',
+    items: [
       {
         title: 'Actividad económica',
         description:
@@ -133,14 +99,15 @@ function openActivityGuide() {
           'Indica cómo facturas tus ingresos. Si no tienes certeza, selecciona “Aún no lo sé” y completa el dato antes de analizar IVA.',
       },
     ],
-  )
+  })
 }
 
 function openProfileGuide() {
-  openGuide(
-    'Guía del perfil tributario',
-    'El perfil reúne tus identificadores y las actividades que usarás al configurar un análisis. Puedes crear más de uno si manejas realidades tributarias distintas.',
-    [
+  openContextGuide({
+    title: 'Guía del perfil tributario',
+    introduction:
+      'El perfil reúne tus identificadores y las actividades que usarás al configurar un análisis. Puedes crear más de uno si manejas realidades tributarias distintas.',
+    items: [
       {
         title: 'Nombre del perfil',
         description:
@@ -168,52 +135,7 @@ function openProfileGuide() {
           'Cada cambio guarda una versión nueva. Las facturas analizadas antes mantienen el perfil y las actividades que tenían en ese momento.',
       },
     ],
-  )
-}
-
-function HelpLabel({ label, hint }: { label: string; hint: string }) {
-  return (
-    <Group gap={4} wrap="nowrap">
-      <Text component="span" inherit>
-        {label}
-      </Text>
-      <Tooltip label={hint} multiline openDelay={800} withArrow w={240}>
-        <ActionIcon
-          aria-label={`Ayuda sobre ${label}`}
-          color="violet"
-          radius="xl"
-          size="xs"
-          variant="subtle"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <CircleHelp size={14} strokeWidth={1.9} />
-        </ActionIcon>
-      </Tooltip>
-    </Group>
-  )
-}
-
-function SectionHelpButton({
-  onClick,
-  title,
-}: {
-  onClick: () => void
-  title: string
-}) {
-  return (
-    <Tooltip label={`Ver guía sobre ${title}`} openDelay={800} withArrow>
-      <ActionIcon
-        aria-label={`Ver guía sobre ${title}`}
-        color="violet"
-        radius="xl"
-        size="md"
-        variant="light"
-        onClick={onClick}
-      >
-        <Info size={18} strokeWidth={1.9} />
-      </ActionIcon>
-    </Tooltip>
-  )
+  })
 }
 
 function ProfilesPage() {
@@ -304,7 +226,7 @@ function ProfilesPage() {
               <div>
                 <Group gap="xs">
                   <Title order={2}>Actividades económicas</Title>
-                  <SectionHelpButton
+                  <ContextGuideButton
                     title="actividades económicas"
                     onClick={openActivityGuide}
                   />
@@ -378,7 +300,7 @@ function ProfilesPage() {
               <div>
                 <Group gap="xs">
                   <Title order={2}>Perfiles tributarios</Title>
-                  <SectionHelpButton
+                  <ContextGuideButton
                     title="perfiles tributarios"
                     onClick={openProfileGuide}
                   />
@@ -557,7 +479,7 @@ function ActivityModal({
           <Text fw={600}>
             {activity ? 'Nueva revisión de actividad' : 'Agregar actividad'}
           </Text>
-          <SectionHelpButton
+          <ContextGuideButton
             title="este formulario"
             onClick={openActivityGuide}
           />
@@ -755,7 +677,7 @@ function ProfileModal({
           <Text fw={600}>
             {profile ? 'Nueva revisión de perfil' : 'Agregar perfil'}
           </Text>
-          <SectionHelpButton
+          <ContextGuideButton
             title="este formulario"
             onClick={openProfileGuide}
           />
@@ -772,7 +694,7 @@ function ProfileModal({
           <Stack gap="sm">
             <TextInput
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Usa un nombre que reconocerás al elegir este perfil en una colección."
                   label="Nombre del perfil"
                 />
@@ -788,7 +710,7 @@ function ProfileModal({
             <Switch
               checked={value.hasEmploymentIncome}
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Márcalo si además recibes sueldo como empleado."
                   label="También tengo ingresos en relación de dependencia"
                 />
@@ -803,7 +725,7 @@ function ProfileModal({
             <Switch
               checked={value.hasRuc}
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Actívalo si este perfil declara actividades con RUC."
                   label="Tengo RUC"
                 />
@@ -820,7 +742,7 @@ function ProfileModal({
             />
             <TextInput
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Ingresa los 10 dígitos de tu cédula si quieres guardarla en este perfil."
                   label="Cédula (opcional)"
                 />
@@ -837,7 +759,7 @@ function ProfileModal({
             <TextInput
               disabled={!value.hasRuc}
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Ingresa los 13 dígitos del RUC asociado a este perfil."
                   label="RUC (opcional)"
                 />
@@ -863,7 +785,7 @@ function ProfileModal({
               ]}
               disabled={!value.hasRuc}
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Elige el régimen que figura en tu RUC. Si no lo conoces, marca “Aún no lo sé”."
                   label="Régimen tributario"
                 />
@@ -886,7 +808,7 @@ function ProfileModal({
               ]}
               disabled={!value.hasRuc}
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Indica cada cuánto presentas IVA. Este dato se usa al configurar análisis de IVA."
                   label="Periodicidad de IVA"
                 />
@@ -902,7 +824,7 @@ function ProfileModal({
             />
             <Textarea
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Anota un dato que ayude a interpretar este perfil, sin incluir claves ni información sensible."
                   label="Datos adicionales (opcional)"
                 />
@@ -926,7 +848,7 @@ function ProfileModal({
               disabled={!value.hasRuc}
               data={activityOptions}
               label={
-                <HelpLabel
+                <FieldHelpLabel
                   hint="Selecciona las actividades que representa este perfil en la actualidad."
                   label="Actividades"
                 />
