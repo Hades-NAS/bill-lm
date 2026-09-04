@@ -1,0 +1,7 @@
+CREATE TABLE "analysis_runs" ("id" TEXT PRIMARY KEY, "collectionId" TEXT NOT NULL, "userId" TEXT NOT NULL, "collectionContextRevisionId" TEXT NOT NULL, "taxpayerProfileRevisionId" TEXT NOT NULL, "ruleSetId" TEXT NOT NULL, "providerConnectionId" TEXT NOT NULL, "provider" VARCHAR(50) NOT NULL, "modelId" VARCHAR(255) NOT NULL, "promptVersion" VARCHAR(100) NOT NULL, "inputSnapshot" JSONB NOT NULL, "idempotencyKey" VARCHAR(255) NOT NULL, "status" VARCHAR(20) NOT NULL, "blockCode" VARCHAR(100), "blockMessage" TEXT, "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, "startedAt" TIMESTAMPTZ, "completedAt" TIMESTAMPTZ);
+CREATE UNIQUE INDEX "analysis_run_idempotency_key" ON "analysis_runs"("userId", "idempotencyKey");
+CREATE INDEX "analysis_run_collection_created_idx" ON "analysis_runs"("collectionId", "createdAt");
+CREATE TABLE "analysis_run_invoices" ("id" TEXT PRIMARY KEY, "runId" TEXT NOT NULL REFERENCES "analysis_runs"("id") ON DELETE CASCADE, "billId" TEXT NOT NULL, "contentHash" VARCHAR(64), "snapshot" JSONB NOT NULL);
+CREATE UNIQUE INDEX "analysis_run_invoice_unique" ON "analysis_run_invoices"("runId", "billId");
+CREATE TABLE "analysis_results" ("id" TEXT PRIMARY KEY, "runId" TEXT NOT NULL REFERENCES "analysis_runs"("id") ON DELETE CASCADE, "billId" TEXT NOT NULL, "purpose" VARCHAR(50) NOT NULL, "classification" VARCHAR(30) NOT NULL, "resultSnapshot" JSONB NOT NULL, "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX "analysis_result_run_bill_unique" ON "analysis_results"("runId", "billId");

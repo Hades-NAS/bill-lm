@@ -427,6 +427,56 @@ model TaxRuleSetFragment {
   @@map("tax_rule_set_fragments")
 }
 
+model AnalysisRun {
+  id String @id @default(uuid())
+  collectionId String
+  userId String
+  collectionContextRevisionId String
+  taxpayerProfileRevisionId String
+  ruleSetId String
+  providerConnectionId String
+  provider String @db.VarChar(50)
+  modelId String @db.VarChar(255)
+  promptVersion String @db.VarChar(100)
+  inputSnapshot Json
+  idempotencyKey String @db.VarChar(255)
+  status String @db.VarChar(20)
+  blockCode String? @db.VarChar(100)
+  blockMessage String? @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz
+  startedAt DateTime? @db.Timestamptz
+  completedAt DateTime? @db.Timestamptz
+  results AnalysisResult[]
+  invoices AnalysisRunInvoice[]
+  @@unique([userId, idempotencyKey], name: "analysis_run_idempotency_key")
+  @@index([collectionId, createdAt], name: "analysis_run_collection_created_idx")
+  @@map("analysis_runs")
+}
+
+model AnalysisRunInvoice {
+  id String @id @default(uuid())
+  runId String
+  billId String
+  contentHash String? @db.VarChar(64)
+  snapshot Json
+  run AnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  @@unique([runId, billId], name: "analysis_run_invoice_unique")
+  @@map("analysis_run_invoices")
+}
+
+model AnalysisResult {
+  id String @id @default(uuid())
+  runId String
+  billId String
+  purpose String @db.VarChar(50)
+  classification String @db.VarChar(30)
+  resultSnapshot Json
+  createdAt DateTime @default(now()) @db.Timestamptz
+  run AnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  @@unique([runId, billId], name: "analysis_result_run_bill_unique")
+  @@map("analysis_results")
+}
+
 model BillDetail {
   id          String @id @default(uuid())
   description String @db.VarChar(255)

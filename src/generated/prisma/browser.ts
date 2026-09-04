@@ -111,6 +111,21 @@ export type TaxRuleFragment = Prisma.TaxRuleFragmentModel
  */
 export type TaxRuleSetFragment = Prisma.TaxRuleSetFragmentModel
 /**
+ * Model AnalysisRun
+ * 
+ */
+export type AnalysisRun = Prisma.AnalysisRunModel
+/**
+ * Model AnalysisRunInvoice
+ * 
+ */
+export type AnalysisRunInvoice = Prisma.AnalysisRunInvoiceModel
+/**
+ * Model AnalysisResult
+ * 
+ */
+export type AnalysisResult = Prisma.AnalysisResultModel
+/**
  * Model BillDetail
  * 
  */

@@ -69,6 +69,9 @@ export const ModelName = {
   TaxRuleSet: 'TaxRuleSet',
   TaxRuleFragment: 'TaxRuleFragment',
   TaxRuleSetFragment: 'TaxRuleSetFragment',
+  AnalysisRun: 'AnalysisRun',
+  AnalysisRunInvoice: 'AnalysisRunInvoice',
+  AnalysisResult: 'AnalysisResult',
   BillDetail: 'BillDetail'
 } as const
 
@@ -366,6 +369,54 @@ export const TaxRuleSetFragmentScalarFieldEnum = {
 export type TaxRuleSetFragmentScalarFieldEnum = (typeof TaxRuleSetFragmentScalarFieldEnum)[keyof typeof TaxRuleSetFragmentScalarFieldEnum]
 
 
+export const AnalysisRunScalarFieldEnum = {
+  id: 'id',
+  collectionId: 'collectionId',
+  userId: 'userId',
+  collectionContextRevisionId: 'collectionContextRevisionId',
+  taxpayerProfileRevisionId: 'taxpayerProfileRevisionId',
+  ruleSetId: 'ruleSetId',
+  providerConnectionId: 'providerConnectionId',
+  provider: 'provider',
+  modelId: 'modelId',
+  promptVersion: 'promptVersion',
+  inputSnapshot: 'inputSnapshot',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  blockCode: 'blockCode',
+  blockMessage: 'blockMessage',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type AnalysisRunScalarFieldEnum = (typeof AnalysisRunScalarFieldEnum)[keyof typeof AnalysisRunScalarFieldEnum]
+
+
+export const AnalysisRunInvoiceScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  billId: 'billId',
+  contentHash: 'contentHash',
+  snapshot: 'snapshot'
+} as const
+
+export type AnalysisRunInvoiceScalarFieldEnum = (typeof AnalysisRunInvoiceScalarFieldEnum)[keyof typeof AnalysisRunInvoiceScalarFieldEnum]
+
+
+export const AnalysisResultScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  billId: 'billId',
+  purpose: 'purpose',
+  classification: 'classification',
+  resultSnapshot: 'resultSnapshot',
+  createdAt: 'createdAt'
+} as const
+
+export type AnalysisResultScalarFieldEnum = (typeof AnalysisResultScalarFieldEnum)[keyof typeof AnalysisResultScalarFieldEnum]
+
+
 export const BillDetailScalarFieldEnum = {
   id: 'id',
   description: 'description',
@@ -389,6 +440,13 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -403,4 +461,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

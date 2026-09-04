@@ -402,6 +402,9 @@ export const ModelName = {
   TaxRuleSet: 'TaxRuleSet',
   TaxRuleFragment: 'TaxRuleFragment',
   TaxRuleSetFragment: 'TaxRuleSetFragment',
+  AnalysisRun: 'AnalysisRun',
+  AnalysisRunInvoice: 'AnalysisRunInvoice',
+  AnalysisResult: 'AnalysisResult',
   BillDetail: 'BillDetail'
 } as const
 
@@ -418,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "collectionContextRevision" | "collectionContextActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "collectionBillMembership" | "taxRuleSource" | "taxRuleSet" | "taxRuleFragment" | "taxRuleSetFragment" | "billDetail"
+    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "collectionContextRevision" | "collectionContextActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "collectionBillMembership" | "taxRuleSource" | "taxRuleSet" | "taxRuleFragment" | "taxRuleSetFragment" | "analysisRun" | "analysisRunInvoice" | "analysisResult" | "billDetail"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1754,6 +1757,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AnalysisRun: {
+      payload: Prisma.$AnalysisRunPayload<ExtArgs>
+      fields: Prisma.AnalysisRunFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnalysisRunFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnalysisRunFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>
+        }
+        findFirst: {
+          args: Prisma.AnalysisRunFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnalysisRunFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>
+        }
+        findMany: {
+          args: Prisma.AnalysisRunFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>[]
+        }
+        create: {
+          args: Prisma.AnalysisRunCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>
+        }
+        createMany: {
+          args: Prisma.AnalysisRunCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnalysisRunCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>[]
+        }
+        delete: {
+          args: Prisma.AnalysisRunDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>
+        }
+        update: {
+          args: Prisma.AnalysisRunUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>
+        }
+        deleteMany: {
+          args: Prisma.AnalysisRunDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnalysisRunUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnalysisRunUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>[]
+        }
+        upsert: {
+          args: Prisma.AnalysisRunUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunPayload>
+        }
+        aggregate: {
+          args: Prisma.AnalysisRunAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnalysisRun>
+        }
+        groupBy: {
+          args: Prisma.AnalysisRunGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalysisRunGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnalysisRunCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalysisRunCountAggregateOutputType> | number
+        }
+      }
+    }
+    AnalysisRunInvoice: {
+      payload: Prisma.$AnalysisRunInvoicePayload<ExtArgs>
+      fields: Prisma.AnalysisRunInvoiceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnalysisRunInvoiceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnalysisRunInvoiceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>
+        }
+        findFirst: {
+          args: Prisma.AnalysisRunInvoiceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnalysisRunInvoiceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>
+        }
+        findMany: {
+          args: Prisma.AnalysisRunInvoiceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>[]
+        }
+        create: {
+          args: Prisma.AnalysisRunInvoiceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>
+        }
+        createMany: {
+          args: Prisma.AnalysisRunInvoiceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnalysisRunInvoiceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>[]
+        }
+        delete: {
+          args: Prisma.AnalysisRunInvoiceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>
+        }
+        update: {
+          args: Prisma.AnalysisRunInvoiceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>
+        }
+        deleteMany: {
+          args: Prisma.AnalysisRunInvoiceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnalysisRunInvoiceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnalysisRunInvoiceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>[]
+        }
+        upsert: {
+          args: Prisma.AnalysisRunInvoiceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisRunInvoicePayload>
+        }
+        aggregate: {
+          args: Prisma.AnalysisRunInvoiceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnalysisRunInvoice>
+        }
+        groupBy: {
+          args: Prisma.AnalysisRunInvoiceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalysisRunInvoiceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnalysisRunInvoiceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalysisRunInvoiceCountAggregateOutputType> | number
+        }
+      }
+    }
+    AnalysisResult: {
+      payload: Prisma.$AnalysisResultPayload<ExtArgs>
+      fields: Prisma.AnalysisResultFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnalysisResultFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnalysisResultFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>
+        }
+        findFirst: {
+          args: Prisma.AnalysisResultFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnalysisResultFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>
+        }
+        findMany: {
+          args: Prisma.AnalysisResultFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>[]
+        }
+        create: {
+          args: Prisma.AnalysisResultCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>
+        }
+        createMany: {
+          args: Prisma.AnalysisResultCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnalysisResultCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>[]
+        }
+        delete: {
+          args: Prisma.AnalysisResultDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>
+        }
+        update: {
+          args: Prisma.AnalysisResultUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>
+        }
+        deleteMany: {
+          args: Prisma.AnalysisResultDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnalysisResultUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnalysisResultUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>[]
+        }
+        upsert: {
+          args: Prisma.AnalysisResultUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalysisResultPayload>
+        }
+        aggregate: {
+          args: Prisma.AnalysisResultAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnalysisResult>
+        }
+        groupBy: {
+          args: Prisma.AnalysisResultGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalysisResultGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnalysisResultCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalysisResultCountAggregateOutputType> | number
+        }
+      }
+    }
     BillDetail: {
       payload: Prisma.$BillDetailPayload<ExtArgs>
       fields: Prisma.BillDetailFieldRefs
@@ -2145,6 +2370,54 @@ export const TaxRuleSetFragmentScalarFieldEnum = {
 export type TaxRuleSetFragmentScalarFieldEnum = (typeof TaxRuleSetFragmentScalarFieldEnum)[keyof typeof TaxRuleSetFragmentScalarFieldEnum]
 
 
+export const AnalysisRunScalarFieldEnum = {
+  id: 'id',
+  collectionId: 'collectionId',
+  userId: 'userId',
+  collectionContextRevisionId: 'collectionContextRevisionId',
+  taxpayerProfileRevisionId: 'taxpayerProfileRevisionId',
+  ruleSetId: 'ruleSetId',
+  providerConnectionId: 'providerConnectionId',
+  provider: 'provider',
+  modelId: 'modelId',
+  promptVersion: 'promptVersion',
+  inputSnapshot: 'inputSnapshot',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  blockCode: 'blockCode',
+  blockMessage: 'blockMessage',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type AnalysisRunScalarFieldEnum = (typeof AnalysisRunScalarFieldEnum)[keyof typeof AnalysisRunScalarFieldEnum]
+
+
+export const AnalysisRunInvoiceScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  billId: 'billId',
+  contentHash: 'contentHash',
+  snapshot: 'snapshot'
+} as const
+
+export type AnalysisRunInvoiceScalarFieldEnum = (typeof AnalysisRunInvoiceScalarFieldEnum)[keyof typeof AnalysisRunInvoiceScalarFieldEnum]
+
+
+export const AnalysisResultScalarFieldEnum = {
+  id: 'id',
+  runId: 'runId',
+  billId: 'billId',
+  purpose: 'purpose',
+  classification: 'classification',
+  resultSnapshot: 'resultSnapshot',
+  createdAt: 'createdAt'
+} as const
+
+export type AnalysisResultScalarFieldEnum = (typeof AnalysisResultScalarFieldEnum)[keyof typeof AnalysisResultScalarFieldEnum]
+
+
 export const BillDetailScalarFieldEnum = {
   id: 'id',
   description: 'description',
@@ -2168,6 +2441,13 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -2182,6 +2462,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -2322,6 +2611,20 @@ export type EnumBillTargetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 export type ListEnumBillTargetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillTargetType[]'>
     
 
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -2435,6 +2738,9 @@ export type GlobalOmitConfig = {
   taxRuleSet?: Prisma.TaxRuleSetOmit
   taxRuleFragment?: Prisma.TaxRuleFragmentOmit
   taxRuleSetFragment?: Prisma.TaxRuleSetFragmentOmit
+  analysisRun?: Prisma.AnalysisRunOmit
+  analysisRunInvoice?: Prisma.AnalysisRunInvoiceOmit
+  analysisResult?: Prisma.AnalysisResultOmit
   billDetail?: Prisma.BillDetailOmit
 }
 
