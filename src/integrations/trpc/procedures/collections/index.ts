@@ -11,6 +11,11 @@ import {
   UpdateCollectionSchema,
   AnalyzeJobNotificationSchema,
 } from '#/schema/collections'
+import {
+  CollectionContextRevisionInputSchema,
+  collectionContextBlocks,
+  TaxpayerProfileContextSchema,
+} from '#/schema/tax-analysis-v2'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
@@ -42,6 +47,25 @@ const resolveConnection = async (userId: string, requestedId?: string) => {
       message: 'Configura una conexión de proveedor activa antes de analizar.',
     })
   return connection
+}
+
+const CollectionContextInputSchema = CollectionContextRevisionInputSchema.extend({
+  collectionId: z.string().uuid(),
+})
+
+const isCompatibleVatPeriod = (
+  startDate: string,
+  endDate: string,
+  frequency: 'monthly' | 'semiannual',
+) => {
+  const start = DateTime.fromISO(startDate, { zone: 'utc' })
+  const end = DateTime.fromISO(endDate, { zone: 'utc' })
+  if (!start.isValid || !end.isValid) return false
+  if (frequency === 'monthly')
+    return start.startOf('month').toISODate() === startDate && end.endOf('month').toISODate() === endDate
+  const semesterStart = start.month === 1 || start.month === 7
+  const semesterEnd = start.month === 6 || start.month === 12
+  return semesterStart && semesterEnd && start.day === 1 && end.day === end.endOf('month').day && start.year === end.year
 }
 
 export const collectionsRouter = {
@@ -232,6 +256,53 @@ export const collectionsRouter = {
       })
 
       return collection
+    }),
+  listContextRevisions: privateProcedure
+    .input(GetCollectionByIdRequestSchema)
+    .query(async ({ input, ctx }) => {
+      const collection = await prisma.collection.findFirst({
+        where: { id: input.id, userId: ctx.principal.userId },
+        select: { id: true },
+      })
+      if (!collection)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Colección no encontrada.' })
+      return prisma.collectionContextRevision.findMany({
+        where: { collectionId: collection.id, userId: ctx.principal.userId },
+        include: { activities: true, taxpayerProfileRevision: true },
+        orderBy: { revision: 'desc' },
+      })
+    }),
+  createContextRevision: privateProcedure
+    .input(CollectionContextInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      const collection = await prisma.collection.findFirst({
+        where: { id: input.collectionId, userId: ctx.principal.userId },
+        select: { id: true },
+      })
+      const profile = await prisma.taxpayerProfileRevision.findFirst({
+        where: { id: input.taxpayerProfileRevisionId, userId: ctx.principal.userId },
+      })
+      if (!collection || !profile)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Colección o perfil no encontrado.' })
+      const blocks = collectionContextBlocks(
+        input,
+        TaxpayerProfileContextSchema.parse(profile),
+      )
+      if (input.purpose === 'vat_credit' && profile.vatFilingFrequency !== 'none' && profile.vatFilingFrequency !== 'unknown' && !isCompatibleVatPeriod(input.period.startDate, input.period.endDate, profile.vatFilingFrequency as 'monthly' | 'semiannual'))
+        blocks.push({ code: 'UNRESOLVED_ANALYSIS_CONFIGURATION', message: 'El período no coincide con la periodicidad de IVA del perfil.', actionLabel: 'Ajustar período', actionPath: `/collections/${input.collectionId}` })
+      if (blocks.length)
+        throw new TRPCError({ code: 'PRECONDITION_FAILED', message: blocks.map((block) => block.message).join(' ') })
+      const activities = await prisma.economicActivityRevision.count({
+        where: { id: { in: input.activityRevisionIds }, userId: ctx.principal.userId },
+      })
+      if (activities !== input.activityRevisionIds.length)
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Selecciona solo actividades propias.' })
+      return prisma.$transaction(async (tx) => {
+        const latest = await tx.collectionContextRevision.findFirst({ where: { collectionId: input.collectionId, userId: ctx.principal.userId }, orderBy: { revision: 'desc' } })
+        const revision = await tx.collectionContextRevision.create({ data: { collectionId: input.collectionId, userId: ctx.principal.userId, taxpayerProfileRevisionId: input.taxpayerProfileRevisionId, purpose: input.purpose, periodStartDate: new Date(`${input.period.startDate}T00:00:00.000Z`), periodEndDate: new Date(`${input.period.endDate}T00:00:00.000Z`), notes: input.notes, revision: (latest?.revision ?? 0) + 1 } })
+        await tx.collectionContextActivityRevision.createMany({ data: input.activityRevisionIds.map((economicActivityRevisionId) => ({ userId: ctx.principal.userId, collectionContextRevisionId: revision.id, economicActivityRevisionId })) })
+        return revision
+      })
     }),
   analyze: privateProcedure
     .input(AnalyzeCollectionRequestSchema)

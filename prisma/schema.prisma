@@ -30,6 +30,8 @@ model User {
   taxpayerProfiles TaxpayerProfile[]
   taxpayerProfileRevisions TaxpayerProfileRevision[]
   taxpayerProfileActivityRevisions TaxpayerProfileActivityRevision[]
+  collectionContextRevisions CollectionContextRevision[]
+  collectionContextActivityRevisions CollectionContextActivityRevision[]
 
   @@map("users")
 }
@@ -73,6 +75,7 @@ model EconomicActivityRevision {
 
   createdAt DateTime @default(now()) @db.Timestamptz
   profileActivityRevisions TaxpayerProfileActivityRevision[]
+  collectionContextActivityRevisions CollectionContextActivityRevision[]
 
   @@unique([activityId, revision], name: "economic_activity_revision_number_key")
   @@unique([id, userId], name: "economic_activity_revision_id_user_key")
@@ -116,6 +119,7 @@ model TaxpayerProfileRevision {
 
   createdAt DateTime @default(now()) @db.Timestamptz
   activities TaxpayerProfileActivityRevision[]
+  collectionContextRevisions CollectionContextRevision[]
 
   @@unique([taxpayerProfileId, revision], name: "taxpayer_profile_revision_number_key")
   @@unique([id, userId], name: "taxpayer_profile_revision_id_user_key")
@@ -139,6 +143,45 @@ model TaxpayerProfileActivityRevision {
   @@unique([taxpayerProfileRevisionId, economicActivityRevisionId], name: "taxpayer_profile_activity_revision_unique")
   @@index([userId, taxpayerProfileRevisionId], name: "taxpayer_profile_activity_user_profile_idx")
   @@map("taxpayer_profile_activity_revisions")
+}
+
+model CollectionContextRevision {
+  id String @id @default(uuid())
+  collectionId String
+  userId String
+  taxpayerProfileRevisionId String
+  purpose String @db.VarChar(50)
+  periodStartDate DateTime @db.Date
+  periodEndDate DateTime @db.Date
+  notes String? @db.Text
+  revision Int
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  collection Collection @relation(fields: [collectionId, userId], references: [id, userId], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  taxpayerProfileRevision TaxpayerProfileRevision @relation(fields: [taxpayerProfileRevisionId, userId], references: [id, userId], onDelete: Restrict)
+  activities CollectionContextActivityRevision[]
+
+  @@unique([collectionId, revision], name: "collection_context_revision_number_key")
+  @@unique([id, userId], name: "collection_context_revision_id_user_key")
+  @@index([userId, collectionId], name: "collection_context_revision_user_collection_idx")
+  @@map("collection_context_revisions")
+}
+
+model CollectionContextActivityRevision {
+  id String @id @default(uuid())
+  userId String
+  collectionContextRevisionId String
+  economicActivityRevisionId String
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  collectionContextRevision CollectionContextRevision @relation(fields: [collectionContextRevisionId, userId], references: [id, userId], onDelete: Restrict)
+  economicActivityRevision EconomicActivityRevision @relation(fields: [economicActivityRevisionId, userId], references: [id, userId], onDelete: Restrict)
+
+  @@unique([collectionContextRevisionId, economicActivityRevisionId], name: "collection_context_activity_revision_unique")
+  @@index([userId, collectionContextRevisionId], name: "collection_context_activity_user_context_idx")
+  @@map("collection_context_activity_revisions")
 }
 
 enum FiscalReferenceSourceType {
@@ -245,7 +288,9 @@ model Collection {
 
   // One-to-many relationship with Bill
   bills BillHeader[]
+  contextRevisions CollectionContextRevision[]
 
+  @@unique([id, userId], name: "collection_id_user_key")
   @@index([year], name: "collection_year_idx")
   @@index([deletedAt], name: "collection_deleted_at_idx")
   @@map("collections")

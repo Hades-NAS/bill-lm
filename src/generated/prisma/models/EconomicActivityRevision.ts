@@ -291,6 +291,7 @@ export type EconomicActivityRevisionWhereInput = {
   activity?: Prisma.XOR<Prisma.EconomicActivityScalarRelationFilter, Prisma.EconomicActivityWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionListRelationFilter
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionListRelationFilter
 }
 
 export type EconomicActivityRevisionOrderByWithRelationInput = {
@@ -311,6 +312,7 @@ export type EconomicActivityRevisionOrderByWithRelationInput = {
   activity?: Prisma.EconomicActivityOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionOrderByRelationAggregateInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionOrderByRelationAggregateInput
 }
 
 export type EconomicActivityRevisionWhereUniqueInput = Prisma.AtLeast<{
@@ -336,6 +338,7 @@ export type EconomicActivityRevisionWhereUniqueInput = Prisma.AtLeast<{
   activity?: Prisma.XOR<Prisma.EconomicActivityScalarRelationFilter, Prisma.EconomicActivityWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionListRelationFilter
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionListRelationFilter
 }, "id" | "economic_activity_revision_number_key" | "economic_activity_revision_id_user_key">
 
 export type EconomicActivityRevisionOrderByWithAggregationInput = {
@@ -396,6 +399,7 @@ export type EconomicActivityRevisionCreateInput = {
   activity: Prisma.EconomicActivityCreateNestedOneWithoutRevisionsInput
   user: Prisma.UserCreateNestedOneWithoutEconomicActivityRevisionsInput
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionUncheckedCreateInput = {
@@ -414,6 +418,7 @@ export type EconomicActivityRevisionUncheckedCreateInput = {
   additionalFacts?: string | null
   createdAt?: Date | string
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionUpdateInput = {
@@ -432,6 +437,7 @@ export type EconomicActivityRevisionUpdateInput = {
   activity?: Prisma.EconomicActivityUpdateOneRequiredWithoutRevisionsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutEconomicActivityRevisionsNestedInput
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionUncheckedUpdateInput = {
@@ -450,6 +456,7 @@ export type EconomicActivityRevisionUncheckedUpdateInput = {
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionCreateManyInput = {
@@ -691,6 +698,20 @@ export type EconomicActivityRevisionUpdateOneRequiredWithoutProfileActivityRevis
   update?: Prisma.XOR<Prisma.XOR<Prisma.EconomicActivityRevisionUpdateToOneWithWhereWithoutProfileActivityRevisionsInput, Prisma.EconomicActivityRevisionUpdateWithoutProfileActivityRevisionsInput>, Prisma.EconomicActivityRevisionUncheckedUpdateWithoutProfileActivityRevisionsInput>
 }
 
+export type EconomicActivityRevisionCreateNestedOneWithoutCollectionContextActivityRevisionsInput = {
+  create?: Prisma.XOR<Prisma.EconomicActivityRevisionCreateWithoutCollectionContextActivityRevisionsInput, Prisma.EconomicActivityRevisionUncheckedCreateWithoutCollectionContextActivityRevisionsInput>
+  connectOrCreate?: Prisma.EconomicActivityRevisionCreateOrConnectWithoutCollectionContextActivityRevisionsInput
+  connect?: Prisma.EconomicActivityRevisionWhereUniqueInput
+}
+
+export type EconomicActivityRevisionUpdateOneRequiredWithoutCollectionContextActivityRevisionsNestedInput = {
+  create?: Prisma.XOR<Prisma.EconomicActivityRevisionCreateWithoutCollectionContextActivityRevisionsInput, Prisma.EconomicActivityRevisionUncheckedCreateWithoutCollectionContextActivityRevisionsInput>
+  connectOrCreate?: Prisma.EconomicActivityRevisionCreateOrConnectWithoutCollectionContextActivityRevisionsInput
+  upsert?: Prisma.EconomicActivityRevisionUpsertWithoutCollectionContextActivityRevisionsInput
+  connect?: Prisma.EconomicActivityRevisionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EconomicActivityRevisionUpdateToOneWithWhereWithoutCollectionContextActivityRevisionsInput, Prisma.EconomicActivityRevisionUpdateWithoutCollectionContextActivityRevisionsInput>, Prisma.EconomicActivityRevisionUncheckedUpdateWithoutCollectionContextActivityRevisionsInput>
+}
+
 export type EconomicActivityRevisionCreateWithoutUserInput = {
   id?: string
   revision: number
@@ -706,6 +727,7 @@ export type EconomicActivityRevisionCreateWithoutUserInput = {
   createdAt?: Date | string
   activity: Prisma.EconomicActivityCreateNestedOneWithoutRevisionsInput
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionUncheckedCreateWithoutUserInput = {
@@ -723,6 +745,7 @@ export type EconomicActivityRevisionUncheckedCreateWithoutUserInput = {
   additionalFacts?: string | null
   createdAt?: Date | string
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionCreateOrConnectWithoutUserInput = {
@@ -786,6 +809,7 @@ export type EconomicActivityRevisionCreateWithoutActivityInput = {
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutEconomicActivityRevisionsInput
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionUncheckedCreateWithoutActivityInput = {
@@ -802,6 +826,7 @@ export type EconomicActivityRevisionUncheckedCreateWithoutActivityInput = {
   additionalFacts?: string | null
   createdAt?: Date | string
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionCreateOrConnectWithoutActivityInput = {
@@ -845,6 +870,7 @@ export type EconomicActivityRevisionCreateWithoutProfileActivityRevisionsInput =
   createdAt?: Date | string
   activity: Prisma.EconomicActivityCreateNestedOneWithoutRevisionsInput
   user: Prisma.UserCreateNestedOneWithoutEconomicActivityRevisionsInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionUncheckedCreateWithoutProfileActivityRevisionsInput = {
@@ -862,6 +888,7 @@ export type EconomicActivityRevisionUncheckedCreateWithoutProfileActivityRevisio
   mixedUseDescription?: string | null
   additionalFacts?: string | null
   createdAt?: Date | string
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
 }
 
 export type EconomicActivityRevisionCreateOrConnectWithoutProfileActivityRevisionsInput = {
@@ -895,6 +922,7 @@ export type EconomicActivityRevisionUpdateWithoutProfileActivityRevisionsInput =
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activity?: Prisma.EconomicActivityUpdateOneRequiredWithoutRevisionsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutEconomicActivityRevisionsNestedInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionUncheckedUpdateWithoutProfileActivityRevisionsInput = {
@@ -912,6 +940,95 @@ export type EconomicActivityRevisionUncheckedUpdateWithoutProfileActivityRevisio
   mixedUseDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
+}
+
+export type EconomicActivityRevisionCreateWithoutCollectionContextActivityRevisionsInput = {
+  id?: string
+  revision: number
+  displayName: string
+  registeredActivityCode?: string | null
+  registeredActivityName: string
+  activityDescription: string
+  necessaryPurchases?: string | null
+  revenueVatTreatment: string
+  revenueVatTreatmentOther?: string | null
+  mixedUseDescription?: string | null
+  additionalFacts?: string | null
+  createdAt?: Date | string
+  activity: Prisma.EconomicActivityCreateNestedOneWithoutRevisionsInput
+  user: Prisma.UserCreateNestedOneWithoutEconomicActivityRevisionsInput
+  profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutEconomicActivityRevisionInput
+}
+
+export type EconomicActivityRevisionUncheckedCreateWithoutCollectionContextActivityRevisionsInput = {
+  id?: string
+  activityId: string
+  userId: string
+  revision: number
+  displayName: string
+  registeredActivityCode?: string | null
+  registeredActivityName: string
+  activityDescription: string
+  necessaryPurchases?: string | null
+  revenueVatTreatment: string
+  revenueVatTreatmentOther?: string | null
+  mixedUseDescription?: string | null
+  additionalFacts?: string | null
+  createdAt?: Date | string
+  profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutEconomicActivityRevisionInput
+}
+
+export type EconomicActivityRevisionCreateOrConnectWithoutCollectionContextActivityRevisionsInput = {
+  where: Prisma.EconomicActivityRevisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.EconomicActivityRevisionCreateWithoutCollectionContextActivityRevisionsInput, Prisma.EconomicActivityRevisionUncheckedCreateWithoutCollectionContextActivityRevisionsInput>
+}
+
+export type EconomicActivityRevisionUpsertWithoutCollectionContextActivityRevisionsInput = {
+  update: Prisma.XOR<Prisma.EconomicActivityRevisionUpdateWithoutCollectionContextActivityRevisionsInput, Prisma.EconomicActivityRevisionUncheckedUpdateWithoutCollectionContextActivityRevisionsInput>
+  create: Prisma.XOR<Prisma.EconomicActivityRevisionCreateWithoutCollectionContextActivityRevisionsInput, Prisma.EconomicActivityRevisionUncheckedCreateWithoutCollectionContextActivityRevisionsInput>
+  where?: Prisma.EconomicActivityRevisionWhereInput
+}
+
+export type EconomicActivityRevisionUpdateToOneWithWhereWithoutCollectionContextActivityRevisionsInput = {
+  where?: Prisma.EconomicActivityRevisionWhereInput
+  data: Prisma.XOR<Prisma.EconomicActivityRevisionUpdateWithoutCollectionContextActivityRevisionsInput, Prisma.EconomicActivityRevisionUncheckedUpdateWithoutCollectionContextActivityRevisionsInput>
+}
+
+export type EconomicActivityRevisionUpdateWithoutCollectionContextActivityRevisionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  registeredActivityCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registeredActivityName?: Prisma.StringFieldUpdateOperationsInput | string
+  activityDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  necessaryPurchases?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  revenueVatTreatment?: Prisma.StringFieldUpdateOperationsInput | string
+  revenueVatTreatmentOther?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mixedUseDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  activity?: Prisma.EconomicActivityUpdateOneRequiredWithoutRevisionsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutEconomicActivityRevisionsNestedInput
+  profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
+}
+
+export type EconomicActivityRevisionUncheckedUpdateWithoutCollectionContextActivityRevisionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  activityId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  registeredActivityCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registeredActivityName?: Prisma.StringFieldUpdateOperationsInput | string
+  activityDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  necessaryPurchases?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  revenueVatTreatment?: Prisma.StringFieldUpdateOperationsInput | string
+  revenueVatTreatmentOther?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mixedUseDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionCreateManyUserInput = {
@@ -945,6 +1062,7 @@ export type EconomicActivityRevisionUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activity?: Prisma.EconomicActivityUpdateOneRequiredWithoutRevisionsNestedInput
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionUncheckedUpdateWithoutUserInput = {
@@ -962,6 +1080,7 @@ export type EconomicActivityRevisionUncheckedUpdateWithoutUserInput = {
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionUncheckedUpdateManyWithoutUserInput = {
@@ -1010,6 +1129,7 @@ export type EconomicActivityRevisionUpdateWithoutActivityInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutEconomicActivityRevisionsNestedInput
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionUncheckedUpdateWithoutActivityInput = {
@@ -1026,6 +1146,7 @@ export type EconomicActivityRevisionUncheckedUpdateWithoutActivityInput = {
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   profileActivityRevisions?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
+  collectionContextActivityRevisions?: Prisma.CollectionContextActivityRevisionUncheckedUpdateManyWithoutEconomicActivityRevisionNestedInput
 }
 
 export type EconomicActivityRevisionUncheckedUpdateManyWithoutActivityInput = {
@@ -1050,10 +1171,12 @@ export type EconomicActivityRevisionUncheckedUpdateManyWithoutActivityInput = {
 
 export type EconomicActivityRevisionCountOutputType = {
   profileActivityRevisions: number
+  collectionContextActivityRevisions: number
 }
 
 export type EconomicActivityRevisionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   profileActivityRevisions?: boolean | EconomicActivityRevisionCountOutputTypeCountProfileActivityRevisionsArgs
+  collectionContextActivityRevisions?: boolean | EconomicActivityRevisionCountOutputTypeCountCollectionContextActivityRevisionsArgs
 }
 
 /**
@@ -1071,6 +1194,13 @@ export type EconomicActivityRevisionCountOutputTypeDefaultArgs<ExtArgs extends r
  */
 export type EconomicActivityRevisionCountOutputTypeCountProfileActivityRevisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.TaxpayerProfileActivityRevisionWhereInput
+}
+
+/**
+ * EconomicActivityRevisionCountOutputType without action
+ */
+export type EconomicActivityRevisionCountOutputTypeCountCollectionContextActivityRevisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CollectionContextActivityRevisionWhereInput
 }
 
 
@@ -1092,6 +1222,7 @@ export type EconomicActivityRevisionSelect<ExtArgs extends runtime.Types.Extensi
   activity?: boolean | Prisma.EconomicActivityDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   profileActivityRevisions?: boolean | Prisma.EconomicActivityRevision$profileActivityRevisionsArgs<ExtArgs>
+  collectionContextActivityRevisions?: boolean | Prisma.EconomicActivityRevision$collectionContextActivityRevisionsArgs<ExtArgs>
   _count?: boolean | Prisma.EconomicActivityRevisionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["economicActivityRevision"]>
 
@@ -1155,6 +1286,7 @@ export type EconomicActivityRevisionInclude<ExtArgs extends runtime.Types.Extens
   activity?: boolean | Prisma.EconomicActivityDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   profileActivityRevisions?: boolean | Prisma.EconomicActivityRevision$profileActivityRevisionsArgs<ExtArgs>
+  collectionContextActivityRevisions?: boolean | Prisma.EconomicActivityRevision$collectionContextActivityRevisionsArgs<ExtArgs>
   _count?: boolean | Prisma.EconomicActivityRevisionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EconomicActivityRevisionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1172,6 +1304,7 @@ export type $EconomicActivityRevisionPayload<ExtArgs extends runtime.Types.Exten
     activity: Prisma.$EconomicActivityPayload<ExtArgs>
     user: Prisma.$UserPayload<ExtArgs>
     profileActivityRevisions: Prisma.$TaxpayerProfileActivityRevisionPayload<ExtArgs>[]
+    collectionContextActivityRevisions: Prisma.$CollectionContextActivityRevisionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1585,6 +1718,7 @@ export interface Prisma__EconomicActivityRevisionClient<T, Null = never, ExtArgs
   activity<T extends Prisma.EconomicActivityDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EconomicActivityDefaultArgs<ExtArgs>>): Prisma.Prisma__EconomicActivityClient<runtime.Types.Result.GetResult<Prisma.$EconomicActivityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   profileActivityRevisions<T extends Prisma.EconomicActivityRevision$profileActivityRevisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EconomicActivityRevision$profileActivityRevisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaxpayerProfileActivityRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  collectionContextActivityRevisions<T extends Prisma.EconomicActivityRevision$collectionContextActivityRevisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EconomicActivityRevision$collectionContextActivityRevisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionContextActivityRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2050,6 +2184,30 @@ export type EconomicActivityRevision$profileActivityRevisionsArgs<ExtArgs extend
   take?: number
   skip?: number
   distinct?: Prisma.TaxpayerProfileActivityRevisionScalarFieldEnum | Prisma.TaxpayerProfileActivityRevisionScalarFieldEnum[]
+}
+
+/**
+ * EconomicActivityRevision.collectionContextActivityRevisions
+ */
+export type EconomicActivityRevision$collectionContextActivityRevisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CollectionContextActivityRevision
+   */
+  select?: Prisma.CollectionContextActivityRevisionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CollectionContextActivityRevision
+   */
+  omit?: Prisma.CollectionContextActivityRevisionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CollectionContextActivityRevisionInclude<ExtArgs> | null
+  where?: Prisma.CollectionContextActivityRevisionWhereInput
+  orderBy?: Prisma.CollectionContextActivityRevisionOrderByWithRelationInput | Prisma.CollectionContextActivityRevisionOrderByWithRelationInput[]
+  cursor?: Prisma.CollectionContextActivityRevisionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CollectionContextActivityRevisionScalarFieldEnum | Prisma.CollectionContextActivityRevisionScalarFieldEnum[]
 }
 
 /**

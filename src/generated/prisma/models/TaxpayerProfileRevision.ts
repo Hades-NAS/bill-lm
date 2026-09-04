@@ -283,6 +283,7 @@ export type TaxpayerProfileRevisionWhereInput = {
   taxpayerProfile?: Prisma.XOR<Prisma.TaxpayerProfileScalarRelationFilter, Prisma.TaxpayerProfileWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   activities?: Prisma.TaxpayerProfileActivityRevisionListRelationFilter
+  collectionContextRevisions?: Prisma.CollectionContextRevisionListRelationFilter
 }
 
 export type TaxpayerProfileRevisionOrderByWithRelationInput = {
@@ -302,6 +303,7 @@ export type TaxpayerProfileRevisionOrderByWithRelationInput = {
   taxpayerProfile?: Prisma.TaxpayerProfileOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
   activities?: Prisma.TaxpayerProfileActivityRevisionOrderByRelationAggregateInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionOrderByRelationAggregateInput
 }
 
 export type TaxpayerProfileRevisionWhereUniqueInput = Prisma.AtLeast<{
@@ -326,6 +328,7 @@ export type TaxpayerProfileRevisionWhereUniqueInput = Prisma.AtLeast<{
   taxpayerProfile?: Prisma.XOR<Prisma.TaxpayerProfileScalarRelationFilter, Prisma.TaxpayerProfileWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   activities?: Prisma.TaxpayerProfileActivityRevisionListRelationFilter
+  collectionContextRevisions?: Prisma.CollectionContextRevisionListRelationFilter
 }, "id" | "taxpayer_profile_revision_number_key" | "taxpayer_profile_revision_id_user_key">
 
 export type TaxpayerProfileRevisionOrderByWithAggregationInput = {
@@ -383,6 +386,7 @@ export type TaxpayerProfileRevisionCreateInput = {
   taxpayerProfile: Prisma.TaxpayerProfileCreateNestedOneWithoutRevisionsInput
   user: Prisma.UserCreateNestedOneWithoutTaxpayerProfileRevisionsInput
   activities?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionUncheckedCreateInput = {
@@ -400,6 +404,7 @@ export type TaxpayerProfileRevisionUncheckedCreateInput = {
   additionalFacts?: string | null
   createdAt?: Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionUpdateInput = {
@@ -417,6 +422,7 @@ export type TaxpayerProfileRevisionUpdateInput = {
   taxpayerProfile?: Prisma.TaxpayerProfileUpdateOneRequiredWithoutRevisionsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutTaxpayerProfileRevisionsNestedInput
   activities?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionUncheckedUpdateInput = {
@@ -434,6 +440,7 @@ export type TaxpayerProfileRevisionUncheckedUpdateInput = {
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionCreateManyInput = {
@@ -665,6 +672,20 @@ export type TaxpayerProfileRevisionUpdateOneRequiredWithoutActivitiesNestedInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.TaxpayerProfileRevisionUpdateToOneWithWhereWithoutActivitiesInput, Prisma.TaxpayerProfileRevisionUpdateWithoutActivitiesInput>, Prisma.TaxpayerProfileRevisionUncheckedUpdateWithoutActivitiesInput>
 }
 
+export type TaxpayerProfileRevisionCreateNestedOneWithoutCollectionContextRevisionsInput = {
+  create?: Prisma.XOR<Prisma.TaxpayerProfileRevisionCreateWithoutCollectionContextRevisionsInput, Prisma.TaxpayerProfileRevisionUncheckedCreateWithoutCollectionContextRevisionsInput>
+  connectOrCreate?: Prisma.TaxpayerProfileRevisionCreateOrConnectWithoutCollectionContextRevisionsInput
+  connect?: Prisma.TaxpayerProfileRevisionWhereUniqueInput
+}
+
+export type TaxpayerProfileRevisionUpdateOneRequiredWithoutCollectionContextRevisionsNestedInput = {
+  create?: Prisma.XOR<Prisma.TaxpayerProfileRevisionCreateWithoutCollectionContextRevisionsInput, Prisma.TaxpayerProfileRevisionUncheckedCreateWithoutCollectionContextRevisionsInput>
+  connectOrCreate?: Prisma.TaxpayerProfileRevisionCreateOrConnectWithoutCollectionContextRevisionsInput
+  upsert?: Prisma.TaxpayerProfileRevisionUpsertWithoutCollectionContextRevisionsInput
+  connect?: Prisma.TaxpayerProfileRevisionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TaxpayerProfileRevisionUpdateToOneWithWhereWithoutCollectionContextRevisionsInput, Prisma.TaxpayerProfileRevisionUpdateWithoutCollectionContextRevisionsInput>, Prisma.TaxpayerProfileRevisionUncheckedUpdateWithoutCollectionContextRevisionsInput>
+}
+
 export type TaxpayerProfileRevisionCreateWithoutUserInput = {
   id?: string
   revision: number
@@ -679,6 +700,7 @@ export type TaxpayerProfileRevisionCreateWithoutUserInput = {
   createdAt?: Date | string
   taxpayerProfile: Prisma.TaxpayerProfileCreateNestedOneWithoutRevisionsInput
   activities?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionUncheckedCreateWithoutUserInput = {
@@ -695,6 +717,7 @@ export type TaxpayerProfileRevisionUncheckedCreateWithoutUserInput = {
   additionalFacts?: string | null
   createdAt?: Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionCreateOrConnectWithoutUserInput = {
@@ -756,6 +779,7 @@ export type TaxpayerProfileRevisionCreateWithoutTaxpayerProfileInput = {
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutTaxpayerProfileRevisionsInput
   activities?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionUncheckedCreateWithoutTaxpayerProfileInput = {
@@ -771,6 +795,7 @@ export type TaxpayerProfileRevisionUncheckedCreateWithoutTaxpayerProfileInput = 
   additionalFacts?: string | null
   createdAt?: Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionCreateOrConnectWithoutTaxpayerProfileInput = {
@@ -813,6 +838,7 @@ export type TaxpayerProfileRevisionCreateWithoutActivitiesInput = {
   createdAt?: Date | string
   taxpayerProfile: Prisma.TaxpayerProfileCreateNestedOneWithoutRevisionsInput
   user: Prisma.UserCreateNestedOneWithoutTaxpayerProfileRevisionsInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionUncheckedCreateWithoutActivitiesInput = {
@@ -829,6 +855,7 @@ export type TaxpayerProfileRevisionUncheckedCreateWithoutActivitiesInput = {
   vatFilingFrequency?: string
   additionalFacts?: string | null
   createdAt?: Date | string
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
 }
 
 export type TaxpayerProfileRevisionCreateOrConnectWithoutActivitiesInput = {
@@ -861,6 +888,7 @@ export type TaxpayerProfileRevisionUpdateWithoutActivitiesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   taxpayerProfile?: Prisma.TaxpayerProfileUpdateOneRequiredWithoutRevisionsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutTaxpayerProfileRevisionsNestedInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionUncheckedUpdateWithoutActivitiesInput = {
@@ -877,6 +905,91 @@ export type TaxpayerProfileRevisionUncheckedUpdateWithoutActivitiesInput = {
   vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+}
+
+export type TaxpayerProfileRevisionCreateWithoutCollectionContextRevisionsInput = {
+  id?: string
+  revision: number
+  displayName: string
+  personalIdNumber?: string | null
+  professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
+  additionalFacts?: string | null
+  createdAt?: Date | string
+  taxpayerProfile: Prisma.TaxpayerProfileCreateNestedOneWithoutRevisionsInput
+  user: Prisma.UserCreateNestedOneWithoutTaxpayerProfileRevisionsInput
+  activities?: Prisma.TaxpayerProfileActivityRevisionCreateNestedManyWithoutTaxpayerProfileRevisionInput
+}
+
+export type TaxpayerProfileRevisionUncheckedCreateWithoutCollectionContextRevisionsInput = {
+  id?: string
+  taxpayerProfileId: string
+  userId: string
+  revision: number
+  displayName: string
+  personalIdNumber?: string | null
+  professionalIdNumber?: string | null
+  hasEmploymentIncome?: boolean
+  hasRuc?: boolean
+  taxRegime?: string
+  vatFilingFrequency?: string
+  additionalFacts?: string | null
+  createdAt?: Date | string
+  activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedCreateNestedManyWithoutTaxpayerProfileRevisionInput
+}
+
+export type TaxpayerProfileRevisionCreateOrConnectWithoutCollectionContextRevisionsInput = {
+  where: Prisma.TaxpayerProfileRevisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.TaxpayerProfileRevisionCreateWithoutCollectionContextRevisionsInput, Prisma.TaxpayerProfileRevisionUncheckedCreateWithoutCollectionContextRevisionsInput>
+}
+
+export type TaxpayerProfileRevisionUpsertWithoutCollectionContextRevisionsInput = {
+  update: Prisma.XOR<Prisma.TaxpayerProfileRevisionUpdateWithoutCollectionContextRevisionsInput, Prisma.TaxpayerProfileRevisionUncheckedUpdateWithoutCollectionContextRevisionsInput>
+  create: Prisma.XOR<Prisma.TaxpayerProfileRevisionCreateWithoutCollectionContextRevisionsInput, Prisma.TaxpayerProfileRevisionUncheckedCreateWithoutCollectionContextRevisionsInput>
+  where?: Prisma.TaxpayerProfileRevisionWhereInput
+}
+
+export type TaxpayerProfileRevisionUpdateToOneWithWhereWithoutCollectionContextRevisionsInput = {
+  where?: Prisma.TaxpayerProfileRevisionWhereInput
+  data: Prisma.XOR<Prisma.TaxpayerProfileRevisionUpdateWithoutCollectionContextRevisionsInput, Prisma.TaxpayerProfileRevisionUncheckedUpdateWithoutCollectionContextRevisionsInput>
+}
+
+export type TaxpayerProfileRevisionUpdateWithoutCollectionContextRevisionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
+  additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  taxpayerProfile?: Prisma.TaxpayerProfileUpdateOneRequiredWithoutRevisionsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutTaxpayerProfileRevisionsNestedInput
+  activities?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+}
+
+export type TaxpayerProfileRevisionUncheckedUpdateWithoutCollectionContextRevisionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  taxpayerProfileId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  personalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  professionalIdNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasEmploymentIncome?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  hasRuc?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxRegime?: Prisma.StringFieldUpdateOperationsInput | string
+  vatFilingFrequency?: Prisma.StringFieldUpdateOperationsInput | string
+  additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionCreateManyUserInput = {
@@ -908,6 +1021,7 @@ export type TaxpayerProfileRevisionUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   taxpayerProfile?: Prisma.TaxpayerProfileUpdateOneRequiredWithoutRevisionsNestedInput
   activities?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionUncheckedUpdateWithoutUserInput = {
@@ -924,6 +1038,7 @@ export type TaxpayerProfileRevisionUncheckedUpdateWithoutUserInput = {
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionUncheckedUpdateManyWithoutUserInput = {
@@ -969,6 +1084,7 @@ export type TaxpayerProfileRevisionUpdateWithoutTaxpayerProfileInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutTaxpayerProfileRevisionsNestedInput
   activities?: Prisma.TaxpayerProfileActivityRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionUncheckedUpdateWithoutTaxpayerProfileInput = {
@@ -984,6 +1100,7 @@ export type TaxpayerProfileRevisionUncheckedUpdateWithoutTaxpayerProfileInput = 
   additionalFacts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.TaxpayerProfileActivityRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
+  collectionContextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutTaxpayerProfileRevisionNestedInput
 }
 
 export type TaxpayerProfileRevisionUncheckedUpdateManyWithoutTaxpayerProfileInput = {
@@ -1007,10 +1124,12 @@ export type TaxpayerProfileRevisionUncheckedUpdateManyWithoutTaxpayerProfileInpu
 
 export type TaxpayerProfileRevisionCountOutputType = {
   activities: number
+  collectionContextRevisions: number
 }
 
 export type TaxpayerProfileRevisionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   activities?: boolean | TaxpayerProfileRevisionCountOutputTypeCountActivitiesArgs
+  collectionContextRevisions?: boolean | TaxpayerProfileRevisionCountOutputTypeCountCollectionContextRevisionsArgs
 }
 
 /**
@@ -1028,6 +1147,13 @@ export type TaxpayerProfileRevisionCountOutputTypeDefaultArgs<ExtArgs extends ru
  */
 export type TaxpayerProfileRevisionCountOutputTypeCountActivitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.TaxpayerProfileActivityRevisionWhereInput
+}
+
+/**
+ * TaxpayerProfileRevisionCountOutputType without action
+ */
+export type TaxpayerProfileRevisionCountOutputTypeCountCollectionContextRevisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CollectionContextRevisionWhereInput
 }
 
 
@@ -1048,6 +1174,7 @@ export type TaxpayerProfileRevisionSelect<ExtArgs extends runtime.Types.Extensio
   taxpayerProfile?: boolean | Prisma.TaxpayerProfileDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   activities?: boolean | Prisma.TaxpayerProfileRevision$activitiesArgs<ExtArgs>
+  collectionContextRevisions?: boolean | Prisma.TaxpayerProfileRevision$collectionContextRevisionsArgs<ExtArgs>
   _count?: boolean | Prisma.TaxpayerProfileRevisionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["taxpayerProfileRevision"]>
 
@@ -1108,6 +1235,7 @@ export type TaxpayerProfileRevisionInclude<ExtArgs extends runtime.Types.Extensi
   taxpayerProfile?: boolean | Prisma.TaxpayerProfileDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   activities?: boolean | Prisma.TaxpayerProfileRevision$activitiesArgs<ExtArgs>
+  collectionContextRevisions?: boolean | Prisma.TaxpayerProfileRevision$collectionContextRevisionsArgs<ExtArgs>
   _count?: boolean | Prisma.TaxpayerProfileRevisionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TaxpayerProfileRevisionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1125,6 +1253,7 @@ export type $TaxpayerProfileRevisionPayload<ExtArgs extends runtime.Types.Extens
     taxpayerProfile: Prisma.$TaxpayerProfilePayload<ExtArgs>
     user: Prisma.$UserPayload<ExtArgs>
     activities: Prisma.$TaxpayerProfileActivityRevisionPayload<ExtArgs>[]
+    collectionContextRevisions: Prisma.$CollectionContextRevisionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1537,6 +1666,7 @@ export interface Prisma__TaxpayerProfileRevisionClient<T, Null = never, ExtArgs 
   taxpayerProfile<T extends Prisma.TaxpayerProfileDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TaxpayerProfileDefaultArgs<ExtArgs>>): Prisma.Prisma__TaxpayerProfileClient<runtime.Types.Result.GetResult<Prisma.$TaxpayerProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   activities<T extends Prisma.TaxpayerProfileRevision$activitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TaxpayerProfileRevision$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaxpayerProfileActivityRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  collectionContextRevisions<T extends Prisma.TaxpayerProfileRevision$collectionContextRevisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TaxpayerProfileRevision$collectionContextRevisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionContextRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2001,6 +2131,30 @@ export type TaxpayerProfileRevision$activitiesArgs<ExtArgs extends runtime.Types
   take?: number
   skip?: number
   distinct?: Prisma.TaxpayerProfileActivityRevisionScalarFieldEnum | Prisma.TaxpayerProfileActivityRevisionScalarFieldEnum[]
+}
+
+/**
+ * TaxpayerProfileRevision.collectionContextRevisions
+ */
+export type TaxpayerProfileRevision$collectionContextRevisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CollectionContextRevision
+   */
+  select?: Prisma.CollectionContextRevisionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CollectionContextRevision
+   */
+  omit?: Prisma.CollectionContextRevisionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CollectionContextRevisionInclude<ExtArgs> | null
+  where?: Prisma.CollectionContextRevisionWhereInput
+  orderBy?: Prisma.CollectionContextRevisionOrderByWithRelationInput | Prisma.CollectionContextRevisionOrderByWithRelationInput[]
+  cursor?: Prisma.CollectionContextRevisionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CollectionContextRevisionScalarFieldEnum | Prisma.CollectionContextRevisionScalarFieldEnum[]
 }
 
 /**

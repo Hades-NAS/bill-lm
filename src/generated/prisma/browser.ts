@@ -50,6 +50,16 @@ export type TaxpayerProfileRevision = Prisma.TaxpayerProfileRevisionModel
  */
 export type TaxpayerProfileActivityRevision = Prisma.TaxpayerProfileActivityRevisionModel
 /**
+ * Model CollectionContextRevision
+ * 
+ */
+export type CollectionContextRevision = Prisma.CollectionContextRevisionModel
+/**
+ * Model CollectionContextActivityRevision
+ * 
+ */
+export type CollectionContextActivityRevision = Prisma.CollectionContextActivityRevisionModel
+/**
  * Model FiscalReference
  * Material fiscal aportado y autoaprobado por el usuario. No representa una
  * fuente normativa oficial ni una validación jurídica.

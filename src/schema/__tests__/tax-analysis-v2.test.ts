@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   AnalysisBlockSchema,
   CollectionContextRevisionInputSchema,
+  collectionContextBlocks,
   EconomicActivityRevisionInputSchema,
   TAX_ANALYSIS_SCHEMA_VERSION,
   TaxAnalysisResultV2Schema,
@@ -60,6 +61,27 @@ describe('tax analysis v2 contracts', () => {
       vatFilingFrequency: 'monthly',
       activityRevisionIds: [id],
     }).success).toBe(false)
+  })
+
+  it('blocks IVA until the profile and activity facts are resolved', () => {
+    const context = CollectionContextRevisionInputSchema.parse({
+      purpose: 'vat_credit',
+      period: { startDate: '2026-01-01', endDate: '2026-01-31' },
+      taxpayerProfileRevisionId: id,
+      activityRevisionIds: [],
+    })
+    expect(
+      collectionContextBlocks(context, {
+        hasRuc: false,
+        taxRegime: 'unknown',
+        vatFilingFrequency: 'unknown',
+      }).map((block) => block.code),
+    ).toEqual([
+      'MISSING_TAXPAYER_PROFILE',
+      'MISSING_ECONOMIC_ACTIVITY',
+      'UNRESOLVED_TAX_REGIME',
+      'UNRESOLVED_VAT_FREQUENCY',
+    ])
   })
 
   it('keeps blocks actionable and results independently versioned', () => {

@@ -390,6 +390,8 @@ export const ModelName = {
   TaxpayerProfile: 'TaxpayerProfile',
   TaxpayerProfileRevision: 'TaxpayerProfileRevision',
   TaxpayerProfileActivityRevision: 'TaxpayerProfileActivityRevision',
+  CollectionContextRevision: 'CollectionContextRevision',
+  CollectionContextActivityRevision: 'CollectionContextActivityRevision',
   FiscalReference: 'FiscalReference',
   ProviderConnection: 'ProviderConnection',
   AuthIdentity: 'AuthIdentity',
@@ -411,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "billDetail"
+    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "collectionContextRevision" | "collectionContextActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "billDetail"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -856,6 +858,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.TaxpayerProfileActivityRevisionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.TaxpayerProfileActivityRevisionCountAggregateOutputType> | number
+        }
+      }
+    }
+    CollectionContextRevision: {
+      payload: Prisma.$CollectionContextRevisionPayload<ExtArgs>
+      fields: Prisma.CollectionContextRevisionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CollectionContextRevisionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CollectionContextRevisionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>
+        }
+        findFirst: {
+          args: Prisma.CollectionContextRevisionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CollectionContextRevisionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>
+        }
+        findMany: {
+          args: Prisma.CollectionContextRevisionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>[]
+        }
+        create: {
+          args: Prisma.CollectionContextRevisionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>
+        }
+        createMany: {
+          args: Prisma.CollectionContextRevisionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CollectionContextRevisionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>[]
+        }
+        delete: {
+          args: Prisma.CollectionContextRevisionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>
+        }
+        update: {
+          args: Prisma.CollectionContextRevisionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>
+        }
+        deleteMany: {
+          args: Prisma.CollectionContextRevisionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CollectionContextRevisionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CollectionContextRevisionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>[]
+        }
+        upsert: {
+          args: Prisma.CollectionContextRevisionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextRevisionPayload>
+        }
+        aggregate: {
+          args: Prisma.CollectionContextRevisionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCollectionContextRevision>
+        }
+        groupBy: {
+          args: Prisma.CollectionContextRevisionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionContextRevisionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CollectionContextRevisionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionContextRevisionCountAggregateOutputType> | number
+        }
+      }
+    }
+    CollectionContextActivityRevision: {
+      payload: Prisma.$CollectionContextActivityRevisionPayload<ExtArgs>
+      fields: Prisma.CollectionContextActivityRevisionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CollectionContextActivityRevisionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CollectionContextActivityRevisionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>
+        }
+        findFirst: {
+          args: Prisma.CollectionContextActivityRevisionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CollectionContextActivityRevisionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>
+        }
+        findMany: {
+          args: Prisma.CollectionContextActivityRevisionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>[]
+        }
+        create: {
+          args: Prisma.CollectionContextActivityRevisionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>
+        }
+        createMany: {
+          args: Prisma.CollectionContextActivityRevisionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CollectionContextActivityRevisionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>[]
+        }
+        delete: {
+          args: Prisma.CollectionContextActivityRevisionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>
+        }
+        update: {
+          args: Prisma.CollectionContextActivityRevisionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>
+        }
+        deleteMany: {
+          args: Prisma.CollectionContextActivityRevisionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CollectionContextActivityRevisionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CollectionContextActivityRevisionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>[]
+        }
+        upsert: {
+          args: Prisma.CollectionContextActivityRevisionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionContextActivityRevisionPayload>
+        }
+        aggregate: {
+          args: Prisma.CollectionContextActivityRevisionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCollectionContextActivityRevision>
+        }
+        groupBy: {
+          args: Prisma.CollectionContextActivityRevisionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionContextActivityRevisionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CollectionContextActivityRevisionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionContextActivityRevisionCountAggregateOutputType> | number
         }
       }
     }
@@ -1424,6 +1574,33 @@ export const TaxpayerProfileActivityRevisionScalarFieldEnum = {
 export type TaxpayerProfileActivityRevisionScalarFieldEnum = (typeof TaxpayerProfileActivityRevisionScalarFieldEnum)[keyof typeof TaxpayerProfileActivityRevisionScalarFieldEnum]
 
 
+export const CollectionContextRevisionScalarFieldEnum = {
+  id: 'id',
+  collectionId: 'collectionId',
+  userId: 'userId',
+  taxpayerProfileRevisionId: 'taxpayerProfileRevisionId',
+  purpose: 'purpose',
+  periodStartDate: 'periodStartDate',
+  periodEndDate: 'periodEndDate',
+  notes: 'notes',
+  revision: 'revision',
+  createdAt: 'createdAt'
+} as const
+
+export type CollectionContextRevisionScalarFieldEnum = (typeof CollectionContextRevisionScalarFieldEnum)[keyof typeof CollectionContextRevisionScalarFieldEnum]
+
+
+export const CollectionContextActivityRevisionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  collectionContextRevisionId: 'collectionContextRevisionId',
+  economicActivityRevisionId: 'economicActivityRevisionId',
+  createdAt: 'createdAt'
+} as const
+
+export type CollectionContextActivityRevisionScalarFieldEnum = (typeof CollectionContextActivityRevisionScalarFieldEnum)[keyof typeof CollectionContextActivityRevisionScalarFieldEnum]
+
+
 export const FiscalReferenceScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -1801,6 +1978,8 @@ export type GlobalOmitConfig = {
   taxpayerProfile?: Prisma.TaxpayerProfileOmit
   taxpayerProfileRevision?: Prisma.TaxpayerProfileRevisionOmit
   taxpayerProfileActivityRevision?: Prisma.TaxpayerProfileActivityRevisionOmit
+  collectionContextRevision?: Prisma.CollectionContextRevisionOmit
+  collectionContextActivityRevision?: Prisma.CollectionContextActivityRevisionOmit
   fiscalReference?: Prisma.FiscalReferenceOmit
   providerConnection?: Prisma.ProviderConnectionOmit
   authIdentity?: Prisma.AuthIdentityOmit

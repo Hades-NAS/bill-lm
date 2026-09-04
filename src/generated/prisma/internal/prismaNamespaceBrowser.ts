@@ -57,6 +57,8 @@ export const ModelName = {
   TaxpayerProfile: 'TaxpayerProfile',
   TaxpayerProfileRevision: 'TaxpayerProfileRevision',
   TaxpayerProfileActivityRevision: 'TaxpayerProfileActivityRevision',
+  CollectionContextRevision: 'CollectionContextRevision',
+  CollectionContextActivityRevision: 'CollectionContextActivityRevision',
   FiscalReference: 'FiscalReference',
   ProviderConnection: 'ProviderConnection',
   AuthIdentity: 'AuthIdentity',
@@ -161,6 +163,33 @@ export const TaxpayerProfileActivityRevisionScalarFieldEnum = {
 } as const
 
 export type TaxpayerProfileActivityRevisionScalarFieldEnum = (typeof TaxpayerProfileActivityRevisionScalarFieldEnum)[keyof typeof TaxpayerProfileActivityRevisionScalarFieldEnum]
+
+
+export const CollectionContextRevisionScalarFieldEnum = {
+  id: 'id',
+  collectionId: 'collectionId',
+  userId: 'userId',
+  taxpayerProfileRevisionId: 'taxpayerProfileRevisionId',
+  purpose: 'purpose',
+  periodStartDate: 'periodStartDate',
+  periodEndDate: 'periodEndDate',
+  notes: 'notes',
+  revision: 'revision',
+  createdAt: 'createdAt'
+} as const
+
+export type CollectionContextRevisionScalarFieldEnum = (typeof CollectionContextRevisionScalarFieldEnum)[keyof typeof CollectionContextRevisionScalarFieldEnum]
+
+
+export const CollectionContextActivityRevisionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  collectionContextRevisionId: 'collectionContextRevisionId',
+  economicActivityRevisionId: 'economicActivityRevisionId',
+  createdAt: 'createdAt'
+} as const
+
+export type CollectionContextActivityRevisionScalarFieldEnum = (typeof CollectionContextActivityRevisionScalarFieldEnum)[keyof typeof CollectionContextActivityRevisionScalarFieldEnum]
 
 
 export const FiscalReferenceScalarFieldEnum = {

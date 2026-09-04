@@ -127,12 +127,42 @@ export const CollectionContextRevisionInputSchema = z.object({
   purpose: TaxPurposeSchema,
   period: TaxPeriodSchema,
   taxpayerProfileRevisionId: IdSchema,
-  activityRevisionIds: z.array(IdSchema).min(1).max(20),
+  activityRevisionIds: z.array(IdSchema).max(20),
   notes: OptionalTextSchema,
 })
 export type CollectionContextRevisionInput = z.infer<
   typeof CollectionContextRevisionInputSchema
 >
+
+export const TaxpayerProfileContextSchema = z.object({
+  hasRuc: z.boolean(),
+  taxRegime: TaxRegimeSchema,
+  vatFilingFrequency: VatFilingFrequencySchema,
+})
+export type TaxpayerProfileContext = z.infer<
+  typeof TaxpayerProfileContextSchema
+>
+
+export function collectionContextBlocks(
+  context: CollectionContextRevisionInput,
+  profile: TaxpayerProfileContext,
+): AnalysisBlock[] {
+  const blocks: AnalysisBlock[] = []
+  const requiresActivities =
+    context.purpose === 'vat_credit' ||
+    context.purpose === 'business_income_tax'
+  if (requiresActivities && !profile.hasRuc)
+    blocks.push({ code: 'MISSING_TAXPAYER_PROFILE', message: 'Este propósito requiere un perfil con RUC.', actionLabel: 'Revisar perfil', actionPath: '/profiles' })
+  if (requiresActivities && context.activityRevisionIds.length === 0)
+    blocks.push({ code: 'MISSING_ECONOMIC_ACTIVITY', message: 'Selecciona al menos una actividad económica.', actionLabel: 'Configurar actividades', actionPath: '/profiles' })
+  if (context.purpose === 'personal_expenses' && context.activityRevisionIds.length > 0)
+    blocks.push({ code: 'UNRESOLVED_ANALYSIS_CONFIGURATION', message: 'Los gastos personales no usan actividades económicas.', actionLabel: 'Ajustar contexto', actionPath: '/collections' })
+  if (context.purpose === 'vat_credit' && profile.taxRegime === 'unknown')
+    blocks.push({ code: 'UNRESOLVED_TAX_REGIME', message: 'Resuelve el régimen tributario antes de analizar IVA.', actionLabel: 'Revisar perfil', actionPath: '/profiles' })
+  if (context.purpose === 'vat_credit' && profile.vatFilingFrequency === 'unknown')
+    blocks.push({ code: 'UNRESOLVED_VAT_FREQUENCY', message: 'Resuelve la periodicidad de IVA antes de analizar.', actionLabel: 'Revisar perfil', actionPath: '/profiles' })
+  return blocks
+}
 
 export const CollectionContextRevisionSchema =
   CollectionContextRevisionInputSchema.extend({
@@ -159,6 +189,11 @@ export type InvoiceAnalysisSnapshot = z.infer<
 export const AnalysisBlockCodeSchema = z.enum([
   'MISSING_PROVIDER_CONNECTION',
   'UNRESOLVED_ANALYSIS_CONFIGURATION',
+  'MISSING_TAXPAYER_PROFILE',
+  'MISSING_ECONOMIC_ACTIVITY',
+  'UNRESOLVED_TAX_REGIME',
+  'UNRESOLVED_VAT_FREQUENCY',
+  'MISSING_APPLICABLE_RULESET',
   'MISSING_COLLECTION_CONTEXT',
   'OUTSIDE_COLLECTION_PERIOD',
   'NO_ELIGIBLE_INVOICES',
