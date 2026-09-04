@@ -41,20 +41,9 @@ A continuación te proporciono la información de la factura con la data necesar
 const DEFAULT_INSTRUCTIONS = `Se debe analizar esta factura basándose en los campos disponibles y en las referencias fiscales autogestionadas por el usuario. Este material es autoaprobado: no se debe presentarlo como normativa oficial del SRI ni como un dictamen jurídico.`
 
 /**
- * Professional-specific instructions suffix
- */
-const PROFESSIONAL_INSTRUCTIONS_SUFFIX = `
-
-Adicionalmente a las condiciones generales, se deben considerar las siguientes instrucciones específicas para facturas de tipo PROFESSIONAL:
-{{CUSTOM_INSTRUCTIONS}}
-
-Estas instrucciones específicas complementan las referencias autogestionadas del usuario.`
-
-/**
  * BillPromptBuilder
  *
- * Centralizes prompt construction for bill analysis.
- * Supports versioning, templating, and custom instructions.
+ * Centralizes prompt construction for bill analysis and reference material.
  *
  * Usage:
  * ```
@@ -72,7 +61,7 @@ export class BillPromptBuilder {
   /**
    * Build a prompt for bill analysis
    *
-   * @param jobData - Job data containing collection info and instructions
+   * @param jobData - Job data containing collection information
    * @param parsedBill - Parsed bill data
    * @returns Generated prompt string
    */
@@ -81,7 +70,7 @@ export class BillPromptBuilder {
     parsedBill: ParsedBill,
     fiscalReferences: Array<{ name: string; markdown: string }>,
   ): string {
-    const { instructions } = jobData.data
+    void jobData
     const { billType, vendorName, details, totals } = parsedBill
 
     // Structure bill data for prompt
@@ -100,11 +89,7 @@ export class BillPromptBuilder {
     }
 
     // Build final instructions
-    const finalInstructions = this.buildInstructions(
-      billType,
-      instructions,
-      fiscalReferences,
-    )
+    const finalInstructions = this.buildInstructions(fiscalReferences)
 
     // Replace placeholders
     const prompt = BASE_PROMPT_TEMPLATE.replace(
@@ -123,12 +108,10 @@ export class BillPromptBuilder {
   }
 
   /**
-   * Build instructions based on bill type and custom instructions
+   * Build instructions from the bill type and reference material.
    * @private
    */
   private buildInstructions(
-    billType: string,
-    customInstructions?: string,
     fiscalReferences: Array<{ name: string; markdown: string }> = [],
   ): string {
     let instructions = DEFAULT_INSTRUCTIONS
@@ -139,18 +122,6 @@ export class BillPromptBuilder {
           (reference) => `\n--- ${reference.name} ---\n${reference.markdown}`,
         )
         .join('\n')}`
-    }
-
-    // Add professional-specific instructions if applicable
-    if (
-      billType === 'PROFESSIONAL' &&
-      customInstructions &&
-      customInstructions.trim()
-    ) {
-      instructions += PROFESSIONAL_INSTRUCTIONS_SUFFIX.replace(
-        '{{CUSTOM_INSTRUCTIONS}}',
-        customInstructions,
-      )
     }
 
     return instructions

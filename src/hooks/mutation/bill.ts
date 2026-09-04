@@ -8,8 +8,6 @@ import { notify } from '#/utils/notifications'
 
 import { invalidateQueriesByKeys } from '../invalidate-utils'
 
-import type { BillFormData } from '#/components/bill/form'
-import type { Factura } from '#/schema/bill'
 import type { MutationOptions } from '#/schema/network'
 import type { FileWithPath } from '@mantine/dropzone'
 
@@ -111,28 +109,14 @@ type PreprocessBillResult = {
 }
 
 export const usePreprocessBillMutation = (
-  params: Partial<BillFormData>,
   options: MutationOptions<PreprocessBillResult> = {},
 ) => {
   return useMutation({
     mutationFn: async (bills: Array<FileWithPath>) => {
-      const { personalIdNumber, professionalIdNumber } = params
-
       const results: PreprocessBillResult = {
         bills: [],
         errors: [],
       }
-
-      if (!personalIdNumber) {
-        notify.error({
-          title: 'Número de cédula requerido',
-          message:
-            'Por favor, proporciona un número de cédula para validar las facturas.',
-        })
-        return results
-      }
-
-      const billsData: Array<{ file: FileWithPath; factura: Factura }> = []
 
       for (const billFile of bills) {
         const buffer = await billFile.arrayBuffer()
@@ -141,45 +125,15 @@ export const usePreprocessBillMutation = (
 
         if (!bill.success) {
           console.error('Error parsing bill XML:', bill.error)
+          results.errors.push({
+            file: billFile,
+            error: 'No pudimos leer este archivo como una factura XML válida.',
+          })
           continue
         }
 
-        billsData.push({ file: billFile, factura: bill.data.factura })
+        results.bills.push(billFile)
       }
-
-      billsData.forEach((bill) => {
-        const idBuyer =
-          bill.factura.infoFactura.identificacionComprador.trim() || ''
-
-        if (idBuyer.length === 10) {
-          if (idBuyer === personalIdNumber) {
-            results.bills.push(bill.file)
-          } else {
-            results.errors.push({
-              file: bill.file,
-              error: `Cédula del comprador (${idBuyer}) no coincide con la proporcionada (${personalIdNumber}).`,
-            })
-          }
-        }
-        if (idBuyer.length === 13) {
-          if (!professionalIdNumber) {
-            results.errors.push({
-              file: bill.file,
-              error: `Factura contiene RUC del comprador (${idBuyer}) pero no se proporcionó un RUC para validar.`,
-            })
-            return
-          }
-
-          if (idBuyer === professionalIdNumber) {
-            results.bills.push(bill.file)
-          } else {
-            results.errors.push({
-              file: bill.file,
-              error: `RUC del comprador (${idBuyer}) no coincide con el proporcionado (${professionalIdNumber}).`,
-            })
-          }
-        }
-      })
       return results
     },
     onSuccess: (data) => {

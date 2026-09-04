@@ -9,9 +9,6 @@ const CollectionInputFieldsSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string().nullable(),
-  personalIdNumber: z.string(),
-  professionalIdNumber: z.string(),
-  instructions: z.string().nullable(),
   year: z.number().int(),
 })
 
@@ -90,7 +87,6 @@ export type PresetType = z.infer<typeof PresetTypeSchema>
 export const AnalyzeCollectionRequestSchema = z.object({
   collectionId: z.string(),
   collectionName: z.string(),
-  instructions: z.string().optional(),
   preset: PresetTypeSchema.default('balanced').optional(),
   type: z.enum(['all', 'missing', 'analyzed', 'specific']),
   billIds: z.array(z.string()),
@@ -151,9 +147,6 @@ export type GetBillDetailRequest = z.infer<typeof GetBillDetailRequestSchema>
 export const CreateCollectionSchema = CollectionInputFieldsSchema.pick({
   name: true,
   description: true,
-  instructions: true,
-  personalIdNumber: true,
-  professionalIdNumber: true,
   year: true,
 })
   .extend({
@@ -164,41 +157,6 @@ export const CreateCollectionSchema = CollectionInputFieldsSchema.pick({
     year: CollectionInputFieldsSchema.shape.year
       .int()
       .min(0, 'Ingresa un año válido.'),
-  })
-  .superRefine((data, ctx) => {
-    if (data.personalIdNumber && !/^\d+$/.test(data.personalIdNumber)) {
-      ctx.addIssue({
-        code: 'invalid_value',
-        path: ['personalIdNumber'],
-        values: [data.personalIdNumber],
-        message: 'La cédula personal solo debe contener números',
-      })
-    }
-    if (data.professionalIdNumber && !/^\d+$/.test(data.professionalIdNumber)) {
-      ctx.addIssue({
-        code: 'invalid_value',
-        path: ['professionalIdNumber'],
-        values: [data.professionalIdNumber],
-        message: 'El RUC solo debe contener números',
-      })
-    }
-
-    if (data.professionalIdNumber && !data.instructions) {
-      ctx.addIssue({
-        code: 'invalid_value',
-        path: ['instructions'],
-        values: [data.instructions],
-        message: 'Agrega instrucciones para las facturas asociadas al RUC.',
-      })
-    }
-    if (data.instructions && !data.professionalIdNumber) {
-      ctx.addIssue({
-        code: 'invalid_value',
-        path: ['professionalIdNumber'],
-        values: [data.professionalIdNumber],
-        message: 'Ingresa el RUC al que aplican estas instrucciones.',
-      })
-    }
   })
 
 export type CreateCollectionType = z.infer<typeof CreateCollectionSchema>

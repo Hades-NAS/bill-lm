@@ -16,7 +16,7 @@
     "worker:dev": "bun run --watch src/integrations/jobs/analyze-job.ts",
     "worker:start": "bun run src/integrations/jobs/analyze-job.ts",
     "post-cta-init": "bunx --bun create-db@latest --user-agent tanstack/tsrouter",
-    "db:gen": "rm -rf src/generated/zod && dotenv -e .env -- prisma generate",
+    "db:gen": "dotenv -e .env -- prisma generate",
     "db:deploy": "dotenv -e .env -- prisma migrate deploy",
     "db:push": "dotenv -e .env -- prisma db push",
     "db:migrate": "dotenv -e .env -- prisma migrate dev",

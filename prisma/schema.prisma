@@ -3,11 +3,6 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
-generator zod {
-  provider = "zod-prisma-types"
-  output   = "../src/generated/zod"
-}
-
 datasource db {
   provider = "postgresql"
 }
@@ -269,11 +264,6 @@ model Collection {
   id          String  @id @default(uuid())
   name        String  @db.VarChar(100)
   description String? @db.VarChar(255)
-
-  // user activity fields
-  personalIdNumber     String  @db.VarChar(10)
-  professionalIdNumber String  @db.VarChar(13)
-  instructions         String? @db.VarChar(555)
 
   year Int
 

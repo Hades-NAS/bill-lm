@@ -5,9 +5,6 @@ import { CreateCollectionSchema, UpdateCollectionSchema } from '#/schema/collect
 const validCollection = {
   name: 'Declaración 2026',
   description: null,
-  instructions: null,
-  personalIdNumber: '0102030405',
-  professionalIdNumber: '',
   year: 2026,
 }
 
@@ -20,14 +17,12 @@ describe('collection input schemas', () => {
     const result = UpdateCollectionSchema.safeParse({
       ...validCollection,
       id: 'not-a-uuid',
-      professionalIdNumber: '0999999999001',
-      instructions: null,
     })
 
     expect(result.success).toBe(false)
     if (!result.success) {
       expect(result.error.issues.map((issue) => issue.path)).toEqual(
-        expect.arrayContaining([['id'], ['instructions']]),
+        expect.arrayContaining([['id']]),
       )
     }
   })

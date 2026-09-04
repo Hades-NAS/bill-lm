@@ -144,9 +144,6 @@ export const collectionsRouter = {
           id: true,
           name: true,
           description: true,
-          instructions: true,
-          personalIdNumber: true,
-          professionalIdNumber: true,
           year: true,
           createdAt: true,
           updatedAt: true,
@@ -180,9 +177,6 @@ export const collectionsRouter = {
           userId: principal.userId,
           name: data.name,
           description: data.description,
-          instructions: data.instructions,
-          personalIdNumber: data.personalIdNumber,
-          professionalIdNumber: data.professionalIdNumber,
           year: data.year,
         },
       })
@@ -304,7 +298,12 @@ export const collectionsRouter = {
         })
       return prisma.collectionContextRevision.findMany({
         where: { collectionId: collection.id, userId: ctx.principal.userId },
-        include: { activities: true, taxpayerProfileRevision: true },
+        include: {
+          activities: {
+            include: { economicActivityRevision: true },
+          },
+          taxpayerProfileRevision: true,
+        },
         orderBy: { revision: 'desc' },
       })
     }),
@@ -357,6 +356,11 @@ export const collectionsRouter = {
           id: input.taxpayerProfileRevisionId,
           userId: ctx.principal.userId,
         },
+        include: {
+          activities: {
+            select: { economicActivityRevisionId: true },
+          },
+        },
       })
       if (!collection || !profile)
         throw new TRPCError({
@@ -399,6 +403,19 @@ export const collectionsRouter = {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Selecciona solo actividades propias.',
+        })
+      const profileActivityIds = new Set(
+        profile.activities.map((activity) => activity.economicActivityRevisionId),
+      )
+      if (
+        input.activityRevisionIds.some(
+          (activityId) => !profileActivityIds.has(activityId),
+        )
+      )
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message:
+            'Selecciona solo actividades incluidas en el perfil tributario.',
         })
       return prisma.$transaction(async (tx) => {
         const latest = await tx.collectionContextRevision.findFirst({
@@ -651,7 +668,6 @@ export const collectionsRouter = {
         data: {
           collectionId: collection.id,
           collectionName: collection.name,
-          instructions: collection.instructions || data.instructions,
           preset: data.preset || 'balanced',
           type,
           billIds: billsToAnalyze.map((bill) => bill.id),

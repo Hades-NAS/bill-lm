@@ -35,8 +35,6 @@ const defaultValues: AddBillToCollectionType = {
 
 export type BillFormData = {
   collectionId: string
-  personalIdNumber: string
-  professionalIdNumber: string
 }
 
 const MAX_BILLS = 10
@@ -74,7 +72,7 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
     onClose: outerOnClose,
   } = props
 
-  const { collectionId, personalIdNumber, professionalIdNumber } = data || {}
+  const { collectionId } = data || {}
 
   const [confirmExit, setConfirmExit] = React.useState(false)
 
@@ -90,13 +88,7 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
     },
   })
 
-  const preprocessBillMutation = usePreprocessBillMutation(
-    {
-      collectionId,
-      personalIdNumber,
-      professionalIdNumber,
-    },
-    {
+  const preprocessBillMutation = usePreprocessBillMutation({
       onSuccess: (result) => {
         const { bills, errors } = result
         form.setFieldValue('bills', bills)
@@ -108,8 +100,7 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
           })
         }
       },
-    },
-  )
+  })
 
   const form = useAppForm({
     defaultValues,

@@ -30,9 +30,6 @@ import type { ModalPageProps } from '#/schema/page'
 const defaultValues: CreateCollectionType = {
   name: '',
   description: '',
-  instructions: '',
-  personalIdNumber: '',
-  professionalIdNumber: '',
   year: DateTime.now().year,
 }
 
@@ -54,9 +51,9 @@ function openCollectionFormGuide() {
           'Sirve como referencia para organizar la colección. El contexto de análisis define las fechas exactas.',
       },
       {
-        title: 'Cédula, RUC e instrucciones',
+        title: 'Contexto tributario',
         description:
-          'Completa los identificadores que pueden aparecer en las facturas. Las instrucciones añaden contexto para procesarlas.',
+          'Después de crear la colección, selecciona un perfil y sus actividades en Contexto. Esa revisión aporta los identificadores y hechos tributarios.',
       },
     ],
   })
@@ -123,9 +120,6 @@ const CollectionForm = (
       form.reset({
         name: data.name,
         description: data.description || '',
-        instructions: data.instructions || '',
-        personalIdNumber: data.personalIdNumber || '',
-        professionalIdNumber: data.professionalIdNumber || '',
         year: data.year,
       })
     } else {
@@ -197,68 +191,6 @@ const CollectionForm = (
             </Flex>
           </Fieldset>
 
-          <Fieldset legend="Información fiscal">
-            <Flex direction="column" gap="sm">
-              <Flex direction={isMobile ? 'column' : 'row'} gap="sm">
-                <form.AppField
-                  children={(field) => (
-                    <field.Input
-                      label={
-                        <FieldHelpLabel
-                          hint="Ingresa la cédula que puede aparecer en las facturas personales de esta colección."
-                          label="Cédula"
-                        />
-                      }
-                      maxLength={10}
-                      placeholder="Cédula personal"
-                      style={{ flex: 1 }}
-                      typeInput="text"
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                  )}
-                  name="personalIdNumber"
-                />
-
-                <form.AppField
-                  children={(field) => (
-                    <field.Input
-                      label={
-                        <FieldHelpLabel
-                          hint="Ingresa el RUC si las facturas corresponden a una actividad profesional o negocio."
-                          label="RUC (opcional)"
-                        />
-                      }
-                      maxLength={13}
-                      placeholder="RUC profesional"
-                      style={{ flex: 1 }}
-                      typeInput="text"
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                  )}
-                  name="professionalIdNumber"
-                />
-              </Flex>
-
-              <form.AppField
-                children={(field) => (
-                  <field.Input
-                    autosize
-                    label={
-                      <FieldHelpLabel
-                        hint="Explica un criterio útil para interpretar las facturas. No incluyas claves ni información sensible."
-                        label="Instrucciones (opcional)"
-                      />
-                    }
-                    minRows={4}
-                    placeholder="Instrucciones para facturas emitidas a RUC"
-                    typeInput="textarea"
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                )}
-                name="instructions"
-              />
-            </Flex>
-          </Fieldset>
           <Box className="bill-lm-modal-actions">
             <form.AppForm>
               <form.SubmitButton loading={isLoading} mt="md">

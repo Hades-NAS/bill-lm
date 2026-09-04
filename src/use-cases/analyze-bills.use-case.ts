@@ -65,7 +65,6 @@ export class AnalyzeBillsUseCase {
         collectionId,
         collectionName,
         preset,
-        instructions: jobDataPayload.instructions,
       })
 
       // Create analysis service

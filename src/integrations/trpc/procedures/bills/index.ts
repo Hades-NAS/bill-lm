@@ -13,6 +13,7 @@ import { privateProcedure } from '#/integrations/trpc/init'
 import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
 import { getBillAmounts, getBillType } from '#/utils/bill'
+import { getBuyerProfileMismatchMessage } from '#/utils/bill-buyer-profile'
 import { roundToDecimals } from '#/utils/math'
 
 import type {
@@ -57,9 +58,28 @@ export const billsRouter = {
 
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Collection not found',
+          message: 'Colección no encontrada.',
         })
       }
+
+      const context = await prisma.collectionContextRevision.findFirst({
+        where: { collectionId, userId: principal.userId },
+        orderBy: { revision: 'desc' },
+        include: {
+          taxpayerProfileRevision: {
+            select: {
+              personalIdNumber: true,
+              professionalIdNumber: true,
+            },
+          },
+        },
+      })
+      if (!context)
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message:
+            'Configura un perfil tributario en el contexto antes de subir facturas.',
+        })
 
       const billData = bills.map((bill) => {
         const ext = StorageHelper.getExtensionFromContentType(bill.mimeType)
@@ -85,11 +105,17 @@ export const billsRouter = {
 
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: `Failed to parse and validate invoice XML: ${billParsed.error}`,
+            message: 'No pudimos leer este XML como una factura electrónica válida.',
           })
         }
 
         const { infoFactura, infoTributaria } = billParsed.data.factura
+        const buyerMismatch = getBuyerProfileMismatchMessage(
+          infoFactura.identificacionComprador,
+          context.taxpayerProfileRevision,
+        )
+        if (buyerMismatch)
+          throw new TRPCError({ code: 'BAD_REQUEST', message: buyerMismatch })
 
         const billAmounts = getBillAmounts(infoFactura)
         const billTargetType = getBillType(infoFactura.identificacionComprador)

@@ -17,14 +17,12 @@ import {
   List,
   Modal,
   ThemeIcon,
-  Textarea,
   Alert,
   Select,
   MultiSelect,
   TextInput,
 } from '@mantine/core'
 import { useListState, useViewportSize } from '@mantine/hooks'
-import { modals } from '@mantine/modals'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
@@ -49,7 +47,6 @@ import {
   isLoadingOrRefetchQuery,
   isLoadingQuery,
 } from '#/utils/query'
-import { formatRUC } from '#/utils/string'
 
 import { useModal } from '#/hooks/modal'
 import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
@@ -181,8 +178,6 @@ function openInvoicesGuide() {
 function CollectionDetailPage() {
   const { id: collectionId } = Route.useParams()
 
-  const modalInstId = React.useRef(`collection-detail-${collectionId}`)
-
   const [filter, setFilter] = React.useState<FilterValue>({
     field: 'name',
     type: 'text',
@@ -211,9 +206,6 @@ function CollectionDetailPage() {
   const queryClient = useQueryClient()
   const profilesQuery = useQuery(
     trpc.taxpayerProfiles.listProfiles.queryOptions(),
-  )
-  const activitiesQuery = useQuery(
-    trpc.taxpayerProfiles.listActivities.queryOptions(),
   )
   const contextRevisionsQuery = useQuery(
     trpc.collections.listContextRevisions.queryOptions({ id: collectionId }),
@@ -259,6 +251,50 @@ function CollectionDetailPage() {
     !analysisConfigLoading &&
     !analysisConfigError &&
     activeConnections.length > 0
+
+  const profileOptions = React.useMemo(() => {
+    const options = (profilesQuery.data ?? []).flatMap((profile) => {
+        const revision = profile.revisions[0]
+        if (!revision) return []
+
+        return [
+          {
+            value: revision.id,
+            label: `${revision.displayName} · rev. ${revision.revision}`,
+            activityRevisionIds: revision.activities.map(
+              ({ economicActivityRevision }) => economicActivityRevision.id,
+            ),
+            activities: revision.activities.map(({ economicActivityRevision }) => ({
+              value: economicActivityRevision.id,
+              label: economicActivityRevision.displayName,
+            })),
+          },
+        ]
+      })
+    const currentRevision = contextRevisionsQuery.data?.[0]
+    if (
+      currentRevision &&
+      !options.some(
+        (option) => option.value === currentRevision.taxpayerProfileRevisionId,
+      )
+    ) {
+      options.push({
+        value: currentRevision.taxpayerProfileRevisionId,
+        label: `${currentRevision.taxpayerProfileRevision.displayName} · rev. ${currentRevision.taxpayerProfileRevision.revision}`,
+        activityRevisionIds: currentRevision.activities.map(
+          (activity) => activity.economicActivityRevisionId,
+        ),
+        activities: currentRevision.activities.map((activity) => ({
+          value: activity.economicActivityRevisionId,
+          label: activity.economicActivityRevision.displayName,
+        })),
+      })
+    }
+    return options
+  }, [contextRevisionsQuery.data, profilesQuery.data])
+  const selectedProfile = profileOptions.find(
+    (profile) => profile.value === profileRevisionId,
+  )
 
   React.useEffect(() => {
     if (!contextModalOpened) return
@@ -442,16 +478,7 @@ function CollectionDetailPage() {
             onChange={(event) => setPeriodEndDate(event.currentTarget.value)}
           />
           <Select
-            data={(profilesQuery.data ?? []).flatMap((profile) =>
-              profile.revisions[0]
-                ? [
-                    {
-                      value: profile.revisions[0].id,
-                      label: `${profile.revisions[0].displayName} · rev. ${profile.revisions[0].revision}`,
-                    },
-                  ]
-                : [],
-            )}
+            data={profileOptions}
             label={
               <FieldHelpLabel
                 hint="Elige el perfil tributario vigente para este análisis."
@@ -459,20 +486,17 @@ function CollectionDetailPage() {
               />
             }
             value={profileRevisionId}
-            onChange={setProfileRevisionId}
+            onChange={(nextProfileRevisionId) => {
+              setProfileRevisionId(nextProfileRevisionId)
+              const nextProfile = profileOptions.find(
+                (profile) => profile.value === nextProfileRevisionId,
+              )
+              setActivityRevisionIds(nextProfile?.activityRevisionIds ?? [])
+            }}
           />
           <MultiSelect
-            data={(activitiesQuery.data ?? []).flatMap((activity) =>
-              activity.revisions[0]
-                ? [
-                    {
-                      value: activity.revisions[0].id,
-                      label: activity.revisions[0].displayName,
-                    },
-                  ]
-                : [],
-            )}
-            disabled={purpose === 'personal_expenses'}
+            data={selectedProfile?.activities ?? []}
+            disabled={purpose === 'personal_expenses' || !profileRevisionId}
             label={
               <FieldHelpLabel
                 hint="Selecciona las actividades vinculadas al IVA o al impuesto a la renta de tu negocio."
@@ -524,9 +548,6 @@ function CollectionDetailPage() {
           opened: billModal.opened,
           data: {
             collectionId: billModal.data || '',
-            personalIdNumber: collectionQuery.data?.personalIdNumber || '',
-            professionalIdNumber:
-              collectionQuery.data?.professionalIdNumber || '',
           },
         }}
         onClose={() => {
@@ -786,31 +807,8 @@ function CollectionDetailPage() {
                   <Skeleton visible={isLoading}>
                     <Flex
                       align="baseline"
-                      direction={isMobile ? 'column' : 'row'}
-                      justify={{
-                        xs: 'center',
-                        md: 'space-between',
-                      }}
+                      justify="flex-end"
                     >
-                      <Flex gap="md">
-                        <Stack gap={4}>
-                          <Text c="gray.6" size="sm">
-                            CED:
-                            <Text component="span" fw={600} ml={4}>
-                              {collectionQuery.data?.personalIdNumber || 'N/A'}
-                            </Text>
-                          </Text>
-                          <Text c="gray.6" size="sm">
-                            RUC:
-                            <Text component="span" fw={600} ml={4}>
-                              {formatRUC(
-                                collectionQuery.data?.professionalIdNumber ||
-                                  'N/A',
-                              )}
-                            </Text>
-                          </Text>
-                        </Stack>
-                      </Flex>
                       <Flex
                         align="baseline"
                         gap="md"
@@ -825,13 +823,6 @@ function CollectionDetailPage() {
                           onClick={() => setContextModalOpened(true)}
                         >
                           Contexto
-                        </Button>
-                        <Button
-                          leftSection={<EyeIcon size={18} />}
-                          variant="subtle"
-                          onClick={() => seeInstructions()}
-                        >
-                          Ver instrucciones
                         </Button>
                         <Tooltip
                           label={
@@ -969,15 +960,24 @@ function CollectionDetailPage() {
                         </Button>
                       )}
                       {selectedRows.length === 0 && (
-                        <Button
-                          color="violet"
-                          leftSection={<Upload size={18} />}
-                          onClick={() => {
-                            setBillModal({ opened: true, data: collectionId })
-                          }}
+                        <Tooltip
+                          label={
+                            contextRevisionsQuery.data?.[0]
+                              ? 'Sube XML de facturas que coincidan con el perfil del contexto.'
+                              : 'Configura el contexto tributario antes de subir facturas.'
+                          }
                         >
-                          Subir facturas
-                        </Button>
+                          <Button
+                            color="violet"
+                            disabled={!contextRevisionsQuery.data?.[0]}
+                            leftSection={<Upload size={18} />}
+                            onClick={() => {
+                              setBillModal({ opened: true, data: collectionId })
+                            }}
+                          >
+                            Subir facturas
+                          </Button>
+                        </Tooltip>
                       )}
                     </Group>
                   </Flex>
@@ -1115,7 +1115,6 @@ function CollectionDetailPage() {
     analyzeCollectionMutation.mutate({
       collectionId,
       collectionName: collectionQuery.data?.name || 'Colección',
-      instructions: collectionQuery.data?.instructions || '',
       type,
       billIds: [],
       preset,
@@ -1399,54 +1398,4 @@ function CollectionDetailPage() {
     return bill?.name || 'Factura'
   }
 
-  function seeInstructions() {
-    modals.open({
-      modalId: modalInstId.current,
-      centered: true,
-      size: 'lg',
-      title: (
-        <Text fw="bolder" size="lg">
-          Instrucciones de la colección
-        </Text>
-      ),
-      children: (
-        <Flex direction="column" gap="md">
-          <Text size="md">
-            Estas son las instrucciones que el agente, usará como referencia
-            para facturas que sea de tipo{' '}
-            <Text component="span" fw="bold">
-              profesional
-            </Text>
-            . Puedes especificar los detalles de la actividad profesional y que
-            compras o gastos serían deducibles
-          </Text>
-          <Textarea autosize readOnly maxRows={100} size="md" variant="filled">
-            {collectionQuery.data?.instructions ||
-              'No hay instrucciones para esta colección.'}
-          </Textarea>
-          <Button
-            fullWidth
-            mt="md"
-            variant="outline"
-            onClick={() => {
-              if (!collectionQuery.data) return
-
-              modals.close(modalInstId.current)
-              setCollectionForm({
-                opened: true,
-                data: {
-                  _count: {
-                    bills: collectionQuery.data.bills.length || 0,
-                  },
-                  ...collectionQuery.data,
-                },
-              })
-            }}
-          >
-            Editar instrucciones
-          </Button>
-        </Flex>
-      ),
-    })
-  }
 }

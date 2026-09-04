@@ -194,7 +194,12 @@ export const CollectionContextRevisionInputSchema = z.object({
   purpose: TaxPurposeSchema,
   period: TaxPeriodSchema,
   taxpayerProfileRevisionId: IdSchema,
-  activityRevisionIds: z.array(IdSchema).max(20),
+  activityRevisionIds: z
+    .array(IdSchema)
+    .max(20)
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: 'No repitas actividades económicas en el contexto.',
+    }),
   notes: OptionalTextSchema,
 })
 export type CollectionContextRevisionInput = z.infer<
