@@ -397,6 +397,7 @@ export const ModelName = {
   AuthIdentity: 'AuthIdentity',
   Collection: 'Collection',
   BillHeader: 'BillHeader',
+  CollectionBillMembership: 'CollectionBillMembership',
   BillDetail: 'BillDetail'
 } as const
 
@@ -413,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "collectionContextRevision" | "collectionContextActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "billDetail"
+    modelProps: "user" | "economicActivity" | "economicActivityRevision" | "taxpayerProfile" | "taxpayerProfileRevision" | "taxpayerProfileActivityRevision" | "collectionContextRevision" | "collectionContextActivityRevision" | "fiscalReference" | "providerConnection" | "authIdentity" | "collection" | "billHeader" | "collectionBillMembership" | "billDetail"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1379,6 +1380,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CollectionBillMembership: {
+      payload: Prisma.$CollectionBillMembershipPayload<ExtArgs>
+      fields: Prisma.CollectionBillMembershipFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CollectionBillMembershipFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CollectionBillMembershipFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>
+        }
+        findFirst: {
+          args: Prisma.CollectionBillMembershipFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CollectionBillMembershipFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>
+        }
+        findMany: {
+          args: Prisma.CollectionBillMembershipFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>[]
+        }
+        create: {
+          args: Prisma.CollectionBillMembershipCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>
+        }
+        createMany: {
+          args: Prisma.CollectionBillMembershipCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CollectionBillMembershipCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>[]
+        }
+        delete: {
+          args: Prisma.CollectionBillMembershipDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>
+        }
+        update: {
+          args: Prisma.CollectionBillMembershipUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>
+        }
+        deleteMany: {
+          args: Prisma.CollectionBillMembershipDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CollectionBillMembershipUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CollectionBillMembershipUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>[]
+        }
+        upsert: {
+          args: Prisma.CollectionBillMembershipUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionBillMembershipPayload>
+        }
+        aggregate: {
+          args: Prisma.CollectionBillMembershipAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCollectionBillMembership>
+        }
+        groupBy: {
+          args: Prisma.CollectionBillMembershipGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionBillMembershipGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CollectionBillMembershipCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionBillMembershipCountAggregateOutputType> | number
+        }
+      }
+    }
     BillDetail: {
       payload: Prisma.$BillDetailPayload<ExtArgs>
       fields: Prisma.BillDetailFieldRefs
@@ -1700,6 +1775,16 @@ export const BillHeaderScalarFieldEnum = {
 export type BillHeaderScalarFieldEnum = (typeof BillHeaderScalarFieldEnum)[keyof typeof BillHeaderScalarFieldEnum]
 
 
+export const CollectionBillMembershipScalarFieldEnum = {
+  id: 'id',
+  collectionId: 'collectionId',
+  billId: 'billId',
+  createdAt: 'createdAt'
+} as const
+
+export type CollectionBillMembershipScalarFieldEnum = (typeof CollectionBillMembershipScalarFieldEnum)[keyof typeof CollectionBillMembershipScalarFieldEnum]
+
+
 export const BillDetailScalarFieldEnum = {
   id: 'id',
   description: 'description',
@@ -1985,6 +2070,7 @@ export type GlobalOmitConfig = {
   authIdentity?: Prisma.AuthIdentityOmit
   collection?: Prisma.CollectionOmit
   billHeader?: Prisma.BillHeaderOmit
+  collectionBillMembership?: Prisma.CollectionBillMembershipOmit
   billDetail?: Prisma.BillDetailOmit
 }
 

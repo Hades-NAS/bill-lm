@@ -42,6 +42,8 @@ export const VatFilingFrequencySchema = z.enum([
 ])
 export type VatFilingFrequency = z.infer<typeof VatFilingFrequencySchema>
 
+export const TaxRuleReviewStatusSchema = z.enum(['draft', 'reviewed', 'active', 'retired'])
+
 export const EconomicActivityRevisionInputSchema = z
   .object({
     displayName: z.string().trim().min(1).max(120),
@@ -122,6 +124,14 @@ export const TaxPeriodSchema = z
     message: 'La fecha final debe ser igual o posterior a la fecha inicial.',
   })
 export type TaxPeriod = z.infer<typeof TaxPeriodSchema>
+
+export const TaxRuleSetSelectorSchema = z.object({
+  purpose: TaxPurposeSchema,
+  period: TaxPeriodSchema,
+  taxRegime: TaxRegimeSchema,
+  vatFilingFrequency: VatFilingFrequencySchema,
+})
+export type TaxRuleSetSelector = z.infer<typeof TaxRuleSetSelectorSchema>
 
 export const CollectionContextRevisionInputSchema = z.object({
   purpose: TaxPurposeSchema,

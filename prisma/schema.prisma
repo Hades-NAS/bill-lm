@@ -288,6 +288,7 @@ model Collection {
 
   // One-to-many relationship with Bill
   bills BillHeader[]
+  billMemberships CollectionBillMembership[]
   contextRevisions CollectionContextRevision[]
 
   @@unique([id, userId], name: "collection_id_user_key")
@@ -344,10 +345,25 @@ model BillHeader {
   collection   Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   // One-to-many relationship with BillDetail
   details      BillDetail[]
+  memberships  CollectionBillMembership[]
 
   @@index([collectionId], name: "bill_collection_id_idx")
   @@index([deletedAt], name: "bill_deleted_at_idx")
   @@map("bills_header")
+}
+
+model CollectionBillMembership {
+  id String @id @default(uuid())
+  collectionId String
+  billId String
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  bill BillHeader @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, billId], name: "collection_bill_membership_unique")
+  @@index([billId], name: "collection_bill_membership_bill_idx")
+  @@map("collection_bill_memberships")
 }
 
 model BillDetail {

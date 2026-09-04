@@ -266,6 +266,7 @@ export type CollectionWhereInput = {
   userId?: Prisma.StringFilter<"Collection"> | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   bills?: Prisma.BillHeaderListRelationFilter
+  billMemberships?: Prisma.CollectionBillMembershipListRelationFilter
   contextRevisions?: Prisma.CollectionContextRevisionListRelationFilter
 }
 
@@ -283,6 +284,7 @@ export type CollectionOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   bills?: Prisma.BillHeaderOrderByRelationAggregateInput
+  billMemberships?: Prisma.CollectionBillMembershipOrderByRelationAggregateInput
   contextRevisions?: Prisma.CollectionContextRevisionOrderByRelationAggregateInput
 }
 
@@ -304,6 +306,7 @@ export type CollectionWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.StringFilter<"Collection"> | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   bills?: Prisma.BillHeaderListRelationFilter
+  billMemberships?: Prisma.CollectionBillMembershipListRelationFilter
   contextRevisions?: Prisma.CollectionContextRevisionListRelationFilter
 }, "id" | "collection_id_user_key">
 
@@ -356,6 +359,7 @@ export type CollectionCreateInput = {
   deletedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutCollectionsInput
   bills?: Prisma.BillHeaderCreateNestedManyWithoutCollectionInput
+  billMemberships?: Prisma.CollectionBillMembershipCreateNestedManyWithoutCollectionInput
   contextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutCollectionInput
 }
 
@@ -372,6 +376,7 @@ export type CollectionUncheckedCreateInput = {
   deletedAt?: Date | string | null
   userId: string
   bills?: Prisma.BillHeaderUncheckedCreateNestedManyWithoutCollectionInput
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedCreateNestedManyWithoutCollectionInput
   contextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutCollectionInput
 }
 
@@ -388,6 +393,7 @@ export type CollectionUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutCollectionsNestedInput
   bills?: Prisma.BillHeaderUpdateManyWithoutCollectionNestedInput
+  billMemberships?: Prisma.CollectionBillMembershipUpdateManyWithoutCollectionNestedInput
   contextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutCollectionNestedInput
 }
 
@@ -404,6 +410,7 @@ export type CollectionUncheckedUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   bills?: Prisma.BillHeaderUncheckedUpdateManyWithoutCollectionNestedInput
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedUpdateManyWithoutCollectionNestedInput
   contextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutCollectionNestedInput
 }
 
@@ -588,6 +595,20 @@ export type CollectionUpdateOneRequiredWithoutBillsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CollectionUpdateToOneWithWhereWithoutBillsInput, Prisma.CollectionUpdateWithoutBillsInput>, Prisma.CollectionUncheckedUpdateWithoutBillsInput>
 }
 
+export type CollectionCreateNestedOneWithoutBillMembershipsInput = {
+  create?: Prisma.XOR<Prisma.CollectionCreateWithoutBillMembershipsInput, Prisma.CollectionUncheckedCreateWithoutBillMembershipsInput>
+  connectOrCreate?: Prisma.CollectionCreateOrConnectWithoutBillMembershipsInput
+  connect?: Prisma.CollectionWhereUniqueInput
+}
+
+export type CollectionUpdateOneRequiredWithoutBillMembershipsNestedInput = {
+  create?: Prisma.XOR<Prisma.CollectionCreateWithoutBillMembershipsInput, Prisma.CollectionUncheckedCreateWithoutBillMembershipsInput>
+  connectOrCreate?: Prisma.CollectionCreateOrConnectWithoutBillMembershipsInput
+  upsert?: Prisma.CollectionUpsertWithoutBillMembershipsInput
+  connect?: Prisma.CollectionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CollectionUpdateToOneWithWhereWithoutBillMembershipsInput, Prisma.CollectionUpdateWithoutBillMembershipsInput>, Prisma.CollectionUncheckedUpdateWithoutBillMembershipsInput>
+}
+
 export type CollectionCreateWithoutUserInput = {
   id?: string
   name: string
@@ -600,6 +621,7 @@ export type CollectionCreateWithoutUserInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   bills?: Prisma.BillHeaderCreateNestedManyWithoutCollectionInput
+  billMemberships?: Prisma.CollectionBillMembershipCreateNestedManyWithoutCollectionInput
   contextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutCollectionInput
 }
 
@@ -615,6 +637,7 @@ export type CollectionUncheckedCreateWithoutUserInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   bills?: Prisma.BillHeaderUncheckedCreateNestedManyWithoutCollectionInput
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedCreateNestedManyWithoutCollectionInput
   contextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutCollectionInput
 }
 
@@ -674,6 +697,7 @@ export type CollectionCreateWithoutContextRevisionsInput = {
   deletedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutCollectionsInput
   bills?: Prisma.BillHeaderCreateNestedManyWithoutCollectionInput
+  billMemberships?: Prisma.CollectionBillMembershipCreateNestedManyWithoutCollectionInput
 }
 
 export type CollectionUncheckedCreateWithoutContextRevisionsInput = {
@@ -689,6 +713,7 @@ export type CollectionUncheckedCreateWithoutContextRevisionsInput = {
   deletedAt?: Date | string | null
   userId: string
   bills?: Prisma.BillHeaderUncheckedCreateNestedManyWithoutCollectionInput
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedCreateNestedManyWithoutCollectionInput
 }
 
 export type CollectionCreateOrConnectWithoutContextRevisionsInput = {
@@ -720,6 +745,7 @@ export type CollectionUpdateWithoutContextRevisionsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutCollectionsNestedInput
   bills?: Prisma.BillHeaderUpdateManyWithoutCollectionNestedInput
+  billMemberships?: Prisma.CollectionBillMembershipUpdateManyWithoutCollectionNestedInput
 }
 
 export type CollectionUncheckedUpdateWithoutContextRevisionsInput = {
@@ -735,6 +761,7 @@ export type CollectionUncheckedUpdateWithoutContextRevisionsInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   bills?: Prisma.BillHeaderUncheckedUpdateManyWithoutCollectionNestedInput
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedUpdateManyWithoutCollectionNestedInput
 }
 
 export type CollectionCreateWithoutBillsInput = {
@@ -749,6 +776,7 @@ export type CollectionCreateWithoutBillsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutCollectionsInput
+  billMemberships?: Prisma.CollectionBillMembershipCreateNestedManyWithoutCollectionInput
   contextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutCollectionInput
 }
 
@@ -764,6 +792,7 @@ export type CollectionUncheckedCreateWithoutBillsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   userId: string
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedCreateNestedManyWithoutCollectionInput
   contextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutCollectionInput
 }
 
@@ -795,6 +824,7 @@ export type CollectionUpdateWithoutBillsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutCollectionsNestedInput
+  billMemberships?: Prisma.CollectionBillMembershipUpdateManyWithoutCollectionNestedInput
   contextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutCollectionNestedInput
 }
 
@@ -810,6 +840,87 @@ export type CollectionUncheckedUpdateWithoutBillsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedUpdateManyWithoutCollectionNestedInput
+  contextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutCollectionNestedInput
+}
+
+export type CollectionCreateWithoutBillMembershipsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  personalIdNumber: string
+  professionalIdNumber: string
+  instructions?: string | null
+  year: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutCollectionsInput
+  bills?: Prisma.BillHeaderCreateNestedManyWithoutCollectionInput
+  contextRevisions?: Prisma.CollectionContextRevisionCreateNestedManyWithoutCollectionInput
+}
+
+export type CollectionUncheckedCreateWithoutBillMembershipsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  personalIdNumber: string
+  professionalIdNumber: string
+  instructions?: string | null
+  year: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  userId: string
+  bills?: Prisma.BillHeaderUncheckedCreateNestedManyWithoutCollectionInput
+  contextRevisions?: Prisma.CollectionContextRevisionUncheckedCreateNestedManyWithoutCollectionInput
+}
+
+export type CollectionCreateOrConnectWithoutBillMembershipsInput = {
+  where: Prisma.CollectionWhereUniqueInput
+  create: Prisma.XOR<Prisma.CollectionCreateWithoutBillMembershipsInput, Prisma.CollectionUncheckedCreateWithoutBillMembershipsInput>
+}
+
+export type CollectionUpsertWithoutBillMembershipsInput = {
+  update: Prisma.XOR<Prisma.CollectionUpdateWithoutBillMembershipsInput, Prisma.CollectionUncheckedUpdateWithoutBillMembershipsInput>
+  create: Prisma.XOR<Prisma.CollectionCreateWithoutBillMembershipsInput, Prisma.CollectionUncheckedCreateWithoutBillMembershipsInput>
+  where?: Prisma.CollectionWhereInput
+}
+
+export type CollectionUpdateToOneWithWhereWithoutBillMembershipsInput = {
+  where?: Prisma.CollectionWhereInput
+  data: Prisma.XOR<Prisma.CollectionUpdateWithoutBillMembershipsInput, Prisma.CollectionUncheckedUpdateWithoutBillMembershipsInput>
+}
+
+export type CollectionUpdateWithoutBillMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  personalIdNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  professionalIdNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  instructions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutCollectionsNestedInput
+  bills?: Prisma.BillHeaderUpdateManyWithoutCollectionNestedInput
+  contextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutCollectionNestedInput
+}
+
+export type CollectionUncheckedUpdateWithoutBillMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  personalIdNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  professionalIdNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  instructions?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  year?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  bills?: Prisma.BillHeaderUncheckedUpdateManyWithoutCollectionNestedInput
   contextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutCollectionNestedInput
 }
 
@@ -838,6 +949,7 @@ export type CollectionUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bills?: Prisma.BillHeaderUpdateManyWithoutCollectionNestedInput
+  billMemberships?: Prisma.CollectionBillMembershipUpdateManyWithoutCollectionNestedInput
   contextRevisions?: Prisma.CollectionContextRevisionUpdateManyWithoutCollectionNestedInput
 }
 
@@ -853,6 +965,7 @@ export type CollectionUncheckedUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bills?: Prisma.BillHeaderUncheckedUpdateManyWithoutCollectionNestedInput
+  billMemberships?: Prisma.CollectionBillMembershipUncheckedUpdateManyWithoutCollectionNestedInput
   contextRevisions?: Prisma.CollectionContextRevisionUncheckedUpdateManyWithoutCollectionNestedInput
 }
 
@@ -876,11 +989,13 @@ export type CollectionUncheckedUpdateManyWithoutUserInput = {
 
 export type CollectionCountOutputType = {
   bills: number
+  billMemberships: number
   contextRevisions: number
 }
 
 export type CollectionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bills?: boolean | CollectionCountOutputTypeCountBillsArgs
+  billMemberships?: boolean | CollectionCountOutputTypeCountBillMembershipsArgs
   contextRevisions?: boolean | CollectionCountOutputTypeCountContextRevisionsArgs
 }
 
@@ -899,6 +1014,13 @@ export type CollectionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
  */
 export type CollectionCountOutputTypeCountBillsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.BillHeaderWhereInput
+}
+
+/**
+ * CollectionCountOutputType without action
+ */
+export type CollectionCountOutputTypeCountBillMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CollectionBillMembershipWhereInput
 }
 
 /**
@@ -923,6 +1045,7 @@ export type CollectionSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   userId?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   bills?: boolean | Prisma.Collection$billsArgs<ExtArgs>
+  billMemberships?: boolean | Prisma.Collection$billMembershipsArgs<ExtArgs>
   contextRevisions?: boolean | Prisma.Collection$contextRevisionsArgs<ExtArgs>
   _count?: boolean | Prisma.CollectionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["collection"]>
@@ -975,6 +1098,7 @@ export type CollectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type CollectionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   bills?: boolean | Prisma.Collection$billsArgs<ExtArgs>
+  billMemberships?: boolean | Prisma.Collection$billMembershipsArgs<ExtArgs>
   contextRevisions?: boolean | Prisma.Collection$contextRevisionsArgs<ExtArgs>
   _count?: boolean | Prisma.CollectionCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -990,6 +1114,7 @@ export type $CollectionPayload<ExtArgs extends runtime.Types.Extensions.Internal
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     bills: Prisma.$BillHeaderPayload<ExtArgs>[]
+    billMemberships: Prisma.$CollectionBillMembershipPayload<ExtArgs>[]
     contextRevisions: Prisma.$CollectionContextRevisionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1400,6 +1525,7 @@ export interface Prisma__CollectionClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   bills<T extends Prisma.Collection$billsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Collection$billsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BillHeaderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  billMemberships<T extends Prisma.Collection$billMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Collection$billMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionBillMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contextRevisions<T extends Prisma.Collection$contextRevisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Collection$contextRevisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionContextRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1863,6 +1989,30 @@ export type Collection$billsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.BillHeaderScalarFieldEnum | Prisma.BillHeaderScalarFieldEnum[]
+}
+
+/**
+ * Collection.billMemberships
+ */
+export type Collection$billMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CollectionBillMembership
+   */
+  select?: Prisma.CollectionBillMembershipSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CollectionBillMembership
+   */
+  omit?: Prisma.CollectionBillMembershipOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CollectionBillMembershipInclude<ExtArgs> | null
+  where?: Prisma.CollectionBillMembershipWhereInput
+  orderBy?: Prisma.CollectionBillMembershipOrderByWithRelationInput | Prisma.CollectionBillMembershipOrderByWithRelationInput[]
+  cursor?: Prisma.CollectionBillMembershipWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CollectionBillMembershipScalarFieldEnum | Prisma.CollectionBillMembershipScalarFieldEnum[]
 }
 
 /**

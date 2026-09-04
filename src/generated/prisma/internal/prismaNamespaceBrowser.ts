@@ -64,6 +64,7 @@ export const ModelName = {
   AuthIdentity: 'AuthIdentity',
   Collection: 'Collection',
   BillHeader: 'BillHeader',
+  CollectionBillMembership: 'CollectionBillMembership',
   BillDetail: 'BillDetail'
 } as const
 
@@ -289,6 +290,16 @@ export const BillHeaderScalarFieldEnum = {
 } as const
 
 export type BillHeaderScalarFieldEnum = (typeof BillHeaderScalarFieldEnum)[keyof typeof BillHeaderScalarFieldEnum]
+
+
+export const CollectionBillMembershipScalarFieldEnum = {
+  id: 'id',
+  collectionId: 'collectionId',
+  billId: 'billId',
+  createdAt: 'createdAt'
+} as const
+
+export type CollectionBillMembershipScalarFieldEnum = (typeof CollectionBillMembershipScalarFieldEnum)[keyof typeof CollectionBillMembershipScalarFieldEnum]
 
 
 export const BillDetailScalarFieldEnum = {

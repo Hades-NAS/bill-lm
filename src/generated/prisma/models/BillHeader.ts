@@ -366,6 +366,7 @@ export type BillHeaderWhereInput = {
   collectionId?: Prisma.StringFilter<"BillHeader"> | string
   collection?: Prisma.XOR<Prisma.CollectionScalarRelationFilter, Prisma.CollectionWhereInput>
   details?: Prisma.BillDetailListRelationFilter
+  memberships?: Prisma.CollectionBillMembershipListRelationFilter
 }
 
 export type BillHeaderOrderByWithRelationInput = {
@@ -393,6 +394,7 @@ export type BillHeaderOrderByWithRelationInput = {
   collectionId?: Prisma.SortOrder
   collection?: Prisma.CollectionOrderByWithRelationInput
   details?: Prisma.BillDetailOrderByRelationAggregateInput
+  memberships?: Prisma.CollectionBillMembershipOrderByRelationAggregateInput
 }
 
 export type BillHeaderWhereUniqueInput = Prisma.AtLeast<{
@@ -423,6 +425,7 @@ export type BillHeaderWhereUniqueInput = Prisma.AtLeast<{
   collectionId?: Prisma.StringFilter<"BillHeader"> | string
   collection?: Prisma.XOR<Prisma.CollectionScalarRelationFilter, Prisma.CollectionWhereInput>
   details?: Prisma.BillDetailListRelationFilter
+  memberships?: Prisma.CollectionBillMembershipListRelationFilter
 }, "id">
 
 export type BillHeaderOrderByWithAggregationInput = {
@@ -507,6 +510,7 @@ export type BillHeaderCreateInput = {
   deletedAt?: Date | string | null
   collection: Prisma.CollectionCreateNestedOneWithoutBillsInput
   details?: Prisma.BillDetailCreateNestedManyWithoutBillInput
+  memberships?: Prisma.CollectionBillMembershipCreateNestedManyWithoutBillInput
 }
 
 export type BillHeaderUncheckedCreateInput = {
@@ -533,6 +537,7 @@ export type BillHeaderUncheckedCreateInput = {
   deletedAt?: Date | string | null
   collectionId: string
   details?: Prisma.BillDetailUncheckedCreateNestedManyWithoutBillInput
+  memberships?: Prisma.CollectionBillMembershipUncheckedCreateNestedManyWithoutBillInput
 }
 
 export type BillHeaderUpdateInput = {
@@ -559,6 +564,7 @@ export type BillHeaderUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collection?: Prisma.CollectionUpdateOneRequiredWithoutBillsNestedInput
   details?: Prisma.BillDetailUpdateManyWithoutBillNestedInput
+  memberships?: Prisma.CollectionBillMembershipUpdateManyWithoutBillNestedInput
 }
 
 export type BillHeaderUncheckedUpdateInput = {
@@ -585,6 +591,7 @@ export type BillHeaderUncheckedUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
   details?: Prisma.BillDetailUncheckedUpdateManyWithoutBillNestedInput
+  memberships?: Prisma.CollectionBillMembershipUncheckedUpdateManyWithoutBillNestedInput
 }
 
 export type BillHeaderCreateManyInput = {
@@ -831,6 +838,20 @@ export type NullableFloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type BillHeaderCreateNestedOneWithoutMembershipsInput = {
+  create?: Prisma.XOR<Prisma.BillHeaderCreateWithoutMembershipsInput, Prisma.BillHeaderUncheckedCreateWithoutMembershipsInput>
+  connectOrCreate?: Prisma.BillHeaderCreateOrConnectWithoutMembershipsInput
+  connect?: Prisma.BillHeaderWhereUniqueInput
+}
+
+export type BillHeaderUpdateOneRequiredWithoutMembershipsNestedInput = {
+  create?: Prisma.XOR<Prisma.BillHeaderCreateWithoutMembershipsInput, Prisma.BillHeaderUncheckedCreateWithoutMembershipsInput>
+  connectOrCreate?: Prisma.BillHeaderCreateOrConnectWithoutMembershipsInput
+  upsert?: Prisma.BillHeaderUpsertWithoutMembershipsInput
+  connect?: Prisma.BillHeaderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BillHeaderUpdateToOneWithWhereWithoutMembershipsInput, Prisma.BillHeaderUpdateWithoutMembershipsInput>, Prisma.BillHeaderUncheckedUpdateWithoutMembershipsInput>
+}
+
 export type BillHeaderCreateNestedOneWithoutDetailsInput = {
   create?: Prisma.XOR<Prisma.BillHeaderCreateWithoutDetailsInput, Prisma.BillHeaderUncheckedCreateWithoutDetailsInput>
   connectOrCreate?: Prisma.BillHeaderCreateOrConnectWithoutDetailsInput
@@ -868,6 +889,7 @@ export type BillHeaderCreateWithoutCollectionInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   details?: Prisma.BillDetailCreateNestedManyWithoutBillInput
+  memberships?: Prisma.CollectionBillMembershipCreateNestedManyWithoutBillInput
 }
 
 export type BillHeaderUncheckedCreateWithoutCollectionInput = {
@@ -893,6 +915,7 @@ export type BillHeaderUncheckedCreateWithoutCollectionInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   details?: Prisma.BillDetailUncheckedCreateNestedManyWithoutBillInput
+  memberships?: Prisma.CollectionBillMembershipUncheckedCreateNestedManyWithoutBillInput
 }
 
 export type BillHeaderCreateOrConnectWithoutCollectionInput = {
@@ -949,6 +972,126 @@ export type BillHeaderScalarWhereInput = {
   collectionId?: Prisma.StringFilter<"BillHeader"> | string
 }
 
+export type BillHeaderCreateWithoutMembershipsInput = {
+  id?: string
+  number: string
+  name: string
+  description?: string | null
+  buyerName: string
+  idBuyer: string
+  totalWithoutTaxes: number
+  taxes: number
+  totalAmount: number
+  comercialName: string
+  socialName: string
+  idSeller: string
+  addressMatriz: string
+  fileType?: $Enums.BillFileType
+  billType?: $Enums.BillTargetType
+  storagePath: string
+  percentage?: number | null
+  reason?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  collection: Prisma.CollectionCreateNestedOneWithoutBillsInput
+  details?: Prisma.BillDetailCreateNestedManyWithoutBillInput
+}
+
+export type BillHeaderUncheckedCreateWithoutMembershipsInput = {
+  id?: string
+  number: string
+  name: string
+  description?: string | null
+  buyerName: string
+  idBuyer: string
+  totalWithoutTaxes: number
+  taxes: number
+  totalAmount: number
+  comercialName: string
+  socialName: string
+  idSeller: string
+  addressMatriz: string
+  fileType?: $Enums.BillFileType
+  billType?: $Enums.BillTargetType
+  storagePath: string
+  percentage?: number | null
+  reason?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  collectionId: string
+  details?: Prisma.BillDetailUncheckedCreateNestedManyWithoutBillInput
+}
+
+export type BillHeaderCreateOrConnectWithoutMembershipsInput = {
+  where: Prisma.BillHeaderWhereUniqueInput
+  create: Prisma.XOR<Prisma.BillHeaderCreateWithoutMembershipsInput, Prisma.BillHeaderUncheckedCreateWithoutMembershipsInput>
+}
+
+export type BillHeaderUpsertWithoutMembershipsInput = {
+  update: Prisma.XOR<Prisma.BillHeaderUpdateWithoutMembershipsInput, Prisma.BillHeaderUncheckedUpdateWithoutMembershipsInput>
+  create: Prisma.XOR<Prisma.BillHeaderCreateWithoutMembershipsInput, Prisma.BillHeaderUncheckedCreateWithoutMembershipsInput>
+  where?: Prisma.BillHeaderWhereInput
+}
+
+export type BillHeaderUpdateToOneWithWhereWithoutMembershipsInput = {
+  where?: Prisma.BillHeaderWhereInput
+  data: Prisma.XOR<Prisma.BillHeaderUpdateWithoutMembershipsInput, Prisma.BillHeaderUncheckedUpdateWithoutMembershipsInput>
+}
+
+export type BillHeaderUpdateWithoutMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyerName?: Prisma.StringFieldUpdateOperationsInput | string
+  idBuyer?: Prisma.StringFieldUpdateOperationsInput | string
+  totalWithoutTaxes?: Prisma.FloatFieldUpdateOperationsInput | number
+  taxes?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  comercialName?: Prisma.StringFieldUpdateOperationsInput | string
+  socialName?: Prisma.StringFieldUpdateOperationsInput | string
+  idSeller?: Prisma.StringFieldUpdateOperationsInput | string
+  addressMatriz?: Prisma.StringFieldUpdateOperationsInput | string
+  fileType?: Prisma.EnumBillFileTypeFieldUpdateOperationsInput | $Enums.BillFileType
+  billType?: Prisma.EnumBillTargetTypeFieldUpdateOperationsInput | $Enums.BillTargetType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  collection?: Prisma.CollectionUpdateOneRequiredWithoutBillsNestedInput
+  details?: Prisma.BillDetailUpdateManyWithoutBillNestedInput
+}
+
+export type BillHeaderUncheckedUpdateWithoutMembershipsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyerName?: Prisma.StringFieldUpdateOperationsInput | string
+  idBuyer?: Prisma.StringFieldUpdateOperationsInput | string
+  totalWithoutTaxes?: Prisma.FloatFieldUpdateOperationsInput | number
+  taxes?: Prisma.FloatFieldUpdateOperationsInput | number
+  totalAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  comercialName?: Prisma.StringFieldUpdateOperationsInput | string
+  socialName?: Prisma.StringFieldUpdateOperationsInput | string
+  idSeller?: Prisma.StringFieldUpdateOperationsInput | string
+  addressMatriz?: Prisma.StringFieldUpdateOperationsInput | string
+  fileType?: Prisma.EnumBillFileTypeFieldUpdateOperationsInput | $Enums.BillFileType
+  billType?: Prisma.EnumBillTargetTypeFieldUpdateOperationsInput | $Enums.BillTargetType
+  storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  percentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  collectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  details?: Prisma.BillDetailUncheckedUpdateManyWithoutBillNestedInput
+}
+
 export type BillHeaderCreateWithoutDetailsInput = {
   id?: string
   number: string
@@ -972,6 +1115,7 @@ export type BillHeaderCreateWithoutDetailsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   collection: Prisma.CollectionCreateNestedOneWithoutBillsInput
+  memberships?: Prisma.CollectionBillMembershipCreateNestedManyWithoutBillInput
 }
 
 export type BillHeaderUncheckedCreateWithoutDetailsInput = {
@@ -997,6 +1141,7 @@ export type BillHeaderUncheckedCreateWithoutDetailsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   collectionId: string
+  memberships?: Prisma.CollectionBillMembershipUncheckedCreateNestedManyWithoutBillInput
 }
 
 export type BillHeaderCreateOrConnectWithoutDetailsInput = {
@@ -1038,6 +1183,7 @@ export type BillHeaderUpdateWithoutDetailsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collection?: Prisma.CollectionUpdateOneRequiredWithoutBillsNestedInput
+  memberships?: Prisma.CollectionBillMembershipUpdateManyWithoutBillNestedInput
 }
 
 export type BillHeaderUncheckedUpdateWithoutDetailsInput = {
@@ -1063,6 +1209,7 @@ export type BillHeaderUncheckedUpdateWithoutDetailsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  memberships?: Prisma.CollectionBillMembershipUncheckedUpdateManyWithoutBillNestedInput
 }
 
 export type BillHeaderCreateManyCollectionInput = {
@@ -1112,6 +1259,7 @@ export type BillHeaderUpdateWithoutCollectionInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   details?: Prisma.BillDetailUpdateManyWithoutBillNestedInput
+  memberships?: Prisma.CollectionBillMembershipUpdateManyWithoutBillNestedInput
 }
 
 export type BillHeaderUncheckedUpdateWithoutCollectionInput = {
@@ -1137,6 +1285,7 @@ export type BillHeaderUncheckedUpdateWithoutCollectionInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   details?: Prisma.BillDetailUncheckedUpdateManyWithoutBillNestedInput
+  memberships?: Prisma.CollectionBillMembershipUncheckedUpdateManyWithoutBillNestedInput
 }
 
 export type BillHeaderUncheckedUpdateManyWithoutCollectionInput = {
@@ -1170,10 +1319,12 @@ export type BillHeaderUncheckedUpdateManyWithoutCollectionInput = {
 
 export type BillHeaderCountOutputType = {
   details: number
+  memberships: number
 }
 
 export type BillHeaderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   details?: boolean | BillHeaderCountOutputTypeCountDetailsArgs
+  memberships?: boolean | BillHeaderCountOutputTypeCountMembershipsArgs
 }
 
 /**
@@ -1191,6 +1342,13 @@ export type BillHeaderCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
  */
 export type BillHeaderCountOutputTypeCountDetailsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.BillDetailWhereInput
+}
+
+/**
+ * BillHeaderCountOutputType without action
+ */
+export type BillHeaderCountOutputTypeCountMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CollectionBillMembershipWhereInput
 }
 
 
@@ -1219,6 +1377,7 @@ export type BillHeaderSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   collectionId?: boolean
   collection?: boolean | Prisma.CollectionDefaultArgs<ExtArgs>
   details?: boolean | Prisma.BillHeader$detailsArgs<ExtArgs>
+  memberships?: boolean | Prisma.BillHeader$membershipsArgs<ExtArgs>
   _count?: boolean | Prisma.BillHeaderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["billHeader"]>
 
@@ -1303,6 +1462,7 @@ export type BillHeaderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type BillHeaderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   collection?: boolean | Prisma.CollectionDefaultArgs<ExtArgs>
   details?: boolean | Prisma.BillHeader$detailsArgs<ExtArgs>
+  memberships?: boolean | Prisma.BillHeader$membershipsArgs<ExtArgs>
   _count?: boolean | Prisma.BillHeaderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BillHeaderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1317,6 +1477,7 @@ export type $BillHeaderPayload<ExtArgs extends runtime.Types.Extensions.Internal
   objects: {
     collection: Prisma.$CollectionPayload<ExtArgs>
     details: Prisma.$BillDetailPayload<ExtArgs>[]
+    memberships: Prisma.$CollectionBillMembershipPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1737,6 +1898,7 @@ export interface Prisma__BillHeaderClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   collection<T extends Prisma.CollectionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CollectionDefaultArgs<ExtArgs>>): Prisma.Prisma__CollectionClient<runtime.Types.Result.GetResult<Prisma.$CollectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   details<T extends Prisma.BillHeader$detailsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BillHeader$detailsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BillDetailPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  memberships<T extends Prisma.BillHeader$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BillHeader$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CollectionBillMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2210,6 +2372,30 @@ export type BillHeader$detailsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.BillDetailScalarFieldEnum | Prisma.BillDetailScalarFieldEnum[]
+}
+
+/**
+ * BillHeader.memberships
+ */
+export type BillHeader$membershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CollectionBillMembership
+   */
+  select?: Prisma.CollectionBillMembershipSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CollectionBillMembership
+   */
+  omit?: Prisma.CollectionBillMembershipOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CollectionBillMembershipInclude<ExtArgs> | null
+  where?: Prisma.CollectionBillMembershipWhereInput
+  orderBy?: Prisma.CollectionBillMembershipOrderByWithRelationInput | Prisma.CollectionBillMembershipOrderByWithRelationInput[]
+  cursor?: Prisma.CollectionBillMembershipWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CollectionBillMembershipScalarFieldEnum | Prisma.CollectionBillMembershipScalarFieldEnum[]
 }
 
 /**

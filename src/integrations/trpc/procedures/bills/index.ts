@@ -157,6 +157,13 @@ export const billsRouter = {
           data: billData.map((bill) => bill.header),
           skipDuplicates: true,
         })
+        await tx.collectionBillMembership.createMany({
+          data: billData.map((bill) => ({
+            collectionId,
+            billId: bill.header.id!,
+          })),
+          skipDuplicates: true,
+        })
 
         await tx.billDetail.createMany({
           data: billData.flatMap((bill) => bill.details),

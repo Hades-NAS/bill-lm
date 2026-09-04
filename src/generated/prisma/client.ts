@@ -110,6 +110,11 @@ export type Collection = Prisma.CollectionModel
  */
 export type BillHeader = Prisma.BillHeaderModel
 /**
+ * Model CollectionBillMembership
+ * 
+ */
+export type CollectionBillMembership = Prisma.CollectionBillMembershipModel
+/**
  * Model BillDetail
  * 
  */
