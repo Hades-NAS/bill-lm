@@ -2,7 +2,18 @@ import z from 'zod'
 
 import type { FileWithPath } from '@mantine/dropzone'
 
-import { CollectionSchema } from '#/generated/zod'
+// This input boundary intentionally stays independent from Prisma's generated
+// Zod output. The generated package is server implementation detail and its
+// JSON helpers are not safe to bundle into the browser build.
+const CollectionInputFieldsSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string().nullable(),
+  personalIdNumber: z.string(),
+  professionalIdNumber: z.string(),
+  instructions: z.string().nullable(),
+  year: z.number().int(),
+})
 
 // COLLECTION CRUD
 
@@ -137,7 +148,7 @@ export const GetBillDetailRequestSchema = z.object({
 export type GetBillDetailRequest = z.infer<typeof GetBillDetailRequestSchema>
 
 // MODELS
-export const CreateCollectionSchema = CollectionSchema.pick({
+export const CreateCollectionSchema = CollectionInputFieldsSchema.pick({
   name: true,
   description: true,
   instructions: true,
@@ -146,8 +157,11 @@ export const CreateCollectionSchema = CollectionSchema.pick({
   year: true,
 })
   .extend({
-    name: CollectionSchema.shape.name.min(1, 'El nombre es requerido'),
-    year: CollectionSchema.shape.year
+    name: CollectionInputFieldsSchema.shape.name.min(
+      1,
+      'El nombre es requerido',
+    ),
+    year: CollectionInputFieldsSchema.shape.year
       .int()
       .min(0, 'El año debe ser un número positivo'),
   })
@@ -190,7 +204,7 @@ export const CreateCollectionSchema = CollectionSchema.pick({
 export type CreateCollectionType = z.infer<typeof CreateCollectionSchema>
 
 export const UpdateCollectionSchema = CreateCollectionSchema.extend({
-  id: CollectionSchema.shape.id.min(
+  id: CollectionInputFieldsSchema.shape.id.min(
     1,
     'El ID es requerido para actualizar una colección',
   ),
