@@ -16,6 +16,11 @@ El sistema separa tres cosas:
 Los manifiestos incluidos hoy son puntos de descubrimiento. Están en estado
 `draft`, no tienen hash y no habilitan reglas para un análisis.
 
+Algunos manifiestos ya incluyen una URL PDF encontrada en el portal oficial.
+Esa URL sirve como punto de partida, no como evidencia de vigencia ni de
+contenido: `fetch` debe descargarla y registrar el hash antes de cualquier
+revisión.
+
 ## Flujo seguro
 
 Sigue este orden para una fuente. No saltes de un PDF descargado a una regla
@@ -57,10 +62,11 @@ El resultado por fuente puede ser:
 - `source-unavailable`: no se pudo consultar la página. Reintenta después; no
   concluyas que la norma dejó de existir por un fallo de red.
 
-### `bun run rules:sri:fetch --source <id> --url <pdf-sri>`
+### `bun run rules:sri:fetch [--source <id>] [--url <pdf-sri>]`
 
-Descarga un PDF de una fuente registrada. Usa el ID del archivo en `sources/`
-y un enlace explícito al PDF que encontraste en el portal oficial.
+Sin `--source`, descarga cada fuente registrada que tenga `resolvedUrl`. Usa
+`--source` para procesar solo una fuente. `--url` permite reemplazar el enlace
+solo para esa fuente individual.
 
 Ejemplo:
 
@@ -80,17 +86,18 @@ No copies un enlace de Google Drive, correo, WhatsApp u otro dominio. No
 edites el PDF descargado. Si el hash no coincide más adelante, vuelve a
 ejecutar `fetch` desde el enlace oficial.
 
-### `bun run rules:sri:extract --source <id>`
+### `bun run rules:sri:extract [--source <id>]`
 
 Lee el original descargado para la fuente indicada, verifica otra vez su hash y
 extrae Markdown en `.cache/tax-rules/ec/sri/extracted/`. Añade marcadores de
 página para que puedas volver al PDF durante la revisión.
 
-Este paso requiere que hayas ejecutado `fetch`. Falla si el PDF no tiene texto
-seleccionable. La primera versión no aplica OCR, por lo que debes conseguir un
-PDF textual del SRI.
+Sin `--source`, procesa todos los originales descargados. Este paso requiere
+que hayas ejecutado `fetch`. Falla si el PDF no tiene texto seleccionable. La
+primera versión no aplica OCR, por lo que debes conseguir un PDF textual del
+SRI.
 
-### `bun run rules:sri:split --source <id>`
+### `bun run rules:sri:split [--source <id>]`
 
 Divide el Markdown extraído en borradores. Para leyes y reglamentos busca
 encabezados de artículos, como `Art. 10.-`; para guías usa títulos en
@@ -102,7 +109,9 @@ comando no reconoce una estructura segura, produce una sola sección con estado
 `ambiguous`. Revisa ese caso a mano; no cambies el título para forzar una
 división automática.
 
-### `bun run rules:sri:diff --source <id>`
+Sin `--source`, crea borradores para todas las extracciones disponibles.
+
+### `bun run rules:sri:diff [--source <id>]`
 
 Compara los borradores de una fuente contra las secciones revisadas que ya
 existan en `sections/reviewed/`. Sirve para preparar una revisión de cambios.
@@ -116,6 +125,19 @@ El resultado separa:
 - `unchanged`: texto y páginas coinciden.
 
 El comando no modifica secciones revisadas ni marca una regla como vigente.
+Sin `--source`, prepara la comparación para todas las fuentes.
+
+## Errores y ejecución por lote
+
+Los comandos `fetch`, `extract`, `split` y `diff` procesan todas las fuentes
+definidas si omites `--source`. Trabajan una fuente a la vez. Si una falla,
+continúan con las demás y muestran un resumen JSON con `completed` y `failed`.
+El proceso termina con código distinto de cero cuando hubo fallos, para que un
+script o CI pueda detectarlos.
+
+Los mensajes indican el siguiente paso útil, por ejemplo ejecutar `fetch`
+antes de `extract`. El comando no muestra stack traces, URLs ajenas permitidas
+ni detalles internos inesperados.
 
 ### `bun run rules:sri:review --section <id>`
 

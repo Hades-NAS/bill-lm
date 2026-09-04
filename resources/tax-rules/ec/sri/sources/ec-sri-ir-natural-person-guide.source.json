@@ -1,1 +1,15 @@
-{"schemaVersion":"1","id":"ec-sri-ir-natural-person-guide","issuer":"Servicio de Rentas Internas","jurisdiction":"EC","sourceKind":"guide","discoveryUrl":"https://www.sri.gob.ec/impuesto-renta","resolvedUrl":null,"mimeType":null,"retrievedAt":null,"contentHash":null,"effectiveFrom":null,"effectiveTo":null,"reviewStatus":"draft"}
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-ir-natural-person-guide",
+  "issuer": "Servicio de Rentas Internas",
+  "jurisdiction": "EC",
+  "sourceKind": "guide",
+  "discoveryUrl": "https://www.sri.gob.ec/impuesto-renta",
+  "resolvedUrl": "https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/55428073-d439-4d4b-9d91-388b3306c424/Gu%C3%ADa%20para%20el%20llenado%20del%20Formulario%20Impuesto%20a%20la%20Renta%20personas%20naturales.pdf",
+  "mimeType": null,
+  "retrievedAt": null,
+  "contentHash": null,
+  "effectiveFrom": null,
+  "effectiveTo": null,
+  "reviewStatus": "draft"
+}

@@ -12,6 +12,12 @@ import {
   ReviewedTaxRuleSectionSchema,
   TaxRuleSourceManifestSchema,
 } from '#/integrations/tax-rules/contracts'
+import {
+  runTaxRuleBatch,
+  summarizeTaxRuleBatch,
+  TaxRuleCommandError,
+  taxRuleUserFacingError,
+} from '#/integrations/tax-rules/command-runner'
 import { diffTaxRuleSections, splitTaxRuleSource } from '#/integrations/tax-rules/sectioning'
 
 const projectRoot = process.cwd()
@@ -35,7 +41,7 @@ function option(name: string) {
 function requireOption(name: string) {
   const value = option(name)
   if (!value || value.startsWith('--'))
-    throw new Error(`Falta ${name}. Ejemplo: bun run rules:sri:fetch --source ec-sri-rlrti --url https://www.sri.gob.ec/archivo.pdf`)
+    throw new TaxRuleCommandError(`Falta ${name}. Ejemplo: bun run rules:sri:fetch --source ec-sri-rlrti --url https://www.sri.gob.ec/archivo.pdf`)
   return value
 }
 
@@ -51,16 +57,21 @@ async function loadSources() {
 
 async function loadSource(sourceId: string) {
   const source = (await loadSources()).find((candidate) => candidate.id === sourceId)
-  if (!source)
-    throw new Error(`No existe la fuente SRI registrada “${sourceId}”.`)
+  if (!source) throw new TaxRuleCommandError(`No existe la fuente SRI registrada “${sourceId}”.`)
   return source
+}
+
+async function selectedSources() {
+  const sourceId = option('--source')
+  if (!sourceId) return loadSources()
+  return [await loadSource(sourceId)]
 }
 
 async function loadDownloadRecord(sourceId: string): Promise<DownloadRecord> {
   try {
     return JSON.parse(await readFile(join(cacheRoot, 'downloads', `${sourceId}.json`), 'utf8'))
   } catch {
-    throw new Error(`No hay un original descargado para “${sourceId}”. Ejecuta primero rules:sri:fetch.`)
+    throw new TaxRuleCommandError(`No hay un original descargado para “${sourceId}”. Ejecuta primero rules:sri:fetch.`)
   }
 }
 
@@ -84,7 +95,7 @@ async function loadDrafts(sourceId: string) {
     return DraftTaxRuleSectionSchema.array().parse(JSON.parse(await readFile(path, 'utf8')))
   } catch (error) {
     if (error instanceof Error && error.message.startsWith('No hay un original')) throw error
-    throw new Error(`No hay borradores para “${sourceId}”. Ejecuta primero rules:sri:split.`)
+    throw new TaxRuleCommandError(`No hay borradores para “${sourceId}”. Ejecuta primero rules:sri:split.`)
   }
 }
 
@@ -101,30 +112,23 @@ async function loadReviewedSections(sourceId: string) {
   )
 }
 
-async function runCheck() {
-  const results = await Promise.all(
-    (await loadSources()).map(async (source) => {
-      try {
-        return await checkTaxRuleSource(source)
-      } catch (error) {
-        return {
-          sourceId: source.id,
-          status: 'source-unavailable' as const,
-          detail: error instanceof Error ? error.message : 'No se pudo consultar la fuente.',
-        }
-      }
-    }),
-  )
-  console.log(JSON.stringify(results, null, 2))
+async function runBatch(
+  command: string,
+  operation: (source: Awaited<ReturnType<typeof loadSources>>[number]) => Promise<unknown>,
+) {
+  const results = await runTaxRuleBatch(await selectedSources(), operation)
+  const summary = summarizeTaxRuleBatch(results)
+  console.log(JSON.stringify({ command, summary, results }, null, 2))
+  if (summary.failed > 0) process.exitCode = 1
 }
 
-async function runFetch() {
-  const sourceId = requireOption('--source')
-  const source = await loadSource(sourceId)
+async function fetchSource(source: Awaited<ReturnType<typeof loadSources>>[number]) {
   const urlOverride = option('--url')
+  if (urlOverride && !option('--source'))
+    throw new TaxRuleCommandError('Usa --url solo junto con --source para no aplicar un PDF a varias fuentes.')
   if (!source.resolvedUrl && !urlOverride)
-    throw new Error(
-      `La fuente “${sourceId}” todavía no tiene un PDF resuelto. Indica --url con un enlace HTTPS de www.sri.gob.ec encontrado y revisado desde su página oficial.`,
+    throw new TaxRuleCommandError(
+      `La fuente “${source.id}” todavía no tiene un PDF resuelto. Indica --url con un enlace HTTPS de www.sri.gob.ec encontrado y revisado desde su página oficial.`,
     )
 
   const downloaded = await fetchTaxRuleSource(
@@ -132,23 +136,22 @@ async function runFetch() {
     cacheRoot,
   )
   const record: DownloadRecord = {
-    sourceId,
+    sourceId: source.id,
     ...downloaded,
     retrievedAt: new Date().toISOString(),
   }
-  const metadataPath = join(cacheRoot, 'downloads', `${sourceId}.json`)
+  const metadataPath = join(cacheRoot, 'downloads', `${source.id}.json`)
   await mkdir(join(cacheRoot, 'downloads'), { recursive: true })
   await writeFile(metadataPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8')
-  console.log(JSON.stringify(record, null, 2))
+  return record
 }
 
-async function runExtract() {
-  const sourceId = requireOption('--source')
-  const record = await loadDownloadRecord(sourceId)
+async function extractSource(source: Awaited<ReturnType<typeof loadSources>>[number]) {
+  const record = await loadDownloadRecord(source.id)
   const pdf = await readFile(record.path)
   const contentHash = `sha256:${createHash('sha256').update(pdf).digest('hex')}`
   if (contentHash !== record.contentHash)
-    throw new Error(`El original de “${sourceId}” no coincide con el hash registrado. Descárgalo de nuevo.`)
+    throw new TaxRuleCommandError(`El original de “${source.id}” no coincide con el hash registrado. Descárgalo de nuevo.`)
 
   const markdown = await extractTaxRulePdf(pdf)
   const outputPath = join(
@@ -158,18 +161,16 @@ async function runExtract() {
   )
   await mkdir(join(cacheRoot, 'extracted'), { recursive: true })
   await writeFile(outputPath, markdown, 'utf8')
-  console.log(JSON.stringify({ sourceId, path: outputPath, sourceContentHash: contentHash }, null, 2))
+  return { path: outputPath, sourceContentHash: contentHash }
 }
 
-async function runSplit() {
-  const sourceId = requireOption('--source')
-  const source = await loadSource(sourceId)
-  const record = await loadDownloadRecord(sourceId)
+async function splitSource(source: Awaited<ReturnType<typeof loadSources>>[number]) {
+  const record = await loadDownloadRecord(source.id)
   const markdown = await readFile(
     join(cacheRoot, 'extracted', `${basename(record.path, '.pdf')}.md`),
     'utf8',
   ).catch(() => {
-    throw new Error(`No hay extracción para “${sourceId}”. Ejecuta primero rules:sri:extract.`)
+    throw new TaxRuleCommandError(`No hay extracción para “${source.id}”. Ejecuta primero rules:sri:extract.`)
   })
   const drafts = splitTaxRuleSource(
     { id: source.id, sourceKind: source.sourceKind, contentHash: record.contentHash },
@@ -183,16 +184,15 @@ async function runSplit() {
   )
   await mkdir(join(cacheRoot, 'sections', 'drafts'), { recursive: true })
   await writeFile(outputPath, `${JSON.stringify(drafts, null, 2)}\n`, 'utf8')
-  console.log(JSON.stringify({ sourceId, path: outputPath, sections: drafts.length }, null, 2))
+  return { path: outputPath, sections: drafts.length }
 }
 
-async function runDiff() {
-  const sourceId = requireOption('--source')
+async function diffSource(source: Awaited<ReturnType<typeof loadSources>>[number]) {
   const diff = diffTaxRuleSections(
-    await loadDrafts(sourceId),
-    await loadReviewedSections(sourceId),
+    await loadDrafts(source.id),
+    await loadReviewedSections(source.id),
   )
-  console.log(JSON.stringify({ sourceId, ...diff }, null, 2))
+  return diff
 }
 
 async function runReview() {
@@ -207,21 +207,31 @@ async function runReview() {
     }),
   )
   const draft = drafts.flat().find((section) => section.id === sectionId)
-  if (!draft) throw new Error(`No existe un borrador “${sectionId}” para revisar.`)
+  if (!draft) throw new TaxRuleCommandError(`No existe un borrador “${sectionId}” para revisar.`)
   console.log(JSON.stringify({
     section: draft,
     nextStep: 'Revisa el texto, páginas, vigencia, propósito, régimen y referencias. La promoción es manual y debe crear un archivo nuevo en resources/tax-rules/ec/sri/sections/reviewed/.',
   }, null, 2))
 }
 
-const command = process.argv[2]
-if (command === 'check') await runCheck()
-else if (command === 'fetch') await runFetch()
-else if (command === 'extract') await runExtract()
-else if (command === 'split') await runSplit()
-else if (command === 'diff') await runDiff()
-else if (command === 'review') await runReview()
-else
-  throw new Error(
-    'Usa uno de: check, fetch, extract, split, diff o review. Consulta el diseño para los argumentos requeridos.',
-  )
+async function main() {
+  const command = process.argv[2]
+  if (command === 'check') await runBatch(command, checkTaxRuleSource)
+  else if (command === 'fetch') await runBatch(command, fetchSource)
+  else if (command === 'extract') await runBatch(command, extractSource)
+  else if (command === 'split') await runBatch(command, splitSource)
+  else if (command === 'diff') await runBatch(command, diffSource)
+  else if (command === 'review') await runReview()
+  else
+    throw new TaxRuleCommandError(
+      'Usa uno de: check, fetch, extract, split, diff o review. Consulta el README de rulesets para los argumentos requeridos.',
+    )
+}
+
+main().catch((error) => {
+  console.error(JSON.stringify({
+    status: 'failed',
+    message: taxRuleUserFacingError(error),
+  }, null, 2))
+  process.exitCode = 1
+})
