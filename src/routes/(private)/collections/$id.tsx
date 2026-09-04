@@ -19,10 +19,13 @@ import {
   ThemeIcon,
   Textarea,
   Alert,
+  Select,
+  MultiSelect,
+  TextInput,
 } from '@mantine/core'
 import { useListState, useViewportSize } from '@mantine/hooks'
 import { modals } from '@mantine/modals'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   ChevronLeft,
@@ -125,6 +128,23 @@ function CollectionDetailPage() {
 
   const userCanAnalyzeQuery = useCheckCanAnalyzeCollectionQuery()
   const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const profilesQuery = useQuery(trpc.taxpayerProfiles.listProfiles.queryOptions())
+  const activitiesQuery = useQuery(trpc.taxpayerProfiles.listActivities.queryOptions())
+  const contextRevisionsQuery = useQuery(
+    trpc.collections.listContextRevisions.queryOptions({ id: collectionId }),
+  )
+  const createContextRevision = useMutation(
+    trpc.collections.createContextRevision.mutationOptions({
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: trpc.collections.listContextRevisions.queryKey({ id: collectionId }) }),
+    }),
+  )
+  const [contextModalOpened, setContextModalOpened] = React.useState(false)
+  const [purpose, setPurpose] = React.useState<'vat_credit' | 'business_income_tax' | 'personal_expenses'>('personal_expenses')
+  const [profileRevisionId, setProfileRevisionId] = React.useState<string | null>(null)
+  const [activityRevisionIds, setActivityRevisionIds] = React.useState<string[]>([])
+  const [periodStartDate, setPeriodStartDate] = React.useState(`${collectionQuery.data?.year ?? DateTime.now().year}-01-01`)
+  const [periodEndDate, setPeriodEndDate] = React.useState(`${collectionQuery.data?.year ?? DateTime.now().year}-12-31`)
   const connectionsQuery = useQuery(
     trpc.providerConnections.list.queryOptions(),
   )
@@ -218,6 +238,19 @@ function CollectionDetailPage() {
           setCollectionForm({ opened: false })
         }}
       />
+
+      <Modal centered fullScreen={isMobile} opened={contextModalOpened} title="Configurar contexto de análisis" onClose={() => setContextModalOpened(false)}>
+        <Stack gap="sm">
+          <Alert color="blue">El contexto se guarda como una nueva revisión; los análisis anteriores no cambian.</Alert>
+          <Select data={[{ value: 'vat_credit', label: 'Declaración de IVA' }, { value: 'business_income_tax', label: 'IR: gastos de actividades económicas' }, { value: 'personal_expenses', label: 'IR: gastos personales' }]} label="Propósito" value={purpose} onChange={(value) => { const next = (value ?? 'personal_expenses') as typeof purpose; setPurpose(next); if (next === 'personal_expenses') setActivityRevisionIds([]) }} />
+          <TextInput label="Inicio del período" type="date" value={periodStartDate} onChange={(event) => setPeriodStartDate(event.currentTarget.value)} />
+          <TextInput label="Fin del período" type="date" value={periodEndDate} onChange={(event) => setPeriodEndDate(event.currentTarget.value)} />
+          <Select data={(profilesQuery.data ?? []).flatMap((profile) => profile.revisions[0] ? [{ value: profile.revisions[0].id, label: `${profile.revisions[0].displayName} · rev. ${profile.revisions[0].revision}` }] : [])} label="Perfil tributario" value={profileRevisionId} onChange={setProfileRevisionId} />
+          <MultiSelect data={(activitiesQuery.data ?? []).flatMap((activity) => activity.revisions[0] ? [{ value: activity.revisions[0].id, label: activity.revisions[0].displayName }] : [])} disabled={purpose === 'personal_expenses'} label="Actividades económicas" value={activityRevisionIds} onChange={setActivityRevisionIds} />
+          {createContextRevision.error && <Alert color="red">{createContextRevision.error.message}</Alert>}
+          <Group justify="space-between"><Text c="dimmed" size="sm">{contextRevisionsQuery.data?.[0] ? `Revisión actual: ${contextRevisionsQuery.data[0].revision}` : 'Aún no hay contexto.'}</Text><Button disabled={!profileRevisionId} loading={createContextRevision.isPending} onClick={() => { if (!profileRevisionId) return; createContextRevision.mutate({ collectionId, purpose, period: { startDate: periodStartDate, endDate: periodEndDate }, taxpayerProfileRevisionId: profileRevisionId, activityRevisionIds }, { onSuccess: () => setContextModalOpened(false) }) }}>Guardar contexto</Button></Group>
+        </Stack>
+      </Modal>
 
       <BillAddForm
         modal
@@ -509,6 +542,13 @@ function CollectionDetailPage() {
                           alignSelf: isMobile ? 'center' : 'flex-end',
                         }}
                       >
+                        <Button
+                          leftSection={<NotepadText size={18} />}
+                          variant="subtle"
+                          onClick={() => setContextModalOpened(true)}
+                        >
+                          Contexto
+                        </Button>
                         <Button
                           leftSection={<EyeIcon size={18} />}
                           variant="subtle"
