@@ -58,6 +58,21 @@ export const ReviewedTaxRuleSectionSchema = z.object({
 })
 export type ReviewedTaxRuleSection = z.infer<typeof ReviewedTaxRuleSectionSchema>
 
+export const DraftTaxRuleSectionSchema = z.object({
+  schemaVersion: z.literal('1'),
+  id: z.string().regex(/^ec-sri-[a-z0-9-]+$/),
+  sourceId: TaxRuleSourceManifestSchema.shape.id,
+  articleOrSection: z.string().trim().min(1).max(255),
+  sourcePages: z.array(z.number().int().positive()).min(1),
+  sourceStartOffset: z.number().int().nonnegative(),
+  sourceEndOffset: z.number().int().positive(),
+  sourceContentHash: Sha256Schema,
+  splitterVersion: z.literal('1'),
+  reviewStatus: z.enum(['draft', 'ambiguous']),
+  markdown: z.string().trim().min(1),
+})
+export type DraftTaxRuleSection = z.infer<typeof DraftTaxRuleSectionSchema>
+
 export const TaxRuleSchema = z.object({
   id: RuleIdSchema,
   version: z.number().int().positive(),
