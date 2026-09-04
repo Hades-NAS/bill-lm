@@ -1,6 +1,7 @@
-import { AppShell, Center, Container, Group, Loader, Text } from '@mantine/core'
+import { AppShell, Center, Container, Group, Loader, NavLink, Stack, Text } from '@mantine/core'
 // import { useDisclosure } from '@mantine/hooks'
-import { Navigate, createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { Navigate, createFileRoute, Link, Outlet, useRouterState } from '@tanstack/react-router'
+import { BriefcaseBusiness, LibraryBig, Settings, User } from 'lucide-react'
 
 import { useIsMobile } from '#/utils/mobile'
 
@@ -9,7 +10,6 @@ import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manage
 
 import { NavbarJobsIndicator } from '#/components/navbar-jobs-indicator'
 import NavbarThemeIcon from '#/components/navbar-theme-icon'
-import NavbarUserIcon from '#/components/user/navbar-icon'
 
 export const Route = createFileRoute('/(private)')({
   component: RouteComponent,
@@ -22,6 +22,7 @@ function RouteComponent() {
   // const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
 
   const isMobile = useIsMobile()
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
 
   if (!isLoaded) {
     return (
@@ -41,7 +42,7 @@ function RouteComponent() {
       navbar={{
         width: 300,
         breakpoint: 'sm',
-        collapsed: { mobile: true, desktop: true },
+        collapsed: { mobile: true, desktop: false },
         // collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
       }}
       padding="md"
@@ -74,11 +75,17 @@ function RouteComponent() {
           <Group gap="xs">
             <NavbarThemeIcon />
             <NavbarJobsIndicator />
-            <NavbarUserIcon />
           </Group>
         </Group>
       </AppShell.Header>
-      <AppShell.Navbar p="md"></AppShell.Navbar>
+      <AppShell.Navbar p="md">
+        <Stack gap="xs">
+          <NavLink component={Link} to="/collections" active={pathname.startsWith('/collections')} label="Colecciones" leftSection={<LibraryBig size={18} />} />
+          <NavLink component={Link} to="/profiles" active={pathname === '/profiles'} label="Perfiles y actividades" leftSection={<BriefcaseBusiness size={18} />} />
+          <NavLink component={Link} to="/user" active={pathname === '/user'} label="Configuración" leftSection={<Settings size={18} />} />
+          <NavLink component={Link} to="/account" active={pathname === '/account'} label="Mi cuenta" leftSection={<User size={18} />} />
+        </Stack>
+      </AppShell.Navbar>
       <AppShell.Main>
         <Container fluid={isMobile} px={0} py="md" size="xl">
           <Outlet />
