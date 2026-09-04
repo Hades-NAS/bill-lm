@@ -66,7 +66,7 @@ export function FieldHelpLabel({
       <Tooltip label={hint} multiline openDelay={800} w={240} withArrow>
         <ActionIcon
           aria-label={`Ayuda sobre ${label}`}
-          color="violet"
+          color="gray"
           radius="xl"
           size="xs"
           variant="subtle"

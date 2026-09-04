@@ -5,8 +5,11 @@ export type ProviderConnectionProvider = z.infer<
   typeof ProviderConnectionProviderSchema
 >
 
-const ConnectionIdSchema = z.string().uuid()
-const SecretSchema = z.string().min(8).max(1000)
+const ConnectionIdSchema = z.string().uuid('La conexión seleccionada no es válida.')
+const SecretSchema = z
+  .string()
+  .min(8, 'Ingresa una API key válida de al menos 8 caracteres.')
+  .max(1_000, 'La API key no puede superar los 1.000 caracteres.')
 
 export const ProviderConnectionPublicSchema = z.object({
   id: ConnectionIdSchema,
@@ -27,8 +30,16 @@ export type ProviderConnectionPublic = z.infer<
 
 export const CreateProviderConnectionSchema = z.object({
   provider: ProviderConnectionProviderSchema,
-  label: z.string().trim().min(1).max(100),
-  modelId: z.string().trim().min(1).max(255),
+  label: z
+    .string()
+    .trim()
+    .min(1, 'Ingresa un nombre para la conexión.')
+    .max(100, 'El nombre no puede superar los 100 caracteres.'),
+  modelId: z
+    .string()
+    .trim()
+    .min(1, 'Ingresa el identificador del modelo.')
+    .max(255, 'El modelo no puede superar los 255 caracteres.'),
   apiKey: SecretSchema,
   makeDefault: z.boolean().default(false),
 })
@@ -38,8 +49,18 @@ export type CreateProviderConnection = z.infer<
 
 export const UpdateProviderConnectionSchema = z.object({
   id: ConnectionIdSchema,
-  label: z.string().trim().min(1).max(100).optional(),
-  modelId: z.string().trim().min(1).max(255).optional(),
+  label: z
+    .string()
+    .trim()
+    .min(1, 'Ingresa un nombre para la conexión.')
+    .max(100, 'El nombre no puede superar los 100 caracteres.')
+    .optional(),
+  modelId: z
+    .string()
+    .trim()
+    .min(1, 'Ingresa el identificador del modelo.')
+    .max(255, 'El modelo no puede superar los 255 caracteres.')
+    .optional(),
   isActive: z.boolean().optional(),
   isDefault: z.boolean().optional(),
 })

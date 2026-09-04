@@ -163,7 +163,7 @@ export const CreateCollectionSchema = CollectionInputFieldsSchema.pick({
     ),
     year: CollectionInputFieldsSchema.shape.year
       .int()
-      .min(0, 'El año debe ser un número positivo'),
+      .min(0, 'Ingresa un año válido.'),
   })
   .superRefine((data, ctx) => {
     if (data.personalIdNumber && !/^\d+$/.test(data.personalIdNumber)) {
@@ -188,7 +188,7 @@ export const CreateCollectionSchema = CollectionInputFieldsSchema.pick({
         code: 'invalid_value',
         path: ['instructions'],
         values: [data.instructions],
-        message: 'Si se RUC es proporcionado, las instrucciones son requeridas',
+        message: 'Agrega instrucciones para las facturas asociadas al RUC.',
       })
     }
     if (data.instructions && !data.professionalIdNumber) {
@@ -196,7 +196,7 @@ export const CreateCollectionSchema = CollectionInputFieldsSchema.pick({
         code: 'invalid_value',
         path: ['professionalIdNumber'],
         values: [data.professionalIdNumber],
-        message: 'Si se proporcionan instrucciones, el RUC es requerido',
+        message: 'Ingresa el RUC al que aplican estas instrucciones.',
       })
     }
   })

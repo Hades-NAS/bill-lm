@@ -63,9 +63,9 @@ describe('normalizeFiscalReferenceMarkdown', () => {
     )
   })
 
-  it('enforces the global reference limit and analysis gate', () => {
+  it('enforces the global reference limit without requiring a reference to analyze', () => {
     expect(() => assertFiscalReferenceLimit(3)).toThrow('hasta tres')
-    expect(canAnalyzeWithRequirements(1, 0)).toBe(false)
+    expect(canAnalyzeWithRequirements(1, 0)).toBe(true)
     expect(canAnalyzeWithRequirements(0, 1)).toBe(false)
     expect(canAnalyzeWithRequirements(1, 1)).toBe(true)
   })

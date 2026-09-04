@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server'
 import superjson from 'superjson'
 
 import { getServiceLogger } from '../logger.server'
+import { userFacingZodError } from '#/utils/user-facing-validation'
 
 import type { TRPCContext } from './context'
 
@@ -16,7 +17,10 @@ const t = initTRPC.context<TRPCContext>().create({
       path: shape.data.path,
       cause: error.cause,
     })
-    return shape
+    return {
+      ...shape,
+      message: userFacingZodError(error.cause) ?? shape.message,
+    }
   },
 })
 

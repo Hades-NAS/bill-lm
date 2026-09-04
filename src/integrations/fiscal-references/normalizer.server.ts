@@ -38,8 +38,8 @@ export function assertFiscalReferenceLimit(activeReferenceCount: number): void {
 
 export const canAnalyzeWithRequirements = (
   activeConnectionCount: number,
-  activeReferenceCount: number,
-) => activeConnectionCount > 0 && activeReferenceCount > 0
+  _activeReferenceCount: number,
+) => activeConnectionCount > 0
 
 export async function withStorageCleanupOnFailure<T>(
   operation: () => Promise<T>,

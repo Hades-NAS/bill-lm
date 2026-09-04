@@ -6,17 +6,21 @@ const IdSchema = z.string().uuid()
 const CivilDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Usa una fecha civil YYYY-MM-DD')
-const OptionalTextSchema = z.string().trim().max(4_000).optional()
+const OptionalTextSchema = z
+  .string()
+  .trim()
+  .max(4_000, 'El texto no puede superar los 4.000 caracteres.')
+  .optional()
 const OptionalPersonalIdNumberSchema = z
   .string()
   .trim()
-  .regex(/^\d{10}$/)
+  .regex(/^\d{10}$/, 'Ingresa los 10 dígitos de la cédula.')
   .or(z.literal(''))
   .optional()
 const OptionalProfessionalIdNumberSchema = z
   .string()
   .trim()
-  .regex(/^\d{13}$/)
+  .regex(/^\d{13}$/, 'Ingresa los 13 dígitos del RUC.')
   .or(z.literal(''))
   .optional()
 
@@ -63,10 +67,26 @@ export const TaxRuleReviewStatusSchema = z.enum([
 
 export const EconomicActivityRevisionInputSchema = z
   .object({
-    displayName: z.string().trim().min(1).max(120),
-    registeredActivityCode: z.string().trim().max(100).optional(),
-    registeredActivityName: z.string().trim().min(1).max(500),
-    activityDescription: z.string().trim().min(1).max(4_000),
+    displayName: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa un nombre para la actividad.')
+      .max(120, 'El nombre de la actividad no puede superar los 120 caracteres.'),
+    registeredActivityCode: z
+      .string()
+      .trim()
+      .max(100, 'El código de actividad no puede superar los 100 caracteres.')
+      .optional(),
+    registeredActivityName: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa el nombre registrado de la actividad.')
+      .max(500, 'El nombre registrado no puede superar los 500 caracteres.'),
+    activityDescription: z
+      .string()
+      .trim()
+      .min(1, 'Describe en qué consiste la actividad.')
+      .max(4_000, 'La descripción no puede superar los 4.000 caracteres.'),
     necessaryPurchases: OptionalTextSchema,
     revenueVatTreatment: RevenueVatTreatmentSchema,
     revenueVatTreatmentOther: OptionalTextSchema,
@@ -102,7 +122,11 @@ export type EconomicActivityRevision = z.infer<
 
 export const TaxpayerProfileRevisionDataSchema = z
   .object({
-    displayName: z.string().trim().min(1).max(120),
+    displayName: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa un nombre para el perfil.')
+      .max(120, 'El nombre del perfil no puede superar los 120 caracteres.'),
     personalIdNumber: OptionalPersonalIdNumberSchema,
     professionalIdNumber: OptionalProfessionalIdNumberSchema,
     hasEmploymentIncome: z.boolean(),

@@ -250,21 +250,57 @@ function CollectionDetailPage() {
   const connectionsQuery = useQuery(
     trpc.providerConnections.list.queryOptions(),
   )
-  const fiscalReferencesQuery = useQuery(
-    trpc.fiscalReferences.list.queryOptions(),
-  )
   const [credentialId, setCredentialId] = React.useState<string | null>(null)
   const activeConnections =
     connectionsQuery.data?.filter((connection) => connection.isActive) ?? []
-  const analysisConfigLoading =
-    connectionsQuery.isPending || fiscalReferencesQuery.isPending
-  const analysisConfigError =
-    connectionsQuery.isError || fiscalReferencesQuery.isError
+  const analysisConfigLoading = connectionsQuery.isPending
+  const analysisConfigError = connectionsQuery.isError
   const analysisConfigReady =
     !analysisConfigLoading &&
     !analysisConfigError &&
-    activeConnections.length > 0 &&
-    (fiscalReferencesQuery.data?.length ?? 0) > 0
+    activeConnections.length > 0
+
+  React.useEffect(() => {
+    if (!contextModalOpened) return
+
+    const currentRevision = contextRevisionsQuery.data?.[0]
+    if (currentRevision) {
+      setPurpose(
+        currentRevision.purpose as
+          | 'vat_credit'
+          | 'business_income_tax'
+          | 'personal_expenses',
+      )
+      setProfileRevisionId(currentRevision.taxpayerProfileRevisionId)
+      setActivityRevisionIds(
+        currentRevision.activities.map(
+          (activity) => activity.economicActivityRevisionId,
+        ),
+      )
+      setPeriodStartDate(
+        DateTime.fromJSDate(currentRevision.periodStartDate, {
+          zone: 'utc',
+        }).toISODate() ?? '',
+      )
+      setPeriodEndDate(
+        DateTime.fromJSDate(currentRevision.periodEndDate, {
+          zone: 'utc',
+        }).toISODate() ?? '',
+      )
+      return
+    }
+
+    const year = collectionQuery.data?.year ?? DateTime.now().year
+    setPurpose('personal_expenses')
+    setProfileRevisionId(null)
+    setActivityRevisionIds([])
+    setPeriodStartDate(`${year}-01-01`)
+    setPeriodEndDate(`${year}-12-31`)
+  }, [
+    collectionQuery.data?.year,
+    contextModalOpened,
+    contextRevisionsQuery.data,
+  ])
 
   const analyzeCollectionMutation = useAnalyzeCollectionMutation()
 
@@ -599,11 +635,6 @@ function CollectionDetailPage() {
             Necesitas una conexión activa para analizar.{' '}
             <Link to="/user">Configurar proveedor</Link>
           </Alert>
-        ) : fiscalReferencesQuery.data?.length === 0 ? (
-          <Alert color="orange" mt="md">
-            Necesitas al menos una referencia fiscal autogestionada para
-            analizar. <Link to="/user">Configurar referencias</Link>
-          </Alert>
         ) : activeConnections.length > 1 ? (
           <Input
             data={activeConnections.map((connection) => ({
@@ -805,7 +836,7 @@ function CollectionDetailPage() {
                         <Tooltip
                           label={
                             !analysisConfigReady
-                              ? 'Configura una conexión activa y al menos una referencia fiscal antes de analizar.'
+                              ? 'Configura una conexión de proveedor activa antes de analizar.'
                               : userCanAnalyzeQuery.data?.canAnalyze
                                 ? 'Analizar facturas de esta colección con IA usando tu conexión y referencias configuradas.'
                                 : 'Su cuenta no tiene permisos para analizar esta colección. Contacta al administrador (enmanuelmag@cardor.dev) para más información.'
