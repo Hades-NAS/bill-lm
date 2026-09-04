@@ -15,25 +15,50 @@ describe('tax rule sectioning', () => {
       'Art. 10.- Base imponible\nTexto A\n\n<!-- page 2 of 2 -->\n\nArt. 11.- Tarifa\nTexto B\n',
     )
     expect(sections).toHaveLength(2)
-    expect(sections[0]).toMatchObject({ id: 'ec-sri-rlrti-art-10-base-imponible', sourcePages: [1, 2] })
-    expect(sections[1]).toMatchObject({ id: 'ec-sri-rlrti-art-11-tarifa', sourcePages: [2], reviewStatus: 'draft' })
+    expect(sections[0]).toMatchObject({
+      id: 'ec-sri-rlrti-art-10-base-imponible',
+      sourcePages: [1, 2],
+    })
+    expect(sections[1]).toMatchObject({
+      id: 'ec-sri-rlrti-art-11-tarifa',
+      sourcePages: [2],
+      reviewStatus: 'draft',
+    })
   })
 
   it('marks an unrecognizable structure as ambiguous rather than inventing sections', () => {
-    expect(splitTaxRuleSource(source, 'Texto sin encabezados utilizables')).toMatchObject([
+    expect(
+      splitTaxRuleSource(source, 'Texto sin encabezados utilizables'),
+    ).toMatchObject([
       { reviewStatus: 'ambiguous', id: 'ec-sri-rlrti-unresolved-structure' },
     ])
   })
 
   it('keeps guides ambiguous until they have a source-specific splitter', () => {
-    const guide = { ...source, id: 'ec-sri-ir-rimpe-guide', sourceKind: 'guide' as const }
-    expect(splitTaxRuleSource(guide, '1. Introducción\nTexto\n2. Declaración\nTexto')).toMatchObject([
-      { reviewStatus: 'ambiguous', articleOrSection: 'La guía requiere una estrategia de división específica' },
+    const guide = {
+      ...source,
+      id: 'ec-sri-ir-rimpe-guide',
+      sourceKind: 'guide' as const,
+    }
+    expect(
+      splitTaxRuleSource(
+        guide,
+        '1. Introducción\nTexto\n2. Declaración\nTexto',
+      ),
+    ).toMatchObject([
+      {
+        reviewStatus: 'ambiguous',
+        articleOrSection:
+          'La guía requiere una estrategia de división específica',
+      },
     ])
   })
 
   it('keeps repeated articles unique and marks later occurrences ambiguous', () => {
-    const [first, repeated] = splitTaxRuleSource(source, 'Art. 1.- Uno\nA\nArt. 1.- Uno\nB')
+    const [first, repeated] = splitTaxRuleSource(
+      source,
+      'Art. 1.- Uno\nA\nArt. 1.- Uno\nB',
+    )
     expect(first.id).toBe('ec-sri-rlrti-art-1-uno')
     expect(repeated).toMatchObject({
       id: 'ec-sri-rlrti-art-1-uno-part-2',
@@ -42,7 +67,10 @@ describe('tax rule sectioning', () => {
   })
 
   it('distinguishes textual changes from page-only changes', () => {
-    const [draft] = splitTaxRuleSource(source, 'Art. 10.- Base imponible\nTexto A')
+    const [draft] = splitTaxRuleSource(
+      source,
+      'Art. 10.- Base imponible\nTexto A',
+    )
     const reviewed = {
       ...draft,
       sourcePages: [2],
@@ -54,6 +82,8 @@ describe('tax rule sectioning', () => {
       reviewedBy: 'owner',
       reviewedAt: '2026-01-01T00:00:00.000Z',
     }
-    expect(diffTaxRuleSections([draft], [reviewed])).toMatchObject({ pageOnlyChanged: [draft.id] })
+    expect(diffTaxRuleSections([draft], [reviewed])).toMatchObject({
+      pageOnlyChanged: [draft.id],
+    })
   })
 })

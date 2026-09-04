@@ -8,7 +8,7 @@ import type { AnalyzeJobData } from '#/schema/collections'
 const logger = getServiceLogger('BillPromptBuilder')
 
 const AGENT_INSTRUCTIONS = `
-Eres un asistente especializado en analizar facturas y determinar si la factura puede ser deducible, explicando el porqué según el material autogestionado por el usuario.
+Eres un asistente especializado en analizar facturas y determinar si la factura puede ser deducible, explicando el porqué según el ruleset oficial seleccionado y el material adicional del usuario, si existe.
 
 El output debe ser un JSON con la siguiente estructura (NO CAMPOS EXTRA, NI TEXTO, SOLO LOS CAMPOS A CONTINUACIÓN):
 {
@@ -16,7 +16,7 @@ El output debe ser un JSON con la siguiente estructura (NO CAMPOS EXTRA, NI TEXT
   "reason": string, // Una explicación detallada de por qué la factura tiene ese porcentaje de deducibilidad. Máximo 1000 caracteres.
 }
 
-No presentes el material como normativa oficial del SRI ni como un dictamen jurídico.
+No presentes el resultado como un dictamen jurídico. Distingue siempre entre el material oficial publicado y el material adicional autogestionado.
 Si la factura no tiene información suficiente para determinar su deducibilidad, asigna un porcentaje bajo y explica claramente la razón en el campo "reason".
 `
 
@@ -27,7 +27,7 @@ Si la factura no tiene información suficiente para determinar su deducibilidad,
 const BASE_PROMPT_TEMPLATE = `
 Eres un asistente que ayuda a los usuarios a analizar facturas electrónicas.
 
-Tu tarea es analizar los campos recibidos usando el material de referencia autogestionado por el usuario, determinar si la factura puede ser deducible y explicar el porqué.
+Tu tarea es analizar los campos recibidos usando el ruleset oficial publicado para el contexto y el material adicional autogestionado por el usuario, si existe; determina si la factura puede ser deducible y explica el porqué.
 
 A continuación te proporciono la información de la factura con la data necesaria para que puedas analizarla:
 {{BILL_DATA}}
@@ -38,7 +38,7 @@ A continuación te proporciono la información de la factura con la data necesar
 /**
  * Default instructions for bill analysis
  */
-const DEFAULT_INSTRUCTIONS = `Se debe analizar esta factura basándose en los campos disponibles y en las referencias fiscales autogestionadas por el usuario. Este material es autoaprobado: no se debe presentarlo como normativa oficial del SRI ni como un dictamen jurídico.`
+const DEFAULT_INSTRUCTIONS = `Analiza esta factura con los campos disponibles y las secciones oficiales publicadas para el contexto. El resultado es orientativo y no constituye un dictamen jurídico.`
 
 /**
  * BillPromptBuilder
@@ -68,7 +68,8 @@ export class BillPromptBuilder {
   build(
     jobData: AnalyzeJobData,
     parsedBill: ParsedBill,
-    fiscalReferences: Array<{ name: string; markdown: string }>,
+    fiscalReferences: Array<{ name: string; markdown: string }> = [],
+    officialReferences: Array<{ name: string; markdown: string }> = [],
   ): string {
     void jobData
     const { billType, vendorName, details, totals } = parsedBill
@@ -89,7 +90,10 @@ export class BillPromptBuilder {
     }
 
     // Build final instructions
-    const finalInstructions = this.buildInstructions(fiscalReferences)
+    const finalInstructions = this.buildInstructions(
+      fiscalReferences,
+      officialReferences,
+    )
 
     // Replace placeholders
     const prompt = BASE_PROMPT_TEMPLATE.replace(
@@ -113,8 +117,17 @@ export class BillPromptBuilder {
    */
   private buildInstructions(
     fiscalReferences: Array<{ name: string; markdown: string }> = [],
+    officialReferences: Array<{ name: string; markdown: string }> = [],
   ): string {
     let instructions = DEFAULT_INSTRUCTIONS
+
+    if (officialReferences.length > 0) {
+      instructions += `\n\nSecciones de fuente oficial publicadas para este análisis:\n${officialReferences
+        .map(
+          (reference) => `\n--- ${reference.name} ---\n${reference.markdown}`,
+        )
+        .join('\n')}`
+    }
 
     if (fiscalReferences.length > 0) {
       instructions += `\n\nMaterial de referencia autogestionado (no es una fuente oficial ni una validación jurídica):\n${fiscalReferences

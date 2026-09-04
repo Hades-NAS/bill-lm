@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-97-18-limitaciones-al-regimen-no-podran-acogerse-al-regimen-de-microempresas",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 97.18.- Limitaciones al Régimen.- No podrán acogerse al régimen de microempresas los",
+  "sourcePages": [
+    103
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 97.18.- Limitaciones al Régimen.- No podrán acogerse al régimen de microempresas los\ncontribuyentes cuyas actividades económicas sean las previstas en los artículos 28 y 29 de esta Ley,\nni tampoco aquellos sujetos pasivos cuya actividad económica sea la prestación de servicios\nprofesionales, ocupación liberal, relación de dependencia; así como aquellos que perciban\nexclusivamente rentas de capital.\nNota: Artículo agregado por artículo 38 de Ley No. 0, publicada en Registro Oficial Suplemento 111\nde 31 de Diciembre del 2019 ."
+}

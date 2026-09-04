@@ -1,12 +1,10 @@
 import { createHash } from 'node:crypto'
 
-import type {
-  DraftTaxRuleSection,
-  ReviewedTaxRuleSection,
-} from './contracts'
+import type { DraftTaxRuleSection, ReviewedTaxRuleSection } from './contracts'
 
 const PAGE_MARKER = /^<!-- page (\d+) of \d+ -->$/m
-const ARTICLE_HEADING = /^(Art(?:ículo)?\.?\s*\d+[A-Za-z.-]*\s*(?:[-–—:.]|$).*)$/im
+const ARTICLE_HEADING =
+  /^(Art(?:ículo)?\.?\s*\d+[A-Za-z.-]*\s*(?:[-–—:.]|$).*)$/im
 
 type SplitSource = {
   id: string
@@ -38,20 +36,31 @@ function pageRange(markdown: string, start: number, end: number) {
   const pages = new Set<number>()
   pages.add(pageAt(markdown, start))
   for (const marker of markdown.matchAll(new RegExp(PAGE_MARKER, 'gm'))) {
-    if (marker.index === undefined || marker.index < start || marker.index > end) continue
+    if (
+      marker.index === undefined ||
+      marker.index < start ||
+      marker.index > end
+    )
+      continue
     pages.add(Number(marker[1]))
   }
   return [...pages].sort((left, right) => left - right)
 }
 
-function headingMatches(sourceKind: SplitSource['sourceKind'], markdown: string) {
-  const matcher = sourceKind === 'law' || sourceKind === 'regulation'
-    ? ARTICLE_HEADING
-    : /$^/
+function headingMatches(
+  sourceKind: SplitSource['sourceKind'],
+  markdown: string,
+) {
+  const matcher =
+    sourceKind === 'law' || sourceKind === 'regulation' ? ARTICLE_HEADING : /$^/
   return [...markdown.matchAll(new RegExp(matcher, 'gim'))]
 }
 
-function ambiguousSection(source: SplitSource, markdown: string, reason: string): DraftTaxRuleSection {
+function ambiguousSection(
+  source: SplitSource,
+  markdown: string,
+  reason: string,
+): DraftTaxRuleSection {
   return {
     schemaVersion: '1',
     id: `${source.id}-unresolved-structure`,
@@ -67,9 +76,18 @@ function ambiguousSection(source: SplitSource, markdown: string, reason: string)
   }
 }
 
-export function splitTaxRuleSource(source: SplitSource, markdown: string): DraftTaxRuleSection[] {
+export function splitTaxRuleSource(
+  source: SplitSource,
+  markdown: string,
+): Array<DraftTaxRuleSection> {
   if (source.sourceKind === 'guide' || source.sourceKind === 'form_guide')
-    return [ambiguousSection(source, markdown, 'La guía requiere una estrategia de división específica')]
+    return [
+      ambiguousSection(
+        source,
+        markdown,
+        'La guía requiere una estrategia de división específica',
+      ),
+    ]
   const matches = headingMatches(source.sourceKind, markdown)
   if (!matches.length)
     return [ambiguousSection(source, markdown, 'Estructura no identificada')]
@@ -110,16 +128,16 @@ const contentHash = (value: string) =>
   createHash('sha256').update(value.trim()).digest('hex')
 
 export type TaxRuleSectionDiff = {
-  added: string[]
-  removed: string[]
-  modified: string[]
-  pageOnlyChanged: string[]
-  unchanged: string[]
+  added: Array<string>
+  removed: Array<string>
+  modified: Array<string>
+  pageOnlyChanged: Array<string>
+  unchanged: Array<string>
 }
 
 export function diffTaxRuleSections(
-  drafts: DraftTaxRuleSection[],
-  reviewed: ReviewedTaxRuleSection[],
+  drafts: Array<DraftTaxRuleSection>,
+  reviewed: Array<ReviewedTaxRuleSection>,
 ): TaxRuleSectionDiff {
   const reviewedById = new Map(reviewed.map((section) => [section.id, section]))
   const draftIds = new Set(drafts.map((section) => section.id))

@@ -1,4 +1,12 @@
-import { Anchor, Box, Container, Paper, Stack, Text, Title } from '@mantine/core'
+import {
+  Anchor,
+  Box,
+  Container,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
 import { Link } from '@tanstack/react-router'
 
 import type { ReactNode } from 'react'

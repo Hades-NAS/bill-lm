@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-110-facilidades-de-pago-los-contribuyentes-que-paguen-sus-impuestos-una-vez-",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 110.- Facilidades de pago.- Los contribuyentes que paguen sus impuestos una vez vencidos los",
+  "sourcePages": [
+    111
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 110.- Facilidades de pago.- Los contribuyentes que paguen sus impuestos una vez vencidos los\nplazos que se establecen para el efecto, deberán autoliquidar y cancelar los correspondientes\nintereses de mora, sin que para el pago de los impuestos atrasados, de los intereses y de las multas\nrespectivas se requiera resolución administrativa alguna.\nLos contribuyentes que estuvieren atrasados en el cumplimiento de obligaciones tributarias, cuya\nadministración está a cargo del Servicio de Rentas Internas, podrán solicitar facilidades de pago, de\nacuerdo con lo dispuesto por el Código Tributario.\nConcordancias:\nCODIGO TRIBUTARIO, Arts. 46, 55\nREGLAMENTO PARA APLICACION LEY DE REGIMEN TRIBUTARIO INTERNO, LRTI, Arts. 72, 77, 158, 201\nCODIGO CIVIL (LIBRO IV), Arts. 1553, 1567, 1641"
+}

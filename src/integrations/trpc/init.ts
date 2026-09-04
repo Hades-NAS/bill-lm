@@ -1,8 +1,9 @@
 import { initTRPC, TRPCError } from '@trpc/server'
 import superjson from 'superjson'
 
-import { getServiceLogger } from '../logger.server'
 import { userFacingZodError } from '#/utils/user-facing-validation'
+
+import { getServiceLogger } from '../logger.server'
 
 import type { TRPCContext } from './context'
 

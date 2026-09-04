@@ -17,6 +17,7 @@ import { Route as publicSignInRouteImport } from './routes/(public)/sign-in'
 import { Route as publicForgotPasswordRouteImport } from './routes/(public)/forgot-password'
 import { Route as privateUserRouteImport } from './routes/(private)/user'
 import { Route as privateProfilesRouteImport } from './routes/(private)/profiles'
+import { Route as privateOfficialSourcesRouteImport } from './routes/(private)/official-sources'
 import { Route as privateAccountRouteImport } from './routes/(private)/account'
 import { Route as privateJobsIndexRouteImport } from './routes/(private)/jobs/index'
 import { Route as privateCollectionsIndexRouteImport } from './routes/(private)/collections/index'
@@ -61,6 +62,11 @@ const privateProfilesRoute = privateProfilesRouteImport.update({
   path: '/profiles',
   getParentRoute: () => privateRouteRoute,
 } as any)
+const privateOfficialSourcesRoute = privateOfficialSourcesRouteImport.update({
+  id: '/official-sources',
+  path: '/official-sources',
+  getParentRoute: () => privateRouteRoute,
+} as any)
 const privateAccountRoute = privateAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -89,6 +95,7 @@ const privateCollectionsIdRoute = privateCollectionsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/account': typeof privateAccountRoute
+  '/official-sources': typeof privateOfficialSourcesRoute
   '/profiles': typeof privateProfilesRoute
   '/user': typeof privateUserRoute
   '/forgot-password': typeof publicForgotPasswordRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/account': typeof privateAccountRoute
+  '/official-sources': typeof privateOfficialSourcesRoute
   '/profiles': typeof privateProfilesRoute
   '/user': typeof privateUserRoute
   '/forgot-password': typeof publicForgotPasswordRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/(private)': typeof privateRouteRouteWithChildren
   '/(public)': typeof publicRouteRouteWithChildren
   '/(private)/account': typeof privateAccountRoute
+  '/(private)/official-sources': typeof privateOfficialSourcesRoute
   '/(private)/profiles': typeof privateProfilesRoute
   '/(private)/user': typeof privateUserRoute
   '/(public)/forgot-password': typeof publicForgotPasswordRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/account'
+    | '/official-sources'
     | '/profiles'
     | '/user'
     | '/forgot-password'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/account'
+    | '/official-sources'
     | '/profiles'
     | '/user'
     | '/forgot-password'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/(private)'
     | '/(public)'
     | '/(private)/account'
+    | '/(private)/official-sources'
     | '/(private)/profiles'
     | '/(private)/user'
     | '/(public)/forgot-password'
@@ -237,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof privateProfilesRouteImport
       parentRoute: typeof privateRouteRoute
     }
+    '/(private)/official-sources': {
+      id: '/(private)/official-sources'
+      path: '/official-sources'
+      fullPath: '/official-sources'
+      preLoaderRoute: typeof privateOfficialSourcesRouteImport
+      parentRoute: typeof privateRouteRoute
+    }
     '/(private)/account': {
       id: '/(private)/account'
       path: '/account'
@@ -277,6 +296,7 @@ declare module '@tanstack/react-router' {
 
 interface privateRouteRouteChildren {
   privateAccountRoute: typeof privateAccountRoute
+  privateOfficialSourcesRoute: typeof privateOfficialSourcesRoute
   privateProfilesRoute: typeof privateProfilesRoute
   privateUserRoute: typeof privateUserRoute
   privateCollectionsIdRoute: typeof privateCollectionsIdRoute
@@ -286,6 +306,7 @@ interface privateRouteRouteChildren {
 
 const privateRouteRouteChildren: privateRouteRouteChildren = {
   privateAccountRoute: privateAccountRoute,
+  privateOfficialSourcesRoute: privateOfficialSourcesRoute,
   privateProfilesRoute: privateProfilesRoute,
   privateUserRoute: privateUserRoute,
   privateCollectionsIdRoute: privateCollectionsIdRoute,

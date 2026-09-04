@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-81-facturacion-del-impuesto-los-sujetos-pasivos-que-actuen-como-agentes-de-p",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 81.- Facturación del impuesto.- Los sujetos pasivos que actúen como agentes de percepción",
+  "sourcePages": [
+    87
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 81.- Facturación del impuesto.- Los sujetos pasivos que actúen como agentes de percepción\ntendrán la obligación de hacer constar en las facturas de venta, por separado, el valor total de las\nventas y el impuesto a los consumos especiales.\nEn el caso de productos importados el ICE se hará constar en la declaración de importación.\nNota: Artículo sustituido por Art. 136 de Decreto Legislativo No. 000, publicado en Registro Oficial\nSuplemento 242 de 29 de Diciembre del 2007 .\nNota: Inciso primero reformado por artículo 34 de Ley No. 0, publicada en Registro Oficial\nSuplemento 111 de 31 de Diciembre del 2019 .\nCapítulo III\nTARIFAS DEL IMPUESTO"
+}

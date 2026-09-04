@@ -1,6 +1,13 @@
 import { ActionIcon, Divider, Menu, Tooltip } from '@mantine/core'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
-import { BriefcaseBusiness, LibraryBig, LogOutIcon, Settings, Telescope, User } from 'lucide-react'
+import {
+  BriefcaseBusiness,
+  LibraryBig,
+  LogOutIcon,
+  Settings,
+  Telescope,
+  User,
+} from 'lucide-react'
 
 import { signOutFromFirebase } from '#/integrations/firebase/auth'
 
@@ -9,7 +16,9 @@ import { useUserAuth } from '#/hooks/auth'
 const NavbarUserIcon = () => {
   const { primaryEmail } = useUserAuth()
   const navigate = useNavigate()
-  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
 
   return (
     <Menu shadow="md" width={200}>

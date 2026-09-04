@@ -34,12 +34,12 @@ import { useTRPC } from '#/integrations/trpc/react'
 
 import { useIsMobile } from '#/utils/mobile'
 
-import { EmptyState } from '#/components/shared/empty-state'
 import {
   ContextGuideButton,
   FieldHelpLabel,
   openContextGuide,
 } from '#/components/shared/context-help'
+import { EmptyState } from '#/components/shared/empty-state'
 
 import type {
   EconomicActivityRevisionInput,
@@ -253,9 +253,9 @@ function ProfilesPage() {
                   const revision = item.revisions[0]
                   if (!revision) return null
                   return (
-                    <Card key={item.id} padding="lg" withBorder>
+                    <Card withBorder key={item.id} padding="lg">
                       <Stack gap="sm">
-                        <Group justify="space-between" align="flex-start">
+                        <Group align="flex-start" justify="space-between">
                           <div>
                             <Text fw={700}>{revision.displayName}</Text>
                             <Text c="dimmed" size="sm">
@@ -326,7 +326,7 @@ function ProfilesPage() {
                   const revision = item.revisions[0]
                   if (!revision) return null
                   return (
-                    <Card key={item.id} padding="lg" withBorder>
+                    <Card withBorder key={item.id} padding="lg">
                       <Group align="flex-start" justify="space-between">
                         <div>
                           <Group gap="xs">
@@ -611,7 +611,7 @@ function ProfileModal({
   onClose,
   onSubmit,
 }: {
-  activityOptions: { value: string; label: string }[]
+  activityOptions: Array<{ value: string; label: string }>
   fullScreen: boolean
   loading: boolean
   opened: boolean
@@ -845,8 +845,8 @@ function ProfileModal({
               personales no serán necesarias.
             </Text>
             <MultiSelect
-              disabled={!value.hasRuc}
               data={activityOptions}
+              disabled={!value.hasRuc}
               label={
                 <FieldHelpLabel
                   hint="Selecciona las actividades que representa este perfil en la actualidad."

@@ -19,7 +19,7 @@ export type ContextGuideItem = {
 type ContextGuide = {
   title: string
   introduction: string
-  items: ContextGuideItem[]
+  items: Array<ContextGuideItem>
 }
 
 export function openContextGuide({ title, introduction, items }: ContextGuide) {
@@ -31,7 +31,7 @@ export function openContextGuide({ title, introduction, items }: ContextGuide) {
       <Stack gap="md">
         <Text>{introduction}</Text>
         <Divider />
-        <List spacing="md" withPadding>
+        <List withPadding spacing="md">
           {items.map((item) => (
             <List.Item key={item.title}>
               <Stack gap={2}>
@@ -60,10 +60,10 @@ export function FieldHelpLabel({
 }) {
   return (
     <Group gap={4} wrap="nowrap">
-      <Text component="span" inherit>
+      <Text inherit component="span">
         {label}
       </Text>
-      <Tooltip label={hint} multiline openDelay={800} w={240} withArrow>
+      <Tooltip multiline withArrow label={hint} openDelay={800} w={240}>
         <ActionIcon
           aria-label={`Ayuda sobre ${label}`}
           color="gray"
@@ -87,7 +87,7 @@ export function ContextGuideButton({
   onClick: () => void
 }) {
   return (
-    <Tooltip label={`Ver guía sobre ${title}`} openDelay={800} withArrow>
+    <Tooltip withArrow label={`Ver guía sobre ${title}`} openDelay={800}>
       <ActionIcon
         aria-label={`Ver guía sobre ${title}`}
         color="violet"

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-97-26-retencion-del-iva-quienes-se-sujeten-a-este-regimen-no-seran-agentes-d",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 97.26.- Retención del IVA.- Quienes se sujeten a este régimen no serán agentes de retención",
+  "sourcePages": [
+    104
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 97.26.- Retención del IVA.- Quienes se sujeten a este régimen no serán agentes de retención\ndel IVA, excepto en la importación de servicios, de conformidad con la ley.\nNota: Artículo agregado por artículo 38 de Ley No. 0, publicada en Registro Oficial Suplemento 111\nde 31 de Diciembre del 2019 .\nTítulo Quinto\nDISPOSICIONES GENERALES"
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-rlrti-art-196-part-4",
+  "sourceId": "ec-sri-rlrti",
+  "articleOrSection": "Art. 196 (repetido; revisar límites)",
+  "sourcePages": [163],
+  "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
+  "purposes": ["vat_credit"],
+  "taxRegimes": ["unknown"],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T20:28:44.178Z",
+  "reviewNotes": "Verifiqué el artículo 196(3) en el PDF oficial: define vehículos eléctricos para numerales de IVA de la LRTI. El fragmento también menciona ICE, que queda fuera del alcance del MMVP.",
+  "markdown": "Art. 196\n(3).- Para efectos de la aplicación de los numerales 14 y 19 del artículo 55 y el numeral 4 del artículo\n77 de la Ley de Régimen Tributario Interno, los vehículos eléctricos serán aquellos que se encuentren\nsujetos a procesos de homologación y matriculación conforme lo dispuesto por la Autoridad Nacional\nde Tránsito.\nNota:\nArtículo agregado por artículo 84 del Decreto Ejecutivo No. 176, publicado en Registro Oficial\nSuplemento 507 de 28 de Febrero del 2024\n.\nTítulo III\nAPLICACIÓN DEL IMPUESTO A LOS CONSUMOS ESPECIALES\nCapítulo I\nNORMAS GENERALES"
+}

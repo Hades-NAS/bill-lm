@@ -108,7 +108,8 @@ export const useCollectionDeleteMutation = (
         options.onSuccess?.(data.id)
         notify.success({
           title: 'Colección archivada',
-          message: 'La colección dejó de mostrarse, pero su historial se conserva.',
+          message:
+            'La colección dejó de mostrarse, pero su historial se conserva.',
         })
       },
       onError: (error) => {

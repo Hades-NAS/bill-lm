@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-7-ejercicio-impositivo-el-ejercicio-impositivo-es-anual-y-comprende-el-lapso",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 7.- Ejercicio impositivo.- El ejercicio impositivo es anual y comprende el lapso que va del 1o. de",
+  "sourcePages": [
+    5
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 7.- Ejercicio impositivo.- El ejercicio impositivo es anual y comprende el lapso que va del 1o. de\nenero al 31 de diciembre. Cuando la actividad generadora de la renta se inicie en fecha posterior al\n1o. de enero, el ejercicio impositivo se cerrará obligatoriamente el 31 de diciembre de cada año.\nConcordancias:\nCODIGO TRIBUTARIO, Arts. 11, 19\nCapítulo II\nINGRESOS DE FUENTE ECUATORIANA"
+}

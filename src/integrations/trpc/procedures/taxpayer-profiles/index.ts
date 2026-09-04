@@ -42,7 +42,10 @@ async function requireActivity(userId: string, id: string) {
     where: { id, userId, deletedAt: null },
   })
   if (!activity)
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'Actividad no encontrada' })
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Actividad no encontrada',
+    })
   return activity
 }
 
@@ -55,7 +58,7 @@ async function requireProfile(userId: string, id: string) {
   return profile
 }
 
-async function ensureOwnedActivityRevisions(userId: string, ids: string[]) {
+async function ensureOwnedActivityRevisions(userId: string, ids: Array<string>) {
   const activities = await prisma.economicActivityRevision.findMany({
     where: { id: { in: ids }, userId, activity: { deletedAt: null } },
     select: { id: true },
@@ -63,7 +66,8 @@ async function ensureOwnedActivityRevisions(userId: string, ids: string[]) {
   if (activities.length !== ids.length)
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Selecciona únicamente revisiones de actividades propias vigentes.',
+      message:
+        'Selecciona únicamente revisiones de actividades propias vigentes.',
     })
 }
 
@@ -183,11 +187,13 @@ export const taxpayerProfilesRouter = {
           },
         })
         await tx.taxpayerProfileActivityRevision.createMany({
-          data: revisionInput.activityRevisionIds.map((economicActivityRevisionId) => ({
-            userId: ctx.principal.userId,
-            taxpayerProfileRevisionId: revision.id,
-            economicActivityRevisionId,
-          })),
+          data: revisionInput.activityRevisionIds.map(
+            (economicActivityRevisionId) => ({
+              userId: ctx.principal.userId,
+              taxpayerProfileRevisionId: revision.id,
+              economicActivityRevisionId,
+            }),
+          ),
         })
         return revision
       })

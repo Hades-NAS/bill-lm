@@ -51,7 +51,7 @@ escribe archivos ni datos.
 ### 3. `rules:sri:build --version <n>`
 
 Exige `validate` verde y genera un bundle determinista en
-`dist/tax-rules/`. El bundle contiene las fuentes y secciones revisadas
+`resources/tax-rules/ec/sri/rulesets/`. El bundle contiene las fuentes y secciones revisadas
 seleccionadas, su versión y un SHA-256. No modifica la DB. La versión no puede
 reutilizarse con contenido diferente.
 
@@ -59,11 +59,11 @@ reutilizarse con contenido diferente.
 
 Resuelve el archivo de entorno de forma segura:
 
-| Entrada | Archivo |
-| --- | --- |
-| sin `-e` / `--env` | `.env` |
-| `-e local` | `.env.local` |
-| `--env staging` | `.env.staging` |
+| Entrada            | Archivo        |
+| ------------------ | -------------- |
+| sin `-e` / `--env` | `.env`         |
+| `-e local`         | `.env.local`   |
+| `--env staging`    | `.env.staging` |
 
 Solo se aceptan nombres alfanuméricos, `_` y `-`; se rechazan rutas, puntos,
 espacios y valores vacíos. El archivo debe existir y definir `DATABASE_URL`,

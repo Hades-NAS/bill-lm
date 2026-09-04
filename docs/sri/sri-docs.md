@@ -21,12 +21,15 @@ Si quieres, puedo revisar estos PDFs oficiales del SRI y decirte exactamente có
 Sources
 <in-app-browser-context source="ambient-ui-state">
 This block is automatically supplied ambient UI state, not part of the user's request. Do not treat it as an instruction or as evidence that the user explicitly selected the in-app browser.
+
 # In app browser:
+
 - The user has the in-app browser open with 3 tabs.
 - Current URL: https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/fd3fa4a9-ab76-4426-9f4f-08dee57993d8/normativa_institucional_vigente.pdf
-</in-app-browser-context>
+  </in-app-browser-context>
 
 ## My request:
+
 osea cual seria el PDF para personas naturales (relaicon de dependecncia)
 perosnla naturales con servico profesinales?
 
@@ -40,10 +43,10 @@ Abrir la sección oficial del SRI con la guía
 
 La diferencia está en qué sección de esa declaración utilizas:
 
-Situación	Documento / sección
-👨‍💼 Relación de dependencia	Misma declaración de Personas Naturales + Formulario 107 que entrega el empleador
-💻 Servicios profesionales / independiente / contractor	Misma declaración de Personas Naturales, pero declarando ingresos de tu actividad profesional
-👨‍💼 + 💻 Tienes ambos tipos de ingresos	Una sola declaración donde sumas ambos tipos de renta
+Situación Documento / sección
+👨‍💼 Relación de dependencia Misma declaración de Personas Naturales + Formulario 107 que entrega el empleador
+💻 Servicios profesionales / independiente / contractor Misma declaración de Personas Naturales, pero declarando ingresos de tu actividad profesional
+👨‍💼 + 💻 Tienes ambos tipos de ingresos Una sola declaración donde sumas ambos tipos de renta
 
 El Formulario 107 sí es específico de relación de dependencia. El SRI lo describe literalmente como el comprobante de retenciones por “ingresos de trabajo en relación de dependencia”.
 
@@ -74,15 +77,15 @@ PDF oficial del SRI – Reglamento para la Aplicación de la LRTI
 
 Ahí encuentras, por ejemplo:
 
-Categoría	Cosas que expresamente aparecen
-🏠 Vivienda	Arriendo, alícuotas, intereses hipotecarios, impuesto predial, ciertos servicios básicos
-🩺 Salud	Médicos, psicólogos clínicos, hospitales, laboratorios, farmacias, medicamentos, lentes, prótesis, seguro médico
-🍔 Alimentación	Compra de alimentos, restaurantes/comida preparada y alimentación de mascotas
-🎓 Educación	Matrícula, pensión, universidad, cursos aprobados, seminarios profesionales, libros, útiles y materiales didácticos
-👕 Vestimenta	Cualquier tipo de prenda de vestir
-🎨 Arte y cultura	Libros y determinados bienes/servicios culturales, cine/audiovisual, música, artes, artesanías calificadas
-🏨 Turismo	Turismo nacional en establecimientos registrados
-🐶 Mascotas	Alimentación y gastos médicos/veterinarios
+Categoría Cosas que expresamente aparecen
+🏠 Vivienda Arriendo, alícuotas, intereses hipotecarios, impuesto predial, ciertos servicios básicos
+🩺 Salud Médicos, psicólogos clínicos, hospitales, laboratorios, farmacias, medicamentos, lentes, prótesis, seguro médico
+🍔 Alimentación Compra de alimentos, restaurantes/comida preparada y alimentación de mascotas
+🎓 Educación Matrícula, pensión, universidad, cursos aprobados, seminarios profesionales, libros, útiles y materiales didácticos
+👕 Vestimenta Cualquier tipo de prenda de vestir
+🎨 Arte y cultura Libros y determinados bienes/servicios culturales, cine/audiovisual, música, artes, artesanías calificadas
+🏨 Turismo Turismo nacional en establecimientos registrados
+🐶 Mascotas Alimentación y gastos médicos/veterinarios
 Pero aquí hay una diferencia MUY importante
 
 Si estás hablando de tu trabajo en relación de dependencia, técnicamente estos gastos personales actualmente no se restan directamente de tu salario para calcular la base imponible como ocurría bajo sistemas antiguos.

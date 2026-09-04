@@ -1,5 +1,4 @@
 import { createHash } from 'node:crypto'
-
 import z from 'zod'
 
 import {
@@ -54,9 +53,12 @@ export const ReviewedTaxRuleSectionSchema = z.object({
   reviewStatus: z.literal('reviewed'),
   reviewedBy: z.string().trim().min(1).max(255),
   reviewedAt: z.string().datetime(),
+  reviewNotes: z.string().trim().min(1).max(2_000).optional(),
   markdown: z.string().trim().min(1),
 })
-export type ReviewedTaxRuleSection = z.infer<typeof ReviewedTaxRuleSectionSchema>
+export type ReviewedTaxRuleSection = z.infer<
+  typeof ReviewedTaxRuleSectionSchema
+>
 
 export const DraftTaxRuleSectionSchema = z.object({
   schemaVersion: z.literal('1'),
@@ -94,7 +96,9 @@ const BundlePayloadSchema = z.object({
   effectiveTo: CivilDateSchema.nullable(),
   sourceManifests: z.array(TaxRuleSourceManifestSchema).min(1),
   sections: z.array(ReviewedTaxRuleSectionSchema).min(1),
-  rules: z.array(TaxRuleSchema).min(1),
+  // A first publication may distribute reviewed source fragments before a
+  // separate semantic-rule curation pass exists. It must never invent rules.
+  rules: z.array(TaxRuleSchema),
   promptContractVersion: z.string().trim().min(1).max(100),
   createdAt: z.string().datetime(),
   createdBy: z.string().trim().min(1).max(255),
@@ -113,18 +117,25 @@ export function canonicalizeTaxRuleValue(value: unknown): string {
   const object = value as Record<string, unknown>
   return `{${Object.keys(object)
     .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonicalizeTaxRuleValue(object[key])}`)
+    .map(
+      (key) =>
+        `${JSON.stringify(key)}:${canonicalizeTaxRuleValue(object[key])}`,
+    )
     .join(',')}}`
 }
 
-export function hashTaxRuleBundlePayload(payload: z.input<typeof BundlePayloadSchema>) {
+export function hashTaxRuleBundlePayload(
+  payload: z.input<typeof BundlePayloadSchema>,
+) {
   const parsed = BundlePayloadSchema.parse(payload)
   return `sha256:${createHash('sha256')
     .update(canonicalizeTaxRuleValue(parsed))
     .digest('hex')}`
 }
 
-export function buildTaxRuleBundle(payload: z.input<typeof BundlePayloadSchema>) {
+export function buildTaxRuleBundle(
+  payload: z.input<typeof BundlePayloadSchema>,
+) {
   const parsed = BundlePayloadSchema.parse(payload)
   return TaxRuleBundleSchema.parse({
     ...parsed,

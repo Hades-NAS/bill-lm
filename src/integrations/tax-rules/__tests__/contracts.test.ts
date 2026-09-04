@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -15,7 +14,8 @@ const source = {
   issuer: 'Servicio de Rentas Internas' as const,
   jurisdiction: 'EC' as const,
   sourceKind: 'law' as const,
-  discoveryUrl: 'https://www.sri.gob.ec/normativa-tributaria-legislacion-nacional',
+  discoveryUrl:
+    'https://www.sri.gob.ec/normativa-tributaria-legislacion-nacional',
   resolvedUrl: 'https://www.sri.gob.ec/example.pdf',
   mimeType: 'application/pdf' as const,
   retrievedAt: '2026-09-03T00:00:00.000Z',
@@ -33,32 +33,36 @@ const payload = {
   effectiveFrom: '2026-01-01',
   effectiveTo: null,
   sourceManifests: [source],
-  sections: [{
-    schemaVersion: '1' as const,
-    id: 'ec-sri-lrti-art-10',
-    sourceId: 'ec-sri-lrti',
-    articleOrSection: 'Art. 10',
-    sourcePages: [10],
-    sourceContentHash: source.contentHash,
-    purposes: ['business_income_tax'] as Array<'business_income_tax'>,
-    taxRegimes: ['general'] as Array<'general'>,
-    effectiveFrom: '2025-10-28',
-    effectiveTo: null,
-    reviewStatus: 'reviewed' as const,
-    reviewedBy: 'fixture',
-    reviewedAt: '2026-09-03T00:00:00.000Z',
-    markdown: 'Resumen de fixture; no es normativa publicada.',
-  }],
-  rules: [{
-    id: 'ec.sri.ir.business.causality',
-    version: 1,
-    purpose: 'business_income_tax' as const,
-    kind: 'requirement' as const,
-    summary: 'Relacionar el gasto con la actividad seleccionada.',
-    sourceSectionIds: ['ec-sri-lrti-art-10'],
-    conditions: ['related_to_selected_activity'],
-    uncertainties: ['mixed_personal_business_use'],
-  }],
+  sections: [
+    {
+      schemaVersion: '1' as const,
+      id: 'ec-sri-lrti-art-10',
+      sourceId: 'ec-sri-lrti',
+      articleOrSection: 'Art. 10',
+      sourcePages: [10],
+      sourceContentHash: source.contentHash,
+      purposes: ['business_income_tax'] as Array<'business_income_tax'>,
+      taxRegimes: ['general'] as Array<'general'>,
+      effectiveFrom: '2025-10-28',
+      effectiveTo: null,
+      reviewStatus: 'reviewed' as const,
+      reviewedBy: 'fixture',
+      reviewedAt: '2026-09-03T00:00:00.000Z',
+      markdown: 'Resumen de fixture; no es normativa publicada.',
+    },
+  ],
+  rules: [
+    {
+      id: 'ec.sri.ir.business.causality',
+      version: 1,
+      purpose: 'business_income_tax' as const,
+      kind: 'requirement' as const,
+      summary: 'Relacionar el gasto con la actividad seleccionada.',
+      sourceSectionIds: ['ec-sri-lrti-art-10'],
+      conditions: ['related_to_selected_activity'],
+      uncertainties: ['mixed_personal_business_use'],
+    },
+  ],
   promptContractVersion: 'v2',
   createdAt: '2026-09-03T00:00:00.000Z',
   createdBy: 'fixture',
@@ -71,7 +75,10 @@ describe('tax rule contracts', () => {
 
   it('builds the same hash from the same reviewed payload', () => {
     expect(buildTaxRuleBundle(payload).bundleHash).toBe(
-      buildTaxRuleBundle({ ...payload, sourceManifests: [...payload.sourceManifests] }).bundleHash,
+      buildTaxRuleBundle({
+        ...payload,
+        sourceManifests: [...payload.sourceManifests],
+      }).bundleHash,
     )
   })
 

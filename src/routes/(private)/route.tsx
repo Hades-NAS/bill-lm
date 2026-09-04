@@ -1,7 +1,28 @@
-import { AppShell, Center, Container, Group, Loader, NavLink, Stack, Text } from '@mantine/core'
+import {
+  AppShell,
+  Center,
+  Container,
+  Group,
+  Loader,
+  NavLink,
+  Stack,
+  Text,
+} from '@mantine/core'
 // import { useDisclosure } from '@mantine/hooks'
-import { Navigate, createFileRoute, Link, Outlet, useRouterState } from '@tanstack/react-router'
-import { BriefcaseBusiness, LibraryBig, Settings, User } from 'lucide-react'
+import {
+  Navigate,
+  createFileRoute,
+  Link,
+  Outlet,
+  useRouterState,
+} from '@tanstack/react-router'
+import {
+  BookOpen,
+  BriefcaseBusiness,
+  LibraryBig,
+  Settings,
+  User,
+} from 'lucide-react'
 
 import { useIsMobile } from '#/utils/mobile'
 
@@ -22,7 +43,9 @@ function RouteComponent() {
   // const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
 
   const isMobile = useIsMobile()
-  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
 
   if (!isLoaded) {
     return (
@@ -80,10 +103,41 @@ function RouteComponent() {
       </AppShell.Header>
       <AppShell.Navbar p="md">
         <Stack gap="xs">
-          <NavLink component={Link} to="/collections" active={pathname.startsWith('/collections')} label="Colecciones" leftSection={<LibraryBig size={18} />} />
-          <NavLink component={Link} to="/profiles" active={pathname === '/profiles'} label="Perfiles y actividades" leftSection={<BriefcaseBusiness size={18} />} />
-          <NavLink component={Link} to="/user" active={pathname === '/user'} label="Configuración" leftSection={<Settings size={18} />} />
-          <NavLink component={Link} to="/account" active={pathname === '/account'} label="Mi cuenta" leftSection={<User size={18} />} />
+          <NavLink
+            active={pathname.startsWith('/collections')}
+            component={Link}
+            label="Colecciones"
+            leftSection={<LibraryBig size={18} />}
+            to="/collections"
+          />
+          <NavLink
+            active={pathname === '/profiles'}
+            component={Link}
+            label="Perfiles y actividades"
+            leftSection={<BriefcaseBusiness size={18} />}
+            to="/profiles"
+          />
+          <NavLink
+            active={pathname === '/user'}
+            component={Link}
+            label="Configuración"
+            leftSection={<Settings size={18} />}
+            to="/user"
+          />
+          <NavLink
+            active={pathname === '/official-sources'}
+            component={Link}
+            label="Fuentes oficiales"
+            leftSection={<BookOpen size={18} />}
+            to="/official-sources"
+          />
+          <NavLink
+            active={pathname === '/account'}
+            component={Link}
+            label="Mi cuenta"
+            leftSection={<User size={18} />}
+            to="/account"
+          />
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main>

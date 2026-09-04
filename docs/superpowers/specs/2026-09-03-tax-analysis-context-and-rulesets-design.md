@@ -34,11 +34,11 @@ Analizar facturas
 
 Internamente existen exactamente tres propósitos ejecutables:
 
-| Propósito | Etiqueta de producto | Actividades requeridas |
-| --- | --- | --- |
-| `vat_credit` | Declaración de IVA | Una o más |
-| `business_income_tax` | IR: gastos de actividades económicas | Una o más |
-| `personal_expenses` | IR: gastos personales | Ninguna |
+| Propósito             | Etiqueta de producto                 | Actividades requeridas |
+| --------------------- | ------------------------------------ | ---------------------- |
+| `vat_credit`          | Declaración de IVA                   | Una o más              |
+| `business_income_tax` | IR: gastos de actividades económicas | Una o más              |
+| `personal_expenses`   | IR: gastos personales                | Ninguna                |
 
 No existe un propósito genérico `other`. Una configuración incompleta o
 desconocida bloquea la ejecución antes de llamar al modelo.
@@ -221,17 +221,17 @@ determinista antes de construir el prompt.
 
 Bloqueos mínimos:
 
-| Código | Condición |
-| --- | --- |
-| `MISSING_PROVIDER_CONNECTION` | No existe proveedor autorizado. |
-| `MISSING_COLLECTION_CONTEXT` | La colección no tiene contexto completo. |
-| `MISSING_TAXPAYER_PROFILE` | No se fijó una revisión de perfil. |
-| `MISSING_ECONOMIC_ACTIVITY` | El propósito requiere actividades y no hay ninguna. |
-| `UNRESOLVED_TAX_REGIME` | El régimen es necesario y permanece desconocido. |
-| `UNRESOLVED_VAT_FREQUENCY` | IVA no tiene periodicidad resuelta. |
-| `MISSING_APPLICABLE_RULESET` | No existe ruleset revisado para propósito y período. |
-| `OUTSIDE_COLLECTION_PERIOD` | La factura queda fuera del período seleccionado. |
-| `NO_ELIGIBLE_INVOICES` | La selección final está vacía. |
+| Código                        | Condición                                            |
+| ----------------------------- | ---------------------------------------------------- |
+| `MISSING_PROVIDER_CONNECTION` | No existe proveedor autorizado.                      |
+| `MISSING_COLLECTION_CONTEXT`  | La colección no tiene contexto completo.             |
+| `MISSING_TAXPAYER_PROFILE`    | No se fijó una revisión de perfil.                   |
+| `MISSING_ECONOMIC_ACTIVITY`   | El propósito requiere actividades y no hay ninguna.  |
+| `UNRESOLVED_TAX_REGIME`       | El régimen es necesario y permanece desconocido.     |
+| `UNRESOLVED_VAT_FREQUENCY`    | IVA no tiene periodicidad resuelta.                  |
+| `MISSING_APPLICABLE_RULESET`  | No existe ruleset revisado para propósito y período. |
+| `OUTSIDE_COLLECTION_PERIOD`   | La factura queda fuera del período seleccionado.     |
+| `NO_ELIGIBLE_INVOICES`        | La selección final está vacía.                       |
 
 ## Pipeline de fuentes SRI y rulesets
 
@@ -402,19 +402,19 @@ la misma solicitud no crea una ejecución accidentalmente duplicada.
 
 ## Comparación con el codebase en progreso
 
-| Área | Estado encontrado | Corrección requerida |
-| --- | --- | --- |
-| `TaxPurposeSchema` | Ya define los tres propósitos aprobados. | Mantener los valores y agregar validación condicional. |
-| Perfil | Exige `activityRevisionIds.min(1)`. | Permitir cero para asalariados y gastos personales; añadir situación laboral, RUC, régimen y periodicidad. |
-| Actividades | Entidad y revisiones ya están modeladas. | Mantenerlas exclusivas para actividades con RUC y validar propiedad/vigencia. |
-| Contexto de colección | Existe como schema, pero no como persistencia completa. | Crear revisiones persistentes y relación con actividades. |
-| Resultado V2 | Comparte `deductiblePercentage`. | Sustituir por un discriminated union con tres resultados especializados. |
-| Runs | El schema fija parte del snapshot. | Persistir run, facturas, ruleset y resultados inmutables. |
-| Prompt V1 | Analiza deducibilidad genérica y adjunta todas las referencias. | Crear builder V2 por propósito y selector determinista de ruleset. |
-| Referencias PDF | Extrae texto, normaliza, limita y calcula hash. | Reutilizar primitives, pero separar reglas oficiales de referencias del usuario. |
-| Facturas cloud | Cada carga crea UUID y ruta nueva. | Introducir identidad única y membresía muchos-a-muchos. |
-| Biblioteca local | La deduplicación y SQLite están documentados como destino. | Implementar después contra el mismo contrato semántico; no presentarlo como comportamiento actual. |
-| Resultado legado | Sobrescribe porcentaje y razón en `BillHeader`. | Mantener solo como proyección temporal y migrar UI al historial. |
+| Área                  | Estado encontrado                                               | Corrección requerida                                                                                       |
+| --------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `TaxPurposeSchema`    | Ya define los tres propósitos aprobados.                        | Mantener los valores y agregar validación condicional.                                                     |
+| Perfil                | Exige `activityRevisionIds.min(1)`.                             | Permitir cero para asalariados y gastos personales; añadir situación laboral, RUC, régimen y periodicidad. |
+| Actividades           | Entidad y revisiones ya están modeladas.                        | Mantenerlas exclusivas para actividades con RUC y validar propiedad/vigencia.                              |
+| Contexto de colección | Existe como schema, pero no como persistencia completa.         | Crear revisiones persistentes y relación con actividades.                                                  |
+| Resultado V2          | Comparte `deductiblePercentage`.                                | Sustituir por un discriminated union con tres resultados especializados.                                   |
+| Runs                  | El schema fija parte del snapshot.                              | Persistir run, facturas, ruleset y resultados inmutables.                                                  |
+| Prompt V1             | Analiza deducibilidad genérica y adjunta todas las referencias. | Crear builder V2 por propósito y selector determinista de ruleset.                                         |
+| Referencias PDF       | Extrae texto, normaliza, limita y calcula hash.                 | Reutilizar primitives, pero separar reglas oficiales de referencias del usuario.                           |
+| Facturas cloud        | Cada carga crea UUID y ruta nueva.                              | Introducir identidad única y membresía muchos-a-muchos.                                                    |
+| Biblioteca local      | La deduplicación y SQLite están documentados como destino.      | Implementar después contra el mismo contrato semántico; no presentarlo como comportamiento actual.         |
+| Resultado legado      | Sobrescribe porcentaje y razón en `BillHeader`.                 | Mantener solo como proyección temporal y migrar UI al historial.                                           |
 
 ## Archivos y superficies afectadas
 

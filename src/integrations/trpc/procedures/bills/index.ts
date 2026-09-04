@@ -106,7 +106,8 @@ export const billsRouter = {
 
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'No pudimos leer este XML como una factura electrónica válida.',
+            message:
+              'No pudimos leer este XML como una factura electrónica válida.',
           })
         }
 

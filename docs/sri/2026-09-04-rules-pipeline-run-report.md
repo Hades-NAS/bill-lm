@@ -20,13 +20,13 @@ una identidad estable para un ruleset futuro.
 
 ## Evidencia encontrada
 
-| Fuente | PDF | Markdown | Borradores | IDs duplicados | Observación |
-| --- | ---: | ---: | ---: | ---: | --- |
-| Guía IR personas naturales | 2.11 MB | 214,462 caracteres | 1,506 | 168 | Sobrefragmentación crítica. |
-| Guía IR RIMPE | 2.48 MB | 27,418 caracteres | 221 | 28 | Sobrefragmentación crítica. |
-| LRTI | 0.36 MB | 427,802 caracteres | 175 | 0 | Resultado inicial utilizable para revisión técnica. |
-| Reglamento LRTI | 1.52 MB | 828,744 caracteres | 342 | 8 | Revisar artículos repetidos o títulos normalizados al mismo ID. |
-| Guía formulario IVA | 1.48 MB | 49,774 caracteres | 286 | 5 | Sobrefragmentación y colisiones menores. |
+| Fuente                     |     PDF |           Markdown | Borradores | IDs duplicados | Observación                                                     |
+| -------------------------- | ------: | -----------------: | ---------: | -------------: | --------------------------------------------------------------- |
+| Guía IR personas naturales | 2.11 MB | 214,462 caracteres |      1,506 |            168 | Sobrefragmentación crítica.                                     |
+| Guía IR RIMPE              | 2.48 MB |  27,418 caracteres |        221 |             28 | Sobrefragmentación crítica.                                     |
+| LRTI                       | 0.36 MB | 427,802 caracteres |        175 |              0 | Resultado inicial utilizable para revisión técnica.             |
+| Reglamento LRTI            | 1.52 MB | 828,744 caracteres |        342 |              8 | Revisar artículos repetidos o títulos normalizados al mismo ID. |
+| Guía formulario IVA        | 1.48 MB |  49,774 caracteres |        286 |              5 | Sobrefragmentación y colisiones menores.                        |
 
 Las cinco descargas quedaron en `.cache/tax-rules/ec/sri/originals/`, tienen un
 registro en `downloads/` y el tamaño registrado coincide con el archivo local.
@@ -129,12 +129,12 @@ Las recomendaciones P0, P1 y P2 de este reporte ya se aplicaron y se
 verificaron el mismo día. El contenido de esta sección reemplaza el diagnóstico
 inicial cuando difiera de él.
 
-| Hallazgo inicial | Cambio aplicado | Resultado verificado |
-| --- | --- | --- |
+| Hallazgo inicial                        | Cambio aplicado                                                                                                                                                                                                                  | Resultado verificado                                                                                                                                                                 |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Guías sobrefragmentadas e IDs repetidos | Las guías y formularios quedan como una sola sección `ambiguous` hasta disponer de un divisor específico por fuente. Las repeticiones de artículos en leyes o reglamentos se identifican de forma única y se marcan `ambiguous`. | IR personas naturales: 1 sección ambigua; RIMPE: 1; guía IVA: 1. LRTI: 175 secciones sin ambigüedad. Reglamento LRTI: 342, de las cuales 10 requieren revisión. Cero IDs duplicados. |
-| `diff` solo imprimía consola | Cada comparación se guarda atómicamente en `.cache/tax-rules/ec/sri/diffs/`, con hashes de borradores y revisadas, hash de fuente y fecha de generación. | Ocho artefactos de comparación locales después de regenerar el lote. |
-| `check` no comparaba estado observado | `check` descarga el PDF oficial solo en memoria, lo valida y compara su hash contra `downloads/`, sin modificar manifiestos versionados. | Las cinco fuentes respondieron `unchanged`; no hubo fallos. |
-| Descarga sin timeout ni metadatos HTTP | Se agregó límite de 30 segundos y se registran tipo MIME, longitud declarada y última modificación si el servidor la informa. Las escrituras de caché son atómicas. | Cobertura unitaria para comparación de hash observada y adquisición segura. |
+| `diff` solo imprimía consola            | Cada comparación se guarda atómicamente en `.cache/tax-rules/ec/sri/diffs/`, con hashes de borradores y revisadas, hash de fuente y fecha de generación.                                                                         | Ocho artefactos de comparación locales después de regenerar el lote.                                                                                                                 |
+| `check` no comparaba estado observado   | `check` descarga el PDF oficial solo en memoria, lo valida y compara su hash contra `downloads/`, sin modificar manifiestos versionados.                                                                                         | Las cinco fuentes respondieron `unchanged`; no hubo fallos.                                                                                                                          |
+| Descarga sin timeout ni metadatos HTTP  | Se agregó límite de 30 segundos y se registran tipo MIME, longitud declarada y última modificación si el servidor la informa. Las escrituras de caché son atómicas.                                                              | Cobertura unitaria para comparación de hash observada y adquisición segura.                                                                                                          |
 
 El Markdown completo permanece solo en caché. No existe todavía un paso que lo
 envíe a un modelo ni un bundle aprobable: el futuro build debe seleccionar
@@ -143,15 +143,15 @@ entran en una ruta de análisis en este estado.
 
 ## Estado de preparación
 
-| Capacidad | Estado | Evidencia |
-| --- | --- | --- |
-| Descarga con hash y caché | Listo para continuar | Cinco originales y registros presentes. |
-| Extracción de PDF textual | Listo para continuar | Cinco Markdown generados. |
-| Split técnico | Listo con límites | Leyes/reglamentos tienen IDs únicos; las guías están retenidas como ambiguas hasta un splitter específico. |
-| Diff auditable | Listo para revisión técnica | Se persiste un artefacto hashable por comparación. |
-| Revisión humana | Permitida con criterio | Puede empezar por LRTI y reglamento; no promover las guías ambiguas. |
-| Bundle validado y publicación | Aún no iniciado | No hay secciones revisadas ni rulesets. |
-| Uso por análisis/worker | No permitido | No existe corpus aprobado ni activo. |
+| Capacidad                     | Estado                      | Evidencia                                                                                                  |
+| ----------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Descarga con hash y caché     | Listo para continuar        | Cinco originales y registros presentes.                                                                    |
+| Extracción de PDF textual     | Listo para continuar        | Cinco Markdown generados.                                                                                  |
+| Split técnico                 | Listo con límites           | Leyes/reglamentos tienen IDs únicos; las guías están retenidas como ambiguas hasta un splitter específico. |
+| Diff auditable                | Listo para revisión técnica | Se persiste un artefacto hashable por comparación.                                                         |
+| Revisión humana               | Permitida con criterio      | Puede empezar por LRTI y reglamento; no promover las guías ambiguas.                                       |
+| Bundle validado y publicación | Aún no iniciado             | No hay secciones revisadas ni rulesets.                                                                    |
+| Uso por análisis/worker       | No permitido                | No existe corpus aprobado ni activo.                                                                       |
 
 ## Recomendación de siguiente paso
 

@@ -22,13 +22,13 @@ import { isLoadingQuery } from '#/utils/query'
 // import { useDeleteBillsMutation } from '#/hooks/mutation/bill'
 import { useGetBillDetailQuery } from '#/hooks/query/bill'
 
-import { EmptyState } from '#/components/shared/empty-state'
-import { LoaderText } from '#/components/shared/loader-text'
-import { NumberDisplay } from '#/components/shared/number-display'
 import {
   ContextGuideButton,
   openContextGuide,
 } from '#/components/shared/context-help'
+import { EmptyState } from '#/components/shared/empty-state'
+import { LoaderText } from '#/components/shared/loader-text'
+import { NumberDisplay } from '#/components/shared/number-display'
 
 import type { ModalPageProps } from '#/schema/page'
 

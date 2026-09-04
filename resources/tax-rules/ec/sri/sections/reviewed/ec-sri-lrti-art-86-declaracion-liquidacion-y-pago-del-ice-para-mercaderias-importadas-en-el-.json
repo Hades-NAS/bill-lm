@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-86-declaracion-liquidacion-y-pago-del-ice-para-mercaderias-importadas-en-el-",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 86.- Declaración, liquidación y pago del ICE para mercaderías importadas.- En el caso de",
+  "sourcePages": [
+    90
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 86.- Declaración, liquidación y pago del ICE para mercaderías importadas.- En el caso de\nimportaciones, la liquidación del ICE se efectuará en la declaración de importación y su pago se\nrealizará previo al despacho de los bienes por parte de la oficina de aduanas correspondiente.\nJurisprudencia:\nGaceta Judicial, REEMBOLSOS DE PETROECUADOR A CONTRATISTAS, 26-mar-1996"
+}

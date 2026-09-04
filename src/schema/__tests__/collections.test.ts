@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { CreateCollectionSchema, UpdateCollectionSchema } from '#/schema/collections'
+import {
+  CreateCollectionSchema,
+  UpdateCollectionSchema,
+} from '#/schema/collections'
 
 const validCollection = {
   name: 'Declaración 2026',
@@ -10,7 +13,9 @@ const validCollection = {
 
 describe('collection input schemas', () => {
   it('validates collection input without importing generated Prisma Zod schemas', () => {
-    expect(CreateCollectionSchema.parse(validCollection)).toEqual(validCollection)
+    expect(CreateCollectionSchema.parse(validCollection)).toEqual(
+      validCollection,
+    )
   })
 
   it('keeps the collection business validation at the API boundary', () => {

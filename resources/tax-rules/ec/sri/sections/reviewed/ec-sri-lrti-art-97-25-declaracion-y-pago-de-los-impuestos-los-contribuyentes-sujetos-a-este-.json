@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-97-25-declaracion-y-pago-de-los-impuestos-los-contribuyentes-sujetos-a-este-",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 97.25.- Declaración y pago de los impuestos.- Los contribuyentes sujetos a este régimen",
+  "sourcePages": [
+    104
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 97.25.- Declaración y pago de los impuestos.- Los contribuyentes sujetos a este régimen\npresentarán las declaraciones y efectuarán el pago correspondiente de los impuestos al valor\nagregado (IVA) y a los consumos especiales (ICE) en forma semestral. El reglamento a esta ley\nestablecerá las condiciones para el cumplimiento de este artículo."
+}

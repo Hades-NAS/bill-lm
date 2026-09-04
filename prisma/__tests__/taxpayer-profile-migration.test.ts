@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-
 import { describe, expect, it } from 'vitest'
 
 const migrationSql = readFileSync(
@@ -28,9 +27,7 @@ describe('taxpayer profile migration', () => {
   })
 
   it('is additive and does not modify legacy collection or invoice tables', () => {
-    expect(migrationSql).not.toMatch(
-      /^\s*(?:ALTER|DROP|DELETE|UPDATE)\s+/im,
-    )
+    expect(migrationSql).not.toMatch(/^\s*(?:ALTER|DROP|DELETE|UPDATE)\s+/im)
     expect(migrationSql).toContain('CREATE TABLE "taxpayer_profiles"')
     expect(migrationSql).toContain('CREATE TABLE "economic_activities"')
   })

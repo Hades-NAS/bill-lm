@@ -116,7 +116,11 @@ export function DropzoneInput(props: Props) {
       {rejections.length > 0 && (
         <Stack gap={4}>
           {rejections.map((rejection) => (
-            <Text c="red" key={`${rejection.name}-${rejection.reason}`} size="sm">
+            <Text
+              c="red"
+              key={`${rejection.name}-${rejection.reason}`}
+              size="sm"
+            >
               {rejection.name}: {rejection.reason}
             </Text>
           ))}

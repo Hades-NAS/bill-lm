@@ -25,7 +25,7 @@ const fieldLabels: Record<string, string> = {
   year: 'el año',
 }
 
-function fieldLabel(path: PropertyKey[]) {
+function fieldLabel(path: Array<PropertyKey>) {
   const key = [...path].reverse().find((item) => typeof item === 'string')
   return typeof key === 'string' ? fieldLabels[key] : undefined
 }
@@ -42,7 +42,8 @@ export function userFacingZodError(error: unknown): string | null {
       return 'Ingresa los 10 dígitos de la cédula.'
     if (issue.path.includes('professionalIdNumber'))
       return 'Ingresa los 13 dígitos del RUC.'
-    if (issue.path.includes('email')) return 'Ingresa un correo electrónico válido.'
+    if (issue.path.includes('email'))
+      return 'Ingresa un correo electrónico válido.'
     return label
       ? `Revisa el formato de ${label}.`
       : 'Revisa el formato de los datos ingresados.'

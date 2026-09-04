@@ -71,7 +71,10 @@ export const EconomicActivityRevisionInputSchema = z
       .string()
       .trim()
       .min(1, 'Ingresa un nombre para la actividad.')
-      .max(120, 'El nombre de la actividad no puede superar los 120 caracteres.'),
+      .max(
+        120,
+        'El nombre de la actividad no puede superar los 120 caracteres.',
+      ),
     registeredActivityCode: z
       .string()
       .trim()
@@ -218,8 +221,8 @@ export type TaxpayerProfileContext = z.infer<
 export function collectionContextBlocks(
   context: CollectionContextRevisionInput,
   profile: TaxpayerProfileContext,
-): AnalysisBlock[] {
-  const blocks: AnalysisBlock[] = []
+): Array<AnalysisBlock> {
+  const blocks: Array<AnalysisBlock> = []
   const requiresActivities =
     context.purpose === 'vat_credit' ||
     context.purpose === 'business_income_tax'

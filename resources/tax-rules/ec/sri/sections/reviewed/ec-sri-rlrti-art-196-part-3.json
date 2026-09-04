@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-rlrti-art-196-part-3",
+  "sourceId": "ec-sri-rlrti",
+  "articleOrSection": "Art. 196 (repetido; revisar límites)",
+  "sourcePages": [162, 163],
+  "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
+  "purposes": ["vat_credit"],
+  "taxRegimes": ["unknown"],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T20:28:43.996Z",
+  "reviewNotes": "Verifiqué el artículo 196(2) en el PDF oficial: fija condiciones para servicios de alojamiento vinculados al numeral 28 del artículo 56 de la LRTI. El texto no limita su aplicación a un régimen tributario del modelo.",
+  "markdown": "Art. 196\n(2) Para efectos de la aplicación del numeral 28 del artículo 56 de la Ley de Régimen Tributario Interno,\nlos servicios de alojamiento deberán ser prestados por los establecimientos que se encuentren inscritos\nen el Registro Nacional de Turismo y cuenten con la Licencia Única Anual de Funcionamiento. Dichos\nestablecimientos deberán verificar que, entre la fecha de la prestación de los servicios de alojamiento\ny la última entrada al país, no hayan transcurrido más de 90 días calendario.\n\n<!-- page 163 of 246 -->\n\nNota:\nArtículo agregado por artículo 72 de Decreto Ejecutivo No. 304, publicado en Registro Oficial\nSuplemento 608 de 30 de Diciembre del 2021\n."
+}

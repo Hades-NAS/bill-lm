@@ -22,13 +22,13 @@ import {
   useGetJobStatsQuery,
 } from '#/hooks/query/telemetry'
 
-import { EmptyState } from '#/components/shared/empty-state'
-import { LoaderText } from '#/components/shared/loader-text'
-import { NumberDisplay } from '#/components/shared/number-display'
 import {
   ContextGuideButton,
   openContextGuide,
 } from '#/components/shared/context-help'
+import { EmptyState } from '#/components/shared/empty-state'
+import { LoaderText } from '#/components/shared/loader-text'
+import { NumberDisplay } from '#/components/shared/number-display'
 
 import type { AnalyzeJobData } from '#/schema/collections'
 import type { ModalPageProps } from '#/schema/page'

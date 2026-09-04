@@ -148,16 +148,12 @@ export const CreateCollectionSchema = CollectionInputFieldsSchema.pick({
   name: true,
   description: true,
   year: true,
+}).extend({
+  name: CollectionInputFieldsSchema.shape.name.min(1, 'El nombre es requerido'),
+  year: CollectionInputFieldsSchema.shape.year
+    .int()
+    .min(0, 'Ingresa un año válido.'),
 })
-  .extend({
-    name: CollectionInputFieldsSchema.shape.name.min(
-      1,
-      'El nombre es requerido',
-    ),
-    year: CollectionInputFieldsSchema.shape.year
-      .int()
-      .min(0, 'Ingresa un año válido.'),
-  })
 
 export type CreateCollectionType = z.infer<typeof CreateCollectionSchema>
 

@@ -18,7 +18,6 @@ import { useCollectionDeleteMutation } from '#/hooks/mutation/collection'
 import ConfModal from '../shared/conf-modal'
 import TextWithIcon from '../shared/text-icon'
 
-
 import type { CollectionBaseType } from '#/integrations/trpc/procedures/collections'
 
 type Props = {
@@ -93,8 +92,8 @@ export const CollectionCard = (props: Props) => {
               }}
             >
               <Text>
-                Se archivará la colección <b>{data.name}</b>. Ya no aparecerá
-                en tu lista, pero su historial quedará conservado.
+                Se archivará la colección <b>{data.name}</b>. Ya no aparecerá en
+                tu lista, pero su historial quedará conservado.
               </Text>
             </ConfModal>
           </Flex>

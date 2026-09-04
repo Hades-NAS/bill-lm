@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-58-base-imponible-general-la-base-imponible-del-iva-es-el-valor-total-de-los",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 58.- Base imponible general.- La base imponible del IVA es el valor total de los bienes muebles",
+  "sourcePages": [
+    68
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 58.- Base imponible general.- La base imponible del IVA es el valor total de los bienes muebles\nde naturaleza corporal que se transfieren o de los servicios que se presten, calculado a base de sus\nprecios de venta o de prestación del servicio, que incluyen impuestos, tasas por servicios y demás\ngastos legalmente imputables al precio.\nDel precio así establecido sólo podrán deducirse los valores correspondientes a:\n1. Los descuentos y bonificaciones normales concedidos a los compradores según los usos o\ncostumbres mercantiles y que consten en la correspondiente factura;\n2. El valor de los bienes y envases devueltos por el comprador; y,\n3. Los intereses y las primas de seguros en las ventas a plazos.\nConcordancias:\nCODIGO CIVIL (TITULO PRELIMINAR), Arts. 2\nCODIGO CIVIL (LIBRO II), Arts. 584, 691, 700\nCODIGO CIVIL (LIBRO IV), Arts. 1615, 1745\nJurisprudencia:\nGaceta Judicial, RECUPERACION DE IMPUESTOS POR DOBLE VIA, 15-jul-1996\nGaceta Judicial, RELIQUIDACION DEL IVA, 11-mar-2004"
+}

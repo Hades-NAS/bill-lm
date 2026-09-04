@@ -56,21 +56,43 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       data: { status: 'running', startedAt: new Date() },
     })
 
-    const [connection, collection, fiscalReferences] = await Promise.all([
-      prisma.providerConnection.findFirst({
-        where: { id: credentialId, userId, isActive: true, deletedAt: null },
-      }),
+    const [connection, collection, fiscalReferences, ruleSet] =
+      await Promise.all([
+        prisma.providerConnection.findFirst({
+          where: { id: credentialId, userId, isActive: true, deletedAt: null },
+        }),
 
-      prisma.collection.findFirst({
-        where: { id: data.collectionId, userId, deletedAt: null },
-        select: { id: true },
-      }),
-      loadActiveFiscalReferenceContext(userId),
-    ])
+        prisma.collection.findFirst({
+          where: { id: data.collectionId, userId, deletedAt: null },
+          select: { id: true },
+        }),
+        loadActiveFiscalReferenceContext(userId),
+        prisma.taxRuleSet.findUnique({
+          where: { id: run.ruleSetId },
+          include: {
+            fragments: {
+              include: {
+                fragment: {
+                  include: {
+                    source: { select: { issuer: true, title: true } },
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ])
     if (!connection || !collection)
       throw new Error('The job authorization is no longer valid')
-    if (fiscalReferences.length === 0)
-      throw new Error('No active fiscal references are available for this job')
+    if (!ruleSet)
+      throw new Error(
+        'The ruleset fixed for this analysis is no longer available',
+      )
+
+    const officialReferences = ruleSet.fragments.map(({ fragment }) => ({
+      name: `${fragment.source.issuer} — ${fragment.source.title} · ${fragment.articleOrSection}`,
+      markdown: fragment.contentMarkdown,
+    }))
 
     const apiKey = decryptProviderSecret(
       {
@@ -99,6 +121,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       job.data,
       data.preset || 'balanced',
       fiscalReferences,
+      officialReferences,
     )
 
     const runContext = await prisma.collectionContextRevision.findFirst({
@@ -117,8 +140,12 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
           invoiceId: result.billId,
           purpose: runContext.purpose,
           classification: result.success ? 'needs_review' : 'ineligible',
-          reasoning: result.success ? (result.analysis?.reason ?? '') : (result.error ?? 'Error de análisis'),
-          uncertainties: result.success ? ['Resultado legacy pendiente de adaptación por propósito.'] : [result.error ?? 'Error de análisis'],
+          reasoning: result.success
+            ? (result.analysis?.reason ?? '')
+            : (result.error ?? 'Error de análisis'),
+          uncertainties: result.success
+            ? ['Resultado legacy pendiente de adaptación por propósito.']
+            : [result.error ?? 'Error de análisis'],
         },
       })),
       skipDuplicates: true,
@@ -144,7 +171,10 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       })
     await prisma.analysisRun.update({
       where: { id: run.id },
-      data: { status: failureCount === 0 ? 'completed' : 'failed', completedAt: new Date() },
+      data: {
+        status: failureCount === 0 ? 'completed' : 'failed',
+        completedAt: new Date(),
+      },
     })
 
     return true
@@ -152,7 +182,11 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
     logger.error(`[Worker] Job ${jobId} failed`)
     if (job.data.analysisRunId)
       await prisma.analysisRun.updateMany({
-        where: { id: job.data.analysisRunId, userId, status: { in: ['queued', 'running'] } },
+        where: {
+          id: job.data.analysisRunId,
+          userId,
+          status: { in: ['queued', 'running'] },
+        },
         data: { status: 'failed', completedAt: new Date() },
       })
 

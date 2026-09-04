@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-art-120-entregas-a-consignacion-todas-las-mercaderias-sujetas-al-impuesto-a-los-",
+  "sourceId": "ec-sri-lrti",
+  "articleOrSection": "Art. 120.- Entregas a consignación.- Todas las mercaderías sujetas al impuesto a los consumos",
+  "sourcePages": [
+    114
+  ],
+  "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
+  "purposes": [
+    "business_income_tax"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-04T19:55:13.255Z",
+  "markdown": "Art. 120.- Entregas a consignación.- Todas las mercaderías sujetas al impuesto a los consumos\nespeciales, que sean entregadas a consignación, no podrán salir de los recintos fabriles sin que se\nhaya realizado los pagos del IVA y del ICE respectivos.\nArt. (...).- Regímenes simplificados.- El Reglamento a esta Ley podrá establecer sistemas de\ncumplimiento de deberes formales y materiales simplificados, para sectores, subsectores o\nsegmentos de la economía, que se establezcan en el mismo.\nNota: Artículo agregado por artículo 1, numeral 24 de Ley No. 0, publicada en Registro Oficial\nSuplemento 150 de 29 de Diciembre del 2017 .\nDEROGATORIAS"
+}

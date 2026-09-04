@@ -1,1 +1,15 @@
-{"schemaVersion":"1","id":"ec-sri-rlrti","issuer":"Servicio de Rentas Internas","jurisdiction":"EC","sourceKind":"regulation","discoveryUrl":"https://www.sri.gob.ec/normativa-tributaria-legislacion-nacional","resolvedUrl":"https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/7169103f-f014-4bf2-bf24-fb29b34e8d07/REGLAMENTO_PARA_APLICACION_LEY_DE_REGIMEN_TRIBUTARIO_INTERNO.pdf","mimeType":null,"retrievedAt":null,"contentHash":null,"effectiveFrom":null,"effectiveTo":null,"reviewStatus":"draft"}
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-rlrti",
+  "issuer": "Servicio de Rentas Internas",
+  "jurisdiction": "EC",
+  "sourceKind": "regulation",
+  "discoveryUrl": "https://www.sri.gob.ec/normativa-tributaria-legislacion-nacional",
+  "resolvedUrl": "https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/7169103f-f014-4bf2-bf24-fb29b34e8d07/REGLAMENTO_PARA_APLICACION_LEY_DE_REGIMEN_TRIBUTARIO_INTERNO.pdf",
+  "mimeType": null,
+  "retrievedAt": null,
+  "contentHash": null,
+  "effectiveFrom": null,
+  "effectiveTo": null,
+  "reviewStatus": "draft"
+}

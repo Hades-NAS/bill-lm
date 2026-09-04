@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-
 import { describe, expect, it } from 'vitest'
 
 const routerSource = readFileSync(
@@ -19,6 +18,8 @@ describe('collection soft deletion', () => {
   })
 
   it('filters archived collections from active collection operations', () => {
-    expect(routerSource.match(/deletedAt: null/g)?.length).toBeGreaterThanOrEqual(6)
+    expect(
+      routerSource.match(/deletedAt: null/g)?.length,
+    ).toBeGreaterThanOrEqual(6)
   })
 })

@@ -70,12 +70,12 @@ El manifiesto no depende únicamente de URLs de descarga con UUID. Conserva una
 página oficial de descubrimiento y la URL directa resuelta para la versión
 revisada.
 
-| ID | Tipo | URL de descubrimiento |
-| --- | --- | --- |
+| ID                             | Tipo             | URL de descubrimiento                                              |
+| ------------------------------ | ---------------- | ------------------------------------------------------------------ |
 | `sri-national-tax-legislation` | Índice normativo | `https://www.sri.gob.ec/normativa-tributaria-legislacion-nacional` |
-| `sri-forms-and-guides` | Índice de guías | `https://www.sri.gob.ec/formularios-e-instructivos` |
-| `sri-vat` | Página temática | `https://www.sri.gob.ec/impuesto-al-valor-agregado-iva` |
-| `sri-income-tax` | Página temática | `https://www.sri.gob.ec/impuesto-renta` |
+| `sri-forms-and-guides`         | Índice de guías  | `https://www.sri.gob.ec/formularios-e-instructivos`                |
+| `sri-vat`                      | Página temática  | `https://www.sri.gob.ec/impuesto-al-valor-agregado-iva`            |
+| `sri-income-tax`               | Página temática  | `https://www.sri.gob.ec/impuesto-renta`                            |
 
 La página de legislación enlaza actualmente el índice
 `normativa_institucional_vigente.pdf`. Ese archivo enumera cuerpos normativos y
@@ -90,13 +90,13 @@ fd3fa4a9-ab76-4426-9f4f-08dee57993d8/normativa_institucional_vigente.pdf
 
 ### Corpus inicial
 
-| Source ID | Rol | Descubrimiento o URL resuelta inicial |
-| --- | --- | --- |
-| `ec-sri-lrti` | Norma primaria para IR e IVA | Resolver “Ley de Régimen Tributario Interno” desde el índice normativo vigente. |
-| `ec-sri-rlrti` | Reglamento primario para IR e IVA | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/03995ac1-408a-4694-b24c-447d93774c52/3.1%20REGLAMENTO%20A%20LA%20LRTI.pdf` |
-| `ec-sri-ir-natural-person-guide` | Guía operativa de IR | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/55428073-d439-4d4b-9d91-388b3306c424/Gu%C3%ADa%20para%20el%20llenado%20del%20Formulario%20Impuesto%20a%20la%20Renta%20personas%20naturales.pdf` |
-| `ec-sri-ir-rimpe-guide` | Guía operativa de RIMPE | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/f9880f8b-13de-49e4-900b-2e15acd39ba1/Gu%C3%ADa%20de%20llenado%20de%20Impuesto%20a%20la%20Renta%20Personas%20Naturales%20RIMPE.pdf` |
-| `ec-sri-vat-form-guide` | Guía operativa de IVA | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/e084fae5-9677-450c-8161-21e7c3a9f65b/Gu%C3%ADa%20para%20el%20llenado%20del%20Formulario%20Impuesto%20al%20Valor%20Agregado%20IVA.PDF` |
+| Source ID                        | Rol                               | Descubrimiento o URL resuelta inicial                                                                                                                                                                                        |
+| -------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ec-sri-lrti`                    | Norma primaria para IR e IVA      | Resolver “Ley de Régimen Tributario Interno” desde el índice normativo vigente.                                                                                                                                              |
+| `ec-sri-rlrti`                   | Reglamento primario para IR e IVA | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/03995ac1-408a-4694-b24c-447d93774c52/3.1%20REGLAMENTO%20A%20LA%20LRTI.pdf`                                                                      |
+| `ec-sri-ir-natural-person-guide` | Guía operativa de IR              | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/55428073-d439-4d4b-9d91-388b3306c424/Gu%C3%ADa%20para%20el%20llenado%20del%20Formulario%20Impuesto%20a%20la%20Renta%20personas%20naturales.pdf` |
+| `ec-sri-ir-rimpe-guide`          | Guía operativa de RIMPE           | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/f9880f8b-13de-49e4-900b-2e15acd39ba1/Gu%C3%ADa%20de%20llenado%20de%20Impuesto%20a%20la%20Renta%20Personas%20Naturales%20RIMPE.pdf`              |
+| `ec-sri-vat-form-guide`          | Guía operativa de IVA             | `https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/e084fae5-9677-450c-8161-21e7c3a9f65b/Gu%C3%ADa%20para%20el%20llenado%20del%20Formulario%20Impuesto%20al%20Valor%20Agregado%20IVA.PDF`           |
 
 Las guías explican formularios y casilleros. No sustituyen la LRTI, el RLRTI ni
 resoluciones aplicables. Cada regla debe indicar si su fuente es `law`,
@@ -215,21 +215,21 @@ SHA-256 real. `retrievedAt` no determina vigencia. `effectiveFrom` y
 Cada sección Markdown usa frontmatter validable:
 
 ```yaml
-schemaVersion: "1"
+schemaVersion: '1'
 id: ec-sri-rlrti-art-28
 sourceId: ec-sri-rlrti
-articleOrSection: "Art. 28"
+articleOrSection: 'Art. 28'
 sourcePages: [34, 35, 36]
-sourceContentHash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+sourceContentHash: 'sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
 purposes:
   - business_income_tax
 taxRegimes:
   - general
-effectiveFrom: "2025-10-28"
+effectiveFrom: '2025-10-28'
 effectiveTo: null
 reviewStatus: reviewed
 reviewedBy: owner
-reviewedAt: "2026-09-03T00:00:00Z"
+reviewedAt: '2026-09-03T00:00:00Z'
 ---
 ```
 

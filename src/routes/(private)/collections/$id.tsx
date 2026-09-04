@@ -231,7 +231,7 @@ function CollectionDetailPage() {
     string | null
   >(null)
   const [activityRevisionIds, setActivityRevisionIds] = React.useState<
-    string[]
+    Array<string>
   >([])
   const [periodStartDate, setPeriodStartDate] = React.useState(
     `${collectionQuery.data?.year ?? DateTime.now().year}-01-01`,
@@ -254,23 +254,25 @@ function CollectionDetailPage() {
 
   const profileOptions = React.useMemo(() => {
     const options = (profilesQuery.data ?? []).flatMap((profile) => {
-        const revision = profile.revisions[0]
-        if (!revision) return []
+      const revision = profile.revisions[0]
+      if (!revision) return []
 
-        return [
-          {
-            value: revision.id,
-            label: `${revision.displayName} · rev. ${revision.revision}`,
-            activityRevisionIds: revision.activities.map(
-              ({ economicActivityRevision }) => economicActivityRevision.id,
-            ),
-            activities: revision.activities.map(({ economicActivityRevision }) => ({
+      return [
+        {
+          value: revision.id,
+          label: `${revision.displayName} · rev. ${revision.revision}`,
+          activityRevisionIds: revision.activities.map(
+            ({ economicActivityRevision }) => economicActivityRevision.id,
+          ),
+          activities: revision.activities.map(
+            ({ economicActivityRevision }) => ({
               value: economicActivityRevision.id,
               label: economicActivityRevision.displayName,
-            })),
-          },
-        ]
-      })
+            }),
+          ),
+        },
+      ]
+    })
     const currentRevision = contextRevisionsQuery.data?.[0]
     if (
       currentRevision &&
@@ -805,10 +807,7 @@ function CollectionDetailPage() {
                   </Skeleton>
 
                   <Skeleton visible={isLoading}>
-                    <Flex
-                      align="baseline"
-                      justify="flex-end"
-                    >
+                    <Flex align="baseline" justify="flex-end">
                       <Flex
                         align="baseline"
                         gap="md"
@@ -1282,7 +1281,7 @@ function CollectionDetailPage() {
     return (
       <Stack gap="sm">
         {bills.map((bill) => (
-          <Card key={bill.id} padding="sm" withBorder>
+          <Card withBorder key={bill.id} padding="sm">
             <Stack gap="xs">
               <Group align="flex-start" justify="space-between" wrap="nowrap">
                 <Checkbox
@@ -1357,7 +1356,7 @@ function CollectionDetailPage() {
   }
 
   function getFilteredBills() {
-    let bills = collectionQuery.data?.bills || []
+    const bills = collectionQuery.data?.bills || []
 
     if (!filter.field || !filter.value) return bills
 
@@ -1397,5 +1396,4 @@ function CollectionDetailPage() {
     const bill = collectionQuery.data?.bills.find((b) => b.id === id)
     return bill?.name || 'Factura'
   }
-
 }

@@ -89,17 +89,17 @@ const BillAddForm = (props: ModalPageProps<BillFormData>) => {
   })
 
   const preprocessBillMutation = usePreprocessBillMutation({
-      onSuccess: (result) => {
-        const { bills, errors } = result
-        form.setFieldValue('bills', bills)
+    onSuccess: (result) => {
+      const { bills, errors } = result
+      form.setFieldValue('bills', bills)
 
-        if (errors.length > 0) {
-          notify.warn({
-            title: 'Algunas facturas no se pudieron procesar',
-            message: 'Revisar el mensaje de error para más detalles.',
-          })
-        }
-      },
+      if (errors.length > 0) {
+        notify.warn({
+          title: 'Algunas facturas no se pudieron procesar',
+          message: 'Revisar el mensaje de error para más detalles.',
+        })
+      }
+    },
   })
 
   const form = useAppForm({

@@ -18,6 +18,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
 import { DateTime } from 'luxon'
 
+import { useIsMobile } from '#/utils/mobile'
 import {
   isEmptyArrayQuery,
   isErrorQuery,
@@ -29,13 +30,12 @@ import { useModal } from '#/hooks/modal'
 import { useGetUserJobsQuery } from '#/hooks/query/telemetry'
 
 import JobTelemetryPage from '#/components/job/job-telemetry'
-import { EmptyState } from '#/components/shared/empty-state'
 import {
   ContextGuideButton,
   openContextGuide,
 } from '#/components/shared/context-help'
+import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
-import { useIsMobile } from '#/utils/mobile'
 
 export const Route = createFileRoute('/(private)/jobs/')({
   component: JobsListPage,
@@ -133,7 +133,7 @@ function JobsListPage() {
             {isMobile ? (
               <Stack gap="sm" p="sm">
                 {jobsQuery.data.map((job) => (
-                  <Card key={job.jobId} padding="sm" withBorder>
+                  <Card withBorder key={job.jobId} padding="sm">
                     <Stack gap="xs">
                       <Group justify="space-between">
                         <Text fw={600} lineClamp={1}>

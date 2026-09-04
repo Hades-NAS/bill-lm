@@ -25,11 +25,11 @@ import { useGetCollectionsQuery } from '#/hooks/query/collection'
 
 import { CollectionCard } from '#/components/collection/collection-card'
 import CollectionForm from '#/components/collection/form'
-import { EmptyState } from '#/components/shared/empty-state'
 import {
   ContextGuideButton,
   openContextGuide,
 } from '#/components/shared/context-help'
+import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
 import { QuickFilter } from '#/components/shared/quick-filter'
 

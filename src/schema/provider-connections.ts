@@ -5,7 +5,9 @@ export type ProviderConnectionProvider = z.infer<
   typeof ProviderConnectionProviderSchema
 >
 
-const ConnectionIdSchema = z.string().uuid('La conexión seleccionada no es válida.')
+const ConnectionIdSchema = z
+  .string()
+  .uuid('La conexión seleccionada no es válida.')
 const SecretSchema = z
   .string()
   .min(8, 'Ingresa una API key válida de al menos 8 caracteres.')

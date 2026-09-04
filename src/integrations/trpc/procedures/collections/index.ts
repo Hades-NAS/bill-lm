@@ -415,7 +415,9 @@ export const collectionsRouter = {
           message: 'Selecciona solo actividades propias.',
         })
       const profileActivityIds = new Set(
-        profile.activities.map((activity) => activity.economicActivityRevisionId),
+        profile.activities.map(
+          (activity) => activity.economicActivityRevisionId,
+        ),
       )
       if (
         input.activityRevisionIds.some(
@@ -658,6 +660,8 @@ export const collectionsRouter = {
               (activity) => activity.economicActivityRevisionId,
             ),
             ruleSetId: ruleSet.id,
+            ruleSetVersion: ruleSet.version,
+            ruleSetContentHash: ruleSet.contentHash,
             providerConnectionId: connection.id,
           },
           idempotencyKey: crypto.randomUUID(),

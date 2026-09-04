@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto'
 import { mkdir, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-
 import { PDFParse } from 'pdf-parse'
 
 import type { TaxRuleSourceManifest } from './contracts'
@@ -21,7 +20,9 @@ type FetchLike = (
 function assertOfficialSriUrl(url: string) {
   const parsed = new URL(url)
   if (parsed.protocol !== 'https:' || parsed.hostname !== SRI_HOST)
-    throw new TaxRuleAcquisitionError('La fuente debe usar HTTPS en www.sri.gob.ec.')
+    throw new TaxRuleAcquisitionError(
+      'La fuente debe usar HTTPS en www.sri.gob.ec.',
+    )
   return parsed
 }
 
@@ -69,16 +70,22 @@ async function downloadOfficialSriPdf(
       })
       if (response.status < 300 || response.status >= 400) break
       const location = response.headers.get('location')
-      if (!location) throw new TaxRuleAcquisitionError('La redirección no contiene destino.')
+      if (!location)
+        throw new TaxRuleAcquisitionError('La redirección no contiene destino.')
       currentUrl = new URL(location, currentUrl).toString()
     }
   } catch (error) {
     if (error instanceof TaxRuleAcquisitionError) throw error
     if (error instanceof DOMException && error.name === 'TimeoutError')
-      throw new TaxRuleAcquisitionError('El SRI tardó demasiado en responder. Intenta de nuevo más tarde.')
-    throw new TaxRuleAcquisitionError('No se pudo conectar con la fuente oficial del SRI.')
+      throw new TaxRuleAcquisitionError(
+        'El SRI tardó demasiado en responder. Intenta de nuevo más tarde.',
+      )
+    throw new TaxRuleAcquisitionError(
+      'No se pudo conectar con la fuente oficial del SRI.',
+    )
   }
-  if (!response?.ok) throw new TaxRuleAcquisitionError('No se pudo descargar la fuente oficial.')
+  if (!response?.ok)
+    throw new TaxRuleAcquisitionError('No se pudo descargar la fuente oficial.')
   const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
   if (!contentType.includes('application/pdf'))
     throw new TaxRuleAcquisitionError('La fuente oficial no respondió un PDF.')
@@ -86,15 +93,23 @@ async function downloadOfficialSriPdf(
   if (contentLength > MAX_PDF_BYTES)
     throw new TaxRuleAcquisitionError('El PDF supera el límite de 20 MB.')
   const buffer = Buffer.from(await response.arrayBuffer())
-  if (buffer.length > MAX_PDF_BYTES || !buffer.subarray(0, 5).equals(Buffer.from('%PDF-')))
-    throw new TaxRuleAcquisitionError('El archivo descargado no es un PDF válido dentro del límite.')
+  if (
+    buffer.length > MAX_PDF_BYTES ||
+    !buffer.subarray(0, 5).equals(Buffer.from('%PDF-'))
+  )
+    throw new TaxRuleAcquisitionError(
+      'El archivo descargado no es un PDF válido dentro del límite.',
+    )
   return {
     buffer,
     resolvedUrl: currentUrl,
     contentHash: `sha256:${createHash('sha256').update(buffer).digest('hex')}`,
     size: buffer.length,
     contentType,
-    contentLength: Number.isFinite(contentLength) && contentLength > 0 ? contentLength : null,
+    contentLength:
+      Number.isFinite(contentLength) && contentLength > 0
+        ? contentLength
+        : null,
     lastModified: response.headers.get('last-modified'),
   }
 }
@@ -109,9 +124,10 @@ export async function checkTaxRuleSource(
   const downloaded = await downloadOfficialSriPdf(source, fetcher)
   return {
     sourceId: source.id,
-    status: observedContentHash === downloaded.contentHash
-      ? ('unchanged' as const)
-      : ('update-candidate' as const),
+    status:
+      observedContentHash === downloaded.contentHash
+        ? ('unchanged' as const)
+        : ('update-candidate' as const),
     observedContentHash: downloaded.contentHash,
     resolvedUrl: downloaded.resolvedUrl,
   }
@@ -125,7 +141,10 @@ export async function fetchTaxRuleSource(
   const downloaded = await downloadOfficialSriPdf(source, fetcher)
   const directory = join(cacheRoot, 'originals')
   await mkdir(directory, { recursive: true })
-  const path = join(directory, `${source.id}-${downloaded.contentHash.slice(7)}.pdf`)
+  const path = join(
+    directory,
+    `${source.id}-${downloaded.contentHash.slice(7)}.pdf`,
+  )
   const temporaryPath = `${path}.${crypto.randomUUID()}.tmp`
   await writeFile(temporaryPath, downloaded.buffer)
   await rename(temporaryPath, path)
