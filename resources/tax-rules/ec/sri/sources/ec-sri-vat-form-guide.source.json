@@ -1,6 +1,7 @@
 {
   "schemaVersion": "1",
   "id": "ec-sri-vat-form-guide",
+  "title": "Guía para el llenado del Formulario de Impuesto al Valor Agregado (IVA)",
   "issuer": "Servicio de Rentas Internas",
   "jurisdiction": "EC",
   "sourceKind": "form_guide",

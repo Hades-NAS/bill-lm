@@ -829,7 +829,7 @@ async function runSyncDb() {
           existingSource ??
           (await tx.taxRuleSource.create({
             data: {
-              title: source.id,
+              title: source.title ?? source.id,
               issuer: source.issuer,
               officialUrl: source.resolvedUrl ?? source.discoveryUrl,
               jurisdiction: source.jurisdiction,

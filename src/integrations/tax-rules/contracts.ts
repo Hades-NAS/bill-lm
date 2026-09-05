@@ -17,6 +17,9 @@ export const TaxRuleSourceManifestSchema = z
   .object({
     schemaVersion: z.literal('1'),
     id: z.string().regex(/^ec-sri-[a-z0-9-]+$/),
+    // Optional only to preserve compatibility with already published bundles.
+    // All source manifests authored from now on must declare a readable title.
+    title: z.string().trim().min(1).max(500).optional(),
     issuer: z.literal('Servicio de Rentas Internas'),
     jurisdiction: z.literal('EC'),
     sourceKind: z.enum(['law', 'regulation', 'guide', 'form_guide']),

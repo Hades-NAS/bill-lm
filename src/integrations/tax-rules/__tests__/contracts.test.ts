@@ -11,6 +11,7 @@ import {
 const source = {
   schemaVersion: '1' as const,
   id: 'ec-sri-lrti',
+  title: 'Ley de Régimen Tributario Interno (LRTI)',
   issuer: 'Servicio de Rentas Internas' as const,
   jurisdiction: 'EC' as const,
   sourceKind: 'law' as const,
@@ -102,8 +103,23 @@ describe('tax rule contracts', () => {
       ),
     )
     expect(TaxRuleSourceManifestSchema.parse(initialManifest)).toMatchObject({
+      title: 'Ley de Régimen Tributario Interno (LRTI)',
       contentHash: null,
       reviewStatus: 'draft',
     })
+  })
+
+  it('accepts an already-published bundle whose manifests predate readable titles', () => {
+    const publishedBundle = JSON.parse(
+      readFileSync(
+        resolve(
+          process.cwd(),
+          'resources/tax-rules/ec/sri/rulesets/ec-sri-2026.1.bundle.json',
+        ),
+        'utf8',
+      ),
+    )
+
+    expect(() => buildTaxRuleBundle(publishedBundle)).not.toThrow()
   })
 })

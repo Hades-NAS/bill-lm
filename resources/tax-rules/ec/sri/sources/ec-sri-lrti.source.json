@@ -1,6 +1,7 @@
 {
   "schemaVersion": "1",
   "id": "ec-sri-lrti",
+  "title": "Ley de Régimen Tributario Interno (LRTI)",
   "issuer": "Servicio de Rentas Internas",
   "jurisdiction": "EC",
   "sourceKind": "law",
