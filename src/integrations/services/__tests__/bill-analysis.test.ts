@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
+vi.mock('#/integrations/firebase/firebase.server', () => ({
+  adminDb: {
+    collection: vi.fn(),
+  },
+}))
+
 import { createBillAnalysisService } from '../bill-analysis.service'
 
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'

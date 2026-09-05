@@ -7,14 +7,19 @@ import { getServiceLogger } from '#/integrations/logger.server'
 import { env } from '#/env'
 
 const logger = getServiceLogger('FirebaseIntegration')
-if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
-  logger.error('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
-  throw new Error(
-    'GOOGLE_APPLICATION_CREDENTIALS environment variable is required to initialize Firebase Admin SDK',
-  )
-}
 
-if (!admin.apps.length) {
+function getAdminApp() {
+  if (admin.apps.length) {
+    return admin.app()
+  }
+
+  if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
+    logger.error('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
+    throw new Error(
+      'GOOGLE_APPLICATION_CREDENTIALS environment variable is required to initialize Firebase Admin SDK',
+    )
+  }
+
   let serviceAccount: any
   try {
     logger.info('Loading Firebase credentials from file', {
@@ -43,15 +48,26 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount),
   })
 
-  const isReady = Boolean(app.options.credential)
-
-  if (isReady) {
-    logger.info('Firebase Admin SDK initialized successfully')
-  } else {
+  if (!app.options.credential) {
     logger.error('Failed to initialize Firebase Admin SDK')
     throw new Error('Firebase Admin SDK initialization failed')
   }
+
+  logger.info('Firebase Admin SDK initialized successfully')
+  return app
 }
 
-export const adminDb = admin.firestore()
-export const adminAuth = admin.auth()
+function createLazyFirebaseService<T extends object>(factory: () => T): T {
+  return new Proxy({} as T, {
+    get(_target, property) {
+      const service = factory()
+      const value = Reflect.get(service, property, service)
+      return typeof value === 'function' ? value.bind(service) : value
+    },
+  })
+}
+
+// Route modules may import Firebase Admin during application bootstrap. Delay
+// credential-file access until a server operation actually needs the service.
+export const adminDb = createLazyFirebaseService(() => getAdminApp().firestore())
+export const adminAuth = createLazyFirebaseService(() => getAdminApp().auth())

@@ -25,6 +25,21 @@ This project uses [Vitest](https://vitest.dev/) for testing. You can run the tes
 bun --bun run test
 ```
 
+Para ejecutar la validación completa de tipado, build, Vitest y Playwright:
+
+```bash
+bash health.sh
+```
+
+`health.sh` usa el fixture público e inerte `.env.health` y crea un entorno
+hijo limpio para cada comprobación. No carga tu `.env`, `.env.local` ni
+credenciales reales. Puedes omitir Playwright o seleccionar su puerto sin
+perder ese aislamiento:
+
+```bash
+SKIP_E2E=true PLAYWRIGHT_PORT=3100 bash health.sh
+```
+
 ## Styling
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.

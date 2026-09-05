@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "if [ \"$SKIP_E2E\" = \"true\" ]; then echo 'Skipping e2e tests (SKIP_E2E=true)'; else npx playwright test; fi",
+    "test:e2e": "if [ \"$SKIP_E2E\" = \"true\" ]; then echo 'Skipping e2e tests (SKIP_E2E=true)'; else bun --no-env-file x playwright test; fi",
     "worker:dev": "bun run --watch src/integrations/jobs/analyze-job.ts",
     "worker:start": "bun run src/integrations/jobs/analyze-job.ts",
     "rules:sri:check": "bun run scripts/tax-rules.ts check",

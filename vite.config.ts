@@ -6,6 +6,9 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { configDefaults, defineConfig } from 'vitest/config'
 
 const config = defineConfig(({ mode }) => ({
+  // Health injects its explicit fixture through the process environment. Do
+  // not merge repository-local .env files into build, test, or dev processes.
+  envDir: false,
   resolve: {
     dedupe: ['react', 'react-dom'],
   },
