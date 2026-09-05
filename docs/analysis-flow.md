@@ -48,3 +48,8 @@ No devuelven Markdown de evidencia oficial o referencias personales, notas,
 datos adicionales del perfil ni el contenido normalizado de la factura. Si un
 snapshot histórico no puede validarse, se muestra como no disponible sin revelar
 su JSON ni el error interno.
+
+En una colección, el botón **Historial** abre un drawer lateral derecho. Permite
+recorrer las ejecuciones con **Ver más** y consultar un resumen seguro del run
+seleccionado sin salir de las facturas. El detalle especializado por factura se
+presenta por separado.

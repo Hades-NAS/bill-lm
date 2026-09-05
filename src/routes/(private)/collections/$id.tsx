@@ -28,6 +28,7 @@ import {
   ChevronLeft,
   Edit,
   EyeIcon,
+  History,
   NotepadText,
   Sparkles,
   Trash2,
@@ -58,6 +59,7 @@ import { billsKeys } from '#/hooks/query-keys'
 import BillDetailPage from '#/components/bill/bill-detail'
 import BillAddForm from '#/components/bill/form'
 import CollectionForm from '#/components/collection/form'
+import { AnalysisHistoryDrawer } from '#/components/collection/analysis-history-drawer'
 import ConfModal from '#/components/shared/conf-modal'
 import {
   ContextGuideButton,
@@ -199,9 +201,6 @@ function CollectionDetailPage() {
   const contextRevisionsQuery = useQuery(
     trpc.collections.listContextRevisions.queryOptions({ id: collectionId }),
   )
-  const analysisRunsQuery = useQuery(
-    trpc.collections.listAnalysisRuns.queryOptions({ id: collectionId }),
-  )
   const createContextRevision = useMutation(
     trpc.collections.createContextRevision.mutationOptions({
       onSuccess: () =>
@@ -213,6 +212,7 @@ function CollectionDetailPage() {
     }),
   )
   const [contextModalOpened, setContextModalOpened] = React.useState(false)
+  const [historyDrawerOpened, setHistoryDrawerOpened] = React.useState(false)
   const [purpose, setPurpose] = React.useState<
     'vat_credit' | 'business_income_tax' | 'personal_expenses'
   >('personal_expenses')
@@ -393,6 +393,15 @@ function CollectionDetailPage() {
         onSubmitted={() => {
           setCollectionForm({ opened: false })
         }}
+      />
+
+      <AnalysisHistoryDrawer
+        collectionId={collectionId}
+        collectionName={collectionQuery.data?.name ?? 'Colección'}
+        isMobile={isMobile}
+        opened={historyDrawerOpened}
+        onClose={() => setHistoryDrawerOpened(false)}
+        onOpenGuide={openAnalysisHistoryGuide}
       />
 
       <Modal
@@ -803,6 +812,13 @@ function CollectionDetailPage() {
                         >
                           Contexto
                         </Button>
+                        <Button
+                          leftSection={<History size={18} />}
+                          variant="subtle"
+                          onClick={() => setHistoryDrawerOpened(true)}
+                        >
+                          Historial
+                        </Button>
                         <Tooltip
                           label={
                             !analysisConfigReady
@@ -837,62 +853,6 @@ function CollectionDetailPage() {
               </Card>
 
               <Box>
-                <Card withBorder mb="md" padding="md" radius="md">
-                  <Group justify="space-between" mb="sm">
-                    <Group gap="xs">
-                      <Title order={2}>Historial de análisis</Title>
-                      <ContextGuideButton
-                        title="el historial de análisis"
-                        onClick={openAnalysisHistoryGuide}
-                      />
-                    </Group>
-                    <Badge variant="light">
-                      {analysisRunsQuery.data?.length ?? 0} runs
-                    </Badge>
-                  </Group>
-                  {analysisRunsQuery.isPending ? (
-                    <Skeleton height={54} />
-                  ) : analysisRunsQuery.data?.length ? (
-                    <Stack gap="xs">
-                      {analysisRunsQuery.data.slice(0, 5).map((run) => (
-                        <Box
-                          key={run.id}
-                          p="xs"
-                          style={{
-                            borderBottom:
-                              '1px solid var(--mantine-color-default-border)',
-                          }}
-                        >
-                          <Group justify="space-between">
-                            <Text fw={600}>
-                              {run.status === 'blocked'
-                                ? 'Bloqueado'
-                                : `Run ${run.status}`}
-                            </Text>
-                            <Text c="dimmed" size="sm">
-                              {run.createdAt.toLocaleString('es-EC')}
-                            </Text>
-                          </Group>
-                          {run.blockMessage && (
-                            <Text c="red" size="sm">
-                              {run.blockMessage}
-                            </Text>
-                          )}
-                          <Text c="dimmed" size="sm">
-                            {run.results.length} resultados ·{' '}
-                            {run.provider ?? 'sin proveedor'}{' '}
-                            {run.modelId ?? ''}
-                          </Text>
-                        </Box>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Text c="dimmed" size="sm">
-                      Aún no hay ejecuciones. Los bloqueos y resultados
-                      aparecerán aquí.
-                    </Text>
-                  )}
-                </Card>
                 <Card withBorder padding="md" radius="md" shadow="sm">
                   <Flex
                     align="flex-start"
