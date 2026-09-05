@@ -3,246 +3,76 @@ import { OpenAIChatCompletionsModel } from '@openai/agents-openai'
 import { DateTime } from 'luxon'
 import { OpenAI } from 'openai'
 
-import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
-import { ModelTaxAnalysisPayloadV2Schema } from '#/schema/tax-analysis-v2'
+import { ModelTaxAnalysisPayloadSchema } from '#/schema/tax-analysis'
 
 import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { createTelemetryService } from '#/integrations/services/telemetry.service'
 
 import type { LLMPreset } from '#/config/llm-config'
-import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
 import type { LLMProviderConfig } from '#/schema/llm-provider'
-import type { ModelTaxAnalysisPayloadV2 } from '#/schema/tax-analysis-v2'
+import type { ModelTaxAnalysisPayload } from '#/schema/tax-analysis'
 import type { ContextProcess, ILLMProvider } from '../provider.interface'
 
 setTracingDisabled(true)
 
-/**
- * OpenAI Provider
- * Uses OpenAI Agent SDK with real OpenAI API key
- * Code mirrors AgentEngine but with real OpenAI credentials
- */
 export class OpenAIProvider implements ILLMProvider {
-  private circuitBreaker: CircuitBreaker
+  private circuitBreaker = new CircuitBreaker(5, 60_000)
   private telemetryService = createTelemetryService()
   private logger = getServiceLogger('OpenAiProvider')
-  private _agent: Agent<unknown, typeof AnalyzeBillOutputSchema> | null = null
-  private _v2Agent: Agent | null = null
+  private agent: Agent | null = null
   private client: OpenAI
-  private agentInstructions: string
 
   constructor(private config: LLMProviderConfig) {
-    this.circuitBreaker = new CircuitBreaker(5, 60_000) // 5 failures, 60s timeout
-
     this.logger.info('Initializing OpenAIProvider with config', {
       modelId: config.modelId,
     })
-
     this.client = new OpenAI({
       organization: config.organization,
       project: config.projectId,
       apiKey: config.apiKey,
     })
-
-    this.agentInstructions = config.agentInstructions
   }
 
-  /**
-   * Get provider name
-   */
   getProviderName(): 'openai' {
     return 'openai'
   }
 
-  /**
-   * Get model ID
-   */
   getModelId(): string {
     return this.config.modelId
   }
 
-  /**
-   * Check if engine is healthy
-   * For OpenAI, we don't have GPU status, just check API connectivity
-   */
   async isEngineHealthy(): Promise<boolean> {
     try {
-      this.logger.debug('Checking OpenAI API connectivity')
-
       await this.client.models.retrieve(this.config.modelId)
       return true
-
-      // this.logger.debug(
-      //   `OpenAI API connectivity check ${hasModels ? 'healthy' : 'unhealthy'}`,
-      // )
-
-      // return hasModels
     } catch (error) {
       this.logger.error('Failed to check OpenAI API health', { error })
       return false
     }
   }
 
-  /**
-   * Check if model is loaded
-   * For OpenAI cloud API, models are always available
-   */
   async isModelLoaded(): Promise<boolean> {
-    try {
-      await this.client.models.retrieve(this.config.modelId)
-      return true
-
-      // this.logger.debug(
-      //   `Model ${this.config.modelId} ${modelExists ? 'exists' : 'not found'} in OpenAI`,
-      // )
-
-      // return modelExists
-    } catch (error) {
-      this.logger.error('Failed to check model availability', { error })
-      return false
-    }
+    return this.isEngineHealthy()
   }
 
-  /**
-   * Load model
-   * For OpenAI cloud API, this is a no-op (models are always available)
-   */
   async loadModel(): Promise<void> {
     this.logger.debug('loadModel called for OpenAI - no-op (cloud API)')
-    return Promise.resolve()
   }
 
-  /**
-   * Create or reuse agent instance
-   */
-  private getAgent(
-    _preset: LLMPreset = 'balanced',
-  ): Agent<unknown, typeof AnalyzeBillOutputSchema> {
-    if (!this._agent) {
-      // const temperature = this.getTemperatureForPreset(preset)
-
-      this._agent = new Agent({
-        name: 'Bill Analysis Agent',
-        model: new OpenAIChatCompletionsModel(this.client, this.config.modelId),
-        instructions: this.agentInstructions,
-        outputType: AnalyzeBillOutputSchema,
-        // modelSettings: { temperature, maxTokens: this.config.maxTokens },
-      })
-    }
-    return this._agent
-  }
-
-  private getV2Agent(): Agent {
-    if (!this._v2Agent)
-      this._v2Agent = new Agent({
-        name: 'Bill Analysis V2 Agent',
-        model: new OpenAIChatCompletionsModel(this.client, this.config.modelId),
-        instructions: this.agentInstructions,
-      })
-    return this._v2Agent
-  }
-
-  /**
-   * Process a prompt and return analysis output
-   */
   async process(
     prompt: string,
     preset: LLMPreset,
     context?: ContextProcess,
-  ): Promise<AnalyzeBillOutput | null> {
-    const startTime = performance.now()
+  ): Promise<ModelTaxAnalysisPayload | null> {
+    const startedAt = performance.now()
     let attempts = 0
     const temperature = this.getTemperatureForPreset(preset)
 
     try {
-      return await this.circuitBreaker.execute(async () => {
+      const response = await this.circuitBreaker.execute(async () => {
         attempts++
-
-        this.logger.info('Processing message with OpenAIProvider', { preset })
-
-        const agent = this.getAgent(preset)
-        const result = await run(agent, prompt, {
-          maxTurns: 6,
-          stream: false,
-        })
-
-        const validate = AnalyzeBillOutputSchema.safeParse(result.finalOutput)
-
-        if (!validate.success) {
-          this.logger.error('OpenAIProvider final output validation failed', {
-            finalOutput: result.finalOutput,
-            errors: validate.error,
-          })
-          throw new Error('OpenAIProvider final output validation failed')
-        }
-
-        this.logger.info('OpenAIProvider processing completed', { preset })
-
-        const duration = Math.round(performance.now() - startTime)
-
-        // Record telemetry
-        if (context) {
-          await this.telemetryService.recordAgentCall({
-            jobId: context.jobId,
-            billId: context.billId,
-            tokensInput: result.state.usage.inputTokens,
-            tokensOutput: result.state.usage.outputTokens,
-            tokensTotal:
-              result.state.usage.inputTokens + result.state.usage.outputTokens,
-            model: this.config.modelId,
-            preset,
-            temperature,
-            duration,
-            attempts,
-            status: 'success',
-            promptVersion: context.promptVersion,
-            timestamp: DateTime.now().toJSDate(),
-          })
-        }
-
-        return validate.data
-      }, `OpenAIProvider.process (preset: ${preset})`)
-    } catch (error) {
-      const duration = Math.round(performance.now() - startTime)
-
-      this.logger.error(`OpenAIProvider failed to process message: ${error}`, {
-        message: prompt.slice(0, 100),
-        preset,
-      })
-
-      // Record error telemetry
-      if (context) {
-        await this.telemetryService.recordAgentCall({
-          jobId: context.jobId,
-          billId: context.billId,
-          tokensInput: 0,
-          tokensOutput: 0,
-          tokensTotal: 0,
-          model: this.config.modelId,
-          preset,
-          temperature,
-          duration,
-          attempts,
-          status: error instanceof AppError ? 'circuit_open' : 'error',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          promptVersion: context.promptVersion,
-          timestamp: DateTime.now().toJSDate(),
-        })
-      }
-
-      return null
-    }
-  }
-
-  async processV2(
-    prompt: string,
-    preset: LLMPreset,
-    _context?: ContextProcess,
-  ): Promise<ModelTaxAnalysisPayloadV2 | null> {
-    try {
-      return await this.circuitBreaker.execute(async () => {
-        const result = await run(this.getV2Agent(), prompt, {
+        const result = await run(this.getAgent(), prompt, {
           maxTurns: 6,
           stream: false,
         })
@@ -250,40 +80,93 @@ export class OpenAIProvider implements ILLMProvider {
           typeof result.finalOutput === 'string'
             ? JSON.parse(result.finalOutput)
             : result.finalOutput
-        const validate = ModelTaxAnalysisPayloadV2Schema.safeParse(output)
-        if (!validate.success)
-          throw new Error('OpenAIProvider V2 final output validation failed')
-        return validate.data
-      }, `OpenAIProvider.processV2 (preset: ${preset})`)
+        const validated = ModelTaxAnalysisPayloadSchema.safeParse(output)
+        if (!validated.success)
+          throw new Error('OpenAIProvider final output validation failed')
+        return { data: validated.data, usage: result.state.usage }
+      }, `OpenAIProvider.process (preset: ${preset})`)
+
+      await this.recordTelemetry({
+        context,
+        preset,
+        temperature,
+        attempts,
+        duration: Math.round(performance.now() - startedAt),
+        tokensInput: response.usage.inputTokens,
+        tokensOutput: response.usage.outputTokens,
+        status: 'success',
+      })
+      return response.data
     } catch (error) {
-      this.logger.error('OpenAIProvider failed to process V2 result', {
+      this.logger.error('OpenAIProvider failed to process analysis result', {
         error: error instanceof Error ? error.message : String(error),
+      })
+      await this.recordTelemetry({
+        context,
+        preset,
+        temperature,
+        attempts,
+        duration: Math.round(performance.now() - startedAt),
+        tokensInput: 0,
+        tokensOutput: 0,
+        status: error instanceof AppError ? 'circuit_open' : 'error',
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       return null
     }
   }
 
-  getTemperatureForPreset: (preset: LLMPreset) => number = (preset) => {
-    if (preset === 'strict') {
-      return 0.1
-    } else if (preset === 'balanced') {
-      return 0.5
-    } else {
-      return 0.7
-    }
+  getTemperatureForPreset(preset: LLMPreset): number {
+    if (preset === 'strict') return 0.1
+    if (preset === 'balanced') return 0.5
+    return 0.7
   }
 
-  /**
-   * Get circuit breaker status for monitoring
-   */
   getCircuitBreakerStatus(): 'closed' | 'open' | 'half-open' {
     return this.circuitBreaker.getState()
   }
 
-  /**
-   * Reset circuit breaker (manual recovery)
-   */
   resetCircuitBreaker(): void {
     this.circuitBreaker.reset()
+  }
+
+  private getAgent(): Agent {
+    if (!this.agent)
+      this.agent = new Agent({
+        name: 'Bill Analysis Agent',
+        model: new OpenAIChatCompletionsModel(this.client, this.config.modelId),
+        instructions: this.config.agentInstructions,
+      })
+    return this.agent
+  }
+
+  private async recordTelemetry(input: {
+    context?: ContextProcess
+    preset: LLMPreset
+    temperature: number
+    attempts: number
+    duration: number
+    tokensInput: number
+    tokensOutput: number
+    status: 'success' | 'error' | 'circuit_open'
+    error?: string
+  }): Promise<void> {
+    if (!input.context) return
+    await this.telemetryService.recordAgentCall({
+      jobId: input.context.jobId,
+      billId: input.context.billId,
+      tokensInput: input.tokensInput,
+      tokensOutput: input.tokensOutput,
+      tokensTotal: input.tokensInput + input.tokensOutput,
+      model: this.config.modelId,
+      preset: input.preset,
+      temperature: input.temperature,
+      duration: input.duration,
+      attempts: input.attempts,
+      status: input.status,
+      error: input.error,
+      promptVersion: input.context.promptVersion,
+      timestamp: DateTime.now().toJSDate(),
+    })
   }
 }

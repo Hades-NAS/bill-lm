@@ -14,7 +14,7 @@ import { ShoppingBagIcon, Sparkles } from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
 
-import { getColorBillTargetType, getColorPercentage } from '#/utils/bill'
+import { getColorBillTargetType } from '#/utils/bill'
 import { useIsMobile } from '#/utils/mobile'
 import { isLoadingQuery } from '#/utils/query'
 
@@ -31,13 +31,13 @@ import { LoaderText } from '#/components/shared/loader-text'
 import { NumberDisplay } from '#/components/shared/number-display'
 
 import type { ModalPageProps } from '#/schema/page'
-import { TaxAnalysisResultV2Schema } from '#/schema/tax-analysis-v2'
+import { TaxAnalysisResultSchema } from '#/schema/tax-analysis'
 
-export function getCanonicalAnalysisResult(snapshot: unknown) {
+export function getAnalysisResult(snapshot: unknown) {
   if (!snapshot || typeof snapshot !== 'object') return null
   const candidate = snapshot as Record<string, unknown>
   const createdAt = candidate.createdAt
-  const result = TaxAnalysisResultV2Schema.safeParse({
+  const result = TaxAnalysisResultSchema.safeParse({
     ...candidate,
     createdAt:
       typeof createdAt === 'string' ? new Date(createdAt) : createdAt,
@@ -125,11 +125,10 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
 
     const { data } = billDetailQuery
 
-    const canonicalAnalysis = getCanonicalAnalysisResult(
+    const analysis = getAnalysisResult(
       data.latestAnalysisResult?.resultSnapshot,
     )
-    const hasLegacyAnalysis = data.percentage !== null && data.reason !== null
-    const hasAnalysis = hasLegacyAnalysis || canonicalAnalysis !== null
+    const hasAnalysis = analysis !== null
 
     return (
       <Flex direction="column" gap="sm">
@@ -228,30 +227,14 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
             <Paper withBorder mt="md" p="md">
               {hasAnalysis && (
                 <Flex direction="column" gap={8}>
-                  {hasLegacyAnalysis && (
-                    <>
-                      <Flex align="center" gap={6}>
-                        <Text size="sm">Deducibilidad: </Text>
-                        <Badge
-                          color={getColorPercentage(data.percentage)}
-                          variant="filled"
-                        >
-                          {data.percentage?.toFixed(2)}%
-                        </Badge>
-                      </Flex>
-                      <Text size="sm">Razón: {data.reason}</Text>
-                    </>
-                  )}
-                  {canonicalAnalysis && (
+                  {analysis && (
                     <>
                       <Text size="sm">
-                        Clasificación: {canonicalAnalysis.classification}
+                        Clasificación: {analysis.classification}
                       </Text>
-                      {!hasLegacyAnalysis && (
-                        <Text size="sm">Razón: {canonicalAnalysis.reasoning}</Text>
-                      )}
+                      <Text size="sm">Razón: {analysis.reasoning}</Text>
                       <Text c="dimmed" size="xs">
-                        {canonicalAnalysis.advisoryNotice}
+                        {analysis.advisoryNotice}
                       </Text>
                     </>
                   )}

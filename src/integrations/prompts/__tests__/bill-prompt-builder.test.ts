@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  BILL_ANALYSIS_V2_PROMPT_METADATA,
+  BILL_ANALYSIS_PROMPT_METADATA,
   BillPromptBuilder,
 } from '../bill-prompt-builder'
 import {
-  AnalysisExecutionEnvelopeV2Schema,
-  ModelTaxAnalysisPayloadV2Schema,
+  AnalysisExecutionEnvelopeSchema,
+  ModelTaxAnalysisPayloadSchema,
   type TaxPurpose,
-} from '#/schema/tax-analysis-v2'
+} from '#/schema/tax-analysis'
 
 const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
 
 function createEnvelope(purpose: TaxPurpose) {
-  return AnalysisExecutionEnvelopeV2Schema.parse({
+  return AnalysisExecutionEnvelopeSchema.parse({
     schemaVersion: 'v2',
     envelopeVersion: '1',
-    prompt: BILL_ANALYSIS_V2_PROMPT_METADATA,
+    prompt: BILL_ANALYSIS_PROMPT_METADATA,
     context: {
       collectionContextRevisionId: id,
       revision: 2,
@@ -113,105 +113,30 @@ function createEnvelope(purpose: TaxPurpose) {
 }
 
 describe('BillPromptBuilder', () => {
-  it('labels user references as self-managed rather than official rules', () => {
-    const prompt = new BillPromptBuilder().build(
-      {
-        jobId: 'job-id',
-        userId: 'user-id',
-        credentialId: 'connection-id',
-        percentage: 0,
-        status: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        callCount: 0,
-        totalTokens: 0,
-        deletedAt: null,
-        read: false,
-        data: {
-          collectionId: 'collection-id',
-          collectionName: 'Colección',
-          type: 'all',
-          billIds: ['bill-id'],
-          credentialId: 'connection-id',
-        },
-      },
-      {
-        vendorName: 'Proveedor',
-        buyerIdentifier: '0102030405',
-        details: [],
-        totals: { amount: 1, net: 1, taxes: 0 },
-        billType: 'PERSONAL',
-      },
-      [{ name: 'Mi criterio.md', markdown: '# Mi criterio\n\nSolo mi texto.' }],
-    )
-
-    expect(prompt).toContain('Mi criterio.md')
-    expect(prompt).toContain('autogestionado')
-    expect(prompt).toContain('no es una fuente oficial')
-  })
-
-  it('labels published ruleset sections as official and keeps them distinct from user material', () => {
-    const prompt = new BillPromptBuilder().build(
-      {
-        jobId: 'job-id',
-        userId: 'user-id',
-        credentialId: 'connection-id',
-        percentage: 0,
-        status: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        callCount: 0,
-        totalTokens: 0,
-        deletedAt: null,
-        read: false,
-        data: {
-          collectionId: 'collection-id',
-          collectionName: 'Colección',
-          type: 'all',
-          billIds: ['bill-id'],
-          credentialId: 'connection-id',
-        },
-      },
-      {
-        vendorName: 'Proveedor',
-        buyerIdentifier: '0102030405',
-        details: [],
-        totals: { amount: 1, net: 1, taxes: 0 },
-        billType: 'PERSONAL',
-      },
-      [{ name: 'Nota propia.md', markdown: 'Nota del usuario.' }],
-      [{ name: 'SRI — LRTI · Art. 10', markdown: 'Texto oficial publicado.' }],
-    )
-
-    expect(prompt).toContain('Secciones de fuente oficial publicadas')
-    expect(prompt).toContain('SRI — LRTI · Art. 10')
-    expect(prompt).toContain('Nota propia.md')
-  })
-
   it.each([
     ['vat_credit', 'crédito tributario de IVA'],
     ['business_income_tax', 'impuesto a la renta de negocio'],
     ['personal_expenses', 'gastos personales'],
   ] as const)(
-    'builds a deterministic V2 prompt for %s',
+    'builds a deterministic prompt for %s',
     (purpose, purposeInstruction) => {
       const envelope = createEnvelope(purpose)
       const builder = new BillPromptBuilder()
 
-      const prompt = builder.buildV2(envelope, id)
+      const prompt = builder.build(envelope, id)
 
       expect(prompt).toContain('Contexto fijado')
       expect(prompt).toContain(purposeInstruction)
       expect(prompt).toContain('"purpose": "' + purpose + '"')
       expect(prompt).toContain('Norma A')
       expect(prompt).toContain('Nota del contribuyente.md')
-      expect(prompt).toContain(BILL_ANALYSIS_V2_PROMPT_METADATA.templateHash)
-      expect(builder.buildV2(envelope, id)).toBe(prompt)
+      expect(prompt).toContain(BILL_ANALYSIS_PROMPT_METADATA.templateHash)
+    expect(builder.build(envelope, id)).toBe(prompt)
     },
   )
 
   it('keeps frozen evidence ordering and omits private invoice identifiers', () => {
-    const prompt = new BillPromptBuilder().buildV2(
+    const prompt = new BillPromptBuilder().build(
       createEnvelope('business_income_tax'),
       id,
     )
@@ -226,8 +151,8 @@ describe('BillPromptBuilder', () => {
     expect(prompt).not.toContain('rawXml')
   })
 
-  it('rejects extra fields in the model-owned V2 payload', () => {
-    expect(ModelTaxAnalysisPayloadV2Schema.safeParse({
+  it('rejects extra fields in the model-owned payload', () => {
+    expect(ModelTaxAnalysisPayloadSchema.safeParse({
       purpose: 'personal_expenses',
       classification: 'needs_review',
       reasoning: 'Falta confirmar el beneficiario.',
@@ -236,7 +161,7 @@ describe('BillPromptBuilder', () => {
       runId: id,
     }).success).toBe(false)
 
-    expect(ModelTaxAnalysisPayloadV2Schema.safeParse({
+    expect(ModelTaxAnalysisPayloadSchema.safeParse({
       purpose: 'vat_credit',
       classification: 'eligible',
       reasoning: 'La factura contiene IVA.',
@@ -253,7 +178,7 @@ describe('BillPromptBuilder', () => {
     const first = createEnvelope('vat_credit').prompt
     const second = createEnvelope('vat_credit').prompt
 
-    expect(first).toEqual(BILL_ANALYSIS_V2_PROMPT_METADATA)
+    expect(first).toEqual(BILL_ANALYSIS_PROMPT_METADATA)
     expect(second).toEqual(first)
     expect(first.templateHash).toMatch(/^[a-f0-9]{64}$/)
     expect(JSON.stringify(first)).not.toMatch(/apiKey|secret|ciphertext/i)

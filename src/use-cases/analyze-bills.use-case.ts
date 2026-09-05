@@ -1,189 +1,34 @@
-import { DateTime } from 'luxon'
-
-import { AnalysisContextSchema } from '#/schema/bill-analysis'
-
-import { adminDb } from '#/integrations/firebase/firebase.server'
-import { getServiceLogger } from '#/integrations/logger.server'
 import { createBillAnalysisService } from '#/integrations/services/bill-analysis.service'
-
-import { FireCollections } from '#/constants/firebase'
 
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
 import type { AnalysisResult } from '#/integrations/services/bill-analysis.service'
 import type { ParsedBill } from '#/schema/bill-analysis'
 import type { AnalyzeJobData, PresetType } from '#/schema/collections'
-import type { AnalysisExecutionEnvelopeV2 } from '#/schema/tax-analysis-v2'
+import type { AnalysisExecutionEnvelope } from '#/schema/tax-analysis'
 
-const logger = getServiceLogger('AnalyzeBillsUseCase')
-
-/**
- * AnalyzeBillsUseCase
- *
- * Orchestrates the analysis of bills independent of delivery mechanism.
- * This use case can be invoked from:
- * - BullMQ Worker (async background jobs)
- * - tRPC endpoints (if needed for sync analysis)
- * - CLI commands
- * - Cron jobs
- *
- * The logic is decoupled from the execution context.
- */
 export class AnalyzeBillsUseCase {
-  private logger = logger
-
   constructor(private provider: ILLMProvider) {}
 
-  /**
-   * Execute bill analysis
-   *
-   * @param billIds - Bills to analyze
-   * @param jobData - Job data (collection info, instructions, etc)
-   * @param preset - LLM preset (strict, balanced, creative)
-   * @returns Array of analysis results
-   */
   async execute(
-    billIds: Array<string>,
-    jobData: AnalyzeJobData,
-    preset: PresetType = 'balanced',
-    fiscalReferences: Array<{ name: string; markdown: string }> = [],
-    officialReferences: Array<{ name: string; markdown: string }> = [],
-  ): Promise<Array<AnalysisResult>> {
-    const { jobId, userId, data: jobDataPayload } = jobData
-    const { collectionId, collectionName } = jobDataPayload
-
-    this.logger.info('AnalyzeBillsUseCase: starting', {
-      jobId,
-      userId,
-      collectionId,
-      billCount: billIds.length,
-      preset,
-    })
-
-    try {
-      // Build analysis context
-      const context = AnalysisContextSchema.parse({
-        jobId,
-        billId: billIds[0], // Will be overridden per bill
-        userId,
-        collectionId,
-        collectionName,
-        preset,
-      })
-
-      // Create analysis service
-      const analysisService = createBillAnalysisService({
-        provider: this.provider,
-      })
-
-      // Execute analysis
-      const results = await analysisService.analyzeBills(
-        billIds,
-        jobData,
-        context,
-        fiscalReferences,
-        officialReferences,
-      )
-
-      this.logger.info('AnalyzeBillsUseCase: analysis completed', {
-        jobId,
-        totalAnalyzed: results.length,
-        successful: results.filter((r) => r.success).length,
-        failed: results.filter((r) => !r.success).length,
-      })
-
-      return results
-    } catch (error) {
-      this.logger.error('AnalyzeBillsUseCase: error during analysis', {
-        jobId,
-        error: error instanceof Error ? error.message : String(error),
-      })
-
-      // Update Firestore with error status
-      try {
-        await adminDb
-          .collection(FireCollections.ANALYZE_COLLECTION)
-          .doc(jobId)
-          .update({
-            status: 'failed',
-            error: error instanceof Error ? error.message : 'Unknown error',
-            updatedAt: DateTime.now().toJSDate(),
-          })
-      } catch (updateError) {
-        this.logger.error('Failed to update Firestore with error status', {
-          jobId,
-          error:
-            updateError instanceof Error
-              ? updateError.message
-              : String(updateError),
-        })
-      }
-
-      throw error
-    }
-  }
-
-  async executePrepared(
     bills: Array<{ billId: string; parsedBill: ParsedBill }>,
     jobData: AnalyzeJobData,
     preset: PresetType = 'balanced',
-    envelope: AnalysisExecutionEnvelopeV2,
+    envelope: AnalysisExecutionEnvelope,
   ): Promise<Array<AnalysisResult>> {
-    const { jobId, userId, data: jobDataPayload } = jobData
     const runId = jobData.analysisRunId
     if (!runId)
       throw new Error('El trabajo no tiene una ejecución de análisis asociada.')
-    const context = AnalysisContextSchema.parse({
-      jobId,
-      billId: bills[0]?.billId,
-      userId,
-      collectionId: jobDataPayload.collectionId,
-      collectionName: jobDataPayload.collectionName,
-      preset,
-    })
-    return createBillAnalysisService({ provider: this.provider }).analyzePreparedBillsV2(
+
+    return createBillAnalysisService({ provider: this.provider }).analyzePreparedBills(
       bills,
       jobData,
-      context,
+      { jobId: jobData.jobId, preset },
       envelope,
       runId,
     )
   }
-
-  /**
-   * Execute and handle both success and error cases
-   * Useful for worker that needs to always complete gracefully
-   */
-  async executeWithErrorHandling(
-    billIds: Array<string>,
-    jobData: AnalyzeJobData,
-    preset: 'strict' | 'balanced' | 'creative' = 'balanced',
-  ): Promise<{
-    success: boolean
-    results?: Array<AnalysisResult>
-    error?: string
-  }> {
-    try {
-      const results = await this.execute(billIds, jobData, preset)
-      return { success: true, results }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error)
-      this.logger.error(
-        'AnalyzeBillsUseCase: caught error in executeWithErrorHandling',
-        {
-          error: errorMessage,
-        },
-      )
-      return { success: false, error: errorMessage }
-    }
-  }
 }
 
-/**
- * Factory function to create use case instance
- */
-export function createAnalyzeBillsUseCase(
-  provider: ILLMProvider,
-): AnalyzeBillsUseCase {
+export function createAnalyzeBillsUseCase(provider: ILLMProvider): AnalyzeBillsUseCase {
   return new AnalyzeBillsUseCase(provider)
 }

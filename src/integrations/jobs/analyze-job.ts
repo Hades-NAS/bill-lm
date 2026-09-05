@@ -141,7 +141,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       agentInstructions: '',
     })
     const useCase = createAnalyzeBillsUseCase(provider)
-    const results = await useCase.executePrepared(
+    const results = await useCase.execute(
       envelope.invoices.map((invoice) => ({
         billId: invoice.billId,
         parsedBill: ParsedBillSchema.parse(invoice.normalized),

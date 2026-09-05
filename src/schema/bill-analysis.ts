@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon'
 import z from 'zod'
 
 import type { BillTargetType } from '#/generated/prisma/enums'
@@ -137,73 +136,6 @@ export function transformRawToParsed(raw: RawBillXML): ParsedBill {
 }
 
 // ============================================================================
-// STAGE 3: Analyzed Bill (results from LLM)
-// ============================================================================
-
-export const AnalyzedBillSchema = z.object({
-  percentage: z
-    .number()
-    .min(0)
-    .max(100)
-    .describe('Deducibility percentage 0-100'),
-  reason: z.string().min(1).max(10000).describe('Explanation of deducibility'),
-  confidence: z
-    .number()
-    .min(0)
-    .max(1)
-    .optional()
-    .describe('Optional confidence score 0-1'),
-  version: z.string().describe('Version of prompt used for analysis'),
-  preset: z
-    .enum(['strict', 'balanced', 'creative'])
-    .describe('LLM preset used'),
-  timestamp: z.date().optional().describe('When analysis was performed'),
-})
-
-export type AnalyzedBill = z.infer<typeof AnalyzedBillSchema>
-
-/**
- * Enrich analysis with metadata
- * Adds version, preset, and timestamp to raw analysis result
- */
-export function enrichAnalysisMetadata(
-  analysis: Omit<AnalyzedBill, 'version' | 'preset'>,
-  version: string,
-  preset: 'strict' | 'balanced' | 'creative',
-): AnalyzedBill {
-  return {
-    ...analysis,
-    version,
-    preset,
-    timestamp: DateTime.now().toJSDate(),
-  }
-}
-
-// ============================================================================
-// STAGE 4: Analysis Context (metadata for the analysis pipeline)
-// ============================================================================
-
-export const AnalysisContextSchema = z.object({
-  jobId: z.string(),
-  billId: z.string(),
-  userId: z.string(),
-  collectionId: z.string(),
-  collectionName: z.string(),
-  preset: z.enum(['strict', 'balanced', 'creative']).default('balanced'),
-  instructions: z.string().optional(),
-  retryCount: z.number().int().min(0).default(0),
-})
-
-export type AnalysisContext = z.infer<typeof AnalysisContextSchema>
-
-export const AnalyzeBillOutputSchema = z.object({
-  percentage: z.number().min(0).max(100),
-  reason: z.string().min(1).max(10000),
-})
-
-export type AnalyzeBillOutput = z.infer<typeof AnalyzeBillOutputSchema>
-
-// ============================================================================
 // Helpers
 // ============================================================================
 
@@ -224,20 +156,4 @@ export function determineBillType(identifier: string): BillTargetType {
     return 'PROFESSIONAL'
   }
   return 'OTHER'
-}
-
-/**
- * Validate if analysis result meets minimum requirements
- */
-export function isValidAnalysis(analysis: AnalyzedBill): boolean {
-  if (analysis.percentage < 0 || analysis.percentage > 100) {
-    return false
-  }
-  if (!analysis.reason || analysis.reason.trim().length === 0) {
-    return false
-  }
-  if (analysis.reason.length > 10000) {
-    return false
-  }
-  return true
 }

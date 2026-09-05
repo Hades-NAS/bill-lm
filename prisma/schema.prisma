@@ -323,9 +323,6 @@ model BillHeader {
   billType    BillTargetType @default(PERSONAL)
   storagePath String         @db.VarChar(255)
 
-  percentage Float?  @db.DoublePrecision
-  reason     String? @db.VarChar(10000)
-
   createdAt DateTime  @default(now()) @db.Timestamptz
   updatedAt DateTime  @updatedAt @db.Timestamptz
   deletedAt DateTime?

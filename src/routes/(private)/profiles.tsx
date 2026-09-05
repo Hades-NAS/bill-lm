@@ -28,7 +28,7 @@ import {
   EconomicActivityRevisionInputSchema,
   TaxpayerProfileRevisionDataSchema,
   TaxpayerProfileRevisionInputSchema,
-} from '#/schema/tax-analysis-v2'
+} from '#/schema/tax-analysis'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
@@ -44,7 +44,7 @@ import { EmptyState } from '#/components/shared/empty-state'
 import type {
   EconomicActivityRevisionInput,
   TaxpayerProfileRevisionInput,
-} from '#/schema/tax-analysis-v2'
+} from '#/schema/tax-analysis'
 
 export const Route = createFileRoute('/(private)/profiles')({
   component: ProfilesPage,

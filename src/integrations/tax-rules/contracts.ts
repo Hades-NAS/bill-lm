@@ -5,7 +5,7 @@ import {
   TaxPurposeSchema,
   TaxRegimeSchema,
   TaxRuleReviewStatusSchema,
-} from '#/schema/tax-analysis-v2'
+} from '#/schema/tax-analysis'
 
 const CivilDateSchema = z
   .string()

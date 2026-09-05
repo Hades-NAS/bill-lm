@@ -346,11 +346,11 @@ export type AnalysisOfficialEvidence = z.infer<
   typeof AnalysisOfficialEvidenceSchema
 >
 
-export const AnalysisExecutionEnvelopeV2Schema = z.object({
+export const AnalysisExecutionEnvelopeSchema = z.object({
   schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
   envelopeVersion: z.literal('1'),
   prompt: z.object({
-    templateId: z.literal('bill-analysis-v2'),
+    templateId: z.literal('bill-analysis'),
     templateVersion: z.literal('2'),
     templateHash: SnapshotHashSchema,
   }),
@@ -407,12 +407,12 @@ export const AnalysisExecutionEnvelopeV2Schema = z.object({
     normalized: ParsedBillSchema,
   })).min(1),
 })
-export type AnalysisExecutionEnvelopeV2 = z.infer<
-  typeof AnalysisExecutionEnvelopeV2Schema
+export type AnalysisExecutionEnvelope = z.infer<
+  typeof AnalysisExecutionEnvelopeSchema
 >
 
 export const AnalysisRunInputSnapshotSchema = z.union([
-  AnalysisExecutionEnvelopeV2Schema,
+  AnalysisExecutionEnvelopeSchema,
   z.object({
     schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
     blockCode: z.string().min(1),
@@ -477,7 +477,7 @@ const TaxAnalysisResultBaseSchema = z.object({
   }),
   createdAt: z.date(),
 })
-export const TaxAnalysisResultV2Schema = z.discriminatedUnion('purpose', [
+export const TaxAnalysisResultSchema = z.discriminatedUnion('purpose', [
   TaxAnalysisResultBaseSchema.extend({
     purpose: z.literal('vat_credit'),
     relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
@@ -505,7 +505,7 @@ export const TaxAnalysisResultV2Schema = z.discriminatedUnion('purpose', [
     missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
   }),
 ])
-export type TaxAnalysisResultV2 = z.infer<typeof TaxAnalysisResultV2Schema>
+export type TaxAnalysisResult = z.infer<typeof TaxAnalysisResultSchema>
 
 const ModelTaxAnalysisPayloadBaseSchema = z
   .object({
@@ -520,9 +520,9 @@ const ModelTaxAnalysisPayloadBaseSchema = z
  * The fields an LLM is allowed to return for an analysis result.
  *
  * schemaVersion, runId, invoiceId, and createdAt are owned by the server and
- * are attached only when F3-04 persists a final V2 result.
+ * are attached only when a final result is persisted.
  */
-export const ModelTaxAnalysisPayloadV2Schema = z.discriminatedUnion('purpose', [
+export const ModelTaxAnalysisPayloadSchema = z.discriminatedUnion('purpose', [
   ModelTaxAnalysisPayloadBaseSchema.extend({
     purpose: z.literal('vat_credit'),
     relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
@@ -550,6 +550,6 @@ export const ModelTaxAnalysisPayloadV2Schema = z.discriminatedUnion('purpose', [
     missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
   }).strict(),
 ])
-export type ModelTaxAnalysisPayloadV2 = z.infer<
-  typeof ModelTaxAnalysisPayloadV2Schema
+export type ModelTaxAnalysisPayload = z.infer<
+  typeof ModelTaxAnalysisPayloadSchema
 >

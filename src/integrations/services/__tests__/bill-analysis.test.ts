@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createBillAnalysisService } from '../bill-analysis.service'
 
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
-import type { AnalysisExecutionEnvelopeV2 } from '#/schema/tax-analysis-v2'
+import type { AnalysisExecutionEnvelope } from '#/schema/tax-analysis'
 
 const RUN_ID = '11111111-1111-4111-8111-111111111111'
 const BILL_ID = '22222222-2222-4222-8222-222222222222'
@@ -12,9 +12,9 @@ const PROFILE_ID = '44444444-4444-4444-8444-444444444444'
 const RULESET_ID = '55555555-5555-4555-8555-555555555555'
 const CONNECTION_ID = '66666666-6666-4666-8666-666666666666'
 
-const envelope: AnalysisExecutionEnvelopeV2 = {
+const envelope: AnalysisExecutionEnvelope = {
   schemaVersion: 'v2', envelopeVersion: '1',
-  prompt: { templateId: 'bill-analysis-v2', templateVersion: '2', templateHash: 'a'.repeat(64) },
+  prompt: { templateId: 'bill-analysis', templateVersion: '2', templateHash: 'a'.repeat(64) },
   context: { collectionContextRevisionId: CONTEXT_ID, revision: 1, purpose: 'personal_expenses', period: { startDate: '2026-01-01', endDate: '2026-12-31' }, notes: null },
   taxpayerProfile: { revisionId: PROFILE_ID, revision: 1, hasRuc: false, hasEmploymentIncome: true, taxRegime: 'unknown', vatFilingFrequency: 'none', additionalFacts: null },
   activities: [], provider: { id: CONNECTION_ID, provider: 'OPENAI', modelId: 'gpt-4o-mini' },
@@ -23,30 +23,28 @@ const envelope: AnalysisExecutionEnvelopeV2 = {
   userReferences: [], invoices: [{ billId: BILL_ID, contentHash: 'b'.repeat(64), parserVersion: 'xml-v1', normalized: { vendorName: 'Proveedor', buyerIdentifier: '0102030405', buyerName: 'Titular', details: [{ description: 'Servicio', quantity: 1, unitPrice: 10 }], totals: { amount: 11.5, net: 10, taxes: 1.5 }, billType: 'PERSONAL' } }],
 }
 
-describe('BillAnalysisService V2 legacy projection', () => {
-  it('never updates BillHeader for a needs_review result', async () => {
+describe('BillAnalysisService canonical result', () => {
+  it('returns a canonical needs_review result without updating BillHeader', async () => {
     const provider = {
       getProviderName: () => 'openai', getModelId: () => 'gpt-4o-mini',
       isModelLoaded: async () => true, loadModel: async () => undefined,
-      processV2: vi.fn().mockResolvedValue({
+      process: vi.fn().mockResolvedValue({
         purpose: 'personal_expenses', classification: 'needs_review',
         reasoning: 'Falta evidencia.', uncertainties: ['Soporte'], missingEvidence: ['Soporte'],
       }),
     } as unknown as ILLMProvider
     const service = createBillAnalysisService({ provider })
-    const updateBills = vi.spyOn(service as any, 'updateBillsInDatabase')
-      .mockResolvedValue(undefined)
     vi.spyOn(service as any, 'updateFirestoreProgress').mockResolvedValue(undefined)
 
-    const results = await service.analyzePreparedBillsV2(
+    const results = await service.analyzePreparedBills(
       [{ billId: BILL_ID, parsedBill: envelope.invoices[0].normalized }],
       { jobId: 'job-1', userId: 'user-1', analysisRunId: RUN_ID, data: { collectionId: CONTEXT_ID, collectionName: 'Colección', billIds: [BILL_ID], type: 'all' } } as any,
-      { jobId: 'job-1', billId: BILL_ID, userId: 'user-1', collectionId: CONTEXT_ID, collectionName: 'Colección', preset: 'balanced', retryCount: 0 },
+      { jobId: 'job-1', preset: 'balanced' },
       envelope,
       RUN_ID,
     )
 
-    expect(results[0]).toMatchObject({ success: true, analysis: undefined })
+    expect(results[0]).toMatchObject({ success: true })
     expect(results[0].result).toMatchObject({
       advisoryNotice: 'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
       references: {
@@ -54,6 +52,5 @@ describe('BillAnalysisService V2 legacy projection', () => {
         user: [],
       },
     })
-    expect(updateBills).not.toHaveBeenCalled()
   })
 })

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { getCanonicalAnalysisResult } from '../bill-detail'
+import { getAnalysisResult } from '../bill-detail'
 
 const id = '11111111-1111-4111-8111-111111111111'
 
 describe('BillDetail canonical result notice', () => {
   it('exposes the canonical no-dictamen notice from a persisted V2 snapshot', () => {
-    const result = getCanonicalAnalysisResult({
+    const result = getAnalysisResult({
       schemaVersion: 'v2', runId: id, invoiceId: id,
       purpose: 'personal_expenses', classification: 'needs_review',
       reasoning: 'Falta evidencia.', uncertainties: ['Soporte'],

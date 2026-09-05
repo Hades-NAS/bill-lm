@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  normalizeTaxAnalysisResultV2,
-  projectTaxAnalysisResultToLegacy,
+  normalizeTaxAnalysisResult,
   TaxAnalysisResultValidationError,
 } from '../result-adapter'
 
@@ -49,7 +48,7 @@ describe('tax analysis result adapter', () => {
       },
     ],
   ])('normaliza un resultado válido de %s', (_name, purpose, payload) => {
-    const result = normalizeTaxAnalysisResultV2({
+    const result = normalizeTaxAnalysisResult({
       payload,
       purpose: purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
       runId: RUN_ID,
@@ -61,24 +60,20 @@ describe('tax analysis result adapter', () => {
     expect(result).toMatchObject({ schemaVersion: 'v2', runId: RUN_ID, invoiceId: INVOICE_ID, purpose })
     expect(result.references).toEqual(references)
     expect(result.advisoryNotice).toContain('no constituye un dictamen jurídico')
-    if (result.classification === 'needs_review')
-      expect(projectTaxAnalysisResultToLegacy(result)).toBeNull()
-    else
-      expect(projectTaxAnalysisResultToLegacy(result)?.reason).toBe(payload.reasoning)
   })
 
   it('rechaza propósito cruzado, campos extra y actividades fuera del envelope', () => {
-    expect(() => normalizeTaxAnalysisResultV2({
+    expect(() => normalizeTaxAnalysisResult({
       payload: { purpose: 'personal_expenses', classification: 'eligible', reasoning: 'x', uncertainties: [], missingEvidence: [] },
       purpose: 'vat_credit', runId: RUN_ID, invoiceId: INVOICE_ID, allowedActivityRevisionIds: [ACTIVITY_ID], references,
     })).toThrow(TaxAnalysisResultValidationError)
 
-    expect(() => normalizeTaxAnalysisResultV2({
+    expect(() => normalizeTaxAnalysisResult({
       payload: { purpose: 'personal_expenses', classification: 'eligible', reasoning: 'x', uncertainties: [], missingEvidence: [], invented: true },
       purpose: 'personal_expenses', runId: RUN_ID, invoiceId: INVOICE_ID, allowedActivityRevisionIds: [], references,
     })).toThrow(TaxAnalysisResultValidationError)
 
-    expect(() => normalizeTaxAnalysisResultV2({
+    expect(() => normalizeTaxAnalysisResult({
       payload: {
         purpose: 'business_income_tax', classification: 'eligible', reasoning: 'x', uncertainties: [],
         relatedActivityRevisionIds: [INVOICE_ID], mixedUseDetected: false,

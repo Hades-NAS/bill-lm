@@ -304,7 +304,12 @@ La separación propuesta preserva el flujo cloud mientras permite que el daemon,
 
 XML/PDF raw, nombres, descripciones de líneas, Markdown normativo y observaciones no cambian instrucciones, herramientas ni schema. Datos tributarios o prompts no llegan a logs/telemetría sin redacción.
 
-`TaxAnalysisResultV2` sustituye el contrato autoritativo `percentage/reason` con una unión discriminada por `purpose`. Un run de `vat_credit` llena solo el área `vat`; uno de `business_income_tax`, solo `businessIncomeTax`; y uno de `personal_expenses`, solo `personalExpenses`. Las otras áreas se omiten o quedan `not_applicable` por contrato: no se infieren ni rellenan. El área aplicable incluye `applicability` (`applicable`, `not_applicable`, `insufficient_facts`, `blocked`), `assessment` (`eligible`, `ineligible`, `partial`, `needs_review`), `applicablePercentage` o monto solo cuando corresponda, razón, evidencia, referencias de ruleset y `confidence`. `applicablePercentage` expresa la proporción aplicable; `confidence` mide calidad del análisis. Ninguno sustituye al otro ni constituye dictamen legal.
+`TaxAnalysisResult` es una unión discriminada por `purpose`. Un run de
+`vat_credit` llena solo el resultado de IVA; uno de `business_income_tax`, solo
+el de impuesto a la renta de actividad; y uno de `personal_expenses`, solo el
+de gastos personales. El resultado aplicable incluye clasificación, razón,
+evidencia, referencias de ruleset, importes o porcentajes cuando correspondan
+y nivel de confianza. Ninguno constituye un dictamen legal.
 
 Un gate común se ejecuta antes de claim o llamada LLM en cloud, GPU y MCP: valida revisión de colección/perfil/actividades, purpose reconocido y periodo, snapshots de payload, ruleset revisado-activo-vigente, factura normalizada/elegible y capability probe del perfil. Cada ausencia produce un estado bloqueado accionable; la UI no puede omitir el gate y el LLM no completa reglas ausentes.
 
@@ -351,7 +356,8 @@ El JSONL no contiene secretos ni contenido sensible innecesario. Las exportacion
 - Extraer puertos de `BillAnalysisService` con contract tests para cloud.
 - Introducir `AnalysisRun`/`AnalysisResult`, memberships y rulesets versionados; preservar la proyección actual.
 - Implementar importación manual de fuentes PDF/Markdown, normalización, revisión, activación y gate de análisis.
-- Migrar `Collection.year` e `instructions` como revisión legacy, sin inferir propósito/actividad; mantener `BillHeader.percentage/reason` solo como proyección de compatibilidad.
+- Migrar `Collection.year` e `instructions` como revisión histórica, sin
+  inferir propósito ni actividad.
 
 **Punto de aceptación:** resultados históricos, idempotencia y ruleset aplicable funcionan sin alterar los resultados cloud existentes; un run sin ruleset activo queda bloqueado de forma explicable.
 

@@ -1,7 +1,7 @@
 import { ReviewedTaxRuleSectionSchema } from './contracts'
 
 import type { DraftTaxRuleSection, ReviewedTaxRuleSection } from './contracts'
-import type { TaxPurpose, TaxRegime } from '#/schema/tax-analysis-v2'
+import type { TaxPurpose, TaxRegime } from '#/schema/tax-analysis'
 
 export type ReviewedSectionMetadata = {
   reviewer: string

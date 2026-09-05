@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AnalysisExecutionEnvelopeV2Schema } from '#/schema/tax-analysis-v2'
+import { AnalysisExecutionEnvelopeSchema } from '#/schema/tax-analysis'
 
 const mocks = vi.hoisted(() => ({
   analysisRunFindFirst: vi.fn(),
@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   collectionFindFirst: vi.fn(),
   decryptProviderSecret: vi.fn(),
   createProvider: vi.fn(),
-  executePrepared: vi.fn(),
+  execute: vi.fn(),
   analysisResultCreateMany: vi.fn(),
   firebaseUpdate: vi.fn(),
 }))
@@ -46,7 +46,7 @@ vi.mock('#/integrations/llm/llm-provider-factory', () => ({
   LLMProviderFactory: class { create = mocks.createProvider },
 }))
 vi.mock('#/use-cases/analyze-bills.use-case', () => ({
-  createAnalyzeBillsUseCase: () => ({ executePrepared: mocks.executePrepared }),
+  createAnalyzeBillsUseCase: () => ({ execute: mocks.execute }),
 }))
 
 import { jobHandler } from '../analyze-job'
@@ -60,9 +60,9 @@ const CONNECTION_ID = '66666666-6666-4666-8666-666666666666'
 const BILL_ID = '77777777-7777-4777-8777-777777777777'
 
 function envelope() {
-  return AnalysisExecutionEnvelopeV2Schema.parse({
+  return AnalysisExecutionEnvelopeSchema.parse({
     schemaVersion: 'v2', envelopeVersion: '1',
-    prompt: { templateId: 'bill-analysis-v2', templateVersion: '2', templateHash: 'a'.repeat(64) },
+    prompt: { templateId: 'bill-analysis', templateVersion: '2', templateHash: 'a'.repeat(64) },
     context: { collectionContextRevisionId: CONTEXT_ID, revision: 1, purpose: 'personal_expenses', period: { startDate: '2026-01-01', endDate: '2026-12-31' }, notes: null },
     taxpayerProfile: { revisionId: PROFILE_ID, revision: 1, hasRuc: false, hasEmploymentIncome: true, taxRegime: 'unknown', vatFilingFrequency: 'none', additionalFacts: null },
     activities: [],
@@ -111,7 +111,7 @@ describe('analyze worker fail-closed gate', () => {
 
     expect(mocks.decryptProviderSecret).not.toHaveBeenCalled()
     expect(mocks.createProvider).not.toHaveBeenCalled()
-    expect(mocks.executePrepared).not.toHaveBeenCalled()
+    expect(mocks.execute).not.toHaveBeenCalled()
   })
 
   it('does not decrypt or invoke an LLM for a stale envelope or missing collection', async () => {
@@ -137,7 +137,7 @@ describe('analyze worker fail-closed gate', () => {
     expect(mocks.providerConnectionFindFirst).not.toHaveBeenCalled()
     expect(mocks.decryptProviderSecret).not.toHaveBeenCalled()
     expect(mocks.createProvider).not.toHaveBeenCalled()
-    expect(mocks.executePrepared).not.toHaveBeenCalled()
+    expect(mocks.execute).not.toHaveBeenCalled()
   })
 })
 
@@ -166,7 +166,7 @@ describe('analyze worker V2 result persistence', () => {
       personalExpenseCategory: 'Salud', potentialEligibleAmount: 11.5,
       beneficiaryRelationship: 'Titular', missingEvidence: [],
     }
-    mocks.executePrepared.mockResolvedValue([
+    mocks.execute.mockResolvedValue([
       { billId: BILL_ID, success: true, result: snapshot },
       { billId: 'failed-bill', success: false, error: 'Proveedor no disponible' },
     ])

@@ -16,7 +16,6 @@ import {
   Flex,
   List,
   Modal,
-  ThemeIcon,
   Alert,
   Select,
   MultiSelect,
@@ -29,7 +28,6 @@ import {
   ChevronLeft,
   Edit,
   EyeIcon,
-  HelpCircle,
   NotepadText,
   Sparkles,
   Trash2,
@@ -40,7 +38,7 @@ import React from 'react'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
-import { getColorBillTargetType, getColorPercentage } from '#/utils/bill'
+import { getColorBillTargetType } from '#/utils/bill'
 import { useIsMobile } from '#/utils/mobile'
 import {
   isLoadingMutation,
@@ -70,7 +68,6 @@ import { EmptyState } from '#/components/shared/empty-state'
 import Input from '#/components/shared/input'
 import { NumberDisplay } from '#/components/shared/number-display'
 import { QuickFilter } from '#/components/shared/quick-filter'
-import TextWithIcon from '#/components/shared/text-icon'
 
 import type { FilterValue, FilterField } from '#/components/shared/quick-filter'
 import type { LLMPreset } from '#/config/llm-config'
@@ -89,14 +86,6 @@ const filterFields: Array<FilterField> = [
     type: 'text',
     placeholder: 'Buscar por nombre',
     clearable: true,
-  },
-  {
-    name: 'percentage',
-    label: 'Porcentaje',
-    type: 'threshold',
-    placeholder: 'Buscar por porcentaje',
-    clearable: true,
-    // defaultValue: DateTime.now().year,
   },
 ]
 
@@ -346,23 +335,14 @@ function CollectionDetailPage() {
     enabled: !!collectionQuery.data,
     queryKey: billsKeys.calc(collectionId, collectionQuery.data?.bills || []),
     queryFn: () => {
-      let analyzed = 0
-      let pending = 0
-
-      collectionQuery.data?.bills.forEach((bill) => {
-        if (bill.percentage !== null) {
-          analyzed++
-        } else {
-          pending++
-        }
-      })
-
-      const fullAnalyzed = collectionQuery.data?.bills.length === analyzed
-      const partialAnalyzed =
-        analyzed > 0 && collectionQuery.data?.bills.length !== analyzed
-      const notAnalyzed = analyzed === 0
-
-      return { analyzed, pending, fullAnalyzed, partialAnalyzed, notAnalyzed }
+      const total = collectionQuery.data?.bills.length ?? 0
+      return {
+        analyzed: 0,
+        pending: total,
+        fullAnalyzed: false,
+        partialAnalyzed: false,
+        notAnalyzed: total > 0,
+      }
     },
   })
 
@@ -1066,31 +1046,6 @@ function CollectionDetailPage() {
                                 <Table.Th w="8%">Subtotal</Table.Th>
                                 <Table.Th w="8%">Impuestos</Table.Th>
                                 <Table.Th w="8%">Total</Table.Th>
-                                <Table.Th w="10%">
-                                  <TextWithIcon
-                                    multiLine
-                                    iconPosition="right"
-                                    maxWidth={400}
-                                    openDelay={500}
-                                    tooltip={
-                                      'Porcentaje de confianza de que esta factura es deducible según el análisis de IA. Un porcentaje más alto indica una mayor confianza en la deducibilidad de la factura.'
-                                    }
-                                  >
-                                    <TextWithIcon.Text inherit>
-                                      Porcentaje
-                                    </TextWithIcon.Text>
-                                    <TextWithIcon.Icon
-                                      c="violet"
-                                      size="xs"
-                                      variant="transparent"
-                                    >
-                                      <ThemeIcon size="xs">
-                                        <HelpCircle size={18} />
-                                      </ThemeIcon>
-                                    </TextWithIcon.Icon>
-                                  </TextWithIcon>
-                                </Table.Th>
-                                <Table.Th>Razonamiento</Table.Th>
                                 <Table.Th w="8%" />
                               </Table.Tr>
                             </Table.Thead>
@@ -1201,36 +1156,6 @@ function CollectionDetailPage() {
           />
         </Table.Td>
         <Table.Td>
-          {bill.percentage !== null ? (
-            <Badge color={getColorPercentage(bill.percentage)} variant="filled">
-              {bill.percentage}%
-            </Badge>
-          ) : (
-            <Badge color="gray">Pendiente</Badge>
-          )}
-        </Table.Td>
-        <Table.Td>
-          {bill.reason ? (
-            <Tooltip label="Ver razonamiento">
-              <ActionIcon
-                aria-label={`Ver razonamiento de ${bill.name}`}
-                color="violet"
-                size="sm"
-                variant="subtle"
-                onClick={() =>
-                  setBillDetailModal({ opened: true, data: bill.id })
-                }
-              >
-                <NotepadText size={16} />
-              </ActionIcon>
-            </Tooltip>
-          ) : (
-            <Text c="dimmed" size="sm">
-              -
-            </Text>
-          )}
-        </Table.Td>
-        <Table.Td>
           <Group gap={4}>
             <Tooltip label="Ver detalles">
               <ActionIcon
@@ -1317,13 +1242,6 @@ function CollectionDetailPage() {
                     value={bill.totalAmount}
                   />
                 </Text>
-                {bill.percentage !== null ? (
-                  <Badge color={getColorPercentage(bill.percentage)}>
-                    {bill.percentage}%
-                  </Badge>
-                ) : (
-                  <Badge color="gray">Pendiente</Badge>
-                )}
               </Group>
               <Group gap="xs" justify="flex-end">
                 <Button
@@ -1333,7 +1251,7 @@ function CollectionDetailPage() {
                     setBillDetailModal({ opened: true, data: bill.id })
                   }
                 >
-                  {bill.reason ? 'Ver razonamiento' : 'Ver detalle'}
+                  Ver detalle
                 </Button>
                 <ActionIcon
                   aria-label={`Eliminar ${bill.name}`}

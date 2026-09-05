@@ -1,8 +1,8 @@
 import {
   collectionContextBlocks,
   type AnalysisBlockCode,
-  type AnalysisExecutionEnvelopeV2,
-} from '#/schema/tax-analysis-v2'
+  type AnalysisExecutionEnvelope,
+} from '#/schema/tax-analysis'
 
 import {
   AnalysisExecutionEnvelopeBudgetError,
@@ -25,7 +25,7 @@ export class AnalysisPrerequisiteError extends Error {
  * immediately before a worker can spend credentials or model tokens.
  */
 export function assertAnalysisEnvelopeCanExecute(
-  envelope: AnalysisExecutionEnvelopeV2,
+  envelope: AnalysisExecutionEnvelope,
 ) {
   const blocks = collectionContextBlocks(
     {
@@ -83,7 +83,7 @@ export function assertAnalysisEnvelopeCanExecute(
 export function assertFrozenProviderConnection<
   T extends { id: string; provider: string; modelId: string },
 >(
-  envelope: AnalysisExecutionEnvelopeV2,
+  envelope: AnalysisExecutionEnvelope,
   connection: T | null,
 ): asserts connection is T {
   if (!connection)
@@ -104,7 +104,7 @@ export function assertFrozenProviderConnection<
 }
 
 export function assertEnvelopeMatchesAnalysisRun(
-  envelope: AnalysisExecutionEnvelopeV2,
+  envelope: AnalysisExecutionEnvelope,
   run: {
     collectionId: string
     collectionContextRevisionId: string | null

@@ -1,15 +1,13 @@
 import {
-  ModelTaxAnalysisPayloadV2Schema,
-  TaxAnalysisResultV2Schema,
-} from '#/schema/tax-analysis-v2'
-
-import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
+  ModelTaxAnalysisPayloadSchema,
+  TaxAnalysisResultSchema,
+} from '#/schema/tax-analysis'
 import type {
-  AnalysisExecutionEnvelopeV2,
-  ModelTaxAnalysisPayloadV2,
-  TaxAnalysisResultV2,
+  AnalysisExecutionEnvelope,
+  ModelTaxAnalysisPayload,
+  TaxAnalysisResult,
   TaxPurpose,
-} from '#/schema/tax-analysis-v2'
+} from '#/schema/tax-analysis'
 
 export const TAX_ANALYSIS_ADVISORY_NOTICE =
   'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.' as const
@@ -21,7 +19,7 @@ export class TaxAnalysisResultValidationError extends Error {
   }
 }
 
-export function normalizeTaxAnalysisResultV2(input: {
+export function normalizeTaxAnalysisResult(input: {
   payload: unknown
   purpose: TaxPurpose
   runId: string
@@ -29,8 +27,8 @@ export function normalizeTaxAnalysisResultV2(input: {
   allowedActivityRevisionIds: Array<string>
   references: TaxAnalysisReferences
   createdAt?: Date
-}): TaxAnalysisResultV2 {
-  const payload = ModelTaxAnalysisPayloadV2Schema.safeParse(input.payload)
+}): TaxAnalysisResult {
+  const payload = ModelTaxAnalysisPayloadSchema.safeParse(input.payload)
   if (!payload.success)
     throw new TaxAnalysisResultValidationError(
       'El proveedor devolvió un resultado tributario con un formato no válido.',
@@ -46,7 +44,7 @@ export function normalizeTaxAnalysisResultV2(input: {
     input.allowedActivityRevisionIds,
   )
 
-  const result = TaxAnalysisResultV2Schema.safeParse({
+  const result = TaxAnalysisResultSchema.safeParse({
     ...payload.data,
     schemaVersion: 'v2',
     runId: input.runId,
@@ -63,7 +61,7 @@ export function normalizeTaxAnalysisResultV2(input: {
 }
 
 function assertActivityReferencesBelongToEnvelope(
-  payload: ModelTaxAnalysisPayloadV2,
+  payload: ModelTaxAnalysisPayload,
   allowedActivityRevisionIds: Array<string>,
 ) {
   if (payload.purpose === 'personal_expenses') return
@@ -74,18 +72,6 @@ function assertActivityReferencesBelongToEnvelope(
     throw new TaxAnalysisResultValidationError(
       'El proveedor relacionó una actividad que no forma parte del contexto fijado.',
     )
-}
-
-/**
- * Transitional compatibility projection. It is intentionally derived from a
- * validated V2 result and is never used as the canonical persisted snapshot.
- */
-export function projectTaxAnalysisResultToLegacy(
-  result: TaxAnalysisResultV2,
-): AnalyzeBillOutput | null {
-  if (result.classification === 'needs_review') return null
-  const percentage = legacyPercentage(result)
-  return { percentage, reason: result.reasoning }
 }
 
 export type TaxAnalysisReferences = {
@@ -100,7 +86,7 @@ export type TaxAnalysisReferences = {
 }
 
 export function referencesFromExecutionEnvelope(
-  envelope: AnalysisExecutionEnvelopeV2,
+  envelope: AnalysisExecutionEnvelope,
 ): TaxAnalysisReferences {
   return {
     official: envelope.officialEvidence.map((evidence) => ({
@@ -116,13 +102,4 @@ export function referencesFromExecutionEnvelope(
       contentHash: reference.contentHash,
     })),
   }
-}
-
-function legacyPercentage(result: TaxAnalysisResultV2): number {
-  if (result.classification === 'ineligible') return 0
-  if (result.purpose === 'vat_credit')
-    return result.creditablePercentage ?? (result.classification === 'eligible' ? 100 : 0)
-  if (result.purpose === 'business_income_tax')
-    return result.businessUsePercentage ?? (result.classification === 'eligible' ? 100 : 0)
-  return result.classification === 'eligible' ? 100 : 0
 }

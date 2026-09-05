@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto'
 
 import {
-  AnalysisExecutionEnvelopeV2Schema,
+  AnalysisExecutionEnvelopeSchema,
   type AnalysisOfficialEvidence,
-  type AnalysisExecutionEnvelopeV2,
+  type AnalysisExecutionEnvelope,
   type TaxRuleSetSelector,
-} from '#/schema/tax-analysis-v2'
+} from '#/schema/tax-analysis'
 
 export const ANALYSIS_EVIDENCE_CHARACTER_BUDGET = 120_000
 
@@ -14,7 +14,7 @@ export function sha256(value: string | Buffer) {
 }
 
 export function assertExecutionEnvelopeBudget(
-  envelope: AnalysisExecutionEnvelopeV2,
+  envelope: AnalysisExecutionEnvelope,
   budget = ANALYSIS_EVIDENCE_CHARACTER_BUDGET,
 ) {
   const characters =
@@ -46,8 +46,8 @@ export class AnalysisExecutionEnvelopeBudgetError extends Error {
 
 export function parseAnalysisExecutionEnvelope(
   snapshot: unknown,
-): AnalysisExecutionEnvelopeV2 {
-  return AnalysisExecutionEnvelopeV2Schema.parse(snapshot)
+): AnalysisExecutionEnvelope {
+  return AnalysisExecutionEnvelopeSchema.parse(snapshot)
 }
 
 export function selectApplicableOfficialEvidence(

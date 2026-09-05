@@ -1,6 +1,6 @@
-import { TaxRuleSetSelectorSchema } from '#/schema/tax-analysis-v2'
+import { TaxRuleSetSelectorSchema } from '#/schema/tax-analysis'
 
-import type { TaxRuleSetSelector } from '#/schema/tax-analysis-v2'
+import type { TaxRuleSetSelector } from '#/schema/tax-analysis'
 
 export type SelectableTaxRuleSet = Omit<TaxRuleSetSelector, 'period'> & {
   id: string

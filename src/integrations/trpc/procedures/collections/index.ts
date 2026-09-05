@@ -15,8 +15,8 @@ import {
   CollectionContextRevisionInputSchema,
   collectionContextBlocks,
   TaxpayerProfileContextSchema,
-  AnalysisExecutionEnvelopeV2Schema,
-} from '#/schema/tax-analysis-v2'
+  AnalysisExecutionEnvelopeSchema,
+} from '#/schema/tax-analysis'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
@@ -30,7 +30,7 @@ import {
   selectApplicableOfficialEvidence,
   sha256,
 } from '#/integrations/tax-analysis/execution-envelope.server'
-import { BILL_ANALYSIS_V2_PROMPT_METADATA } from '#/integrations/prompts/bill-prompt-builder'
+import { BILL_ANALYSIS_PROMPT_METADATA } from '#/integrations/prompts/bill-prompt-builder'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
 import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
@@ -660,20 +660,12 @@ export const collectionsRouter = {
         const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
-            AND: [{ percentage: null }, { reason: null }],
           },
           select: billSelect,
         })
         billsToAnalyze = bills
       } else if (type === 'analyzed') {
-        const bills = await prisma.billHeader.findMany({
-          where: {
-            collectionId: data.collectionId,
-            OR: [{ percentage: { not: null } }, { reason: { not: null } }],
-          },
-          select: billSelect,
-        })
-        billsToAnalyze = bills
+        billsToAnalyze = []
       } else {
         const bills = await prisma.billHeader.findMany({
           where: {
@@ -780,9 +772,9 @@ export const collectionsRouter = {
         normalizedMarkdown: normalizeFiscalReferenceMarkdown((await StorageHelper.getObject(reference.storagePath)).toString('utf8')),
         contentHash: reference.contentHash,
       })))
-      const envelope = AnalysisExecutionEnvelopeV2Schema.parse({
+      const envelope = AnalysisExecutionEnvelopeSchema.parse({
         schemaVersion: 'v2', envelopeVersion: '1',
-        prompt: BILL_ANALYSIS_V2_PROMPT_METADATA,
+        prompt: BILL_ANALYSIS_PROMPT_METADATA,
         context: {
           collectionContextRevisionId: context.id, revision: context.revision,
           purpose: context.purpose,

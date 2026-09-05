@@ -4,7 +4,7 @@ import { z } from 'zod'
 import {
   EconomicActivityRevisionInputSchema,
   TaxpayerProfileRevisionInputSchema,
-} from '#/schema/tax-analysis-v2'
+} from '#/schema/tax-analysis'
 
 import { prisma } from '#/integrations/prisma'
 

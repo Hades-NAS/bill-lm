@@ -2,19 +2,19 @@ import { describe, expect, it } from 'vitest'
 
 import {
   AnalysisBlockSchema,
-  AnalysisExecutionEnvelopeV2Schema,
+  AnalysisExecutionEnvelopeSchema,
   CollectionContextRevisionInputSchema,
   collectionContextBlocks,
   EconomicActivityRevisionInputSchema,
   TAX_ANALYSIS_SCHEMA_VERSION,
-  TaxAnalysisResultV2Schema,
+  TaxAnalysisResultSchema,
   TaxpayerProfileRevisionInputSchema,
   TaxpayerProfileRevisionDataSchema,
-} from '../tax-analysis-v2'
+} from '../tax-analysis'
 
 const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
 
-describe('tax analysis v2 contracts', () => {
+describe('tax analysis contracts', () => {
   it('accepts only executable purposes and an ordered civil period', () => {
     expect(
       CollectionContextRevisionInputSchema.safeParse({
@@ -138,7 +138,7 @@ describe('tax analysis v2 contracts', () => {
     ).toBe(true)
 
     expect(
-      TaxAnalysisResultV2Schema.safeParse({
+      TaxAnalysisResultSchema.safeParse({
         schemaVersion: TAX_ANALYSIS_SCHEMA_VERSION,
         runId: id,
         invoiceId: id,
@@ -158,11 +158,11 @@ describe('tax analysis v2 contracts', () => {
   })
 
   it('rejects raw XML in the immutable invoice envelope', () => {
-    expect(AnalysisExecutionEnvelopeV2Schema.safeParse({
+    expect(AnalysisExecutionEnvelopeSchema.safeParse({
       schemaVersion: 'v2',
       envelopeVersion: '1',
       prompt: {
-        templateId: 'bill-analysis-v2',
+        templateId: 'bill-analysis',
         templateVersion: '2',
         templateHash: 'b'.repeat(64),
       },

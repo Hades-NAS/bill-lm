@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'
 
-import { TaxPurposeSchema, TaxRegimeSchema } from '#/schema/tax-analysis-v2'
+import { TaxPurposeSchema, TaxRegimeSchema } from '#/schema/tax-analysis'
 
 import {
   checkTaxRuleSource,
