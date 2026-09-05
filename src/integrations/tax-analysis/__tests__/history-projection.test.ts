@@ -146,6 +146,8 @@ describe('analysis run history projection', () => {
     expect(serialized).not.toContain(ACTIVITY_ID)
     expect(serialized).not.toContain(SOURCE_ID)
     expect(serialized).not.toContain(hash)
+    expect(serialized).not.toContain('"percentage":')
+    expect(serialized).not.toContain('"reason":')
   })
 
   it('returns a stable unavailable state for malformed snapshots', () => {

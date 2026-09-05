@@ -2,17 +2,25 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   collectionFindFirst: vi.fn(),
+  collectionContextRevisionFindFirst: vi.fn(),
+  providerConnectionFindFirst: vi.fn(),
   analysisRunFindMany: vi.fn(),
   analysisRunFindFirst: vi.fn(),
+  analysisRunCreate: vi.fn(),
+  analyzeQueueAdd: vi.fn(),
 }))
 
 vi.mock('#/integrations/prisma', () => ({
   prisma: {
     collection: { findFirst: mocks.collectionFindFirst },
+    collectionContextRevision: {
+      findFirst: mocks.collectionContextRevisionFindFirst,
+    },
+    providerConnection: { findFirst: mocks.providerConnectionFindFirst },
     analysisRun: {
       findMany: mocks.analysisRunFindMany,
       findFirst: mocks.analysisRunFindFirst,
-      create: vi.fn(),
+      create: mocks.analysisRunCreate,
       update: vi.fn(),
     },
   },
@@ -22,7 +30,7 @@ vi.mock('#/integrations/logger.server', () => ({
   getServiceLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }))
 vi.mock('#/integrations/queue/analyze-queue', () => ({
-  AnalyzeQueue: { add: vi.fn() },
+  AnalyzeQueue: { add: mocks.analyzeQueueAdd },
 }))
 vi.mock('#/integrations/minio/helper', () => ({ StorageHelper: {} }))
 
@@ -33,6 +41,9 @@ const COLLECTION_ID = '11111111-1111-4111-8111-111111111111'
 const RUN_A = '22222222-2222-4222-8222-222222222222'
 const RUN_B = '33333333-3333-4333-8333-333333333333'
 const RUN_C = '44444444-4444-4444-8444-444444444444'
+const CONNECTION_ID = '55555555-5555-4555-8555-555555555555'
+const CONTEXT_ID = '66666666-6666-4666-8666-666666666666'
+const PROFILE_ID = '77777777-7777-4777-8777-777777777777'
 const caller = createTRPCRouter({ collections: collectionsRouter }).createCaller({
   principal: { userId: 'owner-1' },
 } as any)
@@ -137,5 +148,43 @@ describe('analysis history router behavior', () => {
         userId: 'owner-1',
       }),
     }))
+  })
+
+  it('persists a blocked run and never enqueues when the pre-enqueue gate rejects the context', async () => {
+    mocks.collectionFindFirst.mockResolvedValue({ id: COLLECTION_ID, name: 'Prueba' })
+    mocks.providerConnectionFindFirst.mockResolvedValue({ id: CONNECTION_ID })
+    mocks.collectionContextRevisionFindFirst.mockResolvedValue({
+      id: CONTEXT_ID,
+      revision: 1,
+      taxpayerProfileRevisionId: PROFILE_ID,
+      purpose: 'vat_credit',
+      periodStartDate: new Date('2026-01-01T00:00:00.000Z'),
+      periodEndDate: new Date('2026-01-31T00:00:00.000Z'),
+      notes: null,
+      taxpayerProfileRevision: {
+        hasRuc: false,
+        taxRegime: 'unknown',
+        vatFilingFrequency: 'unknown',
+      },
+      activities: [],
+    })
+    mocks.analysisRunCreate.mockResolvedValue({ id: RUN_A })
+
+    await expect(caller.collections.analyze({
+      collectionId: COLLECTION_ID,
+      collectionName: 'Prueba',
+      credentialId: CONNECTION_ID,
+      type: 'all',
+      billIds: [],
+    })).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' })
+
+    expect(mocks.analysisRunCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        status: 'blocked',
+        blockCode: 'MISSING_TAXPAYER_PROFILE',
+        collectionId: COLLECTION_ID,
+      }),
+    }))
+    expect(mocks.analyzeQueueAdd).not.toHaveBeenCalled()
   })
 })

@@ -58,17 +58,39 @@ const PROFILE_ID = '44444444-4444-4444-8444-444444444444'
 const RULESET_ID = '55555555-5555-4555-8555-555555555555'
 const CONNECTION_ID = '66666666-6666-4666-8666-666666666666'
 const BILL_ID = '77777777-7777-4777-8777-777777777777'
+const ACTIVITY_ID = '88888888-8888-4888-8888-888888888888'
 
-function envelope() {
+type Purpose = 'vat_credit' | 'business_income_tax' | 'personal_expenses'
+
+function envelope(purpose: Purpose = 'personal_expenses') {
+  const requiresActivities = purpose !== 'personal_expenses'
   return AnalysisExecutionEnvelopeSchema.parse({
     schemaVersion: 'v2', envelopeVersion: '1',
     prompt: { templateId: 'bill-analysis', templateVersion: '2', templateHash: 'a'.repeat(64) },
-    context: { collectionContextRevisionId: CONTEXT_ID, revision: 1, purpose: 'personal_expenses', period: { startDate: '2026-01-01', endDate: '2026-12-31' }, notes: null },
-    taxpayerProfile: { revisionId: PROFILE_ID, revision: 1, hasRuc: false, hasEmploymentIncome: true, taxRegime: 'unknown', vatFilingFrequency: 'none', additionalFacts: null },
-    activities: [],
+    context: { collectionContextRevisionId: CONTEXT_ID, revision: 1, purpose, period: { startDate: '2026-01-01', endDate: '2026-12-31' }, notes: null },
+    taxpayerProfile: {
+      revisionId: PROFILE_ID,
+      revision: 1,
+      hasRuc: requiresActivities,
+      hasEmploymentIncome: purpose === 'personal_expenses',
+      taxRegime: requiresActivities ? 'general' : 'unknown',
+      vatFilingFrequency: purpose === 'vat_credit' ? 'monthly' : 'none',
+      additionalFacts: null,
+    },
+    activities: requiresActivities ? [{
+      revisionId: ACTIVITY_ID,
+      revision: 1,
+      displayName: 'Servicios profesionales',
+      registeredActivityCode: 'M7410.01',
+      registeredActivityName: 'Servicios profesionales',
+      activityDescription: 'Prestación de servicios profesionales.',
+      necessaryPurchases: null,
+      revenueVatTreatment: 'taxed_nonzero',
+      additionalFacts: null,
+    }] : [],
     provider: { id: CONNECTION_ID, provider: 'OPENAI', modelId: 'gpt-4o-mini' },
     ruleset: { id: RULESET_ID, version: 1, contentHash: 'ruleset', effectiveFrom: '2026-01-01', effectiveTo: null },
-    officialEvidence: [{ ruleSetFragmentId: RULESET_ID, fragmentId: RULESET_ID, fragmentContentHash: 'fragment', source: { id: RULESET_ID, title: 'Norma', issuer: 'SRI', officialUrl: 'https://www.sri.gob.ec/', contentHash: 'source' }, articleOrSection: 'Art. 1', purposes: ['personal_expenses'], taxRegimes: ['unknown'], effectiveFrom: '2026-01-01', effectiveTo: null, markdown: 'Norma aplicable.' }],
+    officialEvidence: [{ ruleSetFragmentId: RULESET_ID, fragmentId: RULESET_ID, fragmentContentHash: 'fragment', source: { id: RULESET_ID, title: 'Norma', issuer: 'SRI', officialUrl: 'https://www.sri.gob.ec/', contentHash: 'source' }, articleOrSection: 'Art. 1', purposes: [purpose], taxRegimes: [requiresActivities ? 'general' : 'unknown'], effectiveFrom: '2026-01-01', effectiveTo: null, markdown: 'Norma aplicable.' }],
     userReferences: [],
     invoices: [{ billId: BILL_ID, contentHash: 'b'.repeat(64), parserVersion: 'xml-v1', normalized: { vendorName: 'Proveedor', buyerIdentifier: '0102030405', buyerName: 'Contribuyente', details: [{ description: 'Servicio', quantity: 1, unitPrice: 10 }], totals: { amount: 11.5, net: 10, taxes: 1.5 }, billType: 'PERSONAL' } }],
   })
@@ -81,6 +103,56 @@ function run(overrides: Record<string, unknown> = {}) {
     taxpayerProfileRevisionId: PROFILE_ID, ruleSetId: RULESET_ID,
     providerConnectionId: CONNECTION_ID, provider: 'OPENAI', modelId: 'gpt-4o-mini',
     ...overrides,
+  }
+}
+
+function specializedResult(purpose: Purpose) {
+  const common = {
+    schemaVersion: 'v2' as const,
+    runId: RUN_ID,
+    invoiceId: BILL_ID,
+    purpose,
+    classification: 'eligible' as const,
+    reasoning: 'La factura tiene soporte suficiente para la clasificación orientativa.',
+    uncertainties: [],
+    createdAt: new Date(),
+    advisoryNotice: 'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
+    references: {
+      official: [{ sourceId: RULESET_ID, sourceContentHash: 'source', fragmentId: RULESET_ID, fragmentContentHash: 'fragment', articleOrSection: 'Art. 1' }],
+      user: [],
+    },
+  }
+
+  switch (purpose) {
+    case 'vat_credit':
+      return {
+        ...common,
+        relatedActivityRevisionIds: [ACTIVITY_ID],
+        invoiceVatAmount: 1.5,
+        potentialCreditableVatAmount: 1.5,
+        creditablePercentage: 100,
+        creditType: 'total' as const,
+        proportionalityRequired: false,
+        missingEvidence: [],
+      }
+    case 'business_income_tax':
+      return {
+        ...common,
+        relatedActivityRevisionIds: [ACTIVITY_ID],
+        businessUsePercentage: 100,
+        potentialExpenseAmount: 11.5,
+        mixedUseDetected: false,
+        substantiationIssues: [],
+        missingEvidence: [],
+      }
+    case 'personal_expenses':
+      return {
+        ...common,
+        personalExpenseCategory: 'Salud',
+        potentialEligibleAmount: 11.5,
+        beneficiaryRelationship: 'Titular',
+        missingEvidence: [],
+      }
   }
 }
 
@@ -129,6 +201,21 @@ describe('analyze worker fail-closed gate', () => {
     expect(mocks.decryptProviderSecret).not.toHaveBeenCalled()
   })
 
+  it('does not decrypt or create a provider when fixed evidence stops being applicable', async () => {
+    const staleEvidence = envelope()
+    staleEvidence.officialEvidence[0].purposes = ['vat_credit']
+    mocks.analysisRunFindFirst.mockResolvedValue(run({ inputSnapshot: staleEvidence }))
+    mocks.providerConnectionFindFirst.mockResolvedValue({
+      id: CONNECTION_ID, provider: 'OPENAI', modelId: 'gpt-4o-mini',
+    })
+
+    await jobHandler(job())
+
+    expect(mocks.decryptProviderSecret).not.toHaveBeenCalled()
+    expect(mocks.createProvider).not.toHaveBeenCalled()
+    expect(mocks.execute).not.toHaveBeenCalled()
+  })
+
   it('does not query credentials or invoke an LLM after a lost atomic claim', async () => {
     mocks.analysisRunUpdateMany.mockResolvedValueOnce({ count: 0 })
 
@@ -141,7 +228,7 @@ describe('analyze worker fail-closed gate', () => {
   })
 })
 
-describe('analyze worker V2 result persistence', () => {
+describe('analyze worker canonical result persistence', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.analysisRunFindFirst.mockResolvedValue(run())
@@ -156,31 +243,64 @@ describe('analyze worker V2 result persistence', () => {
     mocks.firebaseUpdate.mockResolvedValue(undefined)
   })
 
-  it('persists only the specialized canonical snapshots, never a fictitious ineligible result', async () => {
-    const snapshot = {
-      schemaVersion: 'v2', runId: RUN_ID, invoiceId: BILL_ID,
-      purpose: 'personal_expenses', classification: 'eligible',
-      reasoning: 'Gasto de salud.', uncertainties: [], createdAt: new Date(),
-      advisoryNotice: 'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
-      references: { official: [{ sourceId: RULESET_ID, sourceContentHash: 'source', fragmentId: RULESET_ID, fragmentContentHash: 'fragment', articleOrSection: 'Art. 1' }], user: [] },
-      personalExpenseCategory: 'Salud', potentialEligibleAmount: 11.5,
-      beneficiaryRelationship: 'Titular', missingEvidence: [],
-    }
-    mocks.execute.mockResolvedValue([
-      { billId: BILL_ID, success: true, result: snapshot },
-      { billId: 'failed-bill', success: false, error: 'Proveedor no disponible' },
-    ])
+  it.each<[Purpose]>([
+    ['vat_credit'],
+    ['business_income_tax'],
+    ['personal_expenses'],
+  ])('persists the canonical specialized snapshot for %s without legacy fields', async (purpose) => {
+    const snapshot = specializedResult(purpose)
+    mocks.analysisRunFindFirst.mockResolvedValue(run({ inputSnapshot: envelope(purpose) }))
+    mocks.execute.mockResolvedValue([{ billId: BILL_ID, success: true, result: snapshot }])
 
     await jobHandler(job())
 
+    expect(mocks.execute).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ billId: BILL_ID })]),
+      expect.anything(),
+      expect.any(String),
+      expect.objectContaining({ context: expect.objectContaining({ purpose }) }),
+    )
     expect(mocks.analysisResultCreateMany).toHaveBeenCalledWith(expect.objectContaining({
+      skipDuplicates: true,
       data: [expect.objectContaining({
-        runId: RUN_ID, billId: BILL_ID, purpose: 'personal_expenses',
+        runId: RUN_ID, billId: BILL_ID, purpose,
         classification: 'eligible', resultSnapshot: expect.objectContaining({
           ...snapshot,
           createdAt: snapshot.createdAt.toJSON(),
         }),
       })],
+    }))
+    const persisted = mocks.analysisResultCreateMany.mock.calls[0][0].data[0]
+    expect(persisted.resultSnapshot).not.toHaveProperty('percentage')
+    expect(persisted.resultSnapshot).not.toHaveProperty('reason')
+  })
+
+  it('allows only one concurrent worker to claim and execute an immutable run', async () => {
+    mocks.execute.mockResolvedValue([
+      { billId: BILL_ID, success: true, result: specializedResult('personal_expenses') },
+    ])
+    mocks.analysisRunUpdateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 })
+
+    await Promise.all([jobHandler(job()), jobHandler(job())])
+
+    expect(mocks.analysisRunUpdateMany).toHaveBeenCalledTimes(2)
+    expect(mocks.decryptProviderSecret).toHaveBeenCalledTimes(1)
+    expect(mocks.createProvider).toHaveBeenCalledTimes(1)
+    expect(mocks.execute).toHaveBeenCalledTimes(1)
+    expect(mocks.analysisResultCreateMany).toHaveBeenCalledTimes(1)
+  })
+
+  it('marks an operational provider failure as failed without persisting a result', async () => {
+    mocks.execute.mockRejectedValue(new Error('Proveedor no disponible'))
+
+    await jobHandler(job())
+
+    expect(mocks.analysisResultCreateMany).not.toHaveBeenCalled()
+    expect(mocks.analysisRunUpdateMany).toHaveBeenLastCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: RUN_ID, status: { in: ['queued', 'running'] } }),
+      data: expect.objectContaining({ status: 'failed' }),
     }))
   })
 })
