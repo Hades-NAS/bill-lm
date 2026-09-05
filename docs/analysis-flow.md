@@ -34,3 +34,17 @@ determinación del SRI.
 El progreso operativo del trabajo se publica en Firestore. El historial y el
 detalle de cada factura leen los resultados persistidos de `AnalysisRun` y
 `AnalysisResult`.
+
+## Historial seguro
+
+La API de historial pagina las ejecuciones por fecha de creación e identificador
+para conservar un orden estable. El detalle se autoriza primero contra la
+colección activa de la persona autenticada; una colección archivada o ajena no
+expone su historial.
+
+Las respuestas muestran solo una proyección segura del snapshot fijado: contexto
+tributario, proveedor/modelo, versión del ruleset y resultados especializados.
+No devuelven Markdown de evidencia oficial o referencias personales, notas,
+datos adicionales del perfil ni el contenido normalizado de la factura. Si un
+snapshot histórico no puede validarse, se muestra como no disponible sin revelar
+su JSON ni el error interno.

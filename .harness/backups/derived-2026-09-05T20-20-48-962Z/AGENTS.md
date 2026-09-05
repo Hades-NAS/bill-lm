@@ -1,3 +1,9 @@
+## Available Research Tools
+
+- Context7 MCP tools available: resolve library ID before querying docs
+- Mintlify Index available for publisher-maintained technical documentation
+- Web search available for current information outside documentation indexes
+
 # AGENTS.md — bill-lm
 
 **Read this file first.** It is the navigation map for every AI agent working in this repository.
@@ -16,9 +22,11 @@ If it exits non-zero, stop and report the issue. Do not proceed with codebase ch
 
 ## Harness data (source of truth)
 
-| File | Purpose |
-|------|---------|
-| `.harness/harness.db` | SQLite: all tasks, actions, file changes, tool calls |
+| File                         | Purpose                                                    |
+| ---------------------------- | ---------------------------------------------------------- |
+| `.harness/harness.db`        | SQLite: all tasks, actions, file changes, tool calls       |
+| `.harness/current.md`        | Markdown fallback — read this if MCP server is unavailable |
+| `.harness/feature_list.json` | Human-editable task seed list                              |
 
 ## MCP tools (preferred)
 
@@ -64,20 +72,20 @@ docs.search          query                                  → search ./docs fo
 
 ## Agent roles
 
-| Agent | Responsibility |
-|-------|---------------|
-| lead | Decomposes the task into a plan, assigns sub-agents |
-| explorer | Reads and maps relevant code, never writes |
+| Agent      | Responsibility                                                             |
+| ---------- | -------------------------------------------------------------------------- |
+| lead       | Decomposes the task into a plan, assigns sub-agents                        |
+| explorer   | Reads and maps relevant code, never writes                                 |
 | consultant | Technical advisor, runs after explorer, before builder. Never writes code. |
-| builder | Implements the plan, writes files |
-| reviewer | Verifies acceptance criteria, approves or blocks |
+| builder    | Implements the plan, writes files                                          |
+| reviewer   | Verifies acceptance criteria, approves or blocks                           |
 
 ## What to read
 
 ```
-Always:         MCP tasks.get. If MCP is unavailable, stop and ask the user to restore the MCP connection.
+Always:         .harness/current.md (or MCP tasks.get)
 If implementing: ./docs/
 If orchestrating: Agent definition files in your provider's agents directory
 ```
 
-<!-- ahk:generated 45701d4b659d429aeffe90a5048dd62ca361ebccd3318986f4074a8ca5914990 -->
+<!-- ahk:generated abdb85c2260a6cbd6e7c7b9197fdeda2ba79ac3d22a9df97b746ef86b73469e8 -->

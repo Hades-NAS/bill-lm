@@ -441,6 +441,28 @@ export const AnalysisRunSchema = z.object({
 })
 export type AnalysisRun = z.infer<typeof AnalysisRunSchema>
 
+export const AnalysisRunHistoryCursorSchema = z.object({
+  createdAt: z.coerce.date(),
+  id: IdSchema,
+})
+
+export const ListAnalysisRunHistoryRequestSchema = z.object({
+  collectionId: IdSchema,
+  cursor: AnalysisRunHistoryCursorSchema.optional(),
+  limit: z.number().int().min(1).max(50).default(20),
+})
+export type ListAnalysisRunHistoryRequest = z.infer<
+  typeof ListAnalysisRunHistoryRequestSchema
+>
+
+export const GetAnalysisRunDetailRequestSchema = z.object({
+  collectionId: IdSchema,
+  runId: IdSchema,
+})
+export type GetAnalysisRunDetailRequest = z.infer<
+  typeof GetAnalysisRunDetailRequestSchema
+>
+
 export const TaxAnalysisClassificationSchema = z.enum([
   'eligible',
   'ineligible',

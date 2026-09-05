@@ -16,6 +16,8 @@ import {
   collectionContextBlocks,
   TaxpayerProfileContextSchema,
   AnalysisExecutionEnvelopeSchema,
+  GetAnalysisRunDetailRequestSchema,
+  ListAnalysisRunHistoryRequestSchema,
 } from '#/schema/tax-analysis'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
@@ -30,6 +32,10 @@ import {
   selectApplicableOfficialEvidence,
   sha256,
 } from '#/integrations/tax-analysis/execution-envelope.server'
+import {
+  projectAnalysisRunDetail,
+  projectAnalysisRunHistoryItem,
+} from '#/integrations/tax-analysis/history-projection.server'
 import { BILL_ANALYSIS_PROMPT_METADATA } from '#/integrations/prompts/bill-prompt-builder'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
@@ -341,7 +347,7 @@ export const collectionsRouter = {
           code: 'NOT_FOUND',
           message: 'Colección no encontrada.',
         })
-      return prisma.analysisRun.findMany({
+      const runs = await prisma.analysisRun.findMany({
         where: { collectionId: collection.id, userId: ctx.principal.userId },
         select: {
           id: true,
@@ -351,6 +357,7 @@ export const collectionsRouter = {
           provider: true,
           modelId: true,
           promptVersion: true,
+          inputSnapshot: true,
           createdAt: true,
           completedAt: true,
           results: {
@@ -361,10 +368,136 @@ export const collectionsRouter = {
               resultSnapshot: true,
               createdAt: true,
             },
+            orderBy: [{ createdAt: 'asc' }, { billId: 'asc' }],
           },
+          _count: { select: { invoices: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       })
+      return runs.map(projectAnalysisRunHistoryItem)
+    }),
+  listAnalysisRunHistory: privateProcedure
+    .input(ListAnalysisRunHistoryRequestSchema)
+    .query(async ({ input, ctx }) => {
+      const collection = await prisma.collection.findFirst({
+        where: {
+          id: input.collectionId,
+          userId: ctx.principal.userId,
+          deletedAt: null,
+        },
+        select: { id: true },
+      })
+      if (!collection)
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Colección no encontrada.',
+        })
+
+      const runs = await prisma.analysisRun.findMany({
+        where: {
+          collectionId: collection.id,
+          userId: ctx.principal.userId,
+          ...(input.cursor
+            ? {
+                OR: [
+                  { createdAt: { lt: input.cursor.createdAt } },
+                  {
+                    createdAt: input.cursor.createdAt,
+                    id: { lt: input.cursor.id },
+                  },
+                ],
+              }
+            : {}),
+        },
+        take: input.limit + 1,
+        select: {
+          id: true,
+          status: true,
+          blockCode: true,
+          blockMessage: true,
+          provider: true,
+          modelId: true,
+          promptVersion: true,
+          inputSnapshot: true,
+          createdAt: true,
+          completedAt: true,
+          results: {
+            select: {
+              billId: true,
+              purpose: true,
+              classification: true,
+              resultSnapshot: true,
+              createdAt: true,
+            },
+            orderBy: [{ createdAt: 'asc' }, { billId: 'asc' }],
+          },
+          _count: { select: { invoices: true } },
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      })
+      const page = runs.slice(0, input.limit)
+      const last = page.at(-1)
+      return {
+        items: page.map(projectAnalysisRunHistoryItem),
+        nextCursor:
+          runs.length > input.limit && last
+            ? { createdAt: last.createdAt, id: last.id }
+            : null,
+      }
+    }),
+  getAnalysisRunDetail: privateProcedure
+    .input(GetAnalysisRunDetailRequestSchema)
+    .query(async ({ input, ctx }) => {
+      const collection = await prisma.collection.findFirst({
+        where: {
+          id: input.collectionId,
+          userId: ctx.principal.userId,
+          deletedAt: null,
+        },
+        select: { id: true },
+      })
+      if (!collection)
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Colección no encontrada.',
+        })
+
+      const run = await prisma.analysisRun.findFirst({
+        where: {
+          id: input.runId,
+          collectionId: collection.id,
+          userId: ctx.principal.userId,
+        },
+        select: {
+          id: true,
+          status: true,
+          blockCode: true,
+          blockMessage: true,
+          provider: true,
+          modelId: true,
+          promptVersion: true,
+          inputSnapshot: true,
+          createdAt: true,
+          completedAt: true,
+          results: {
+            select: {
+              billId: true,
+              purpose: true,
+              classification: true,
+              resultSnapshot: true,
+              createdAt: true,
+            },
+            orderBy: [{ createdAt: 'asc' }, { billId: 'asc' }],
+          },
+          _count: { select: { invoices: true } },
+        },
+      })
+      if (!run)
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Análisis no encontrado.',
+        })
+      return projectAnalysisRunDetail(run)
     }),
   createContextRevision: privateProcedure
     .input(CollectionContextInputSchema)
