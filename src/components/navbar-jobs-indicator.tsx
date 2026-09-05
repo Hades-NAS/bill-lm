@@ -38,6 +38,7 @@ interface JobCardProps {
 function JobCard({ job, onCollectionClick }: JobCardProps) {
   const isActive = job.status === 'pending' || job.status === 'in-progress'
   const isCompleted = job.status === 'completed'
+  const isBlocked = job.status === 'blocked'
 
   return (
     <Paper
@@ -55,8 +56,10 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
               ? job.status === 'pending'
                 ? 'gray'
                 : 'blue'
-              : isCompleted
+                : isCompleted
                 ? 'green'
+                : isBlocked
+                  ? 'orange'
                 : 'red'
           }
           size="sm"
@@ -68,6 +71,8 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
               ? 'En progreso'
               : job.status === 'completed'
                 ? 'Completado'
+                : job.status === 'blocked'
+                  ? 'Bloqueado'
                 : 'Error'}
         </Badge>
       </Group>
@@ -115,10 +120,10 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
         </>
       )}
 
-      {/* Error message - only show for failed jobs */}
-      {job.status === 'failed' && (
-        <Text c="red.8" mb="xs" size="xs">
-          Error: {job.error}
+      {/* Terminal error or prerequisite message */}
+      {(job.status === 'failed' || job.status === 'blocked') && (
+        <Text c={job.status === 'blocked' ? 'orange.8' : 'red.8'} mb="xs" size="xs">
+          {job.status === 'blocked' ? 'Bloqueado: ' : 'Error: '}{job.error}
         </Text>
       )}
 
@@ -138,6 +143,8 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
       return 'blue.8'
     } else if (status === 'completed') {
       return 'green.8'
+    } else if (status === 'blocked') {
+      return 'orange.8'
     } else {
       return 'red.8'
     }

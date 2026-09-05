@@ -10,6 +10,7 @@ import { FireCollections } from '#/constants/firebase'
 
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
 import type { AnalysisResult } from '#/integrations/services/bill-analysis.service'
+import type { ParsedBill } from '#/schema/bill-analysis'
 import type { AnalyzeJobData, PresetType } from '#/schema/collections'
 
 const logger = getServiceLogger('AnalyzeBillsUseCase')
@@ -118,6 +119,31 @@ export class AnalyzeBillsUseCase {
 
       throw error
     }
+  }
+
+  async executePrepared(
+    bills: Array<{ billId: string; parsedBill: ParsedBill }>,
+    jobData: AnalyzeJobData,
+    preset: PresetType = 'balanced',
+    fiscalReferences: Array<{ name: string; markdown: string }> = [],
+    officialReferences: Array<{ name: string; markdown: string }> = [],
+  ): Promise<Array<AnalysisResult>> {
+    const { jobId, userId, data: jobDataPayload } = jobData
+    const context = AnalysisContextSchema.parse({
+      jobId,
+      billId: bills[0]?.billId,
+      userId,
+      collectionId: jobDataPayload.collectionId,
+      collectionName: jobDataPayload.collectionName,
+      preset,
+    })
+    return createBillAnalysisService({ provider: this.provider }).analyzePreparedBills(
+      bills,
+      jobData,
+      context,
+      fiscalReferences,
+      officialReferences,
+    )
   }
 
   /**

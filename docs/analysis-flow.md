@@ -1,7 +1,7 @@
 # Flujo de análisis de facturas
 
-> Estado: flujo cloud con BYOK de Fase 1 y referencias fiscales autogestionadas de Fase 2-A implementados en código; ver [BYOK cloud](./byok-cloud.md) para el mapa técnico de credenciales, contratos y bifurcaciones.
-> Actualizado: 2026-09-03.
+> Estado: flujo cloud con BYOK y envelope inmutable de ejecución implementados en código; ver [BYOK cloud](./byok-cloud.md) para el mapa técnico de credenciales, contratos y bifurcaciones.
+> Actualizado: 2026-09-05.
 >
 > Este documento describe qué ocurre desde el clic en **Analizar colección** hasta que se guardan el resultado y el progreso. La sección BYOK es comportamiento actual de código; aún falta comprobarlo contra servicios reales tras aplicar la migración.
 
@@ -11,12 +11,13 @@
 Usuario autenticado
   -> página de colección y modal Mantine
   -> tRPC collections.analyze
-  -> valida autorización + conexión BYOK + referencias fiscales + selección de facturas
+  -> valida autorización + conexión BYOK + contexto/ruleset + selección de facturas
+  -> materializa envelope: evidencia oficial, referencias opcionales y facturas normalizadas
   -> Firestore: notificación/progreso
   -> BullMQ/Redis: trabajo interno
   -> worker: proveedor LLM nuevo para ese job
   -> caso de uso + servicio de análisis
-  -> MinIO: Markdown de referencias autogestionadas + XML original -> parser -> factura normalizada actual
+  -> worker consume envelope fijo (no relee normativa, referencias ni XML de MinIO)
   -> prompt -> proveedor LLM -> { percentage, reason }
   -> Prisma/PostgreSQL: actualiza BillHeader
   -> Firestore: progreso, telemetría y estado final
@@ -66,18 +67,19 @@ El servidor sigue este orden:
 
 1. Deriva `principal` de la sesión Firebase verificada por el middleware tRPC.
 2. Ejecuta `resolveConnection`: acepta una conexión activa propia indicada por `credentialId`, o la predeterminada activa del usuario. Si no existe, responde `PRECONDITION_FAILED`.
-3. Exige al menos una referencia fiscal autogestionada activa del mismo usuario; si no existe, responde `PRECONDITION_FAILED`.
-4. Busca la colección por `id` **y** `userId`; si no pertenece al usuario responde `NOT_FOUND`.
-5. Selecciona facturas según `type`:
+3. Busca la colección por `id` **y** `userId`; si no pertenece al usuario responde `NOT_FOUND`.
+4. Resuelve un ruleset oficial activo y materializa solo sus fragmentos aplicables; sin evidencia aplicable, bloquea el run.
+5. Lee las referencias autogestionadas activas si existen; son opcionales y se congelan en el run.
+6. Selecciona facturas según `type`:
    - `all`: todas las de la colección;
    - `missing`: donde `percentage` y `reason` son `null`;
    - `analyzed`: donde alguno de esos dos campos ya tiene valor;
    - `specific`: solo IDs solicitados que pertenecen a la colección.
-6. Si no quedaron facturas, responde `BAD_REQUEST`.
-7. Construye `AnalyzeJobData` con IDs, instrucciones, preset, contadores iniciales y el `credentialId` de la conexión autorizada.
-8. Escribe una versión pública del job en Firestore `analyze-v1/{jobId}`. La variante pública elimina el `userId` interno y añade `firebaseUid` para que el navegador pueda suscribirse.
-9. Encola el payload interno en BullMQ con `AnalyzeQueue.add`.
-10. Devuelve al navegador únicamente `jobId`, `collectionId` y `collectionName`.
+7. Si no quedaron facturas, responde `BAD_REQUEST`.
+8. Parsea los XML y guarda sus hechos normalizados, hashes, evidencia oficial y referencias en `AnalysisRun.inputSnapshot`; si el material supera el presupuesto, bloquea sin truncarlo.
+9. Construye `AnalyzeJobData` con IDs opacos, preset y el `credentialId` de la conexión autorizada.
+10. Escribe una versión pública del job en Firestore `analyze-v1/{jobId}` y encola el payload interno en BullMQ.
+11. Devuelve al navegador únicamente `jobId`, `collectionId` y `collectionName`.
 
 ### Límite de secretos de Fase 0
 
@@ -89,9 +91,9 @@ El worker (`src/integrations/jobs/analyze-job.ts`) escucha `ANALYZE_QUEUE_NAME` 
 
 1. Extrae `jobId`, `billIds` y preset del payload.
 2. Busca conexión y colección con el mismo `userId`, exige conexión activa/no eliminada y descifra el secreto con AES-GCM.
-3. Vuelve a exigir referencias fiscales activas propias y descarga solo sus Markdown normalizados desde MinIO. El contenido no entra en Firestore, BullMQ ni telemetría.
+3. Lee el envelope persistido: no vuelve a descargar Markdown normativo, referencias ni XML. El contenido no entra en Firestore, BullMQ ni telemetría.
 4. Construye un proveedor **nuevo** para este job. No hay singleton compartido entre jobs ni fallback a una key global.
-5. Construye `AnalyzeBillsUseCase(provider)` y ejecuta los IDs de factura con ese contexto autogestionado.
+5. Construye `AnalyzeBillsUseCase(provider)` y ejecuta las facturas normalizadas fijadas con esa evidencia.
 6. Al terminar, marca el documento Firestore como `completed` si no hubo fallos o `failed` si hubo al menos uno.
 7. Si el caso de uso lanza un error, escribe `failed` y el mensaje de error en Firestore; el handler devuelve `null`.
 
@@ -111,10 +113,8 @@ OpenAI y LM Studio ya no llaman `setDefaultOpenAIClient`: la configuración del 
 El servicio ejecuta esta secuencia:
 
 1. Comprueba si el modelo está cargado. Para OpenAI/Claude es un no-op; LM Studio puede cargarlo con reintentos.
-2. Busca los `BillHeader` solicitados en PostgreSQL y obtiene `id`, `billType` y `storagePath`.
-3. Para cada factura, recupera el objeto de MinIO y ejecuta `parseAndValidateInvoiceXML`.
-4. Si el XML no puede leerse o validarse, agrega un resultado fallido para esa factura y continúa con las demás.
-5. Convierte XML válido en `ParsedBill`: proveedor, identificador/comprador, líneas, totales y tipo (`PERSONAL`, `PROFESSIONAL` u `OTHER`).
+2. Recibe facturas `ParsedBill` ya normalizadas y fijadas por el servidor antes de encolar.
+3. No vuelve a leer el XML de MinIO: cambios posteriores en el objeto no alteran el run.
 6. Construye el prompt v1. Incluye proveedor, descripciones de ítems, totales, tipo de factura, referencias fiscales autogestionadas y, si es `PROFESSIONAL`, las instrucciones personalizadas de la colección. No presenta esas referencias como normativa oficial ni como un dictamen jurídico.
 7. Invoca `provider.process` detrás de un circuit breaker. El resultado esperado es exactamente `{ percentage: 0..100, reason: string }`.
 8. Valida la salida Zod, agrega versión de prompt, preset y timestamp. Si falla la llamada, el output o la validación, registra fallo para esa factura y continúa.

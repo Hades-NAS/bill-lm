@@ -66,14 +66,31 @@ revisarlo y aprobarlo antes de que pueda formar parte de un ruleset.
 En **Configuración** cada usuario puede cargar hasta tres referencias globales
 para sus análisis. Aceptan Markdown o PDFs con texto seleccionable; el servidor
 normaliza el contenido a Markdown y lo guarda en MinIO. Son material aportado y
-autoaprobado por el usuario, no normativa oficial ni un dictamen jurídico. Se
-requiere al menos una referencia activa y una conexión BYOK activa antes de
-analizar una colección. Los PDFs escaneados sin texto se rechazan: OCR no forma
-parte de esta fase.
+autoaprobado por el usuario, no normativa oficial ni un dictamen jurídico. Son
+opcionales: cada ejecución fija las que existían junto con la evidencia oficial
+del ruleset y las facturas normalizadas. Por eso, eliminar o editar una
+referencia después no altera un análisis anterior. Los PDFs escaneados sin texto
+se rechazan: OCR no forma parte de esta fase.
 
-Esta fase no crea `AnalysisRun` ni snapshots inmutables del material usado: una
-referencia eliminada deja de aplicarse a análisis futuros, pero todavía no hay
-proveniencia histórica por ejecución.
+Antes de encolar, el servidor crea un `AnalysisRun` con un envelope inmutable:
+contexto, reglas oficiales aplicables, referencias autogestionadas y datos
+normalizados de las facturas. Si la evidencia excede el presupuesto, se bloquea
+el run sin truncar ni llamar al proveedor.
+
+## Ejecución de análisis y trazabilidad
+
+Cada ejecución selecciona el ruleset por propósito, régimen, periodicidad y
+período completo. Solo conserva los fragmentos oficiales vigentes y aplicables;
+también guarda los hashes y el Markdown exacto usado. El worker procesa ese
+snapshot fijo, por lo que cambios posteriores en MinIO, referencias o reglas no
+modifican el análisis ya encolado. El detalle técnico está en
+[docs/analysis-flow.md](docs/analysis-flow.md).
+
+Antes de enviarlo a la cola y otra vez en el worker, el servidor comprueba los
+prerrequisitos del envelope y que la conexión activa siga siendo exactamente la
+misma conexión y modelo fijados. Si falta o cambió algo, el run queda
+**bloqueado** sin descifrar la clave ni llamar al proveedor; fallos operativos
+de cola, almacenamiento o proveedor quedan como **fallidos**.
 
 ## T3Env
 

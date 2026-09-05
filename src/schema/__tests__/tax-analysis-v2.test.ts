@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   AnalysisBlockSchema,
+  AnalysisExecutionEnvelopeV2Schema,
   CollectionContextRevisionInputSchema,
   collectionContextBlocks,
   EconomicActivityRevisionInputSchema,
@@ -105,6 +106,27 @@ describe('tax analysis v2 contracts', () => {
     ])
   })
 
+  it('allows personal expenses without activities but requires activities for IVA and IR business', () => {
+    const base = {
+      period: { startDate: '2026-01-01', endDate: '2026-12-31' },
+      taxpayerProfileRevisionId: id,
+      activityRevisionIds: [],
+    }
+    const profile = { hasRuc: true, taxRegime: 'general' as const, vatFilingFrequency: 'monthly' as const }
+    expect(collectionContextBlocks(
+      CollectionContextRevisionInputSchema.parse({ ...base, purpose: 'personal_expenses' }),
+      profile,
+    )).toEqual([])
+    expect(collectionContextBlocks(
+      CollectionContextRevisionInputSchema.parse({ ...base, purpose: 'vat_credit' }),
+      profile,
+    ).map((block) => block.code)).toContain('MISSING_ECONOMIC_ACTIVITY')
+    expect(collectionContextBlocks(
+      CollectionContextRevisionInputSchema.parse({ ...base, purpose: 'business_income_tax' }),
+      profile,
+    ).map((block) => block.code)).toContain('MISSING_ECONOMIC_ACTIVITY')
+  })
+
   it('keeps blocks actionable and results independently versioned', () => {
     expect(
       AnalysisBlockSchema.safeParse({
@@ -128,5 +150,23 @@ describe('tax analysis v2 contracts', () => {
         createdAt: new Date(),
       }).success,
     ).toBe(true)
+  })
+
+  it('rejects raw XML in the immutable invoice envelope', () => {
+    expect(AnalysisExecutionEnvelopeV2Schema.safeParse({
+      schemaVersion: 'v2',
+      envelopeVersion: '1',
+      prompt: {
+        templateId: 'bill-analysis-v2',
+        templateVersion: '2',
+        templateHash: 'b'.repeat(64),
+      },
+      context: { collectionContextRevisionId: id, revision: 1, purpose: 'personal_expenses', period: { startDate: '2026-01-01', endDate: '2026-12-31' }, notes: null },
+      taxpayerProfile: { revisionId: id, revision: 1, hasRuc: false, hasEmploymentIncome: true, taxRegime: 'unknown', vatFilingFrequency: 'none', additionalFacts: null },
+      activities: [], provider: { id, provider: 'OPENAI', modelId: 'gpt-4o-mini' },
+      ruleset: { id, version: 1, contentHash: 'rules', effectiveFrom: '2026-01-01', effectiveTo: null },
+      officialEvidence: [{ ruleSetFragmentId: id, fragmentId: id, fragmentContentHash: 'fragment', source: { id, title: 'Norma', issuer: 'SRI', officialUrl: 'https://www.sri.gob.ec/', contentHash: 'source' }, articleOrSection: 'Art. 1', purposes: ['personal_expenses'], taxRegimes: ['unknown'], effectiveFrom: '2026-01-01', effectiveTo: null, markdown: 'Contenido' }],
+      userReferences: [], invoices: [{ billId: id, contentHash: 'a'.repeat(64), parserVersion: 'xml-v1', normalized: '<factura>secreto</factura>' }],
+    }).success).toBe(false)
   })
 })

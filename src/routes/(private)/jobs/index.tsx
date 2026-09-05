@@ -49,6 +49,8 @@ const getStatusColor = (status: string) => {
       return 'blue'
     case 'completed':
       return 'green'
+    case 'blocked':
+      return 'orange'
     case 'failed':
     case 'error':
       return 'red'
@@ -62,6 +64,7 @@ const getStatusLabel = (status: string) => {
     pending: 'Pendiente',
     'in-progress': 'En progreso',
     completed: 'Completado',
+    blocked: 'Bloqueado',
     failed: 'Fallido',
     error: 'Error',
   }
@@ -77,7 +80,7 @@ function openJobsGuide() {
       {
         title: 'Estados',
         description:
-          'Pendiente y en progreso indican que el trabajo sigue en cola o ejecutándose. Completado terminó. Fallido o con error requiere revisar el detalle.',
+          'Pendiente y en progreso indican que el trabajo sigue en cola o ejecutándose. Bloqueado indica que falta un requisito y no se llamó al proveedor. Fallido requiere revisar el detalle.',
       },
       {
         title: 'Progreso',

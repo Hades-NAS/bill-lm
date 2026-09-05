@@ -38,7 +38,13 @@ export function useJobsSubscriptionManager() {
     const jobsCollectionQuery = query(
       collection(db, FireCollections.ANALYZE_COLLECTION),
       where('firebaseUid', '==', auth.userId),
-      where('status', 'in', ['pending', 'in-progress', 'completed', 'failed']),
+      where('status', 'in', [
+        'pending',
+        'in-progress',
+        'completed',
+        'failed',
+        'blocked',
+      ]),
       where('read', '==', false),
     )
 

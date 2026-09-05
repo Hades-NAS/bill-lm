@@ -2,12 +2,18 @@ import { Worker } from 'bullmq'
 import { DateTime } from 'luxon'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
-import { loadActiveFiscalReferenceContext } from '#/integrations/fiscal-references/context.server'
 import { decryptProviderSecret } from '#/integrations/llm/byok-crypto.server'
 import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
 import { redisConnection } from '#/integrations/redis'
+import {
+  AnalysisPrerequisiteError,
+  assertAnalysisEnvelopeCanExecute,
+  assertEnvelopeMatchesAnalysisRun,
+  assertFrozenProviderConnection,
+} from '#/integrations/tax-analysis/analysis-gate'
+import { parseAnalysisExecutionEnvelope } from '#/integrations/tax-analysis/execution-envelope.server'
 
 import { FireCollections } from '#/constants/firebase'
 
@@ -15,9 +21,25 @@ import type { AnalyzeJobData } from '#/schema/collections'
 import type { Job } from 'bullmq'
 
 import { env } from '#/env'
+import { ParsedBillSchema } from '#/schema/bill-analysis'
 import { createAnalyzeBillsUseCase } from '#/use-cases/analyze-bills.use-case'
 
 const logger = getServiceLogger('AnalyzeWorker')
+
+const markJobBlocked = async (jobId: string, message: string) => {
+  try {
+    await adminDb
+      .collection(FireCollections.ANALYZE_COLLECTION)
+      .doc(jobId)
+      .update({
+        status: 'blocked',
+        error: message,
+        updatedAt: DateTime.now().toJSDate(),
+      })
+  } catch {
+    logger.error(`[Worker] Failed to update blocked status for job ${jobId}`)
+  }
+}
 
 logger.info(
   `Starting Analyze Worker connecting to Redis at ${redisConnection.host}:${redisConnection.port}`,
@@ -48,15 +70,38 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
     const run = await prisma.analysisRun.findFirst({
       where: { id: job.data.analysisRunId, userId, status: 'queued' },
     })
-    if (!run) throw new Error('The analysis run is no longer eligible')
-    if (!run.ruleSetId || !run.collectionContextRevisionId)
-      throw new Error('The analysis run has incomplete context')
-    await prisma.analysisRun.update({
-      where: { id: run.id },
+    if (!run) return null
+
+    let envelope
+    try {
+      envelope = parseAnalysisExecutionEnvelope(run.inputSnapshot)
+    } catch {
+      const message =
+        'El contexto preparado para este análisis no es válido. Configúralo nuevamente antes de reintentar.'
+      await prisma.analysisRun.updateMany({
+        where: { id: run.id, userId, status: 'queued' },
+        data: {
+          status: 'blocked',
+          blockCode: 'UNRESOLVED_ANALYSIS_CONFIGURATION',
+          blockMessage: message,
+          completedAt: new Date(),
+        },
+      })
+      await markJobBlocked(jobId, message)
+      return null
+    }
+
+    // Only one worker may advance this immutable run. This claim happens before
+    // decrypting the provider secret or creating an LLM client.
+    const claim = await prisma.analysisRun.updateMany({
+      where: { id: run.id, userId, status: 'queued' },
       data: { status: 'running', startedAt: new Date() },
     })
+    if (claim.count !== 1) return null
 
-    const [connection, collection, fiscalReferences, ruleSet] =
+    assertEnvelopeMatchesAnalysisRun(envelope, run, data.collectionId)
+
+    const [connection, collection] =
       await Promise.all([
         prisma.providerConnection.findFirst({
           where: { id: credentialId, userId, isActive: true, deletedAt: null },
@@ -66,32 +111,21 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
           where: { id: data.collectionId, userId, deletedAt: null },
           select: { id: true },
         }),
-        loadActiveFiscalReferenceContext(userId),
-        prisma.taxRuleSet.findUnique({
-          where: { id: run.ruleSetId },
-          include: {
-            fragments: {
-              include: {
-                fragment: {
-                  include: {
-                    source: { select: { issuer: true, title: true } },
-                  },
-                },
-              },
-            },
-          },
-        }),
       ])
-    if (!connection || !collection)
-      throw new Error('The job authorization is no longer valid')
-    if (!ruleSet)
-      throw new Error(
-        'The ruleset fixed for this analysis is no longer available',
+    if (!collection)
+      throw new AnalysisPrerequisiteError(
+        'MISSING_COLLECTION_CONTEXT',
+        'La colección ya no está disponible para ejecutar este análisis.',
       )
-
-    const officialReferences = ruleSet.fragments.map(({ fragment }) => ({
-      name: `${fragment.source.issuer} — ${fragment.source.title} · ${fragment.articleOrSection}`,
-      markdown: fragment.contentMarkdown,
+    assertAnalysisEnvelopeCanExecute(envelope)
+    assertFrozenProviderConnection(envelope, connection)
+    const fiscalReferences = envelope.userReferences.map((reference) => ({
+      name: reference.name,
+      markdown: reference.normalizedMarkdown,
+    }))
+    const officialReferences = envelope.officialEvidence.map((evidence) => ({
+      name: `${evidence.source.issuer} — ${evidence.source.title} · ${evidence.articleOrSection}`,
+      markdown: evidence.markdown,
     }))
 
     const apiKey = decryptProviderSecret(
@@ -116,29 +150,28 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       agentInstructions: '',
     })
     const useCase = createAnalyzeBillsUseCase(provider)
-    const results = await useCase.execute(
-      billIds,
+    const results = await useCase.executePrepared(
+      envelope.invoices.map((invoice) => ({
+        billId: invoice.billId,
+        parsedBill: ParsedBillSchema.parse(invoice.normalized),
+      })),
       job.data,
       data.preset || 'balanced',
       fiscalReferences,
       officialReferences,
     )
 
-    const runContext = await prisma.collectionContextRevision.findFirst({
-      where: { id: run.collectionContextRevisionId, userId },
-    })
-    if (!runContext) throw new Error('The analysis context is no longer valid')
     await prisma.analysisResult.createMany({
       data: results.map((result) => ({
         runId: run.id,
         billId: result.billId,
-        purpose: runContext.purpose,
+        purpose: envelope.context.purpose,
         classification: result.success ? 'needs_review' : 'ineligible',
         resultSnapshot: {
           schemaVersion: 'v2',
           runId: run.id,
           invoiceId: result.billId,
-          purpose: runContext.purpose,
+          purpose: envelope.context.purpose,
           classification: result.success ? 'needs_review' : 'ineligible',
           reasoning: result.success
             ? (result.analysis?.reason ?? '')
@@ -180,14 +213,23 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
     return true
   } catch (error) {
     logger.error(`[Worker] Job ${jobId} failed`)
+    const prerequisiteError =
+      error instanceof AnalysisPrerequisiteError ? error : null
     if (job.data.analysisRunId)
       await prisma.analysisRun.updateMany({
         where: {
           id: job.data.analysisRunId,
           userId,
-          status: { in: ['queued', 'running'] },
+          status: prerequisiteError ? 'running' : { in: ['queued', 'running'] },
         },
-        data: { status: 'failed', completedAt: new Date() },
+        data: prerequisiteError
+          ? {
+              status: 'blocked',
+              blockCode: prerequisiteError.code,
+              blockMessage: prerequisiteError.message,
+              completedAt: new Date(),
+            }
+          : { status: 'failed', completedAt: new Date() },
       })
 
     // Update error status in Firestore
@@ -196,8 +238,8 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         .collection(FireCollections.ANALYZE_COLLECTION)
         .doc(jobId)
         .update({
-          status: 'failed',
-          error: 'No se pudo completar el análisis.',
+          status: prerequisiteError ? 'blocked' : 'failed',
+          error: prerequisiteError?.message ?? 'No se pudo completar el análisis.',
           updatedAt: DateTime.now().toJSDate(),
         })
     } catch (updateError) {

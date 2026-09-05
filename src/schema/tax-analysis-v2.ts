@@ -1,5 +1,7 @@
 import z from 'zod'
 
+import { ParsedBillSchema } from '#/schema/bill-analysis'
+
 export const TAX_ANALYSIS_SCHEMA_VERSION = 'v2' as const
 
 const IdSchema = z.string().uuid()
@@ -306,6 +308,9 @@ export const AnalysisBlockCodeSchema = z.enum([
   'MISSING_COLLECTION_CONTEXT',
   'OUTSIDE_COLLECTION_PERIOD',
   'NO_ELIGIBLE_INVOICES',
+  'NO_APPLICABLE_OFFICIAL_EVIDENCE',
+  'ANALYSIS_CONTEXT_EXCEEDS_BUDGET',
+  'STALE_PROVIDER_CONNECTION',
 ])
 export type AnalysisBlockCode = z.infer<typeof AnalysisBlockCodeSchema>
 
@@ -317,21 +322,103 @@ export const AnalysisBlockSchema = z.object({
 })
 export type AnalysisBlock = z.infer<typeof AnalysisBlockSchema>
 
-export const AnalysisRunInputSnapshotSchema = z.object({
+const SnapshotHashSchema = z.string().regex(/^[a-f0-9]{64}$/i)
+
+export const AnalysisOfficialEvidenceSchema = z.object({
+  ruleSetFragmentId: IdSchema,
+  fragmentId: IdSchema,
+  fragmentContentHash: z.string().min(1),
+  source: z.object({
+    id: IdSchema,
+    title: z.string().min(1),
+    issuer: z.string().min(1),
+    officialUrl: z.string().url(),
+    contentHash: z.string().min(1),
+  }),
+  articleOrSection: z.string().min(1),
+  purposes: z.array(TaxPurposeSchema),
+  taxRegimes: z.array(TaxRegimeSchema),
+  effectiveFrom: CivilDateSchema,
+  effectiveTo: CivilDateSchema.nullable(),
+  markdown: z.string().min(1),
+})
+export type AnalysisOfficialEvidence = z.infer<
+  typeof AnalysisOfficialEvidenceSchema
+>
+
+export const AnalysisExecutionEnvelopeV2Schema = z.object({
   schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
-  collectionContextRevisionId: IdSchema,
-  taxpayerProfileRevisionId: IdSchema,
-  activityRevisionIds: z.array(IdSchema).min(1),
-  providerConnection: z.object({
+  envelopeVersion: z.literal('1'),
+  prompt: z.object({
+    templateId: z.literal('bill-analysis-v2'),
+    templateVersion: z.literal('2'),
+    templateHash: SnapshotHashSchema,
+  }),
+  context: z.object({
+    collectionContextRevisionId: IdSchema,
+    revision: z.number().int().positive(),
+    purpose: TaxPurposeSchema,
+    period: TaxPeriodSchema,
+    notes: z.string().nullable(),
+  }),
+  taxpayerProfile: z.object({
+    revisionId: IdSchema,
+    revision: z.number().int().positive(),
+    hasRuc: z.boolean(),
+    hasEmploymentIncome: z.boolean(),
+    taxRegime: TaxRegimeSchema,
+    vatFilingFrequency: VatFilingFrequencySchema,
+    additionalFacts: z.string().nullable(),
+  }),
+  activities: z.array(z.object({
+    revisionId: IdSchema,
+    revision: z.number().int().positive(),
+    displayName: z.string().min(1),
+    registeredActivityCode: z.string().nullable(),
+    registeredActivityName: z.string().min(1),
+    activityDescription: z.string().min(1),
+    necessaryPurchases: z.string().nullable(),
+    revenueVatTreatment: RevenueVatTreatmentSchema,
+    additionalFacts: z.string().nullable(),
+  })),
+  provider: z.object({
     id: IdSchema,
     provider: z.enum(['OPENAI', 'CLAUDE']),
     modelId: z.string().min(1).max(255),
   }),
-  promptVersion: z.string().min(1).max(100),
+  ruleset: z.object({
+    id: IdSchema,
+    version: z.number().int().positive(),
+    contentHash: z.string().min(1),
+    effectiveFrom: CivilDateSchema,
+    effectiveTo: CivilDateSchema.nullable(),
+  }),
+  officialEvidence: z.array(AnalysisOfficialEvidenceSchema).min(1),
+  userReferences: z.array(z.object({
+    id: IdSchema,
+    name: z.string().min(1),
+    normalizedMarkdown: z.string().min(1),
+    contentHash: z.string().min(1),
+  })),
+  invoices: z.array(z.object({
+    billId: IdSchema,
+    contentHash: SnapshotHashSchema,
+    parserVersion: z.literal('xml-v1'),
+    normalized: ParsedBillSchema,
+  })).min(1),
 })
-export type AnalysisRunInputSnapshot = z.infer<
-  typeof AnalysisRunInputSnapshotSchema
+export type AnalysisExecutionEnvelopeV2 = z.infer<
+  typeof AnalysisExecutionEnvelopeV2Schema
 >
+
+export const AnalysisRunInputSnapshotSchema = z.union([
+  AnalysisExecutionEnvelopeV2Schema,
+  z.object({
+    schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
+    blockCode: z.string().min(1),
+  }),
+])
+export type AnalysisRunInputSnapshot = z.infer<typeof AnalysisRunInputSnapshotSchema>
 
 export const AnalysisRunStatusSchema = z.enum([
   'queued',
@@ -402,3 +489,50 @@ export const TaxAnalysisResultV2Schema = z.discriminatedUnion('purpose', [
   }),
 ])
 export type TaxAnalysisResultV2 = z.infer<typeof TaxAnalysisResultV2Schema>
+
+const ModelTaxAnalysisPayloadBaseSchema = z
+  .object({
+    purpose: TaxPurposeSchema,
+    classification: TaxAnalysisClassificationSchema,
+    reasoning: z.string().trim().min(1).max(10_000),
+    uncertainties: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  })
+  .strict()
+
+/**
+ * The fields an LLM is allowed to return for an analysis result.
+ *
+ * schemaVersion, runId, invoiceId, and createdAt are owned by the server and
+ * are attached only when F3-04 persists a final V2 result.
+ */
+export const ModelTaxAnalysisPayloadV2Schema = z.discriminatedUnion('purpose', [
+  ModelTaxAnalysisPayloadBaseSchema.extend({
+    purpose: z.literal('vat_credit'),
+    relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
+    invoiceVatAmount: z.number().nonnegative(),
+    potentialCreditableVatAmount: z.number().nonnegative().optional(),
+    creditablePercentage: z.number().min(0).max(100).optional(),
+    creditType: z.enum(['total', 'partial', 'none', 'undetermined']),
+    proportionalityRequired: z.boolean(),
+    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  }).strict(),
+  ModelTaxAnalysisPayloadBaseSchema.extend({
+    purpose: z.literal('business_income_tax'),
+    relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
+    businessUsePercentage: z.number().min(0).max(100).optional(),
+    potentialExpenseAmount: z.number().nonnegative().optional(),
+    mixedUseDetected: z.boolean(),
+    substantiationIssues: z.array(z.string().trim().min(1).max(1_000)).max(20),
+    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  }).strict(),
+  ModelTaxAnalysisPayloadBaseSchema.extend({
+    purpose: z.literal('personal_expenses'),
+    personalExpenseCategory: z.string().trim().min(1).max(120).optional(),
+    potentialEligibleAmount: z.number().nonnegative().optional(),
+    beneficiaryRelationship: z.string().trim().min(1).max(500).optional(),
+    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  }).strict(),
+])
+export type ModelTaxAnalysisPayloadV2 = z.infer<
+  typeof ModelTaxAnalysisPayloadV2Schema
+>

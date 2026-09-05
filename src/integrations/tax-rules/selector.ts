@@ -2,8 +2,9 @@ import { TaxRuleSetSelectorSchema } from '#/schema/tax-analysis-v2'
 
 import type { TaxRuleSetSelector } from '#/schema/tax-analysis-v2'
 
-export type SelectableTaxRuleSet = TaxRuleSetSelector & {
+export type SelectableTaxRuleSet = Omit<TaxRuleSetSelector, 'period'> & {
   id: string
+  version: number
   effectiveFrom: string
   effectiveTo: string | null
   reviewStatus: 'draft' | 'reviewed' | 'active' | 'retired'
@@ -26,8 +27,11 @@ export function selectApplicableTaxRuleSet(
           (!candidate.effectiveTo ||
             candidate.effectiveTo >= parsed.period.endDate),
       )
-      .sort((left, right) =>
-        right.effectiveFrom.localeCompare(left.effectiveFrom),
+      .sort(
+        (left, right) =>
+          right.effectiveFrom.localeCompare(left.effectiveFrom) ||
+          right.version - left.version ||
+          left.id.localeCompare(right.id),
       )[0] ?? null
   )
 }

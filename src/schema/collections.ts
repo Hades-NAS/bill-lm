@@ -106,7 +106,7 @@ export const AnalyzeJobDataSchema = z.object({
   credentialId: z.string().min(1).nullable(),
   analysisRunId: z.string().uuid().optional(),
   percentage: z.number().min(0).max(100),
-  status: z.enum(['pending', 'in-progress', 'completed', 'failed']),
+  status: z.enum(['pending', 'in-progress', 'completed', 'failed', 'blocked']),
   error: z.string().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),

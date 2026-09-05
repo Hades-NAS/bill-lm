@@ -15,15 +15,31 @@ import {
   CollectionContextRevisionInputSchema,
   collectionContextBlocks,
   TaxpayerProfileContextSchema,
+  AnalysisExecutionEnvelopeV2Schema,
 } from '#/schema/tax-analysis-v2'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
+import { normalizeFiscalReferenceMarkdown } from '#/integrations/fiscal-references/normalizer.server'
 import { getServiceLogger } from '#/integrations/logger.server'
+import {
+  AnalysisPrerequisiteError,
+  assertAnalysisEnvelopeCanExecute,
+} from '#/integrations/tax-analysis/analysis-gate'
+import {
+  selectApplicableOfficialEvidence,
+  sha256,
+} from '#/integrations/tax-analysis/execution-envelope.server'
+import { BILL_ANALYSIS_V2_PROMPT_METADATA } from '#/integrations/prompts/bill-prompt-builder'
+import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
 import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
+import { selectApplicableTaxRuleSet } from '#/integrations/tax-rules/selector'
 
 import { FireCollections } from '#/constants/firebase'
+
+import { transformRawToParsed } from '#/schema/bill-analysis'
+import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
 import { privateProcedure } from '../../init'
 
@@ -471,11 +487,6 @@ export const collectionsRouter = {
         collectionId: data.collectionId,
       })
 
-      const connection = await resolveConnection(
-        principal.userId,
-        data.credentialId,
-      )
-
       const { type, billIds } = data
 
       const collection = await prisma.collection.findFirst({
@@ -498,9 +509,29 @@ export const collectionsRouter = {
         })
       }
 
+      let connection
+      try {
+        connection = await resolveConnection(
+          principal.userId,
+          data.credentialId,
+        )
+      } catch (error) {
+        if (error instanceof TRPCError && error.code === 'PRECONDITION_FAILED')
+          await persistBlockedRun({
+            userId: principal.userId,
+            collectionId: collection.id,
+            code: 'MISSING_PROVIDER_CONNECTION',
+            message: error.message,
+          })
+        throw error
+      }
+
       const context = await prisma.collectionContextRevision.findFirst({
         where: { collectionId: collection.id, userId: principal.userId },
-        include: { taxpayerProfileRevision: true, activities: true },
+        include: {
+          taxpayerProfileRevision: true,
+          activities: { include: { economicActivityRevision: true } },
+        },
         orderBy: { revision: 'desc' },
       })
       if (!context) {
@@ -550,21 +581,44 @@ export const collectionsRouter = {
           message,
         })
       }
-      const ruleSet = await prisma.taxRuleSet.findFirst({
+      const ruleSetCandidates = await prisma.taxRuleSet.findMany({
         where: {
           purpose: context.purpose,
           taxRegime: context.taxpayerProfileRevision.taxRegime,
           vatFilingFrequency:
             context.taxpayerProfileRevision.vatFilingFrequency,
           reviewStatus: 'active',
-          effectiveFrom: { lte: context.periodStartDate },
-          OR: [
-            { effectiveTo: null },
-            { effectiveTo: { gte: context.periodEndDate } },
-          ],
         },
-        orderBy: { effectiveFrom: 'desc' },
+        include: {
+          fragments: {
+            include: { fragment: { include: { source: true } } },
+          },
+        },
       })
+      const selectedRuleSet = selectApplicableTaxRuleSet(
+        {
+          purpose: context.purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
+          period: {
+            startDate: context.periodStartDate.toISOString().slice(0, 10),
+            endDate: context.periodEndDate.toISOString().slice(0, 10),
+          },
+          taxRegime: context.taxpayerProfileRevision.taxRegime as 'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown',
+          vatFilingFrequency: context.taxpayerProfileRevision.vatFilingFrequency as 'none' | 'monthly' | 'semiannual' | 'unknown',
+        },
+        ruleSetCandidates.map((candidate) => ({
+          id: candidate.id,
+          version: candidate.version,
+          purpose: candidate.purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
+          taxRegime: candidate.taxRegime as 'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown',
+          vatFilingFrequency: candidate.vatFilingFrequency as 'none' | 'monthly' | 'semiannual' | 'unknown',
+          effectiveFrom: candidate.effectiveFrom.toISOString().slice(0, 10),
+          effectiveTo: candidate.effectiveTo?.toISOString().slice(0, 10) ?? null,
+          reviewStatus: candidate.reviewStatus as 'draft' | 'reviewed' | 'active' | 'retired',
+        })),
+      )
+      const ruleSet = selectedRuleSet
+        ? ruleSetCandidates.find((candidate) => candidate.id === selectedRuleSet.id)
+        : null
       if (!ruleSet) {
         const message =
           'No existe un ruleset oficial activo para este contexto y período.'
@@ -579,16 +633,27 @@ export const collectionsRouter = {
         throw new TRPCError({ code: 'PRECONDITION_FAILED', message })
       }
 
-      let billsToAnalyze: Array<{ id: string }> = []
+      let billsToAnalyze: Array<{
+        id: string
+        storagePath: string
+        number: string
+        billType: 'PERSONAL' | 'PROFESSIONAL' | 'OTHER'
+        totalAmount: number
+      }> = []
+      const billSelect = {
+        id: true,
+        storagePath: true,
+        number: true,
+        billType: true,
+        totalAmount: true,
+      } as const
 
       if (type === 'all') {
         const bills = await prisma.billHeader.findMany({
           where: {
             collectionId: data.collectionId,
           },
-          select: {
-            id: true,
-          },
+          select: billSelect,
         })
         billsToAnalyze = bills
       } else if (type === 'missing') {
@@ -597,9 +662,7 @@ export const collectionsRouter = {
             collectionId: data.collectionId,
             AND: [{ percentage: null }, { reason: null }],
           },
-          select: {
-            id: true,
-          },
+          select: billSelect,
         })
         billsToAnalyze = bills
       } else if (type === 'analyzed') {
@@ -608,9 +671,7 @@ export const collectionsRouter = {
             collectionId: data.collectionId,
             OR: [{ percentage: { not: null } }, { reason: { not: null } }],
           },
-          select: {
-            id: true,
-          },
+          select: billSelect,
         })
         billsToAnalyze = bills
       } else {
@@ -621,9 +682,7 @@ export const collectionsRouter = {
               in: billIds,
             },
           },
-          select: {
-            id: true,
-          },
+          select: billSelect,
         })
         billsToAnalyze = bills
       }
@@ -641,6 +700,119 @@ export const collectionsRouter = {
         })
       }
 
+      const officialEvidence = selectApplicableOfficialEvidence(
+        {
+          purpose: context.purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
+          period: {
+            startDate: context.periodStartDate.toISOString().slice(0, 10),
+            endDate: context.periodEndDate.toISOString().slice(0, 10),
+          },
+          taxRegime: context.taxpayerProfileRevision.taxRegime as 'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown',
+          vatFilingFrequency: context.taxpayerProfileRevision.vatFilingFrequency as 'none' | 'monthly' | 'semiannual' | 'unknown',
+        },
+        ruleSet.fragments.map(({ id, fragment }) => ({
+          ruleSetFragmentId: id,
+          fragmentId: fragment.id,
+          fragmentContentHash: fragment.contentHash,
+          source: {
+            id: fragment.source.id,
+            title: fragment.source.title,
+            issuer: fragment.source.issuer,
+            officialUrl: fragment.source.officialUrl,
+            contentHash: fragment.source.contentHash,
+          },
+          articleOrSection: fragment.articleOrSection,
+          purposes: fragment.purposes as Array<'vat_credit' | 'business_income_tax' | 'personal_expenses'>,
+          taxRegimes: fragment.taxRegimes as Array<'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown'>,
+          effectiveFrom: fragment.effectiveFrom.toISOString().slice(0, 10),
+          effectiveTo: fragment.effectiveTo?.toISOString().slice(0, 10) ?? null,
+          markdown: fragment.contentMarkdown,
+        })),
+      )
+      if (officialEvidence.length === 0) {
+        const message = 'El ruleset activo no contiene evidencia oficial aplicable para este contexto.'
+        await persistBlockedRun({ userId: principal.userId, collectionId: collection.id, contextRevisionId: context.id, taxpayerProfileRevisionId: context.taxpayerProfileRevisionId, code: 'NO_APPLICABLE_OFFICIAL_EVIDENCE', message })
+        throw new TRPCError({ code: 'PRECONDITION_FAILED', message })
+      }
+
+      const references = await prisma.fiscalReference.findMany({
+        where: { userId: principal.userId, deletedAt: null },
+        select: { id: true, name: true, storagePath: true, contentHash: true },
+        orderBy: { createdAt: 'asc' },
+      })
+      let invoiceSnapshots: Array<{
+        billId: string
+        contentHash: string
+        parserVersion: 'xml-v1'
+        normalized: ReturnType<typeof transformRawToParsed>
+      }>
+      try {
+        invoiceSnapshots = await Promise.all(billsToAnalyze.map(async (bill) => {
+          const xml = await StorageHelper.getObject(bill.storagePath)
+          const parsed = parseAndValidateInvoiceXML(xml)
+          if (!parsed.success)
+            throw new TRPCError({ code: 'BAD_REQUEST', message: `No se pudo leer la factura ${bill.number}; vuelve a cargar un XML válido.` })
+          return {
+            billId: bill.id,
+            contentHash: sha256(xml),
+            parserVersion: 'xml-v1' as const,
+            normalized: transformRawToParsed(parsed.data),
+          }
+        }))
+      } catch (error) {
+        const message =
+          error instanceof TRPCError
+            ? error.message
+            : 'No se pudo preparar una factura para el análisis. Vuelve a cargar un XML válido.'
+        await persistBlockedRun({
+          userId: principal.userId,
+          collectionId: collection.id,
+          contextRevisionId: context.id,
+          taxpayerProfileRevisionId: context.taxpayerProfileRevisionId,
+          code: 'UNRESOLVED_ANALYSIS_CONFIGURATION',
+          message,
+        })
+        throw new TRPCError({ code: 'PRECONDITION_FAILED', message, cause: error })
+      }
+      const userReferences = await Promise.all(references.map(async (reference) => ({
+        id: reference.id,
+        name: reference.name,
+        normalizedMarkdown: normalizeFiscalReferenceMarkdown((await StorageHelper.getObject(reference.storagePath)).toString('utf8')),
+        contentHash: reference.contentHash,
+      })))
+      const envelope = AnalysisExecutionEnvelopeV2Schema.parse({
+        schemaVersion: 'v2', envelopeVersion: '1',
+        prompt: BILL_ANALYSIS_V2_PROMPT_METADATA,
+        context: {
+          collectionContextRevisionId: context.id, revision: context.revision,
+          purpose: context.purpose,
+          period: { startDate: context.periodStartDate.toISOString().slice(0, 10), endDate: context.periodEndDate.toISOString().slice(0, 10) },
+          notes: context.notes,
+        },
+        taxpayerProfile: {
+          revisionId: context.taxpayerProfileRevision.id, revision: context.taxpayerProfileRevision.revision,
+          hasRuc: context.taxpayerProfileRevision.hasRuc, hasEmploymentIncome: context.taxpayerProfileRevision.hasEmploymentIncome,
+          taxRegime: context.taxpayerProfileRevision.taxRegime, vatFilingFrequency: context.taxpayerProfileRevision.vatFilingFrequency,
+          additionalFacts: context.taxpayerProfileRevision.additionalFacts,
+        },
+        activities: context.activities.map(({ economicActivityRevision: activity }) => ({
+          revisionId: activity.id, revision: activity.revision, displayName: activity.displayName,
+          registeredActivityCode: activity.registeredActivityCode, registeredActivityName: activity.registeredActivityName,
+          activityDescription: activity.activityDescription, necessaryPurchases: activity.necessaryPurchases,
+          revenueVatTreatment: activity.revenueVatTreatment, additionalFacts: activity.additionalFacts,
+        })),
+        provider: { id: connection.id, provider: connection.provider, modelId: connection.modelId },
+        ruleset: { id: ruleSet.id, version: ruleSet.version, contentHash: ruleSet.contentHash, effectiveFrom: ruleSet.effectiveFrom.toISOString().slice(0, 10), effectiveTo: ruleSet.effectiveTo?.toISOString().slice(0, 10) ?? null },
+        officialEvidence, userReferences, invoices: invoiceSnapshots,
+      })
+      try {
+        assertAnalysisEnvelopeCanExecute(envelope)
+      } catch (error) {
+        if (!(error instanceof AnalysisPrerequisiteError)) throw error
+        await persistBlockedRun({ userId: principal.userId, collectionId: collection.id, contextRevisionId: context.id, taxpayerProfileRevisionId: context.taxpayerProfileRevisionId, code: error.code, message: error.message })
+        throw new TRPCError({ code: 'PRECONDITION_FAILED', message: error.message })
+      }
+
       const analysisRun = await prisma.analysisRun.create({
         data: {
           userId: principal.userId,
@@ -652,24 +824,14 @@ export const collectionsRouter = {
           provider: connection.provider,
           modelId: connection.modelId,
           promptVersion: 'v2',
-          inputSnapshot: {
-            schemaVersion: 'v2',
-            collectionContextRevisionId: context.id,
-            taxpayerProfileRevisionId: context.taxpayerProfileRevisionId,
-            activityRevisionIds: context.activities.map(
-              (activity) => activity.economicActivityRevisionId,
-            ),
-            ruleSetId: ruleSet.id,
-            ruleSetVersion: ruleSet.version,
-            ruleSetContentHash: ruleSet.contentHash,
-            providerConnectionId: connection.id,
-          },
+          inputSnapshot: JSON.parse(JSON.stringify(envelope)),
           idempotencyKey: crypto.randomUUID(),
           status: 'queued',
           invoices: {
-            create: billsToAnalyze.map((bill) => ({
-              billId: bill.id,
-              snapshot: { id: bill.id },
+            create: invoiceSnapshots.map((bill) => ({
+              billId: bill.billId,
+              contentHash: bill.contentHash,
+              snapshot: JSON.parse(JSON.stringify(bill)),
             })),
           },
         },
@@ -705,12 +867,30 @@ export const collectionsRouter = {
         firebaseUid: principal.subject,
       })
 
-      await adminDb
-        .collection(FireCollections.ANALYZE_COLLECTION)
-        .doc(payload.jobId)
-        .set(notification)
+      try {
+        await adminDb
+          .collection(FireCollections.ANALYZE_COLLECTION)
+          .doc(payload.jobId)
+          .set(notification)
 
-      await AnalyzeQueue.add(jobName, payload)
+        await AnalyzeQueue.add(jobName, payload)
+      } catch (error) {
+        await prisma.analysisRun.update({
+          where: { id: analysisRun.id },
+          data: { status: 'failed', completedAt: new Date() },
+        })
+        logger.error('Could not queue analysis run', {
+          userId: principal.userId,
+          collectionId: collection.id,
+          runId: analysisRun.id,
+        })
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message:
+            'No se pudo enviar el análisis a la cola. Inténtalo nuevamente.',
+          cause: error,
+        })
+      }
 
       logger.info('Added analyze job to queue', {
         userId: principal.userId,

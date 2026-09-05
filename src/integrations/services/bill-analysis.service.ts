@@ -26,6 +26,7 @@ import { FireCollections } from '#/constants/firebase'
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
 import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
 import type { AnalyzedBill, AnalysisContext } from '#/schema/bill-analysis'
+import type { ParsedBill } from '#/schema/bill-analysis'
 import type { AnalyzeJobData } from '#/schema/collections'
 
 const logger = getServiceLogger('BillAnalysisService')
@@ -137,6 +138,27 @@ export class BillAnalysisService {
       })
       throw error
     }
+  }
+
+  async analyzePreparedBills(
+    bills: Array<{ billId: string; parsedBill: ParsedBill }>,
+    jobData: AnalyzeJobData,
+    context: AnalysisContext,
+    fiscalReferences: Array<{ name: string; markdown: string }> = [],
+    officialReferences: Array<{ name: string; markdown: string }> = [],
+  ): Promise<Array<AnalysisResult>> {
+    await this.ensureModelLoaded()
+    const results = await this.analyzeEachBill(
+      bills.map((bill) => ({ ...bill, success: true })),
+      jobData,
+      context,
+      fiscalReferences,
+      officialReferences,
+    )
+    const successfulResults = results.filter((result) => result.success)
+    if (successfulResults.length > 0)
+      await this.updateBillsInDatabase(successfulResults)
+    return results
   }
 
   /**
