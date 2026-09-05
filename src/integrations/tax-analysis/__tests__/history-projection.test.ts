@@ -121,7 +121,7 @@ const row = {
 }
 
 describe('analysis run history projection', () => {
-  it('returns a specialized, validated result without exposing raw snapshots', () => {
+  it('returns a specialized, validated result without exposing raw snapshots or internal identifiers', () => {
     const detail = projectAnalysisRunDetail(row)
     expect(detail.results[0]).toMatchObject({
       status: 'available',
@@ -142,6 +142,10 @@ describe('analysis run history projection', () => {
     expect(serialized).not.toContain('private user reference markdown')
     expect(serialized).not.toContain('1314708916')
     expect(serialized).not.toContain('Detalle privado')
+    expect(serialized).not.toContain(INVOICE_ID)
+    expect(serialized).not.toContain(ACTIVITY_ID)
+    expect(serialized).not.toContain(SOURCE_ID)
+    expect(serialized).not.toContain(hash)
   })
 
   it('returns a stable unavailable state for malformed snapshots', () => {

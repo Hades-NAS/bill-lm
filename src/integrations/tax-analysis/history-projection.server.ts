@@ -3,6 +3,8 @@ import {
   TaxAnalysisResultSchema,
 } from '#/schema/tax-analysis'
 
+import type { TaxAnalysisResult } from '#/schema/tax-analysis'
+
 type ResultRow = {
   billId: string
   purpose: string
@@ -40,11 +42,66 @@ function parseResultSnapshot(snapshot: unknown) {
   return TaxAnalysisResultSchema.safeParse(result)
 }
 
+/**
+ * Projects an analysis result for the authenticated collection history.
+ *
+ * The persisted contract carries identifiers and hashes needed for audit and
+ * reproducibility. They are intentionally not part of the browser response:
+ * the drawer only needs the human-readable conclusion and provenance.
+ */
+function projectSafeSpecializedResult(result: TaxAnalysisResult) {
+  const base = {
+    purpose: result.purpose,
+    classification: result.classification,
+    reasoning: result.reasoning,
+    uncertainties: result.uncertainties,
+    advisoryNotice: result.advisoryNotice,
+    references: {
+      official: result.references.official.map(({ articleOrSection }) => ({
+        articleOrSection,
+      })),
+      user: result.references.user.map(({ name }) => ({ name })),
+    },
+  }
+
+  switch (result.purpose) {
+    case 'vat_credit':
+      return {
+        ...base,
+        purpose: 'vat_credit' as const,
+        invoiceVatAmount: result.invoiceVatAmount,
+        potentialCreditableVatAmount: result.potentialCreditableVatAmount,
+        creditablePercentage: result.creditablePercentage,
+        creditType: result.creditType,
+        proportionalityRequired: result.proportionalityRequired,
+        missingEvidence: result.missingEvidence,
+      }
+    case 'business_income_tax':
+      return {
+        ...base,
+        purpose: 'business_income_tax' as const,
+        businessUsePercentage: result.businessUsePercentage,
+        potentialExpenseAmount: result.potentialExpenseAmount,
+        mixedUseDetected: result.mixedUseDetected,
+        substantiationIssues: result.substantiationIssues,
+        missingEvidence: result.missingEvidence,
+      }
+    case 'personal_expenses':
+      return {
+        ...base,
+        purpose: 'personal_expenses' as const,
+        personalExpenseCategory: result.personalExpenseCategory,
+        potentialEligibleAmount: result.potentialEligibleAmount,
+        beneficiaryRelationship: result.beneficiaryRelationship,
+        missingEvidence: result.missingEvidence,
+      }
+  }
+}
+
 function projectResult(row: ResultRow) {
   const parsed = parseResultSnapshot(row.resultSnapshot)
   if (!parsed.success)
     return {
-      billId: row.billId,
       purpose: row.purpose,
       classification: row.classification,
       createdAt: row.createdAt,
@@ -53,12 +110,11 @@ function projectResult(row: ResultRow) {
     }
 
   return {
-    billId: row.billId,
     purpose: row.purpose,
     classification: row.classification,
     createdAt: row.createdAt,
     status: 'available' as const,
-    result: parsed.data,
+    result: projectSafeSpecializedResult(parsed.data),
   }
 }
 
@@ -84,7 +140,6 @@ function projectFrozenContext(snapshot: unknown) {
     prompt: {
       templateId: envelope.prompt.templateId,
       templateVersion: envelope.prompt.templateVersion,
-      templateHash: envelope.prompt.templateHash,
     },
     context: {
       revision: envelope.context.revision,
@@ -111,27 +166,23 @@ function projectFrozenContext(snapshot: unknown) {
     },
     ruleset: {
       version: envelope.ruleset.version,
-      contentHash: envelope.ruleset.contentHash,
       effectiveFrom: envelope.ruleset.effectiveFrom,
       effectiveTo: envelope.ruleset.effectiveTo,
     },
     officialEvidence: envelope.officialEvidence.map((evidence) => ({
-      source: evidence.source,
+      source: {
+        title: evidence.source.title,
+        issuer: evidence.source.issuer,
+        officialUrl: evidence.source.officialUrl,
+      },
       articleOrSection: evidence.articleOrSection,
-      fragmentContentHash: evidence.fragmentContentHash,
       effectiveFrom: evidence.effectiveFrom,
       effectiveTo: evidence.effectiveTo,
     })),
     userReferences: envelope.userReferences.map((reference) => ({
-      id: reference.id,
       name: reference.name,
-      contentHash: reference.contentHash,
     })),
-    invoices: envelope.invoices.map((invoice) => ({
-      billId: invoice.billId,
-      contentHash: invoice.contentHash,
-      parserVersion: invoice.parserVersion,
-    })),
+    invoiceCount: envelope.invoices.length,
   }
 }
 

@@ -50,6 +50,15 @@ snapshot histórico no puede validarse, se muestra como no disponible sin revela
 su JSON ni el error interno.
 
 En una colección, el botón **Historial** abre un drawer lateral derecho. Permite
-recorrer las ejecuciones con **Ver más** y consultar un resumen seguro del run
-seleccionado sin salir de las facturas. El detalle especializado por factura se
-presenta por separado.
+recorrer las ejecuciones con **Ver más**, consultar un resumen seguro del run y
+abrir el resultado especializado de cada factura sin salir de la colección. El
+mismo drawer conserva tres niveles —historial, run y factura— con acciones de
+volver; no abre drawers anidados. La vista de factura muestra solo una
+proyección segura: no expone IDs internos, hashes ni snapshots crudos.
+# Operación de migración: retiro de resultados legacy
+
+La migración `20260905100000_remove_legacy_bill_analysis_columns` elimina únicamente las columnas históricas `bills_header.percentage` y `bills_header.reason`.
+
+Antes de desplegar, ejecutar `prisma migrate status` contra el entorno objetivo y comparar el destino, sin copiar ni imprimir `DATABASE_URL`. En producción se usa `prisma migrate deploy`; no se usa `migrate dev` ni `db push`.
+
+La migración es destructiva por diseño y no tiene rollback SQL automático. Si fuera necesario recuperar datos, el procedimiento es restaurar una copia de seguridad aprobada en un entorno aislado y extraer la información requerida; no revertir tablas de producción a ciegas.

@@ -50,9 +50,81 @@ function createRun(
   }
 }
 
-function createDetail(status: 'completed' | 'failed' | 'blocked') {
+function createAvailableResult(
+  purpose: 'vat_credit' | 'business_income_tax' | 'personal_expenses',
+  classification: 'eligible' | 'ineligible' | 'needs_review' = 'eligible',
+) {
+  const base = {
+    classification,
+    reasoning: 'La documentación disponible permite esta orientación.',
+    uncertainties: ['Confirma el comprobante original antes de declarar.'],
+    advisoryNotice:
+      'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
+    references: {
+      official: [{ articleOrSection: 'Art. 45' }],
+      user: [{ name: 'Guía de respaldo' }],
+    },
+  }
+
+  switch (purpose) {
+    case 'vat_credit':
+      return {
+        purpose,
+        classification,
+        createdAt: new Date('2026-09-05T12:01:00.000Z'),
+        status: 'available' as const,
+        result: {
+          ...base,
+          purpose,
+          invoiceVatAmount: 12,
+          potentialCreditableVatAmount: 9,
+          creditablePercentage: 75,
+          creditType: 'partial' as const,
+          proportionalityRequired: true,
+          missingEvidence: ['Verifica el destino del gasto.'],
+        },
+      }
+    case 'business_income_tax':
+      return {
+        purpose,
+        classification,
+        createdAt: new Date('2026-09-05T12:01:00.000Z'),
+        status: 'available' as const,
+        result: {
+          ...base,
+          purpose,
+          businessUsePercentage: 80,
+          potentialExpenseAmount: 120,
+          mixedUseDetected: true,
+          substantiationIssues: ['Relaciona el gasto con la actividad.'],
+          missingEvidence: [],
+        },
+      }
+    case 'personal_expenses':
+      return {
+        purpose,
+        classification,
+        createdAt: new Date('2026-09-05T12:01:00.000Z'),
+        status: 'available' as const,
+        result: {
+          ...base,
+          purpose,
+          personalExpenseCategory: 'Salud',
+          potentialEligibleAmount: 48.5,
+          beneficiaryRelationship: 'Titular',
+          missingEvidence: [],
+        },
+      }
+  }
+}
+
+function createDetail(
+  status: 'completed' | 'failed' | 'blocked',
+  results: Array<ReturnType<typeof createAvailableResult>> = [],
+) {
   return {
     ...createRun(status),
+    results,
     frozenContext: {
       status: 'available' as const,
       context: { revision: 1, purpose: 'vat_credit', period },
@@ -236,6 +308,108 @@ describe('AnalysisHistoryDrawer', () => {
       ),
     ).toBeTruthy()
     expect(screen.getByText('Ruleset oficial')).toBeTruthy()
+  })
+
+  it.each([
+    ['vat_credit', 'Tipo de crédito de IVA'],
+    ['business_income_tax', 'Uso estimado para la actividad'],
+    ['personal_expenses', 'Categoría de gasto personal'],
+  ] as const)(
+    'renders the specialized %s result inside the same drawer',
+    async (purpose, fieldLabel) => {
+      const result = createAvailableResult(purpose)
+      setTrpcResponses({
+        detail: createDetail('completed', [result]),
+      })
+      renderDrawer()
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: /Ver resumen del análisis Declaración de IVA/i,
+        }),
+      )
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Ver resultado de la factura 1',
+        }),
+      )
+
+      expect(await screen.findByText(fieldLabel)).toBeTruthy()
+      expect(screen.getByText('Resultado orientativo')).toBeTruthy()
+      expect(screen.getByText(/Fuente oficial.*Art\. 45/)).toBeTruthy()
+    },
+  )
+
+  it('makes a needs-review result actionable without presenting it as final', async () => {
+    const result = createAvailableResult('business_income_tax', 'needs_review')
+    setTrpcResponses({ detail: createDetail('completed', [result]) })
+    renderDrawer()
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: /Ver resumen del análisis Declaración de IVA/i,
+      }),
+    )
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Ver resultado de la factura 1',
+      }),
+    )
+
+    expect(await screen.findByText('Revisión necesaria')).toBeTruthy()
+    expect(
+      screen.getByText(
+        'Revisa la documentación indicada antes de tomar una decisión fiscal.',
+      ),
+    ).toBeTruthy()
+  })
+
+  it('returns from an invoice result to its run summary', async () => {
+    const result = createAvailableResult('personal_expenses')
+    setTrpcResponses({ detail: createDetail('completed', [result]) })
+    renderDrawer()
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: /Ver resumen del análisis Declaración de IVA/i,
+      }),
+    )
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Ver resultado de la factura 1',
+      }),
+    )
+    await screen.findByText('Categoría de gasto personal')
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Volver al resumen del análisis' }),
+    )
+
+    expect(
+      await screen.findByText('Resultados por factura'),
+    ).toBeTruthy()
+    expect(screen.queryByText('Categoría de gasto personal')).toBeNull()
+  })
+
+  it('does not render internal identifiers or hashes from the result projection', async () => {
+    const result = createAvailableResult('vat_credit')
+    setTrpcResponses({ detail: createDetail('completed', [result]) })
+    renderDrawer()
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: /Ver resumen del análisis Declaración de IVA/i,
+      }),
+    )
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Ver resultado de la factura 1',
+      }),
+    )
+    await screen.findByText('Tipo de crédito de IVA')
+
+    expect(screen.queryByText(/11111111-1111-4111/i)).toBeNull()
+    expect(screen.queryByText(/contenido-super-secreto/i)).toBeNull()
   })
 
   it('resets selection when the collection changes', async () => {

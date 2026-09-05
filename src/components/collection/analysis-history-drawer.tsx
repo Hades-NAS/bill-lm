@@ -27,6 +27,11 @@ type HistoryPage = RouterOutputs['collections']['listAnalysisRunHistory']
 type HistoryItem = HistoryPage['items'][number]
 type HistoryCursor = NonNullable<HistoryPage['nextCursor']>
 type HistoryDetail = RouterOutputs['collections']['getAnalysisRunDetail']
+type HistoryResult = HistoryDetail['results'][number]
+type AvailableHistoryResult = Extract<
+  HistoryResult,
+  { status: 'available' }
+>['result']
 
 const purposeLabels: Record<string, string> = {
   vat_credit: 'Declaración de IVA',
@@ -48,6 +53,19 @@ const statusColors: Record<string, string> = {
   completed: 'green',
   failed: 'red',
   blocked: 'orange',
+}
+
+const classificationLabels: Record<string, string> = {
+  eligible: 'Aplicable',
+  ineligible: 'No aplicable',
+  needs_review: 'Requiere revisión',
+}
+
+const creditTypeLabels: Record<string, string> = {
+  total: 'Total',
+  partial: 'Parcial',
+  none: 'No aplica',
+  undetermined: 'Por determinar',
 }
 
 export function getAnalysisRunStatusCopy(status: string) {
@@ -89,6 +107,222 @@ function appendNewHistoryItems(
 ) {
   const knownIds = new Set(current.map((item) => item.id))
   return [...current, ...next.filter((item) => !knownIds.has(item.id))]
+}
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('es-EC', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount)
+}
+
+function DetailField({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) {
+  return (
+    <Stack gap={2}>
+      <Text c="dimmed" size="xs">
+        {label}
+      </Text>
+      <Text size="sm">{value}</Text>
+    </Stack>
+  )
+}
+
+function DetailList({
+  title,
+  items,
+  emptyCopy,
+}: {
+  title: string
+  items: Array<string>
+  emptyCopy: string
+}) {
+  return (
+    <Stack gap={4}>
+      <Text fw={600} size="sm">
+        {title}
+      </Text>
+      {items.length ? (
+        <Stack gap={4}>
+          {items.map((item, index) => (
+            <Text key={`${item}-${index}`} size="sm">
+              • {item}
+            </Text>
+          ))}
+        </Stack>
+      ) : (
+        <Text c="dimmed" size="sm">
+          {emptyCopy}
+        </Text>
+      )}
+    </Stack>
+  )
+}
+
+function ResultReferences({ result }: { result: AvailableHistoryResult }) {
+  return (
+    <Stack gap="sm">
+      <Text fw={600} size="sm">
+        Referencias consultadas
+      </Text>
+      <DetailList
+        emptyCopy="No hay referencias oficiales disponibles."
+        items={result.references.official.map(
+          ({ articleOrSection }) => `Fuente oficial · ${articleOrSection}`,
+        )}
+        title="Normativa oficial"
+      />
+      <DetailList
+        emptyCopy="No se usaron referencias adicionales."
+        items={result.references.user.map(({ name }) => name)}
+        title="Referencias aportadas"
+      />
+    </Stack>
+  )
+}
+
+function SpecializedResult({ result }: { result: AvailableHistoryResult }) {
+  const common = (
+    <>
+      <DetailField
+        label="Clasificación"
+        value={classificationLabels[result.classification] ?? 'No disponible'}
+      />
+      {result.classification === 'needs_review' && (
+        <Alert color="orange" title="Revisión necesaria">
+          Revisa la documentación indicada antes de tomar una decisión fiscal.
+        </Alert>
+      )}
+      <DetailField label="Razonamiento" value={result.reasoning} />
+      <DetailList
+        emptyCopy="No se identificaron incertidumbres adicionales."
+        items={result.uncertainties}
+        title="Incertidumbres"
+      />
+    </>
+  )
+
+  switch (result.purpose) {
+    case 'vat_credit':
+      return (
+        <Stack gap="md">
+          {common}
+          <DetailField
+            label="Tipo de crédito de IVA"
+            value={creditTypeLabels[result.creditType] ?? 'No disponible'}
+          />
+          <DetailField
+            label="IVA de la factura"
+            value={formatCurrency(result.invoiceVatAmount)}
+          />
+          {result.potentialCreditableVatAmount !== undefined && (
+            <DetailField
+              label="IVA potencialmente acreditable"
+              value={formatCurrency(result.potentialCreditableVatAmount)}
+            />
+          )}
+          {result.creditablePercentage !== undefined && (
+            <DetailField
+              label="Porcentaje potencialmente acreditable"
+              value={`${result.creditablePercentage}%`}
+            />
+          )}
+          <DetailField
+            label="Proporcionalidad"
+            value={
+              result.proportionalityRequired
+                ? 'Se requiere revisar proporcionalidad.'
+                : 'No se requiere proporcionalidad.'
+            }
+          />
+          <DetailList
+            emptyCopy="No se identificó evidencia adicional pendiente."
+            items={result.missingEvidence}
+            title="Evidencia pendiente"
+          />
+          <ResultReferences result={result} />
+          <Alert color="blue" title="Resultado orientativo">
+            {result.advisoryNotice}
+          </Alert>
+        </Stack>
+      )
+    case 'business_income_tax':
+      return (
+        <Stack gap="md">
+          {common}
+          {result.businessUsePercentage !== undefined && (
+            <DetailField
+              label="Uso estimado para la actividad"
+              value={`${result.businessUsePercentage}%`}
+            />
+          )}
+          {result.potentialExpenseAmount !== undefined && (
+            <DetailField
+              label="Gasto potencialmente sustentable"
+              value={formatCurrency(result.potentialExpenseAmount)}
+            />
+          )}
+          <DetailField
+            label="Uso mixto"
+            value={
+              result.mixedUseDetected
+                ? 'Se identificó posible uso mixto.'
+                : 'No se identificó uso mixto.'
+            }
+          />
+          <DetailList
+            emptyCopy="No se identificaron observaciones de sustento."
+            items={result.substantiationIssues}
+            title="Observaciones de sustento"
+          />
+          <DetailList
+            emptyCopy="No se identificó evidencia adicional pendiente."
+            items={result.missingEvidence}
+            title="Evidencia pendiente"
+          />
+          <ResultReferences result={result} />
+          <Alert color="blue" title="Resultado orientativo">
+            {result.advisoryNotice}
+          </Alert>
+        </Stack>
+      )
+    case 'personal_expenses':
+      return (
+        <Stack gap="md">
+          {common}
+          <DetailField
+            label="Categoría de gasto personal"
+            value={result.personalExpenseCategory ?? 'Por determinar'}
+          />
+          {result.potentialEligibleAmount !== undefined && (
+            <DetailField
+              label="Monto potencialmente aplicable"
+              value={formatCurrency(result.potentialEligibleAmount)}
+            />
+          )}
+          {result.beneficiaryRelationship && (
+            <DetailField
+              label="Beneficiario"
+              value={result.beneficiaryRelationship}
+            />
+          )}
+          <DetailList
+            emptyCopy="No se identificó evidencia adicional pendiente."
+            items={result.missingEvidence}
+            title="Evidencia pendiente"
+          />
+          <ResultReferences result={result} />
+          <Alert color="blue" title="Resultado orientativo">
+            {result.advisoryNotice}
+          </Alert>
+        </Stack>
+      )
+  }
 }
 
 function RunStatusBadge({ status }: { status: string }) {
@@ -147,7 +381,13 @@ function RunListItem({
   )
 }
 
-function RunSummary({ detail }: { detail: HistoryDetail }) {
+function RunSummary({
+  detail,
+  onSelectResult,
+}: {
+  detail: HistoryDetail
+  onSelectResult: (resultIndex: number) => void
+}) {
   const frozenContext = detail.frozenContext
   const isBlocked = detail.status === 'blocked'
 
@@ -214,8 +454,53 @@ function RunSummary({ detail }: { detail: HistoryDetail }) {
           </Stack>
         </>
       )}
+      <Divider />
+      <Stack gap="sm">
+        <Text fw={600}>Resultados por factura</Text>
+        {detail.results.length === 0 ? (
+          <Text c="dimmed" size="sm">
+            Esta ejecución aún no tiene resultados por factura.
+          </Text>
+        ) : (
+          detail.results.map((result, index) => (
+            <UnstyledButton
+              key={`${result.createdAt.toISOString()}-${index}`}
+              aria-label={`Ver resultado de la factura ${index + 1}`}
+              onClick={() => onSelectResult(index)}
+              style={{
+                border: '1px solid var(--mantine-color-default-border)',
+                borderRadius: 'var(--mantine-radius-sm)',
+                padding: 'var(--mantine-spacing-sm)',
+                textAlign: 'left',
+              }}
+            >
+              <Group justify="space-between" wrap="nowrap">
+                <Stack gap={2}>
+                  <Text fw={600}>Factura {index + 1}</Text>
+                  <Text c="dimmed" size="sm">
+                    {getAnalysisPurposeLabel(result.purpose)}
+                  </Text>
+                </Stack>
+                <ChevronRight aria-hidden size={16} />
+              </Group>
+            </UnstyledButton>
+          ))
+        )}
+      </Stack>
     </Stack>
   )
+}
+
+function InvoiceResultDetail({ result }: { result: HistoryResult }) {
+  if (result.status === 'unavailable') {
+    return (
+      <Alert color="orange" title="Resultado no disponible">
+        {result.message}
+      </Alert>
+    )
+  }
+
+  return <SpecializedResult result={result.result} />
 }
 
 export function AnalysisHistoryDrawer({
@@ -239,6 +524,9 @@ export function AnalysisHistoryDrawer({
   >()
   const [items, setItems] = useState<Array<HistoryItem>>([])
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
+  const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(
+    null,
+  )
   const loadedPageRef = useRef<string | null>(null)
   const previousCollectionIdRef = useRef(collectionId)
 
@@ -278,6 +566,7 @@ export function AnalysisHistoryDrawer({
     setRequestedCursor(undefined)
     setItems([])
     setSelectedRunId(null)
+    setSelectedResultIndex(null)
     loadedPageRef.current = null
   }, [])
 
@@ -293,8 +582,15 @@ export function AnalysisHistoryDrawer({
     onClose()
   }
 
-  const handleSelect = (runId: string) => setSelectedRunId(runId)
-  const handleBack = () => setSelectedRunId(null)
+  const handleSelect = (runId: string) => {
+    setSelectedRunId(runId)
+    setSelectedResultIndex(null)
+  }
+  const handleBack = () => {
+    setSelectedRunId(null)
+    setSelectedResultIndex(null)
+  }
+  const handleBackToRun = () => setSelectedResultIndex(null)
   const nextCursor = historyQuery.data?.nextCursor ?? null
 
   return (
@@ -336,16 +632,50 @@ export function AnalysisHistoryDrawer({
             </Alert>
           ) : detailQuery.data ? (
             <Box>
-              <Button
-                aria-label="Volver al historial de análisis"
-                leftSection={<ArrowLeft size={16} />}
-                mb="md"
-                variant="subtle"
-                onClick={handleBack}
-              >
-                Volver al historial
-              </Button>
-              <RunSummary detail={detailQuery.data} />
+              {selectedResultIndex !== null ? (
+                <>
+                  <Button
+                    aria-label="Volver al resumen del análisis"
+                    leftSection={<ArrowLeft size={16} />}
+                    mb="md"
+                    variant="subtle"
+                    onClick={handleBackToRun}
+                  >
+                    Volver al resumen
+                  </Button>
+                  <Stack gap="md">
+                    <Title order={3}>
+                      Factura {selectedResultIndex + 1}
+                    </Title>
+                    {detailQuery.data.results[selectedResultIndex] ? (
+                      <InvoiceResultDetail
+                        result={detailQuery.data.results[selectedResultIndex]}
+                      />
+                    ) : (
+                      <Alert color="orange" title="Resultado no disponible">
+                        Esta factura ya no tiene un resultado que se pueda
+                        mostrar.
+                      </Alert>
+                    )}
+                  </Stack>
+                </>
+              ) : (
+                <>
+                  <Button
+                    aria-label="Volver al historial de análisis"
+                    leftSection={<ArrowLeft size={16} />}
+                    mb="md"
+                    variant="subtle"
+                    onClick={handleBack}
+                  >
+                    Volver al historial
+                  </Button>
+                  <RunSummary
+                    detail={detailQuery.data}
+                    onSelectResult={setSelectedResultIndex}
+                  />
+                </>
+              )}
             </Box>
           ) : null
         ) : historyQuery.isPending && items.length === 0 ? (
