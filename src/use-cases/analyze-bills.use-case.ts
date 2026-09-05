@@ -12,6 +12,7 @@ import type { ILLMProvider } from '#/integrations/llm/provider.interface'
 import type { AnalysisResult } from '#/integrations/services/bill-analysis.service'
 import type { ParsedBill } from '#/schema/bill-analysis'
 import type { AnalyzeJobData, PresetType } from '#/schema/collections'
+import type { AnalysisExecutionEnvelopeV2 } from '#/schema/tax-analysis-v2'
 
 const logger = getServiceLogger('AnalyzeBillsUseCase')
 
@@ -125,10 +126,12 @@ export class AnalyzeBillsUseCase {
     bills: Array<{ billId: string; parsedBill: ParsedBill }>,
     jobData: AnalyzeJobData,
     preset: PresetType = 'balanced',
-    fiscalReferences: Array<{ name: string; markdown: string }> = [],
-    officialReferences: Array<{ name: string; markdown: string }> = [],
+    envelope: AnalysisExecutionEnvelopeV2,
   ): Promise<Array<AnalysisResult>> {
     const { jobId, userId, data: jobDataPayload } = jobData
+    const runId = jobData.analysisRunId
+    if (!runId)
+      throw new Error('El trabajo no tiene una ejecución de análisis asociada.')
     const context = AnalysisContextSchema.parse({
       jobId,
       billId: bills[0]?.billId,
@@ -137,12 +140,12 @@ export class AnalyzeBillsUseCase {
       collectionName: jobDataPayload.collectionName,
       preset,
     })
-    return createBillAnalysisService({ provider: this.provider }).analyzePreparedBills(
+    return createBillAnalysisService({ provider: this.provider }).analyzePreparedBillsV2(
       bills,
       jobData,
       context,
-      fiscalReferences,
-      officialReferences,
+      envelope,
+      runId,
     )
   }
 

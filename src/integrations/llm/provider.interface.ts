@@ -1,5 +1,6 @@
 import type { LLMPreset } from '@/config/llm-config'
 import type { AnalyzeBillOutput } from '@/schema/bill-analysis'
+import type { ModelTaxAnalysisPayloadV2 } from '@/schema/tax-analysis-v2'
 
 export interface ContextProcess {
   jobId: string
@@ -42,6 +43,16 @@ export interface ILLMProvider {
     preset: LLMPreset,
     context?: ContextProcess,
   ) => Promise<AnalyzeBillOutput | null>
+
+  /**
+   * Process an immutable V2 execution prompt. The model only owns the
+   * purpose-specific payload; run and invoice metadata remain server-owned.
+   */
+  processV2: (
+    prompt: string,
+    preset: LLMPreset,
+    context?: ContextProcess,
+  ) => Promise<ModelTaxAnalysisPayloadV2 | null>
 
   /**
    * Get the current state of the internal circuit breaker

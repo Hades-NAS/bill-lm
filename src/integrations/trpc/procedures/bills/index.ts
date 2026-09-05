@@ -327,12 +327,21 @@ export const billsRouter = {
         })
       }
 
+      const latestAnalysisResult = await prisma.analysisResult.findFirst({
+        where: {
+          billId,
+          run: { userId: principal.userId },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { resultSnapshot: true },
+      })
+
       logger.info('Bill details retrieved successfully', {
         billId,
         userId: principal.userId,
       })
 
-      return bill
+      return { ...bill, latestAnalysisResult }
     }),
 } satisfies TRPCRouterRecord
 

@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   decryptProviderSecret: vi.fn(),
   createProvider: vi.fn(),
   executePrepared: vi.fn(),
+  analysisResultCreateMany: vi.fn(),
   firebaseUpdate: vi.fn(),
 }))
 
@@ -34,7 +35,7 @@ vi.mock('#/integrations/prisma', () => ({
     },
     providerConnection: { findFirst: mocks.providerConnectionFindFirst },
     collection: { findFirst: mocks.collectionFindFirst },
-    analysisResult: { createMany: vi.fn() },
+    analysisResult: { createMany: mocks.analysisResultCreateMany },
   },
 }))
 vi.mock('#/integrations/redis', () => ({ redisConnection: {} }))
@@ -137,5 +138,49 @@ describe('analyze worker fail-closed gate', () => {
     expect(mocks.decryptProviderSecret).not.toHaveBeenCalled()
     expect(mocks.createProvider).not.toHaveBeenCalled()
     expect(mocks.executePrepared).not.toHaveBeenCalled()
+  })
+})
+
+describe('analyze worker V2 result persistence', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.analysisRunFindFirst.mockResolvedValue(run())
+    mocks.analysisRunUpdateMany.mockResolvedValue({ count: 1 })
+    mocks.collectionFindFirst.mockResolvedValue({ id: COLLECTION_ID })
+    mocks.providerConnectionFindFirst.mockResolvedValue({
+      id: CONNECTION_ID, provider: 'OPENAI', modelId: 'gpt-4o-mini',
+      secretCiphertext: 'cipher', secretIv: 'iv', secretAuthTag: 'tag', secretVersion: 1,
+    })
+    mocks.decryptProviderSecret.mockReturnValue('key')
+    mocks.createProvider.mockReturnValue({})
+    mocks.firebaseUpdate.mockResolvedValue(undefined)
+  })
+
+  it('persists only the specialized canonical snapshots, never a fictitious ineligible result', async () => {
+    const snapshot = {
+      schemaVersion: 'v2', runId: RUN_ID, invoiceId: BILL_ID,
+      purpose: 'personal_expenses', classification: 'eligible',
+      reasoning: 'Gasto de salud.', uncertainties: [], createdAt: new Date(),
+      advisoryNotice: 'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
+      references: { official: [{ sourceId: RULESET_ID, sourceContentHash: 'source', fragmentId: RULESET_ID, fragmentContentHash: 'fragment', articleOrSection: 'Art. 1' }], user: [] },
+      personalExpenseCategory: 'Salud', potentialEligibleAmount: 11.5,
+      beneficiaryRelationship: 'Titular', missingEvidence: [],
+    }
+    mocks.executePrepared.mockResolvedValue([
+      { billId: BILL_ID, success: true, result: snapshot },
+      { billId: 'failed-bill', success: false, error: 'Proveedor no disponible' },
+    ])
+
+    await jobHandler(job())
+
+    expect(mocks.analysisResultCreateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: [expect.objectContaining({
+        runId: RUN_ID, billId: BILL_ID, purpose: 'personal_expenses',
+        classification: 'eligible', resultSnapshot: expect.objectContaining({
+          ...snapshot,
+          createdAt: snapshot.createdAt.toJSON(),
+        }),
+      })],
+    }))
   })
 })

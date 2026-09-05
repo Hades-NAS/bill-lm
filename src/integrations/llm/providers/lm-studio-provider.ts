@@ -4,6 +4,7 @@ import { DateTime } from 'luxon'
 import OpenAI from 'openai'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
+import { ModelTaxAnalysisPayloadV2Schema } from '#/schema/tax-analysis-v2'
 
 import {
   AppError,
@@ -17,6 +18,7 @@ import { createTelemetryService } from '#/integrations/services/telemetry.servic
 import type { LLMPreset } from '#/config/llm-config'
 import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
 import type { LLMProviderConfig } from '#/schema/llm-provider'
+import type { ModelTaxAnalysisPayloadV2 } from '#/schema/tax-analysis-v2'
 import type { ContextProcess, ILLMProvider } from '../provider.interface'
 
 import { env } from '#/env'
@@ -33,6 +35,7 @@ export class LMStudioProvider implements ILLMProvider {
   private telemetryService = createTelemetryService()
   private logger = getServiceLogger('LmStudioProvider')
   private _agent: Agent<unknown, typeof AnalyzeBillOutputSchema> | null = null
+  private _v2Agent: Agent | null = null
   private client: OpenAI
   private agentInstructions: string
 
@@ -242,6 +245,36 @@ export class LMStudioProvider implements ILLMProvider {
     }
   }
 
+  async processV2(
+    prompt: string,
+    preset: LLMPreset,
+    _context?: ContextProcess,
+  ): Promise<ModelTaxAnalysisPayloadV2 | null> {
+    try {
+      if (env.FAKE_ANALYZE === 'true')
+        throw new Error('FAKE_ANALYZE no produce resultados tributarios V2.')
+      return await this.circuitBreaker.execute(async () => {
+        const result = await run(this.getV2Agent(preset), prompt, {
+          maxTurns: 6,
+          stream: false,
+        })
+        const output =
+          typeof result.finalOutput === 'string'
+            ? JSON.parse(result.finalOutput)
+            : result.finalOutput
+        const validate = ModelTaxAnalysisPayloadV2Schema.safeParse(output)
+        if (!validate.success)
+          throw new Error('LMStudioProvider V2 final output validation failed')
+        return validate.data
+      }, `LMStudioProvider.processV2 (preset: ${preset})`)
+    } catch (error) {
+      this.logger.error('LMStudioProvider failed to process V2 result', {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return null
+    }
+  }
+
   private getAgent(
     preset: LLMPreset = 'balanced',
   ): Agent<unknown, typeof AnalyzeBillOutputSchema> {
@@ -257,6 +290,22 @@ export class LMStudioProvider implements ILLMProvider {
       })
     }
     return this._agent
+  }
+
+  private getV2Agent(
+    preset: LLMPreset = 'balanced',
+  ): Agent {
+    if (!this._v2Agent)
+      this._v2Agent = new Agent({
+        name: 'Bill Analysis V2 Agent',
+        model: new OpenAIChatCompletionsModel(this.client, this.config.modelId),
+        instructions: this.agentInstructions,
+        modelSettings: {
+          temperature: this.getTemperatureForPreset(preset),
+          maxTokens: this.config.maxTokens,
+        },
+      })
+    return this._v2Agent
   }
 
   getTemperatureForPreset(preset: LLMPreset): number {

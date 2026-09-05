@@ -458,6 +458,23 @@ const TaxAnalysisResultBaseSchema = z.object({
   classification: TaxAnalysisClassificationSchema,
   reasoning: z.string().trim().min(1).max(10_000),
   uncertainties: z.array(z.string().trim().min(1).max(1_000)).max(20),
+  advisoryNotice: z.literal(
+    'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
+  ),
+  references: z.object({
+    official: z.array(z.object({
+      sourceId: IdSchema,
+      sourceContentHash: z.string().min(1),
+      fragmentId: IdSchema,
+      fragmentContentHash: z.string().min(1),
+      articleOrSection: z.string().min(1),
+    })).min(1),
+    user: z.array(z.object({
+      id: IdSchema,
+      name: z.string().min(1),
+      contentHash: z.string().min(1),
+    })),
+  }),
   createdAt: z.date(),
 })
 export const TaxAnalysisResultV2Schema = z.discriminatedUnion('purpose', [

@@ -2,6 +2,7 @@ import { Anthropic } from '@anthropic-ai/sdk'
 import { DateTime } from 'luxon'
 
 import { AnalyzeBillOutputSchema } from '#/schema/bill-analysis'
+import { ModelTaxAnalysisPayloadV2Schema } from '#/schema/tax-analysis-v2'
 
 import { AppError, CircuitBreaker } from '#/integrations/errors/error-handler'
 import { getServiceLogger } from '#/integrations/logger.server'
@@ -10,6 +11,7 @@ import { createTelemetryService } from '#/integrations/services/telemetry.servic
 import type { LLMPreset } from '#/config/llm-config'
 import type { AnalyzeBillOutput } from '#/schema/bill-analysis'
 import type { LLMProviderConfig } from '#/schema/llm-provider'
+import type { ModelTaxAnalysisPayloadV2 } from '#/schema/tax-analysis-v2'
 import type { ContextProcess, ILLMProvider } from '../provider.interface'
 
 /**
@@ -212,6 +214,37 @@ export class ClaudeProvider implements ILLMProvider {
         })
       }
 
+      return null
+    }
+  }
+
+  async processV2(
+    prompt: string,
+    preset: LLMPreset,
+    _context?: ContextProcess,
+  ): Promise<ModelTaxAnalysisPayloadV2 | null> {
+    try {
+      return await this.circuitBreaker.execute(async () => {
+        const response = await this.client.messages.create({
+          model: this.config.modelId,
+          max_tokens: this.config.maxTokens,
+          temperature: this.getTemperatureForPreset(preset),
+          system: this.agentInstructions,
+          messages: [{ role: 'user', content: prompt }],
+        })
+        const text = response.content.find((block) => block.type === 'text')
+        if (!text) throw new Error('No text content in Claude V2 response')
+        const validate = ModelTaxAnalysisPayloadV2Schema.safeParse(
+          JSON.parse(text.text),
+        )
+        if (!validate.success)
+          throw new Error('ClaudeProvider V2 final output validation failed')
+        return validate.data
+      }, `ClaudeProvider.processV2 (preset: ${preset})`)
+    } catch (error) {
+      this.logger.error('ClaudeProvider failed to process V2 result', {
+        error: error instanceof Error ? error.message : String(error),
+      })
       return null
     }
   }

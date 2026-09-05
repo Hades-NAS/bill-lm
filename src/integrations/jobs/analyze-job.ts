@@ -119,15 +119,6 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       )
     assertAnalysisEnvelopeCanExecute(envelope)
     assertFrozenProviderConnection(envelope, connection)
-    const fiscalReferences = envelope.userReferences.map((reference) => ({
-      name: reference.name,
-      markdown: reference.normalizedMarkdown,
-    }))
-    const officialReferences = envelope.officialEvidence.map((evidence) => ({
-      name: `${evidence.source.issuer} — ${evidence.source.title} · ${evidence.articleOrSection}`,
-      markdown: evidence.markdown,
-    }))
-
     const apiKey = decryptProviderSecret(
       {
         ciphertext: connection.secretCiphertext,
@@ -157,30 +148,20 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       })),
       job.data,
       data.preset || 'balanced',
-      fiscalReferences,
-      officialReferences,
+      envelope,
     )
 
     await prisma.analysisResult.createMany({
-      data: results.map((result) => ({
-        runId: run.id,
-        billId: result.billId,
-        purpose: envelope.context.purpose,
-        classification: result.success ? 'needs_review' : 'ineligible',
-        resultSnapshot: {
-          schemaVersion: 'v2',
+      data: results.flatMap((result) => {
+        if (!result.success || !result.result) return []
+        return [{
           runId: run.id,
-          invoiceId: result.billId,
-          purpose: envelope.context.purpose,
-          classification: result.success ? 'needs_review' : 'ineligible',
-          reasoning: result.success
-            ? (result.analysis?.reason ?? '')
-            : (result.error ?? 'Error de análisis'),
-          uncertainties: result.success
-            ? ['Resultado legacy pendiente de adaptación por propósito.']
-            : [result.error ?? 'Error de análisis'],
-        },
-      })),
+          billId: result.billId,
+          purpose: result.result.purpose,
+          classification: result.result.classification,
+          resultSnapshot: JSON.parse(JSON.stringify(result.result)),
+        }]
+      }),
       skipDuplicates: true,
     })
 

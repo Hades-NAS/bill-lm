@@ -153,7 +153,7 @@ En el navegador, `useJobsSubscriptionManager` abre una única suscripción Fires
 ## Limitaciones explícitas del flujo actual
 
 - Aunque la carga acepta `application/pdf`, el worker intenta parsear el contenido como XML. PDF no está soportado de forma real.
-- `BillHeader.percentage` y `reason` son una proyección sobrescrita: no existe historial de `AnalysisRun`/`AnalysisResult` todavía.
+- Cada `AnalysisRun` conserva resultados V2 por factura con el propósito, la evidencia y las referencias fijadas. `BillHeader.percentage` y `reason` siguen siendo una proyección temporal solo para resultados finalizados; un resultado `needs_review` no sobrescribe esos campos. El detalle de factura muestra el aviso canónico de que el resultado es orientativo y no constituye una determinación del SRI.
 - Fase 2-A no crea snapshots inmutables ni proveniencia histórica del Markdown usado por cada ejecución. Las referencias activas se vuelven a resolver al ejecutar el worker; el historial versionado pertenece a una fase posterior.
 - El prompt usa las referencias fiscales autogestionadas activas del usuario y las instrucciones de la colección. No hay rulesets oficiales/versionados ni verificación de vigencia en Fase 2-A.
 - Hay conexión cifrada, selección por ejecución, default y autorización por ownership. La UI de Ajustes ya permite crear, seleccionar como predeterminada, activar/desactivar, probar, rotar y eliminar conexiones.

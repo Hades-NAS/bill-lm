@@ -17,6 +17,11 @@ import { getServiceLogger } from '#/integrations/logger.server'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
 import { createBillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
+import {
+  normalizeTaxAnalysisResultV2,
+  projectTaxAnalysisResultToLegacy,
+  referencesFromExecutionEnvelope,
+} from '#/integrations/tax-analysis/result-adapter'
 import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
 import { roundToDecimals } from '#/utils/math'
@@ -28,6 +33,10 @@ import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-build
 import type { AnalyzedBill, AnalysisContext } from '#/schema/bill-analysis'
 import type { ParsedBill } from '#/schema/bill-analysis'
 import type { AnalyzeJobData } from '#/schema/collections'
+import type {
+  AnalysisExecutionEnvelopeV2,
+  TaxAnalysisResultV2,
+} from '#/schema/tax-analysis-v2'
 
 const logger = getServiceLogger('BillAnalysisService')
 
@@ -35,6 +44,7 @@ export interface AnalysisResult {
   billId: string
   success: boolean
   analysis?: AnalyzedBill
+  result?: TaxAnalysisResultV2
   error?: string
 }
 
@@ -158,6 +168,88 @@ export class BillAnalysisService {
     const successfulResults = results.filter((result) => result.success)
     if (successfulResults.length > 0)
       await this.updateBillsInDatabase(successfulResults)
+    return results
+  }
+
+  /**
+   * Analyze prepared invoice snapshots with an immutable V2 execution
+   * envelope. Canonical V2 results stay separate from the temporary legacy
+   * projection used by BillHeader.
+   */
+  async analyzePreparedBillsV2(
+    bills: Array<{ billId: string; parsedBill: ParsedBill }>,
+    jobData: AnalyzeJobData,
+    context: AnalysisContext,
+    envelope: AnalysisExecutionEnvelopeV2,
+    runId: string,
+  ): Promise<Array<AnalysisResult>> {
+    void jobData
+    await this.ensureModelLoaded()
+    const results: Array<AnalysisResult> = []
+
+    for (const bill of bills) {
+      try {
+        const prompt = this.promptBuilder.buildV2(envelope, bill.billId)
+        const payload = await this.circuitBreaker.execute(
+          () =>
+            this.provider.processV2(prompt, context.preset, {
+              billId: bill.billId,
+              jobId: context.jobId,
+              promptVersion: 'v2',
+            }),
+          `Analyze V2 bill ${bill.billId}`,
+        )
+        if (!payload)
+          throw new AppError(
+            ErrorType.AI_ENGINE,
+            `${this.provider.getProviderName()} provider returned null for V2 analysis`,
+            { billId: bill.billId },
+            true,
+          )
+
+        const result = normalizeTaxAnalysisResultV2({
+          payload,
+          purpose: envelope.context.purpose,
+          runId,
+          invoiceId: bill.billId,
+          allowedActivityRevisionIds: envelope.activities.map(
+            (activity) => activity.revisionId,
+          ),
+          references: referencesFromExecutionEnvelope(envelope),
+        })
+        const legacyProjection = projectTaxAnalysisResultToLegacy(result)
+        results.push({
+          billId: bill.billId,
+          success: true,
+          result,
+          analysis: legacyProjection
+            ? enrichAnalysisMetadata(legacyProjection, 'v2', context.preset)
+            : undefined,
+        })
+      } catch (error) {
+        this.logger.warn(`Failed to analyze V2 bill ${bill.billId}`, {
+          jobId: context.jobId,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        results.push({
+          billId: bill.billId,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+
+      await this.updateFirestoreProgress(
+        context.jobId,
+        results.length,
+        bills.length,
+      )
+    }
+
+    const legacyWritableResults = results.filter(
+      (result) => result.success && result.analysis,
+    )
+    if (legacyWritableResults.length > 0)
+      await this.updateBillsInDatabase(legacyWritableResults)
     return results
   }
 

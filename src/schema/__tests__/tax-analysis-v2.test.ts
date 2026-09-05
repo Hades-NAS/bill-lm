@@ -146,6 +146,11 @@ describe('tax analysis v2 contracts', () => {
         classification: 'needs_review',
         reasoning: 'El contexto disponible no permite confirmar el caso.',
         uncertainties: ['Falta evidencia adicional.'],
+        advisoryNotice: 'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
+        references: {
+          official: [{ sourceId: id, sourceContentHash: 'source', fragmentId: id, fragmentContentHash: 'fragment', articleOrSection: 'Art. 1' }],
+          user: [],
+        },
         missingEvidence: ['No se conoce el beneficiario.'],
         createdAt: new Date(),
       }).success,
