@@ -1,5 +1,6 @@
-import { execFileSync, spawn } from 'node:child_process'
+import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -73,6 +74,60 @@ async function waitForText(url: string): Promise<string> {
   throw lastError instanceof Error
     ? lastError
     : new Error('Vite no inició dentro del tiempo esperado.')
+}
+
+function closeViteServer(
+  server: ChildProcess,
+  tempDirectory: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let escalationTimeout: ReturnType<typeof setTimeout> | undefined
+    let finalTimeout: ReturnType<typeof setTimeout> | undefined
+    let processError: Error | undefined
+
+    const clearTimeouts = () => {
+      if (escalationTimeout) clearTimeout(escalationTimeout)
+      if (finalTimeout) clearTimeout(finalTimeout)
+    }
+
+    server.once('close', () => {
+      clearTimeouts()
+      if (processError) {
+        reject(processError)
+        return
+      }
+      resolve()
+    })
+    server.once('error', (error) => {
+      processError = error
+    })
+
+    try {
+      server.kill('SIGTERM')
+    } catch (error) {
+      clearTimeouts()
+      reject(error)
+      return
+    }
+
+    escalationTimeout = setTimeout(() => {
+      try {
+        server.kill('SIGKILL')
+      } catch (error) {
+        clearTimeouts()
+        reject(error)
+        return
+      }
+
+      finalTimeout = setTimeout(() => {
+        reject(
+          new Error(
+            `Vite (PID ${server.pid ?? 'desconocido'}) no cerró antes de limpiar ${tempDirectory}.`,
+          ),
+        )
+      }, 2_000)
+    }, 5_000)
+  })
 }
 
 describe('health.sh', () => {
@@ -161,6 +216,7 @@ describe('health.sh', () => {
 
   it('does not expose a VITE-only .env value in an isolated Vite build or dev server', async () => {
     const tempDirectory = mkdtempSync(join(tmpdir(), 'bill-lm-health-vite-'))
+    let canRemoveTempDirectory = true
     const viteConfig = 'export default { envDir: false }\n'
     const marker = 'must-not-load-vite-health'
 
@@ -205,15 +261,19 @@ describe('health.sh', () => {
           stdio: 'pipe',
         },
       )
+      canRemoveTempDirectory = false
 
       try {
         const source = await waitForText(`http://127.0.0.1:${port}/src/main.ts`)
         expect(source).not.toContain(marker)
       } finally {
-        devServer.kill('SIGTERM')
+        await closeViteServer(devServer, tempDirectory)
+        canRemoveTempDirectory = true
       }
     } finally {
-      rmSync(tempDirectory, { recursive: true, force: true })
+      if (canRemoveTempDirectory) {
+        await rm(tempDirectory, { recursive: true, force: true })
+      }
     }
   })
 })
