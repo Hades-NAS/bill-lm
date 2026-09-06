@@ -23,7 +23,6 @@ import {
 } from '#/schema/tax-analysis'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
-import { canAnalyzeWithRequirements, normalizeFiscalReferenceMarkdown  } from '#/integrations/fiscal-references/normalizer.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { StorageHelper } from '#/integrations/minio/helper'
 import { BILL_ANALYSIS_PROMPT_METADATA } from '#/integrations/prompts/bill-prompt-builder'
@@ -920,11 +919,6 @@ export const collectionsRouter = {
         throw new TRPCError({ code: 'PRECONDITION_FAILED', message })
       }
 
-      const references = await prisma.fiscalReference.findMany({
-        where: { userId: principal.userId, deletedAt: null },
-        select: { id: true, name: true, storagePath: true, contentHash: true },
-        orderBy: { createdAt: 'asc' },
-      })
       let invoiceSnapshots: Array<{
         billId: string
         contentHash: string
@@ -968,18 +962,6 @@ export const collectionsRouter = {
           cause: error,
         })
       }
-      const userReferences = await Promise.all(
-        references.map(async (reference) => ({
-          id: reference.id,
-          name: reference.name,
-          normalizedMarkdown: normalizeFiscalReferenceMarkdown(
-            (await StorageHelper.getObject(reference.storagePath)).toString(
-              'utf8',
-            ),
-          ),
-          contentHash: reference.contentHash,
-        })),
-      )
       const envelope = AnalysisExecutionEnvelopeSchema.parse({
         schemaVersion: 'v2',
         envelopeVersion: '1',
@@ -1032,7 +1014,6 @@ export const collectionsRouter = {
           effectiveTo: ruleSet.effectiveTo?.toISOString().slice(0, 10) ?? null,
         },
         officialEvidence,
-        userReferences,
         invoices: invoiceSnapshots,
       })
       try {
@@ -1158,7 +1139,7 @@ export const collectionsRouter = {
       })
 
       return {
-        canAnalyze: canAnalyzeWithRequirements(connectionCount, 0),
+        canAnalyze: connectionCount > 0,
       }
     }),
 
