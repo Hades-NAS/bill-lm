@@ -346,7 +346,8 @@ export type AnalysisOfficialEvidence = z.infer<
   typeof AnalysisOfficialEvidenceSchema
 >
 
-export const AnalysisExecutionEnvelopeSchema = z.object({
+export const AnalysisExecutionEnvelopeSchema = z
+  .object({
   schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
   envelopeVersion: z.literal('1'),
   execution: z
@@ -401,15 +402,7 @@ export const AnalysisExecutionEnvelopeSchema = z.object({
     effectiveTo: CivilDateSchema.nullable(),
   }),
   officialEvidence: z.array(AnalysisOfficialEvidenceSchema).min(1),
-  userReferences: z.array(
-    z.object({
-      id: IdSchema,
-      name: z.string().min(1),
-      normalizedMarkdown: z.string().min(1),
-      contentHash: z.string().min(1),
-    }),
-  ),
-  invoices: z
+    invoices: z
     .array(
       z.object({
         billId: IdSchema,
@@ -418,8 +411,9 @@ export const AnalysisExecutionEnvelopeSchema = z.object({
         normalized: ParsedBillSchema,
       }),
     )
-    .min(1),
-})
+      .min(1),
+  })
+  .strict()
 export type AnalysisExecutionEnvelope = z.infer<
   typeof AnalysisExecutionEnvelopeSchema
 >
@@ -510,13 +504,6 @@ const TaxAnalysisResultBaseSchema = z.object({
         }),
       )
       .min(1),
-    user: z.array(
-      z.object({
-        id: IdSchema,
-        name: z.string().min(1),
-        contentHash: z.string().min(1),
-      }),
-    ),
   }),
   createdAt: z.date(),
 })

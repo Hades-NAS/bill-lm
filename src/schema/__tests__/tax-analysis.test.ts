@@ -177,7 +177,6 @@ describe('tax analysis contracts', () => {
               articleOrSection: 'Art. 1',
             },
           ],
-          user: [],
         },
         missingEvidence: ['No se conoce el beneficiario.'],
         createdAt: new Date(),
@@ -240,7 +239,6 @@ describe('tax analysis contracts', () => {
             markdown: 'Contenido',
           },
         ],
-        userReferences: [],
         invoices: [
           {
             billId: id,
@@ -250,6 +248,12 @@ describe('tax analysis contracts', () => {
           },
         ],
       }).success,
+    ).toBe(false)
+  })
+
+  it('rejects retired self-managed references in an execution envelope', () => {
+    expect(
+      AnalysisExecutionEnvelopeSchema.safeParse({ userReferences: [] }).success,
     ).toBe(false)
   })
 })
