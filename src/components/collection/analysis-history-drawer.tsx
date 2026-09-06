@@ -19,8 +19,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
-import type { inferRouterOutputs } from '@trpc/server'
 import type { TRPCRouter } from '#/integrations/trpc/router'
+import type { inferRouterOutputs } from '@trpc/server'
 
 type RouterOutputs = inferRouterOutputs<TRPCRouter>
 type HistoryPage = RouterOutputs['collections']['listAnalysisRunHistory']
@@ -345,13 +345,13 @@ function RunListItem({
   return (
     <UnstyledButton
       aria-label={`Ver resumen del análisis ${getAnalysisPurposeLabel(run.purpose)}`}
-      onClick={() => onSelect(run.id)}
       style={{
         border: '1px solid var(--mantine-color-default-border)',
         borderRadius: 'var(--mantine-radius-sm)',
         padding: 'var(--mantine-spacing-sm)',
         textAlign: 'left',
       }}
+      onClick={() => onSelect(run.id)}
     >
       <Stack gap={6}>
         <Group justify="space-between" wrap="nowrap">
@@ -478,15 +478,15 @@ function RunSummary({
         ) : (
           detail.results.map((result, index) => (
             <UnstyledButton
-              key={`${result.createdAt.toISOString()}-${index}`}
               aria-label={`Ver resultado de la factura ${index + 1}`}
-              onClick={() => onSelectResult(index)}
+              key={`${result.createdAt.toISOString()}-${index}`}
               style={{
                 border: '1px solid var(--mantine-color-default-border)',
                 borderRadius: 'var(--mantine-radius-sm)',
                 padding: 'var(--mantine-spacing-sm)',
                 textAlign: 'left',
               }}
+              onClick={() => onSelectResult(index)}
             >
               <Group justify="space-between" wrap="nowrap">
                 <Stack gap={2}>
@@ -619,9 +619,9 @@ export function AnalysisHistoryDrawer({
           <Title order={2}>Historial de análisis</Title>
           <Button
             aria-label="Ver guía del historial de análisis"
-            onClick={onOpenGuide}
             size="compact-xs"
             variant="subtle"
+            onClick={onOpenGuide}
           >
             Ayuda
           </Button>

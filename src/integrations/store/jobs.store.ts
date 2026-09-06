@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+import { toDate } from '#/utils/firestore-date'
+
 import { invalidateQueriesByKeys } from '#/hooks/invalidate-utils'
 import { UPDATE_COLLECTION_INVALIDATION_KEYS } from '#/hooks/mutation/collection'
 
 import { getContext } from '../tanstack-query/root-provider'
-import { toDate } from '#/utils/firestore-date'
 
 import type { AnalyzeJobNotification } from '#/schema/collections'
 

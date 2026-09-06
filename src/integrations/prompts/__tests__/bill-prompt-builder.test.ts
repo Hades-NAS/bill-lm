@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  AnalysisExecutionEnvelopeSchema,
+  ModelTaxAnalysisPayloadSchema
+  
+} from '#/schema/tax-analysis'
+
+import {
   BILL_ANALYSIS_PROMPT_METADATA,
   BillPromptBuilder,
 } from '../bill-prompt-builder'
-import {
-  AnalysisExecutionEnvelopeSchema,
-  ModelTaxAnalysisPayloadSchema,
-  type TaxPurpose,
-} from '#/schema/tax-analysis'
+
+import type {TaxPurpose} from '#/schema/tax-analysis';
 
 const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
 

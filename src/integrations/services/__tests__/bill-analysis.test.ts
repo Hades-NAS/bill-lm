@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { createBillAnalysisService } from '../bill-analysis.service'
+
+import type { ILLMProvider } from '#/integrations/llm/provider.interface'
+import type { AnalysisExecutionEnvelope } from '#/schema/tax-analysis'
+
 vi.mock('#/integrations/firebase/firebase.server', () => ({
   adminDb: {
     collection: vi.fn(),
   },
 }))
-
-import { createBillAnalysisService } from '../bill-analysis.service'
-
-import type { ILLMProvider } from '#/integrations/llm/provider.interface'
-import type { AnalysisExecutionEnvelope } from '#/schema/tax-analysis'
 
 const RUN_ID = '11111111-1111-4111-8111-111111111111'
 const BILL_ID = '22222222-2222-4222-8222-222222222222'

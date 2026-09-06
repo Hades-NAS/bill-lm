@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AnalysisExecutionEnvelopeSchema } from '#/schema/tax-analysis'
 
+import { jobHandler } from '../analyze-job'
+
 const mocks = vi.hoisted(() => ({
   analysisRunFindFirst: vi.fn(),
   analysisRunUpdateMany: vi.fn(),
@@ -62,8 +64,6 @@ vi.mock('#/use-cases/analyze-bills.use-case', () => ({
     return { execute: mocks.execute }
   },
 }))
-
-import { jobHandler } from '../analyze-job'
 
 const RUN_ID = '11111111-1111-4111-8111-111111111111'
 const COLLECTION_ID = '22222222-2222-4222-8222-222222222222'

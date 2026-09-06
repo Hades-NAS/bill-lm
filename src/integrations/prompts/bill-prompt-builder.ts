@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto'
 
+import { TAX_ANALYSIS_SCHEMA_VERSION } from '#/schema/tax-analysis'
+
 import { getServiceLogger } from '../logger.server'
 
 import type {
   AnalysisExecutionEnvelope,
   TaxPurpose,
 } from '#/schema/tax-analysis'
-import { TAX_ANALYSIS_SCHEMA_VERSION } from '#/schema/tax-analysis'
 
 const logger = getServiceLogger('BillPromptBuilder')
 

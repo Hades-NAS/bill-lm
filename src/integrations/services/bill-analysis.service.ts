@@ -18,12 +18,12 @@ import { FireCollections } from '#/constants/firebase'
 
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
 import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
+import type { ParsedBill } from '#/schema/bill-analysis'
 import type { AnalyzeJobData } from '#/schema/collections'
 import type {
   AnalysisExecutionEnvelope,
   TaxAnalysisResult,
 } from '#/schema/tax-analysis'
-import type { ParsedBill } from '#/schema/bill-analysis'
 
 const logger = getServiceLogger('BillAnalysisService')
 

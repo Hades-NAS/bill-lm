@@ -1,18 +1,17 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-
 import { describe, expect, it } from 'vitest'
 
-import {
-  AnalysisExecutionEnvelopeBudgetError,
-  assertExecutionEnvelopeBudget,
-  selectApplicableOfficialEvidence,
-} from '../execution-envelope.server'
 import {
   AnalysisPrerequisiteError,
   assertAnalysisEnvelopeCanExecute,
   assertFrozenProviderConnection,
 } from '../analysis-gate'
+import {
+  AnalysisExecutionEnvelopeBudgetError,
+  assertExecutionEnvelopeBudget,
+  selectApplicableOfficialEvidence,
+} from '../execution-envelope.server'
 
 const envelope = {
   schemaVersion: 'v2' as const,

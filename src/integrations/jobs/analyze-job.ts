@@ -1,6 +1,8 @@
 import { Worker } from 'bullmq'
 import { DateTime } from 'luxon'
 
+import { ParsedBillSchema } from '#/schema/bill-analysis'
+
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { decryptProviderSecret } from '#/integrations/llm/byok-crypto.server'
 import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
@@ -22,7 +24,6 @@ import type { AnalyzeJobData } from '#/schema/collections'
 import type { Job } from 'bullmq'
 
 import { env } from '#/env'
-import { ParsedBillSchema } from '#/schema/bill-analysis'
 import { createAnalyzeBillsUseCase } from '#/use-cases/analyze-bills.use-case'
 
 const logger = getServiceLogger('AnalyzeWorker')

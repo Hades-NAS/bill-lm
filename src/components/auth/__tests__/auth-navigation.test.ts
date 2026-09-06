@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { shouldNavigateToCollections } from '../auth-forms'
+
 vi.mock('#/integrations/firebase/auth', () => ({}))
 vi.mock('#/integrations/firebase/auth-error', () => ({
   getFirebaseAuthErrorMessage: vi.fn(),
 }))
 vi.mock('#/hooks/auth', () => ({ useUserAuth: vi.fn() }))
-
-import { shouldNavigateToCollections } from '../auth-forms'
 
 const authenticatedSession = {
   userId: 'firebase-user-1',

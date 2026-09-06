@@ -26,6 +26,7 @@ import {
   signUpWithEmail,
 } from '#/integrations/firebase/auth'
 import { getFirebaseAuthErrorMessage } from '#/integrations/firebase/auth-error'
+
 import { useUserAuth } from '#/hooks/auth'
 
 import type { AuthType } from '#/schema/auth'

@@ -14,6 +14,8 @@ import { ShoppingBagIcon, Sparkles } from 'lucide-react'
 import { DateTime } from 'luxon'
 import React from 'react'
 
+import { TaxAnalysisResultSchema } from '#/schema/tax-analysis'
+
 import { getColorBillTargetType } from '#/utils/bill'
 import { useIsMobile } from '#/utils/mobile'
 import { isLoadingQuery } from '#/utils/query'
@@ -31,7 +33,6 @@ import { LoaderText } from '#/components/shared/loader-text'
 import { NumberDisplay } from '#/components/shared/number-display'
 
 import type { ModalPageProps } from '#/schema/page'
-import { TaxAnalysisResultSchema } from '#/schema/tax-analysis'
 
 export function getAnalysisResult(snapshot: unknown) {
   if (!snapshot || typeof snapshot !== 'object') return null

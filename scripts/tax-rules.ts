@@ -24,13 +24,13 @@ import {
   TaxRuleSourceManifestSchema,
 } from '#/integrations/tax-rules/contracts'
 import {
-  diffTaxRuleSections,
-  splitTaxRuleSource,
-} from '#/integrations/tax-rules/sectioning'
-import {
   buildReviewedSections,
   resolveAmbiguousSection,
 } from '#/integrations/tax-rules/promotion'
+import {
+  diffTaxRuleSections,
+  splitTaxRuleSource,
+} from '#/integrations/tax-rules/sectioning'
 
 import { PrismaClient } from '../src/generated/prisma/client'
 

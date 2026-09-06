@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/integrations/firebase/firebase.server', () => ({
-  adminDb: {},
-}))
-
 import { LLMProviderFactory } from '../llm-provider-factory'
 
 import type { LLMProviderConfig } from '#/schema/llm-provider'
+
+vi.mock('#/integrations/firebase/firebase.server', () => ({
+  adminDb: {},
+}))
 
 const baseConfig: Omit<LLMProviderConfig, 'apiKey'> = {
   provider: 'openai',

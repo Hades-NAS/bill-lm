@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { createTRPCRouter } from '#/integrations/trpc/init'
+
+import { collectionsRouter } from '..'
+
 const mocks = vi.hoisted(() => ({
   collectionFindFirst: vi.fn(),
   collectionContextRevisionFindFirst: vi.fn(),
@@ -33,9 +37,6 @@ vi.mock('#/integrations/queue/analyze-queue', () => ({
   AnalyzeQueue: { add: mocks.analyzeQueueAdd },
 }))
 vi.mock('#/integrations/minio/helper', () => ({ StorageHelper: {} }))
-
-import { createTRPCRouter } from '#/integrations/trpc/init'
-import { collectionsRouter } from '..'
 
 const COLLECTION_ID = '11111111-1111-4111-8111-111111111111'
 const RUN_A = '22222222-2222-4222-8222-222222222222'

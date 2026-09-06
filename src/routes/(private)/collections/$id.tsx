@@ -58,8 +58,8 @@ import { billsKeys } from '#/hooks/query-keys'
 
 import BillDetailPage from '#/components/bill/bill-detail'
 import BillAddForm from '#/components/bill/form'
-import CollectionForm from '#/components/collection/form'
 import { AnalysisHistoryDrawer } from '#/components/collection/analysis-history-drawer'
+import CollectionForm from '#/components/collection/form'
 import ConfModal from '#/components/shared/conf-modal'
 import {
   ContextGuideButton,

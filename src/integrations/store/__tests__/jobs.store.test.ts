@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { useJobsStore  } from '../jobs.store'
+
+import type {JobStatusItem} from '../jobs.store';
+
 vi.mock('#/hooks/invalidate-utils', () => ({
   invalidateQueriesByKeys: vi.fn(),
 }))
@@ -11,8 +15,6 @@ vi.mock('#/hooks/mutation/collection', () => ({
 vi.mock('#/integrations/tanstack-query/root-provider', () => ({
   getContext: vi.fn(() => ({ queryClient: {} })),
 }))
-
-import { useJobsStore, type JobStatusItem } from '../jobs.store'
 
 function job(jobId: string, updatedAt: Date): JobStatusItem {
   return {

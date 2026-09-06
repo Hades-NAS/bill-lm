@@ -2,6 +2,8 @@ import { TRPCError } from '@trpc/server'
 import { DateTime } from 'luxon'
 import z from 'zod'
 
+
+import { transformRawToParsed } from '#/schema/bill-analysis'
 import {
   AnalyzeCollectionRequestSchema,
   CreateCollectionSchema,
@@ -21,10 +23,10 @@ import {
 } from '#/schema/tax-analysis'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
-import { env } from '#/env'
-import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
-import { normalizeFiscalReferenceMarkdown } from '#/integrations/fiscal-references/normalizer.server'
+import { canAnalyzeWithRequirements, normalizeFiscalReferenceMarkdown  } from '#/integrations/fiscal-references/normalizer.server'
 import { getServiceLogger } from '#/integrations/logger.server'
+import { StorageHelper } from '#/integrations/minio/helper'
+import { BILL_ANALYSIS_PROMPT_METADATA } from '#/integrations/prompts/bill-prompt-builder'
 import {
   AnalysisPrerequisiteError,
   assertAnalysisEnvelopeCanExecute,
@@ -37,22 +39,22 @@ import {
   projectAnalysisRunDetail,
   projectAnalysisRunHistoryItem,
 } from '#/integrations/tax-analysis/history-projection.server'
-import { BILL_ANALYSIS_PROMPT_METADATA } from '#/integrations/prompts/bill-prompt-builder'
-import { StorageHelper } from '#/integrations/minio/helper'
 import { prisma } from '#/integrations/prisma'
 import { AnalyzeQueue } from '#/integrations/queue/analyze-queue'
 import { selectApplicableTaxRuleSet } from '#/integrations/tax-rules/selector'
+import { parseAndValidateInvoiceXML } from '#/integrations/xml'
 
 import { FireCollections } from '#/constants/firebase'
 
-import { transformRawToParsed } from '#/schema/bill-analysis'
-import { parseAndValidateInvoiceXML } from '#/integrations/xml'
+
 
 import { privateProcedure } from '../../init'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import type { AnalyzeJobData } from '#/schema/collections'
 import type { inferRouterOutputs, TRPCRouterRecord } from '@trpc/server'
+
+import { env } from '#/env'
 
 const logger = getServiceLogger('Collections')
 
