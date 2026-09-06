@@ -61,7 +61,6 @@ function projectSafeSpecializedResult(result: TaxAnalysisResult) {
       official: result.references.official.map(({ articleOrSection }) => ({
         articleOrSection,
       })),
-      user: result.references.user.map(({ name }) => ({ name })),
     },
   }
 
@@ -180,9 +179,6 @@ function projectFrozenContext(snapshot: unknown) {
       articleOrSection: evidence.articleOrSection,
       effectiveFrom: evidence.effectiveFrom,
       effectiveTo: evidence.effectiveTo,
-    })),
-    userReferences: envelope.userReferences.map((reference) => ({
-      name: reference.name,
     })),
     invoiceCount: envelope.invoices.length,
   }

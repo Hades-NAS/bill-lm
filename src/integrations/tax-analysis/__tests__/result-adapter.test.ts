@@ -18,7 +18,6 @@ const references = {
       articleOrSection: 'Art. 1',
     },
   ],
-  user: [{ id: ACTIVITY_ID, name: 'Nota', contentHash: 'user-hash' }],
 }
 
 describe('tax analysis result adapter', () => {

@@ -19,15 +19,10 @@ export function assertExecutionEnvelopeBudget(
   envelope: AnalysisExecutionEnvelope,
   budget = ANALYSIS_EVIDENCE_CHARACTER_BUDGET,
 ) {
-  const characters =
-    envelope.officialEvidence.reduce(
-      (total, evidence) => total + evidence.markdown.length,
-      0,
-    ) +
-    envelope.userReferences.reduce(
-      (total, reference) => total + reference.normalizedMarkdown.length,
-      0,
-    )
+  const characters = envelope.officialEvidence.reduce(
+    (total, evidence) => total + evidence.markdown.length,
+    0,
+  )
   if (characters > budget)
     throw new AnalysisExecutionEnvelopeBudgetError(characters, budget)
   return characters

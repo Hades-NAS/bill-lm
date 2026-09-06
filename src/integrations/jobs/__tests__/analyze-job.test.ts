@@ -145,7 +145,6 @@ function envelope(purpose: Purpose = 'personal_expenses') {
         markdown: 'Norma aplicable.',
       },
     ],
-    userReferences: [],
     invoices: [
       {
         billId: BILL_ID,
@@ -204,7 +203,6 @@ function specializedResult(purpose: Purpose) {
           articleOrSection: 'Art. 1',
         },
       ],
-      user: [],
     },
   }
 

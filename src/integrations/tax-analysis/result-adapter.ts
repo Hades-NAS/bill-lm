@@ -85,7 +85,6 @@ export type TaxAnalysisReferences = {
     fragmentContentHash: string
     articleOrSection: string
   }>
-  user: Array<{ id: string; name: string; contentHash: string }>
 }
 
 export function referencesFromExecutionEnvelope(
@@ -98,11 +97,6 @@ export function referencesFromExecutionEnvelope(
       fragmentId: evidence.fragmentId,
       fragmentContentHash: evidence.fragmentContentHash,
       articleOrSection: evidence.articleOrSection,
-    })),
-    user: envelope.userReferences.map((reference) => ({
-      id: reference.id,
-      name: reference.name,
-      contentHash: reference.contentHash,
     })),
   }
 }

@@ -17,7 +17,6 @@ const CONTEXT_ID = '66666666-6666-4666-8666-666666666666'
 const PROFILE_ID = '77777777-7777-4777-8777-777777777777'
 const CONNECTION_ID = '88888888-8888-4888-8888-888888888888'
 const SOURCE_ID = '99999999-9999-4999-8999-999999999999'
-const REFERENCE_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 const hash = 'a'.repeat(64)
 const now = new Date('2026-09-05T12:00:00.000Z')
 
@@ -78,14 +77,6 @@ const envelope = {
       markdown: 'official markdown that must remain private',
     },
   ],
-  userReferences: [
-    {
-      id: REFERENCE_ID,
-      name: 'Referencia privada',
-      normalizedMarkdown: 'private user reference markdown',
-      contentHash: hash,
-    },
-  ],
   invoices: [
     {
       billId: INVOICE_ID,
@@ -129,7 +120,6 @@ const result = normalizeTaxAnalysisResult({
         articleOrSection: 'Art. 1',
       },
     ],
-    user: [],
   },
   createdAt: now,
 })

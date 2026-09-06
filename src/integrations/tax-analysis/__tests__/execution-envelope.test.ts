@@ -17,16 +17,15 @@ const envelope = {
   schemaVersion: 'v2' as const,
   envelopeVersion: '1' as const,
   officialEvidence: [{ markdown: 'oficial' }],
-  userReferences: [{ normalizedMarkdown: 'usuario' }],
 } as any
 
 describe('execution envelope budget', () => {
   it('does not silently truncate evidence within budget', () => {
-    expect(assertExecutionEnvelopeBudget(envelope, 20)).toBe(14)
+    expect(assertExecutionEnvelopeBudget(envelope, 20)).toBe(7)
   })
 
   it('blocks instead of truncating evidence above budget', () => {
-    expect(() => assertExecutionEnvelopeBudget(envelope, 12)).toThrow(
+    expect(() => assertExecutionEnvelopeBudget(envelope, 6)).toThrow(
       AnalysisExecutionEnvelopeBudgetError,
     )
   })
@@ -118,7 +117,6 @@ describe('analysis execution gate', () => {
         markdown: 'Contenido oficial',
       },
     ],
-    userReferences: [],
     invoices: [{ billId: '550e8400-e29b-41d4-a716-446655440000' }],
     provider: {
       id: 'connection-1',

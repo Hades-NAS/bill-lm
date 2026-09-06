@@ -72,7 +72,6 @@ const envelope: AnalysisExecutionEnvelope = {
       markdown: 'Norma.',
     },
   ],
-  userReferences: [],
   invoices: [
     {
       billId: BILL_ID,
@@ -140,7 +139,6 @@ describe('BillAnalysisService canonical result', () => {
             articleOrSection: 'Art. 1',
           },
         ],
-        user: [],
       },
     })
   })
