@@ -1,8 +1,12 @@
 import { createEnv } from '@t3-oss/env-core'
 import { z } from 'zod'
 
+import { LLMSmokeTestEnvSchema } from '#/integrations/llm/smoke-test-config'
+
 export const LLMProviderEnum = z.enum(['lm-studio', 'openai', 'claude'])
 export type LLMProvider = z.infer<typeof LLMProviderEnum>
+
+export { LLMSmokeTestEnvSchema }
 
 export const env = createEnv({
   server: {
@@ -24,6 +28,7 @@ export const env = createEnv({
     REDIS_PORT: z.string().min(1).optional(),
 
     FAKE_ANALYZE: z.string().optional(),
+    LLM_SMOKE_TEST: LLMSmokeTestEnvSchema,
     // Root secret for server-side AES-256-GCM encryption of BYOK credentials.
     // It must never be exposed through a VITE_ variable.
     BYOK_ENCRYPTION_KEY: z.string().optional(),
@@ -82,6 +87,7 @@ export const env = createEnv({
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PORT: process.env.REDIS_PORT,
     FAKE_ANALYZE: process.env.FAKE_ANALYZE,
+    LLM_SMOKE_TEST: process.env.LLM_SMOKE_TEST,
     BYOK_ENCRYPTION_KEY: process.env.BYOK_ENCRYPTION_KEY,
 
     // LLM Provider

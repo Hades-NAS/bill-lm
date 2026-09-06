@@ -20,6 +20,7 @@ const CONNECTION_ID = '66666666-6666-4666-8666-666666666666'
 
 const envelope: AnalysisExecutionEnvelope = {
   schemaVersion: 'v2', envelopeVersion: '1',
+  execution: { mode: 'real' },
   prompt: { templateId: 'bill-analysis', templateVersion: '2', templateHash: 'a'.repeat(64) },
   context: { collectionContextRevisionId: CONTEXT_ID, revision: 1, purpose: 'personal_expenses', period: { startDate: '2026-01-01', endDate: '2026-12-31' }, notes: null },
   taxpayerProfile: { revisionId: PROFILE_ID, revision: 1, hasRuc: false, hasEmploymentIncome: true, taxRegime: 'unknown', vatFilingFrequency: 'none', additionalFacts: null },

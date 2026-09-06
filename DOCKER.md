@@ -48,6 +48,29 @@ docker run -d --name bill-lm-worker \
 
 El env file de ambos procesos solo necesita `BYOK_ENCRYPTION_KEY` idéntica. Mantén montado el service account en la ruta que fue configurada durante el build. No incluyas API keys de proveedores ni de usuarios: las de usuarios se cifran en PostgreSQL a través de Ajustes.
 
+## Smoke test sin consumo de LLM
+
+Para comprobar el flujo de análisis sin enviar prompts ni generar consumo,
+declara `LLM_SMOKE_TEST=true` en los entornos runtime de **server y worker**.
+Ambos procesos deben tener exactamente el mismo valor; el worker bloquea la
+ejecución si el snapshot creado por server no coincide. El worker aún descifra
+la conexión BYOK y crea el cliente, pero sustituye la llamada al proveedor por
+una respuesta fiscal determinista marcada como **Simulado** en el historial.
+
+```yaml
+services:
+  server:
+    environment:
+      LLM_SMOKE_TEST: 'true'
+  worker:
+    environment:
+      LLM_SMOKE_TEST: 'true'
+```
+
+Este modo no confirma que la API key sea válida, tenga permisos, ni que el
+modelo esté disponible. Para volver a ejecuciones reales, elimina la variable
+o usa `LLM_SMOKE_TEST=false` en ambos servicios y reinícialos.
+
 ## Migración BYOK
 
 Antes de publicar una versión que use conexiones BYOK, toma backup de PostgreSQL y aplica la migración con la imagen o checkout de esa misma versión:

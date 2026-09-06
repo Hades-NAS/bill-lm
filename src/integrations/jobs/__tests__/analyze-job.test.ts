@@ -9,14 +9,16 @@ const mocks = vi.hoisted(() => ({
   collectionFindFirst: vi.fn(),
   decryptProviderSecret: vi.fn(),
   createProvider: vi.fn(),
+  useCaseProvider: vi.fn(),
   execute: vi.fn(),
   analysisResultCreateMany: vi.fn(),
   firebaseUpdate: vi.fn(),
+  env: { ANALYZE_QUEUE_NAME: 'test', LLM_MAX_TOKENS: '2048', LLM_TIMEOUT_MS: '30000', LLM_SMOKE_TEST: false },
 }))
 
 vi.mock('bullmq', () => ({ Worker: class {} }))
 vi.mock('#/env', () => ({
-  env: { ANALYZE_QUEUE_NAME: 'test', LLM_MAX_TOKENS: '2048', LLM_TIMEOUT_MS: '30000' },
+  env: mocks.env,
 }))
 vi.mock('#/integrations/firebase/firebase.server', () => ({
   adminDb: {
@@ -46,7 +48,10 @@ vi.mock('#/integrations/llm/llm-provider-factory', () => ({
   LLMProviderFactory: class { create = mocks.createProvider },
 }))
 vi.mock('#/use-cases/analyze-bills.use-case', () => ({
-  createAnalyzeBillsUseCase: () => ({ execute: mocks.execute }),
+  createAnalyzeBillsUseCase: (provider: unknown) => {
+    mocks.useCaseProvider(provider)
+    return { execute: mocks.execute }
+  },
 }))
 
 import { jobHandler } from '../analyze-job'
@@ -171,6 +176,7 @@ describe('analyze worker fail-closed gate', () => {
     mocks.analysisRunUpdateMany.mockResolvedValue({ count: 1 })
     mocks.collectionFindFirst.mockResolvedValue({ id: COLLECTION_ID })
     mocks.firebaseUpdate.mockResolvedValue(undefined)
+    mocks.env.LLM_SMOKE_TEST = false
   })
 
   it.each([
@@ -302,5 +308,53 @@ describe('analyze worker canonical result persistence', () => {
       where: expect.objectContaining({ id: RUN_ID, status: { in: ['queued', 'running'] } }),
       data: expect.objectContaining({ status: 'failed' }),
     }))
+  })
+})
+
+describe('analyze worker smoke mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.env.LLM_SMOKE_TEST = true
+    mocks.analysisRunFindFirst.mockResolvedValue(run({ inputSnapshot: envelope('personal_expenses') }))
+    mocks.analysisRunUpdateMany.mockResolvedValue({ count: 1 })
+    mocks.collectionFindFirst.mockResolvedValue({ id: COLLECTION_ID })
+    mocks.providerConnectionFindFirst.mockResolvedValue({
+      id: CONNECTION_ID, provider: 'OPENAI', modelId: 'gpt-4o-mini',
+      secretCiphertext: 'cipher', secretIv: 'iv', secretAuthTag: 'tag', secretVersion: 1,
+    })
+    mocks.decryptProviderSecret.mockReturnValue('key')
+    mocks.createProvider.mockReturnValue({})
+    mocks.firebaseUpdate.mockResolvedValue(undefined)
+  })
+
+  it('blocks before decrypting when server and worker smoke modes differ', async () => {
+    await jobHandler(job())
+
+    expect(mocks.decryptProviderSecret).not.toHaveBeenCalled()
+    expect(mocks.createProvider).not.toHaveBeenCalled()
+    expect(mocks.execute).not.toHaveBeenCalled()
+    expect(mocks.analysisRunUpdateMany).toHaveBeenLastCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ status: 'blocked' }),
+    }))
+  })
+
+  it('constructs the real client but passes a smoke adapter to the use case', async () => {
+    mocks.analysisRunFindFirst.mockResolvedValue(run({
+      inputSnapshot: AnalysisExecutionEnvelopeSchema.parse({
+        ...envelope('personal_expenses'), execution: { mode: 'smoke' },
+      }),
+    }))
+    mocks.execute.mockResolvedValue([{ billId: BILL_ID, success: true, result: specializedResult('personal_expenses') }])
+
+    await jobHandler(job())
+
+    expect(mocks.decryptProviderSecret).toHaveBeenCalledOnce()
+    expect(mocks.createProvider).toHaveBeenCalledOnce()
+    expect(mocks.useCaseProvider.mock.calls[0][0]).not.toBe(
+      mocks.createProvider.mock.results[0].value,
+    )
+    expect(mocks.execute).toHaveBeenCalledWith(
+      expect.anything(), expect.anything(), expect.anything(), expect.anything(),
+    )
   })
 })

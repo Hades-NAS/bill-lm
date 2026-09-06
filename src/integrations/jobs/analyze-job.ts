@@ -4,6 +4,7 @@ import { DateTime } from 'luxon'
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { decryptProviderSecret } from '#/integrations/llm/byok-crypto.server'
 import { LLMProviderFactory } from '#/integrations/llm/llm-provider-factory'
+import { SmokeTestProvider } from '#/integrations/llm/smoke-test-provider'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { prisma } from '#/integrations/prisma'
 import { redisConnection } from '#/integrations/redis'
@@ -118,6 +119,12 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         'La colección ya no está disponible para ejecutar este análisis.',
       )
     assertAnalysisEnvelopeCanExecute(envelope)
+    const workerExecutionMode = env.LLM_SMOKE_TEST ? 'smoke' : 'real'
+    if (envelope.execution.mode !== workerExecutionMode)
+      throw new AnalysisPrerequisiteError(
+        'UNRESOLVED_ANALYSIS_CONFIGURATION',
+        'El modo de ejecución del servidor no coincide con el worker. Configura LLM_SMOKE_TEST igual en ambos y vuelve a intentar.',
+      )
     assertFrozenProviderConnection(envelope, connection)
     const apiKey = decryptProviderSecret(
       {
@@ -132,7 +139,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         version: connection.secretVersion,
       },
     )
-    const provider = new LLMProviderFactory().create({
+    const realProvider = new LLMProviderFactory().create({
       provider: connection.provider.toLowerCase() as 'openai' | 'claude',
       modelId: connection.modelId,
       apiKey,
@@ -140,6 +147,9 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       timeout: parseInt(env.LLM_TIMEOUT_MS ?? '30000'),
       agentInstructions: '',
     })
+    const provider = envelope.execution.mode === 'smoke'
+      ? new SmokeTestProvider(realProvider, envelope)
+      : realProvider
     const useCase = createAnalyzeBillsUseCase(provider)
     const results = await useCase.execute(
       envelope.invoices.map((invoice) => ({

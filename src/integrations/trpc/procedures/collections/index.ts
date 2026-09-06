@@ -21,6 +21,7 @@ import {
 } from '#/schema/tax-analysis'
 
 import { adminDb } from '#/integrations/firebase/firebase.server'
+import { env } from '#/env'
 import { canAnalyzeWithRequirements } from '#/integrations/fiscal-references/normalizer.server'
 import { normalizeFiscalReferenceMarkdown } from '#/integrations/fiscal-references/normalizer.server'
 import { getServiceLogger } from '#/integrations/logger.server'
@@ -907,6 +908,7 @@ export const collectionsRouter = {
       })))
       const envelope = AnalysisExecutionEnvelopeSchema.parse({
         schemaVersion: 'v2', envelopeVersion: '1',
+        execution: { mode: env.LLM_SMOKE_TEST ? 'smoke' : 'real' },
         prompt: BILL_ANALYSIS_PROMPT_METADATA,
         context: {
           collectionContextRevisionId: context.id, revision: context.revision,

@@ -43,6 +43,7 @@ function createRun(
     completedAt:
       status === 'completed' ? new Date('2026-09-05T12:01:00.000Z') : null,
     invoiceCount: 2,
+    executionMode: 'real' as 'real' | 'smoke',
     snapshotStatus: 'available' as const,
     purpose: 'vat_credit',
     period,
@@ -127,6 +128,7 @@ function createDetail(
     results,
     frozenContext: {
       status: 'available' as const,
+      execution: { mode: 'real' as const },
       context: { revision: 1, purpose: 'vat_credit', period },
       ruleset: { version: 2 },
       rawInput: 'contenido-super-secreto',
@@ -308,6 +310,23 @@ describe('AnalysisHistoryDrawer', () => {
       ),
     ).toBeTruthy()
     expect(screen.getByText('Ruleset oficial')).toBeTruthy()
+  })
+
+  it('labels smoke executions as simulated and non-fiscal', async () => {
+    setTrpcResponses({
+      runs: [{ ...createRun('completed'), executionMode: 'smoke' }],
+      detail: { ...createDetail('completed'), executionMode: 'smoke' },
+    })
+    renderDrawer()
+
+    expect(await screen.findByText('Simulado')).toBeTruthy()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Ver resumen del análisis Declaración de IVA/i,
+      }),
+    )
+    expect(await screen.findByText('Ejecución simulada')).toBeTruthy()
+    expect(screen.getByText(/sin consultar al proveedor/i)).toBeTruthy()
   })
 
   it.each([

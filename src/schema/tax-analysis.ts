@@ -349,6 +349,9 @@ export type AnalysisOfficialEvidence = z.infer<
 export const AnalysisExecutionEnvelopeSchema = z.object({
   schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
   envelopeVersion: z.literal('1'),
+  execution: z.object({
+    mode: z.enum(['real', 'smoke']),
+  }).default({ mode: 'real' }),
   prompt: z.object({
     templateId: z.literal('bill-analysis'),
     templateVersion: z.literal('2'),

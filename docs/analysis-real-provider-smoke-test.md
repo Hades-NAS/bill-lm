@@ -35,6 +35,18 @@ Debes ver solo el resultado especializado de IR de actividad. El detalle debe id
 
 Debes ver solo el resultado de gastos personales. Si el sistema necesita una revisión humana, debe mostrar `needs_review` y explicar qué validar sin presentar una conclusión fiscal definitiva.
 
+## Smoke test sin consumo
+
+`LLM_SMOKE_TEST=true` recorre preparación, cola, worker, normalización y
+persistencia sin enviar prompts al proveedor. Configúralo de forma idéntica en
+server y worker; consulta [DOCKER.md](../../DOCKER.md) para el bloque de
+Compose. El worker descifra la conexión BYOK y crea el cliente localmente, pero
+lo sustituye por una respuesta determinista marcada como **Simulado**.
+
+No confirma que la API key sea válida, tenga permisos ni que el modelo esté
+disponible. Para la prueba real descrita en los escenarios anteriores,
+desactiva la variable en ambos procesos.
+
 ## Fallos esperados
 
 | Situación | Resultado esperado |

@@ -333,6 +333,14 @@ function RunStatusBadge({ status }: { status: string }) {
   )
 }
 
+function SmokeTestBadge() {
+  return (
+    <Badge color="orange" variant="light">
+      Simulado
+    </Badge>
+  )
+}
+
 function RunListItem({
   run,
   onSelect,
@@ -354,7 +362,10 @@ function RunListItem({
       <Stack gap={6}>
         <Group justify="space-between" wrap="nowrap">
           <Text fw={600}>{getAnalysisPurposeLabel(run.purpose)}</Text>
-          <RunStatusBadge status={run.status} />
+          <Group gap="xs">
+            {run.executionMode === 'smoke' && <SmokeTestBadge />}
+            <RunStatusBadge status={run.status} />
+          </Group>
         </Group>
         <Text c="dimmed" size="sm">
           {formatPeriod(run.period)}
@@ -395,8 +406,16 @@ function RunSummary({
     <Stack gap="md">
       <Group justify="space-between">
         <Title order={3}>{getAnalysisPurposeLabel(detail.purpose)}</Title>
-        <RunStatusBadge status={detail.status} />
+        <Group gap="xs">
+          {detail.executionMode === 'smoke' && <SmokeTestBadge />}
+          <RunStatusBadge status={detail.status} />
+        </Group>
       </Group>
+      {detail.executionMode === 'smoke' && (
+        <Alert color="orange" title="Ejecución simulada">
+          Esta ejecución validó el flujo sin consultar al proveedor. No uses sus resultados para decisiones fiscales.
+        </Alert>
+      )}
       <Text c="dimmed" size="sm">
         {getAnalysisRunStatusCopy(detail.status)}
       </Text>
