@@ -23,11 +23,6 @@ function RouteComponent() {
   return (
     <AppShell
       header={{ height: isMobile ? 50 : 60 }}
-      navbar={{
-        width: 300,
-        breakpoint: 'sm',
-        collapsed: { mobile: true, desktop: true },
-      }}
       padding="md"
     >
       <AppShell.Header bd={0} bg={scroll.y < 80 ? 'transparent' : 'violet.6'}>
@@ -60,7 +55,6 @@ function RouteComponent() {
           </Group>
         </Group>
       </AppShell.Header>
-      <AppShell.Navbar p="md"></AppShell.Navbar>
       <AppShell.Main m={0} p={0}>
         <Outlet />
       </AppShell.Main>
