@@ -1,12 +1,10 @@
 import {
-  Alert,
   ActionIcon,
+  Alert,
   Badge,
   Box,
   Button,
   Container,
-  Divider,
-  FileInput,
   Group,
   Menu,
   Modal,
@@ -25,9 +23,7 @@ import React from 'react'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
-import { fileToBase64 } from '#/utils/file'
 
-import ConfModal from '#/components/shared/conf-modal'
 import {
   ContextGuideButton,
   FieldHelpLabel,
@@ -63,37 +59,10 @@ function openConnectionsGuide() {
     ],
   })
 }
-
-function openFiscalReferencesGuide() {
-  openContextGuide({
-    title: 'Guía de referencias fiscales',
-    introduction:
-      'Estas referencias aportan contexto global a tus análisis. No sustituyen normativa oficial ni asesoría profesional.',
-    items: [
-      {
-        title: 'Alcance global',
-        description:
-          'Cada referencia puede usarse en cualquier colección y en análisis futuros de tu cuenta.',
-      },
-      {
-        title: 'Formato',
-        description:
-          'Puedes subir Markdown, texto plano o un PDF con texto seleccionable. El servidor convierte los PDF a Markdown y limpia el contenido.',
-      },
-      {
-        title: 'Límite',
-        description:
-          'Mantén hasta tres documentos. Reemplaza uno cuando ya no represente tu contexto actual.',
-      },
-    ],
-  })
-}
-
 function UserPage() {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const connections = useQuery(trpc.providerConnections.list.queryOptions())
-  const fiscalReferences = useQuery(trpc.fiscalReferences.list.queryOptions())
   const createConnection = useMutation(
     trpc.providerConnections.create.mutationOptions({
       onSuccess: () =>
@@ -126,20 +95,6 @@ function UserPage() {
       onSuccess: invalidateConnections,
     }),
   )
-  const invalidateFiscalReferences = () =>
-    queryClient.invalidateQueries({
-      queryKey: trpc.fiscalReferences.list.queryKey(),
-    })
-  const uploadFiscalReference = useMutation(
-    trpc.fiscalReferences.upload.mutationOptions({
-      onSuccess: invalidateFiscalReferences,
-    }),
-  )
-  const removeFiscalReference = useMutation(
-    trpc.fiscalReferences.remove.mutationOptions({
-      onSuccess: invalidateFiscalReferences,
-    }),
-  )
   const [provider, setProvider] = React.useState<'openai' | 'claude'>('openai')
   const [label, setLabel] = React.useState('')
   const [modelId, setModelId] = React.useState('gpt-4o-mini')
@@ -147,14 +102,6 @@ function UserPage() {
   const [createModalOpened, setCreateModalOpened] = React.useState(false)
   const [rotationId, setRotationId] = React.useState<string | null>(null)
   const [rotationKey, setRotationKey] = React.useState('')
-  const [fiscalReferenceFile, setFiscalReferenceFile] =
-    React.useState<File | null>(null)
-  const [fiscalReferenceModalOpened, setFiscalReferenceModalOpened] =
-    React.useState(false)
-  const [referenceToRemove, setReferenceToRemove] = React.useState<{
-    id: string
-    name: string
-  } | null>(null)
 
   const connectionError = [
     createConnection.error,
@@ -162,10 +109,6 @@ function UserPage() {
     probeConnection.error,
     removeConnection.error,
     rotateConnection.error,
-  ].find((error) => error != null)
-  const fiscalReferenceError = [
-    uploadFiscalReference.error,
-    removeFiscalReference.error,
   ].find((error) => error != null)
 
   const closeCreateModal = () => {
@@ -179,33 +122,6 @@ function UserPage() {
     setRotationId(null)
     setRotationKey('')
   }
-  const closeFiscalReferenceModal = () => {
-    setFiscalReferenceModalOpened(false)
-    setFiscalReferenceFile(null)
-    uploadFiscalReference.reset()
-  }
-  const uploadReference = async () => {
-    if (!fiscalReferenceFile) return
-
-    const mimeType =
-      fiscalReferenceFile.type === 'application/pdf'
-        ? 'application/pdf'
-        : fiscalReferenceFile.type === 'text/plain'
-          ? 'text/plain'
-          : 'text/markdown'
-
-    uploadFiscalReference.mutate(
-      {
-        file: {
-          name: fiscalReferenceFile.name,
-          base64: await fileToBase64(fiscalReferenceFile),
-          mimeType,
-        },
-      },
-      { onSuccess: closeFiscalReferenceModal },
-    )
-  }
-
   return (
     <Box py={40}>
       <Container size="md">
@@ -374,188 +290,6 @@ function UserPage() {
             </Stack>
           </Box>
 
-          <Divider />
-
-          <Box>
-            <Stack gap="md">
-              <Group align="flex-start" justify="space-between">
-                <div>
-                  <Group gap="xs">
-                    <Title order={2}>Referencias fiscales</Title>
-                    <ContextGuideButton
-                      title="referencias fiscales"
-                      onClick={openFiscalReferencesGuide}
-                    />
-                  </Group>
-                  <Text c="dimmed" size="sm">
-                    Material autogestionado global para tus análisis. No se
-                    trata como normativa oficial ni como dictamen jurídico.
-                  </Text>
-                </div>
-                <Button
-                  disabled={
-                    fiscalReferences.isPending ||
-                    (fiscalReferences.data?.length ?? 0) >= 3
-                  }
-                  onClick={() => setFiscalReferenceModalOpened(true)}
-                >
-                  Agregar referencia
-                </Button>
-              </Group>
-              <Alert color="blue">
-                {fiscalReferences.data?.length ?? 0}/3 referencias. Aceptamos
-                Markdown o PDFs con texto seleccionable; los PDFs se convierten
-                a Markdown en el servidor.
-              </Alert>
-              {fiscalReferences.isPending && (
-                <Stack gap="xs">
-                  <Skeleton height={62} />
-                  <Skeleton height={62} />
-                </Stack>
-              )}
-              {fiscalReferences.isError && (
-                <Alert color="red" title="No pudimos cargar tus referencias">
-                  <Stack gap="xs">
-                    <Text size="sm">{fiscalReferences.error.message}</Text>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      onClick={() => fiscalReferences.refetch()}
-                    >
-                      Reintentar
-                    </Button>
-                  </Stack>
-                </Alert>
-              )}
-              {fiscalReferenceError && (
-                <Alert color="red" title="No se pudo actualizar la referencia">
-                  {fiscalReferenceError.message}
-                </Alert>
-              )}
-              {fiscalReferences.data?.map((reference) => (
-                <Group
-                  bd="1px solid var(--mantine-color-default-border)"
-                  justify="space-between"
-                  key={reference.id}
-                  p="sm"
-                  style={{ borderRadius: 'var(--mantine-radius-sm)' }}
-                >
-                  <div>
-                    <Text fw={600}>{reference.name}</Text>
-                    <Text c="dimmed" size="sm">
-                      {reference.sourceType === 'PDF'
-                        ? 'PDF normalizado a Markdown'
-                        : 'Markdown normalizado'}
-                    </Text>
-                  </div>
-                  <ActionIcon
-                    aria-label={`Eliminar ${reference.name}`}
-                    color="red"
-                    loading={
-                      removeFiscalReference.isPending &&
-                      referenceToRemove?.id === reference.id
-                    }
-                    onClick={() => setReferenceToRemove(reference)}
-                  >
-                    <Trash2 size={16} />
-                  </ActionIcon>
-                </Group>
-              ))}
-              {!fiscalReferences.isPending &&
-                !fiscalReferences.isError &&
-                fiscalReferences.data?.length === 0 && (
-                  <Alert color="gray" title="Aún no tienes referencias">
-                    Agrega hasta tres documentos que quieras usar como contexto
-                    en análisis futuros.
-                  </Alert>
-                )}
-            </Stack>
-          </Box>
-          <Modal
-            centered
-            opened={fiscalReferenceModalOpened}
-            title={
-              <Group gap="xs">
-                <Text fw={600}>Agregar referencia fiscal</Text>
-                <ContextGuideButton
-                  title="referencias fiscales"
-                  onClick={openFiscalReferencesGuide}
-                />
-              </Group>
-            }
-            onClose={closeFiscalReferenceModal}
-          >
-            <Stack>
-              <Alert color="blue">
-                Puedes mantener hasta tres referencias globales. Aceptamos
-                Markdown, texto plano y PDF con texto seleccionable; los PDF se
-                convierten a Markdown en el servidor y no se conserva el PDF
-                original.
-              </Alert>
-              <FileInput
-                clearable
-                accept=".md,.markdown,text/markdown,text/plain,application/pdf"
-                disabled={uploadFiscalReference.isPending}
-                label={
-                  <FieldHelpLabel
-                    hint="Usa un documento que explique tu contexto fiscal. Evita claves, contraseñas y datos que no quieras enviar al análisis."
-                    label="Archivo de referencia"
-                  />
-                }
-                placeholder="Selecciona un PDF o Markdown"
-                value={fiscalReferenceFile}
-                onChange={setFiscalReferenceFile}
-              />
-              {uploadFiscalReference.isPending && (
-                <Text c="dimmed" size="sm">
-                  Convirtiendo, limpiando y guardando la referencia…
-                </Text>
-              )}
-              {uploadFiscalReference.error && (
-                <Alert color="red" title="No se pudo agregar la referencia">
-                  {uploadFiscalReference.error.message}
-                </Alert>
-              )}
-              <Group justify="flex-end">
-                <Button
-                  disabled={uploadFiscalReference.isPending}
-                  variant="default"
-                  onClick={closeFiscalReferenceModal}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  disabled={!fiscalReferenceFile}
-                  loading={uploadFiscalReference.isPending}
-                  onClick={uploadReference}
-                >
-                  Guardar referencia
-                </Button>
-              </Group>
-            </Stack>
-          </Modal>
-          <ConfModal
-            confirmColor="red"
-            confirmText="Eliminar referencia"
-            consequence="Los resultados ya generados no cambian; la referencia dejará de usarse en análisis futuros."
-            loading={removeFiscalReference.isPending}
-            opened={referenceToRemove !== null}
-            title="Eliminar referencia fiscal"
-            variant="destructive"
-            onCancel={() => setReferenceToRemove(null)}
-            onConfirm={() => {
-              if (!referenceToRemove) return
-              removeFiscalReference.mutate(
-                { id: referenceToRemove.id },
-                { onSuccess: () => setReferenceToRemove(null) },
-              )
-            }}
-          >
-            <Text>
-              Se eliminará <b>{referenceToRemove?.name}</b>. Dejará de influir
-              en análisis futuros; los resultados ya generados no se modifican.
-            </Text>
-          </ConfModal>
           <Modal
             centered
             opened={createModalOpened}

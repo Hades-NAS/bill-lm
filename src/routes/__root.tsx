@@ -61,7 +61,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         name: 'description',
         content:
-          'Bill LM - Organiza facturas XML y revísalas con tu conexión de IA y referencias fiscales autogestionadas.',
+          'Bill LM - Organiza facturas XML y revísalas con tu conexión de IA y fuentes fiscales oficiales.',
       },
       {
         name: 'keywords',
@@ -91,7 +91,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         property: 'og:description',
         content:
-          'Organiza facturas XML y revísalas con tu conexión de IA y referencias fiscales autogestionadas.',
+          'Organiza facturas XML y revísalas con tu conexión de IA y fuentes fiscales oficiales.',
       },
       {
         property: 'og:image',
@@ -120,7 +120,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         name: 'twitter:description',
         content:
-          'Organiza facturas XML y revísalas con tu conexión de IA y referencias fiscales autogestionadas.',
+          'Organiza facturas XML y revísalas con tu conexión de IA y fuentes fiscales oficiales.',
       },
       {
         name: 'twitter:image',
