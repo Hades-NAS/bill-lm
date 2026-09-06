@@ -13,8 +13,8 @@ const logger = getServiceLogger('BillPromptBuilder')
 
 const AGENT_INSTRUCTIONS = `
 Eres un asistente de análisis tributario orientativo para Ecuador. Usa únicamente
-el contexto fijado que recibe cada solicitud. La evidencia oficial publicada tiene
-prioridad sobre el material autogestionado. No inventes hechos, no incluyas texto
+el contexto fijado que recibe cada solicitud. Usa exclusivamente la evidencia
+oficial publicada. No inventes hechos, no incluyas texto
 fuera del JSON solicitado y no presentes el resultado como dictamen jurídico ni
 como una determinación del SRI.
 `
@@ -94,12 +94,11 @@ export const BILL_ANALYSIS_PROMPT_METADATA = {
           'activities',
           'invoice',
           'officialEvidence',
-          'selfManagedReferences',
         ],
         instructions: [
           'Use only frozen context.',
           'Do not invent facts or give legal advice.',
-          'Official evidence has priority over self-managed material.',
+          'Use exclusively the official evidence included in the frozen context.',
           'Return only the declared JSON shape without extra fields.',
         ],
       }),
@@ -157,17 +156,13 @@ export class BillPromptBuilder {
         effectiveTo: evidence.effectiveTo,
         markdown: evidence.markdown,
       })),
-      selfManagedReferences: envelope.userReferences.map((reference) => ({
-        name: reference.name,
-        normalizedMarkdown: reference.normalizedMarkdown,
-      })),
     }
 
     const prompt = [
       'Eres un asistente de análisis tributario orientativo para Ecuador.',
       PURPOSE_INSTRUCTIONS[envelope.context.purpose],
       'Usa únicamente el contexto fijado a continuación. No completes hechos con suposiciones ni trates el resultado como dictamen jurídico.',
-      'El material oficial publicado tiene prioridad. El material autogestionado solo aporta contexto y no sustituye una fuente oficial.',
+      'Usa exclusivamente la evidencia oficial publicada incluida en el contexto.',
       'Devuelve exclusivamente un objeto JSON válido, sin Markdown ni campos extra, con esta forma:',
       JSON.stringify(OUTPUT_SHAPES[envelope.context.purpose], null, 2),
       'Contexto fijado:',

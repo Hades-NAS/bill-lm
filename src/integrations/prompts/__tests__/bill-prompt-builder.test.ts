@@ -95,14 +95,6 @@ function createEnvelope(purpose: TaxPurpose) {
         markdown: 'Segunda evidencia oficial.',
       },
     ],
-    userReferences: [
-      {
-        id,
-        name: 'Nota del contribuyente.md',
-        normalizedMarkdown: 'Material autogestionado.',
-        contentHash: 'reference-hash',
-      },
-    ],
     invoices: [
       {
         billId: id,
@@ -138,7 +130,7 @@ describe('BillPromptBuilder', () => {
       expect(prompt).toContain(purposeInstruction)
       expect(prompt).toContain('"purpose": "' + purpose + '"')
       expect(prompt).toContain('Norma A')
-      expect(prompt).toContain('Nota del contribuyente.md')
+      expect(prompt).not.toContain('Material autogestionado')
       expect(prompt).toContain(BILL_ANALYSIS_PROMPT_METADATA.templateHash)
       expect(builder.build(envelope, id)).toBe(prompt)
     },
@@ -153,7 +145,7 @@ describe('BillPromptBuilder', () => {
     expect(prompt.indexOf('Primera evidencia oficial.')).toBeLessThan(
       prompt.indexOf('Segunda evidencia oficial.'),
     )
-    expect(prompt).toContain('material autogestionado')
+    expect(prompt).not.toContain('material autogestionado')
     expect(prompt).not.toContain('buyerIdentifier')
     expect(prompt).not.toContain('0102030405')
     expect(prompt).not.toContain('Persona privada')
