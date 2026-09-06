@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-2026-art-64-facturacion-del-impuesto-los-sujetos-pasivos-del-iva-tienen-la-obligacion",
+  "sourceId": "ec-sri-lrti-2026",
+  "articleOrSection": "Art. 64.- Facturación del impuesto.- Los sujetos pasivos del IVA tienen la obligación de emitir y entregar al adquirente del",
+  "sourcePages": [
+    62
+  ],
+  "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
+  "purposes": [
+    "vat_credit"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-06T02:05:49.487Z",
+  "reviewNotes": "Artículo 64 verificado en la LRTI vigente; aporta evidencia de comprobante y desglose de IVA, sin decidir elegibilidad.",
+  "markdown": ".- Facturación del impuesto.- Los sujetos pasivos del IVA tienen la obligación de emitir y entregar al adquirente del\tArt. 64\nbien o al beneficiario del servicio facturas, boletas o notas de venta, según el caso, por las operaciones que efectúe, en\nconformidad con el reglamento. Esta obligación regirá aun cuando la venta o prestación de servicios no se encuentren\ngravados o tengan tarifa cero. En las facturas, notas o boletas de venta deberá hacerse constar por separado el valor de las\nmercaderías transferidas o el precio de los servicios prestados y la tarifa del impuesto; y el IVA cobrado.\nEn caso de los derivados del petróleo para consumo interno y externo, Petrocomercial, las comercializadoras y los\ndistribuidores facturarán desglosando el impuesto al valor agregado IVA, del precio de venta.\nInciso segundo derogado por Ley No. 0, publicada en Registro Oficial Suplemento 180 de 10 de Febrero del 2014 .\tNota:\nCONCORDANCIAS:\nCÓDIGO TRIBUTARIO, Arts. 344, 345\nREGLAMENTO PARA APLICACIÓN LEY DE RÉGIMEN TRIBUTARIO INTERNO, LRTI, Arts. 224\nCapítulo III\nTARIFA DEL IMPUESTO Y CRÉDITO TRIBUTARIO"
+}

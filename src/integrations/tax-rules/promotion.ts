@@ -10,6 +10,7 @@ export type ReviewedSectionMetadata = {
   effectiveFrom: string
   effectiveTo: string | null
   reviewedAt: string
+  reviewNotes?: string
 }
 
 export type AmbiguousSectionResolution = ReviewedSectionMetadata & {
@@ -56,6 +57,7 @@ export function buildReviewedSections(
       reviewStatus: 'reviewed',
       reviewedBy: metadata.reviewer,
       reviewedAt: metadata.reviewedAt,
+      reviewNotes: metadata.reviewNotes,
       markdown: draft.markdown,
     }),
   )

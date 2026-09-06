@@ -26,6 +26,24 @@ describe('tax rule sectioning', () => {
     })
   })
 
+  it('splits the tabular article headings used by the SRI Lexis export', () => {
+    const sections = splitTaxRuleSource(
+      source,
+      '.- Facturación del impuesto.- Texto A\tArt. 64\n\n<!-- page 2 of 2 -->\n\n.- Crédito tributario.- Texto B\tArt. 66\n',
+    )
+
+    expect(sections).toHaveLength(2)
+    expect(sections[0]).toMatchObject({
+      id: 'ec-sri-rlrti-art-64-facturacion-del-impuesto-texto-a',
+      articleOrSection: 'Art. 64.- Facturación del impuesto.- Texto A',
+      sourcePages: [1, 2],
+    })
+    expect(sections[1]).toMatchObject({
+      id: 'ec-sri-rlrti-art-66-credito-tributario-texto-b',
+      reviewStatus: 'draft',
+    })
+  })
+
   it('marks an unrecognizable structure as ambiguous rather than inventing sections', () => {
     expect(
       splitTaxRuleSource(source, 'Texto sin encabezados utilizables'),

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-2026-art-67-declaracion-del-impuesto-los-sujetos-pasivos-del-iva-declararan-el-impues",
+  "sourceId": "ec-sri-lrti-2026",
+  "articleOrSection": "Art. 67.- Declaración del impuesto.- Los sujetos pasivos del IVA declararán el impuesto de las operaciones que realicen",
+  "sourcePages": [
+    65
+  ],
+  "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
+  "purposes": [
+    "vat_credit"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-06T02:05:50.015Z",
+  "reviewNotes": "Artículo 67 verificado en la LRTI vigente; fundamenta la periodicidad mensual del alcance sin inferir obligaciones ajenas al contexto.",
+  "markdown": ".- Declaración del impuesto.- Los sujetos pasivos del IVA declararán el impuesto de las operaciones que realicen\tArt. 67\nmensualmente dentro del mes siguiente de realizadas, salvo de aquellas por las que hayan concedido plazo de un mes o\nmás para el pago en cuyo caso podrán presentar la declaración en el mes subsiguiente de realizadas, en la forma y plazos\nque se establezcan en el reglamento.\nLos sujetos pasivos que exclusivamente transfieran bienes o presten servicios gravados con tarifa cero o no gravados, así\ncomo aquellos que estén sujetos a la retención total del IVA causado, presentarán una declaración semestral de dichas\ntransferencias, a menos que sea agente de retención de IVA.\nArtículo sustituido por Art. 123 de Decreto Legislativo No. 000, publicado en Registro Oficial Suplemento 242 de 29\tNota:\nde Diciembre del 2007 .\nCONCORDANCIAS:\nCÓDIGO CIVIL (TÍTULO PRELIMINAR), Arts. 33, 35\nCÓDIGO TRIBUTARIO, Arts. 12\nREGLAMENTO PARA APLICACIÓN LEY DE RÉGIMEN TRIBUTARIO INTERNO, LRTI, Arts. 158, 159"
+}

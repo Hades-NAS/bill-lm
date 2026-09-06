@@ -44,6 +44,22 @@ describe('buildReviewedSections', () => {
     ).toBe(true)
   })
 
+  it('preserves an audit rationale when promoting a normal draft', () => {
+    const [reviewed] = buildReviewedSections(
+      [draft('ec-sri-lrti-art-64')],
+      {
+        ...metadata,
+        reviewNotes:
+          'El texto fue contrastado con la fuente oficial y se limita a evidencia para IVA.',
+      },
+      new Set(),
+    )
+
+    expect(reviewed.reviewNotes).toBe(
+      'El texto fue contrastado con la fuente oficial y se limita a evidencia para IVA.',
+    )
+  })
+
   it('rejects the complete batch before writing when a section is ambiguous or already reviewed', () => {
     expect(() =>
       buildReviewedSections(

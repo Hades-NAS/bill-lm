@@ -543,7 +543,8 @@ async function runPromote() {
     throw new TaxRuleCommandError(
       'La promoción masiva exige --source <id> para no mezclar criterios de fuentes distintas.',
     )
-  const metadata = reviewedMetadata()
+  const rationale = option('--rationale') ? rationaleOption() : undefined
+  const metadata = { ...reviewedMetadata(), reviewNotes: rationale }
   const drafts = bulk
     ? await loadDrafts(sourceId!)
     : (

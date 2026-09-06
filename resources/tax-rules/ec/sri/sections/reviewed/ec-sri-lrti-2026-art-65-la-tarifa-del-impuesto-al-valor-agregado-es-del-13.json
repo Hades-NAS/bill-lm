@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-2026-art-65-la-tarifa-del-impuesto-al-valor-agregado-es-del-13",
+  "sourceId": "ec-sri-lrti-2026",
+  "articleOrSection": "Art. 65.- La tarifa del impuesto al valor agregado es del \"13%\".",
+  "sourcePages": [
+    62,
+    63
+  ],
+  "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
+  "purposes": [
+    "vat_credit"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-06T02:05:49.659Z",
+  "reviewNotes": "Artículo 65 verificado en la LRTI vigente; conserva tarifa y excepciones como contexto, nunca como decisión automática.",
+  "markdown": ".- La tarifa del impuesto al valor agregado es del \"13%\".\tArt. 65\nCon base en las condiciones de las finanzas públicas y de balanzas de pago, el Presidente de la República podrá modificar\nla tarifa general del Impuesto al Valor Agregado, previo dictamen favorable del ente rector de las finanzas públicas. En\nningún caso la tarifa podrá ser inferior al 13% ni mayor al 15%, salvo las excepciones previstas en esta ley.\nArtículo sustituido por Disposición Reformatoria Primera numeral 2 de Ley No. 0, publicada en Registro Oficial\tNota:\nSuplemento 516 de 12 de Marzo del 2024 .\n\n<!-- page 63 of 104 -->\n\nPor Disposición del Decreto Ejecutivo No. 198, publicado en Registro Oficial Suplemento 520 de 18 de Marzo del\tNota:\n2024 , (primer suplemento) modifica la tarifa general del Impuesto al Valor Agregado - IVA, del 13% al 15%, para el año\n2024, a partir del 01 de abril de 2024.\nPor Disposición del Decreto Ejecutivo No. 470, publicado en Registro Oficial Suplemento 700 de 10 de Diciembre del\tNota:\n2024 , (cuarto suplemento), se mantiene la modificación de la tarifa general del Impuesto al Valor Agregado - IVA, del 13%\nal 15% para el año 2025.\n.- Previo dictamen favorable del Ministerio de Economía y Finanzas, el Presidente de la República del Ecuador,\tArt. (...)\nmediante decreto ejecutivo, podrá reducir al 8% la tarifa general del Impuesto al Valor Agregado para la prestación de los\nservicios definidos como actividades turísticas de conformidad con el artículo 5 de la Ley de Turismo durante los feriados\nnacionales o locales, y los días sábado y domingo que los preceden o siguen.\nLa reducción de la tarifa aplicará a las prestaciones de servicios cuyo hecho generador ocurra en las fechas que detalle el\ndecreto ejecutivo.\nArtículo agregado por artículo 13 de Ley No. 0, publicada en Registro Oficial Suplemento 525 de 25 de Marzo del\tNota:\n2024 .\nInciso primero reformado por Disposición Reformatoria segunda de Ley No. 0, publicada en Registro Oficial\tNota:\nSuplemento 80 de 14 de julio del 2025 , (cuarto suplemento)."
+}

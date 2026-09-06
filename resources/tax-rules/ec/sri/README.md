@@ -233,13 +233,18 @@ Después de revisar una sección, crea una copia revisada versionable. Debes
 indicar quién la revisó, propósito, régimen y vigencia; el comando no infiere
 estos datos desde el PDF.
 
+Cuando la promoción representa una decisión de alcance, agrega
+`--rationale`. La justificación se almacena como nota de revisión junto al
+artefacto y facilita auditoría posterior.
+
 ```bash
 bun run rules:sri:promote \
   --section ec-sri-lrti-art-10 \
   --reviewer "Nombre responsable" \
   --purpose business_income_tax \
   --tax-regime general \
-  --effective-from 2026-01-01
+  --effective-from 2026-01-01 \
+  --rationale "Expliqué el alcance tributario confirmado y los límites de esta sección."
 ```
 
 Puedes indicar `--effective-to YYYY-MM-DD` cuando corresponda. El comando
@@ -268,7 +273,7 @@ promovida, no crea ninguna revisión del lote.
 
 #### Estado revisado de las fuentes y comandos posibles
 
-La revisión de los originales descargados muestra que las cinco fuentes no
+La revisión de los originales descargados muestra que las seis fuentes no
 tienen un único propósito y régimen aplicable. El comando `promote --all`
 sirve solo cuando todas las secciones de una fuente comparten la misma
 selección. No ocurre con LRTI ni con su reglamento, que cubren IR e IVA.
@@ -276,6 +281,7 @@ selección. No ocurre con LRTI ni con su reglamento, que cubren IR e IVA.
 | Fuente                           | Alcance constatado                                                        | Estado actual                                                                                  | Acción correcta                                                                                                                                     |
 | -------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ec-sri-lrti`                    | Ley primaria de IR e IVA                                                  | Sus 175 secciones ya se promovieron como `business_income_tax` / `general` desde `2026-01-01`. | No ejecutes `promote` otra vez. Esa publicación no cubre IVA ni gastos personales; requiere una revisión por secciones antes de crear otro ruleset. |
+| `ec-sri-lrti-2026`               | Copia vigente de LRTI para IVA general mensual                            | Arts. 64, 65, 66, 67 y 69 curados como `vat_credit` / `general`; bundle v3 activo desde `2026-01-01`. | No vuelvas a promover esos IDs. Revisa una fuente nueva si el SRI modifica la LRTI o si amplías cobertura. |
 | `ec-sri-rlrti`                   | Reglamento de IR e IVA; el PDF descargado indica reforma al `2026-05-22`. | 332 borradores y 10 secciones `ambiguous`.                                                     | Revisa y divide primero las secciones ambiguas; después clasifica por sección para IR o IVA.                                                        |
 | `ec-sri-ir-natural-person-guide` | Declaración de IR de personas naturales.                                  | Una sección `ambiguous`.                                                                       | Divide y revisa la guía antes de asignarla a `personal_expenses` u otro propósito.                                                                  |
 | `ec-sri-ir-rimpe-guide`          | Declaración de IR RIMPE para Negocios Populares y Emprendedores.          | Una sección `ambiguous`.                                                                       | Divide y revisa; necesita cobertura para `rimpe_popular_business` y `rimpe_entrepreneur`, no una sola selección.                                    |
@@ -286,6 +292,13 @@ Usa estas recetas para volver a descargar y preparar cada fuente. Puedes usar
 de una receta.
 
 ```bash
+# LRTI vigente usada por IVA general mensual 2026
+bun run rules:sri:check --source ec-sri-lrti-2026
+bun run rules:sri:fetch --source ec-sri-lrti-2026
+bun run rules:sri:extract --source ec-sri-lrti-2026
+bun run rules:sri:split --source ec-sri-lrti-2026
+bun run rules:sri:diff --source ec-sri-lrti-2026
+
 # LRTI
 bun run rules:sri:check --source ec-sri-lrti
 bun run rules:sri:fetch --source ec-sri-lrti
@@ -425,6 +438,36 @@ bun run rules:sri:activate:db \
   --vat-filing-frequency monthly \
   --apply
 ```
+
+### Publicación actual: IVA general mensual 2026
+
+El bundle `ec-sri-2026.3` ya fue sincronizado y activado para
+`vat_credit + general + monthly` en la base indicada por `.env`. Tiene cinco
+fragmentos de `ec-sri-lrti-2026` y vigencia desde `2026-01-01`.
+
+No ejecutes los siguientes comandos contra esa misma base salvo que hayas
+creado una versión nueva del bundle. Son la receta exacta de publicación para
+un entorno vacío o autorizado:
+
+```bash
+bun run rules:sri:sync:db \
+  --version 3 \
+  --purpose vat_credit \
+  --tax-regime general \
+  --vat-filing-frequency monthly \
+  --apply
+
+bun run rules:sri:activate:db \
+  --version 3 \
+  --purpose vat_credit \
+  --tax-regime general \
+  --vat-filing-frequency monthly \
+  --apply
+```
+
+El contexto de la colección debe abarcar 2026 para seleccionar este ruleset.
+Un contexto de 2025 se mantiene bloqueado deliberadamente: la versión no se
+aplica de forma retroactiva.
 
 Sin `--apply` solo informa cuál ruleset se activaría. Con `--apply` activa esa
 versión y retira el ruleset activo anterior de la misma selección. No modifica

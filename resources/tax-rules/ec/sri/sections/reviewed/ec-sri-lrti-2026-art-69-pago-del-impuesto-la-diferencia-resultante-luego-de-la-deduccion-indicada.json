@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1",
+  "id": "ec-sri-lrti-2026-art-69-pago-del-impuesto-la-diferencia-resultante-luego-de-la-deduccion-indicada",
+  "sourceId": "ec-sri-lrti-2026",
+  "articleOrSection": "Art. 69.- Pago del impuesto.- La diferencia resultante, luego de la deducción indicada en el artículo anterior, constituye el",
+  "sourcePages": [
+    65
+  ],
+  "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
+  "purposes": [
+    "vat_credit"
+  ],
+  "taxRegimes": [
+    "general"
+  ],
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": null,
+  "reviewStatus": "reviewed",
+  "reviewedBy": "Enmanuel Magallanes",
+  "reviewedAt": "2026-09-06T02:05:50.192Z",
+  "reviewNotes": "Artículo 69 verificado en la LRTI vigente; se usa solo como contexto para saldo y arrastre, no para concluir por una factura.",
+  "markdown": ".- Pago del impuesto.- La diferencia resultante, luego de la deducción indicada en el artículo anterior, constituye el\tArt. 69\nvalor que debe ser pagado en los mismos plazos previstos para la presentación de la declaración.\nSi la declaración arrojare saldo a favor del sujeto pasivo, dicho saldo será considerado crédito tributario, que se hará\nefectivo en la declaración del mes siguiente.\nLos valores así obtenidos se afectarán con las retenciones practicadas al sujeto pasivo y el crédito tributario del mes\nanterior si lo hubiere.\nCuando por cualquier circunstancia evidente se presuma que el crédito tributario resultante no podrá ser compensado con\nel IVA causado dentro de los seis meses inmediatos siguientes, el sujeto pasivo podrá solicitar al Director Regional o\nProvincial del Servicio de Rentas Internas la devolución o la compensación del crédito tributario originado por retenciones\nque le hayan sido practicadas hasta dentro de cinco años contados desde la fecha de pago. La devolución o compensación\nde los saldos del IVA a favor del contribuyente no constituyen pagos indebidos y, consiguientemente, no causarán intereses.\nArtículo reformado por Art. 124 de Decreto Legislativo No. 000, publicado en Registro Oficial Suplemento 242 de 29\tNota:\nde Diciembre del 2007 .\nInciso cuarto reformado por artículo 35, numeral 16 de Ley No. 0, publicada en Registro Oficial Suplemento 309 de\tNota:\n21 de Agosto del 2018 .\nCONCORDANCIAS:\nCÓDIGO TRIBUTARIO, Arts. 22, 43, 51, 52\nCÓDIGO CIVIL (LIBRO IV), Arts. 1679\nREGLAMENTO PARA APLICACIÓN LEY DE RÉGIMEN TRIBUTARIO INTERNO, LRTI, Arts. 70, 72"
+}

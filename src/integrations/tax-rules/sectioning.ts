@@ -3,8 +3,11 @@ import { createHash } from 'node:crypto'
 import type { DraftTaxRuleSection, ReviewedTaxRuleSection } from './contracts'
 
 const PAGE_MARKER = /^<!-- page (\d+) of \d+ -->$/m
+// Sources published by the SRI use both conventional headings ("Art. 10.- …")
+// and a Lexis export layout where the article number appears after the title
+// in a tab-separated column (".- …\tArt. 10").
 const ARTICLE_HEADING =
-  /^(Art(?:ículo)?\.?\s*\d+[A-Za-z.-]*\s*(?:[-–—:.]|$).*)$/im
+  /^(?:(Art(?:ículo)?\.?\s*\d+[A-Za-z.-]*\s*(?:[-–—:.]|$).*)|(.+?)\tArt\.\s*(\d+(?:\.\d+)?[A-Za-z.-]*)\s*)$/im
 
 type SplitSource = {
   id: string
@@ -56,6 +59,16 @@ function headingMatches(
   return [...markdown.matchAll(new RegExp(matcher, 'gim'))]
 }
 
+function articleHeading(match: RegExpMatchArray) {
+  if (match[1]) return match[1].trim()
+
+  const title = match[2]?.trim().replace(/^[-–—:.\s]+/, '')
+  const article = match[3]?.trim()
+  return title && article
+    ? `Art. ${article}.- ${title}`
+    : 'Sección sin título'
+}
+
 function ambiguousSection(
   source: SplitSource,
   markdown: string,
@@ -95,7 +108,7 @@ export function splitTaxRuleSource(
   const sections = matches.map((match, index) => {
     const start = match.index ?? 0
     const end = matches[index + 1]?.index ?? markdown.length
-    const articleOrSection = match[1]?.trim() ?? 'Sección sin título'
+    const articleOrSection = articleHeading(match)
     return {
       schemaVersion: '1' as const,
       id: `${source.id}-${slugify(articleOrSection)}`,
