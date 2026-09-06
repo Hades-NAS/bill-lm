@@ -26,7 +26,6 @@ describe('BillDetail canonical result notice', () => {
             articleOrSection: 'Art. 1',
           },
         ],
-        user: [],
       },
       missingEvidence: ['Soporte'],
       createdAt: '2026-09-05T00:00:00.000Z',

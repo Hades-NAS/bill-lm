@@ -171,11 +171,6 @@ function ResultReferences({ result }: { result: AvailableHistoryResult }) {
         )}
         title="Normativa oficial"
       />
-      <DetailList
-        emptyCopy="No se usaron referencias adicionales."
-        items={result.references.user.map(({ name }) => name)}
-        title="Referencias aportadas"
-      />
     </Stack>
   )
 }

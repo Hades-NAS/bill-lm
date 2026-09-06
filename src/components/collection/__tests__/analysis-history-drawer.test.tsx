@@ -63,7 +63,6 @@ function createAvailableResult(
       'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
     references: {
       official: [{ articleOrSection: 'Art. 45' }],
-      user: [{ name: 'Guía de respaldo' }],
     },
   }
 
