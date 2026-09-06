@@ -39,10 +39,33 @@ describe('selectApplicableTaxRuleSet', () => {
       taxRegime: 'general' as const,
       vatFilingFrequency: 'monthly' as const,
     }
-    expect(selectApplicableTaxRuleSet(selector, [
-      { id: 'b', version: 2, ...selector, effectiveFrom: '2026-01-01', effectiveTo: null, reviewStatus: 'active' },
-      { id: 'a', version: 2, ...selector, effectiveFrom: '2026-01-01', effectiveTo: null, reviewStatus: 'active' },
-      { id: 'newer', version: 3, ...selector, effectiveFrom: '2026-01-01', effectiveTo: null, reviewStatus: 'active' },
-    ])?.id).toBe('newer')
+    expect(
+      selectApplicableTaxRuleSet(selector, [
+        {
+          id: 'b',
+          version: 2,
+          ...selector,
+          effectiveFrom: '2026-01-01',
+          effectiveTo: null,
+          reviewStatus: 'active',
+        },
+        {
+          id: 'a',
+          version: 2,
+          ...selector,
+          effectiveFrom: '2026-01-01',
+          effectiveTo: null,
+          reviewStatus: 'active',
+        },
+        {
+          id: 'newer',
+          version: 3,
+          ...selector,
+          effectiveFrom: '2026-01-01',
+          effectiveTo: null,
+          reviewStatus: 'active',
+        },
+      ])?.id,
+    ).toBe('newer')
   })
 })

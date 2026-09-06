@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-54-transferencias-que-no-son-objeto-del-impuesto-no-se-causara-el-iva-en-los",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 54.- Transferencias que no son objeto del impuesto.- No se causará el IVA en los siguientes",
-  "sourcePages": [
-    61,
-    62
-  ],
+  "sourcePages": [61, 62],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

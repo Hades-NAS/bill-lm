@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-27-1-ingresos-de-actividades-agropecuarias-los-ingresos-provenientes-de-acti",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 27.1.- Ingresos de actividades agropecuarias.- Los ingresos provenientes de actividades",
-  "sourcePages": [
-    37,
-    38
-  ],
+  "sourcePages": [37, 38],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

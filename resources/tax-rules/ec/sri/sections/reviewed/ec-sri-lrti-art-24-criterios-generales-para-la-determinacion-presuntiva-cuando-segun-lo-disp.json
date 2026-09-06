@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-24-criterios-generales-para-la-determinacion-presuntiva-cuando-segun-lo-disp",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 24.- Criterios generales para la determinación presuntiva.- Cuando, según lo dispuesto en el",
-  "sourcePages": [
-    35
-  ],
+  "sourcePages": [35],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

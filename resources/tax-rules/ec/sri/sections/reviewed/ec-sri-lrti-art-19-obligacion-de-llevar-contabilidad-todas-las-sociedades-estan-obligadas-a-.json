@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-19-obligacion-de-llevar-contabilidad-todas-las-sociedades-estan-obligadas-a-",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 19.- Obligación de llevar contabilidad.- Todas las sociedades están obligadas a llevar",
-  "sourcePages": [
-    31,
-    32
-  ],
+  "sourcePages": [31, 32],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

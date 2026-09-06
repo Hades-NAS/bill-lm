@@ -19,7 +19,9 @@ export class AnalyzeBillsUseCase {
     if (!runId)
       throw new Error('El trabajo no tiene una ejecución de análisis asociada.')
 
-    return createBillAnalysisService({ provider: this.provider }).analyzePreparedBills(
+    return createBillAnalysisService({
+      provider: this.provider,
+    }).analyzePreparedBills(
       bills,
       jobData,
       { jobId: jobData.jobId, preset },
@@ -29,6 +31,8 @@ export class AnalyzeBillsUseCase {
   }
 }
 
-export function createAnalyzeBillsUseCase(provider: ILLMProvider): AnalyzeBillsUseCase {
+export function createAnalyzeBillsUseCase(
+  provider: ILLMProvider,
+): AnalyzeBillsUseCase {
   return new AnalyzeBillsUseCase(provider)
 }

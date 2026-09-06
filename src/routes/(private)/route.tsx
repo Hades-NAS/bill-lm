@@ -27,7 +27,6 @@ import {
 import { useIsMobile } from '#/utils/mobile'
 
 import { useUserAuth } from '#/hooks/auth'
-import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
 
 import { NavbarJobsIndicator } from '#/components/navbar-jobs-indicator'
 import NavbarThemeIcon from '#/components/navbar-theme-icon'
@@ -38,7 +37,6 @@ export const Route = createFileRoute('/(private)')({
 
 function RouteComponent() {
   const { isLoaded, isSignedIn, isEmailVerified } = useUserAuth()
-  useJobsSubscriptionManager()
   // const [mobileOpened, { toggle: toggleMobile }] = useDisclosure()
   // const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(false)
 

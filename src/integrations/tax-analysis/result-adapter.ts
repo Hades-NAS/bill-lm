@@ -67,7 +67,9 @@ function assertActivityReferencesBelongToEnvelope(
   if (payload.purpose === 'personal_expenses') return
   const allowed = new Set(allowedActivityRevisionIds)
   if (
-    payload.relatedActivityRevisionIds.some((revisionId) => !allowed.has(revisionId))
+    payload.relatedActivityRevisionIds.some(
+      (revisionId) => !allowed.has(revisionId),
+    )
   )
     throw new TaxAnalysisResultValidationError(
       'El proveedor relacionó una actividad que no forma parte del contexto fijado.',

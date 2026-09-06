@@ -25,7 +25,11 @@ const now = new Date('2026-09-05T12:00:00.000Z')
 const envelope = {
   schemaVersion: 'v2' as const,
   envelopeVersion: '1' as const,
-  prompt: { templateId: 'bill-analysis' as const, templateVersion: '2' as const, templateHash: hash },
+  prompt: {
+    templateId: 'bill-analysis' as const,
+    templateVersion: '2' as const,
+    templateHash: hash,
+  },
   context: {
     collectionContextRevisionId: CONTEXT_ID,
     revision: 2,
@@ -43,39 +47,63 @@ const envelope = {
     additionalFacts: 'additional private facts',
   },
   activities: [],
-  provider: { id: CONNECTION_ID, provider: 'OPENAI' as const, modelId: 'gpt-4o-mini' },
-  ruleset: { id: RULESET_FRAGMENT_ID, version: 1, contentHash: hash, effectiveFrom: '2026-01-01', effectiveTo: null },
-  officialEvidence: [{
-    ruleSetFragmentId: RULESET_FRAGMENT_ID,
-    fragmentId: FRAGMENT_ID,
-    fragmentContentHash: hash,
-    source: { id: SOURCE_ID, title: 'Resolución de prueba', issuer: 'SRI', officialUrl: 'https://www.sri.gob.ec/', contentHash: hash },
-    articleOrSection: 'Art. 1',
-    purposes: ['personal_expenses'],
-    taxRegimes: ['unknown'],
+  provider: {
+    id: CONNECTION_ID,
+    provider: 'OPENAI' as const,
+    modelId: 'gpt-4o-mini',
+  },
+  ruleset: {
+    id: RULESET_FRAGMENT_ID,
+    version: 1,
+    contentHash: hash,
     effectiveFrom: '2026-01-01',
     effectiveTo: null,
-    markdown: 'official markdown that must remain private',
-  }],
-  userReferences: [{
-    id: REFERENCE_ID,
-    name: 'Referencia privada',
-    normalizedMarkdown: 'private user reference markdown',
-    contentHash: hash,
-  }],
-  invoices: [{
-    billId: INVOICE_ID,
-    contentHash: hash,
-    parserVersion: 'xml-v1' as const,
-    normalized: {
-      vendorName: 'Proveedor',
-      buyerIdentifier: '1314708916',
-      buyerName: 'Nombre privado',
-      details: [{ description: 'Detalle privado', quantity: 1, unitPrice: 10 }],
-      totals: { amount: 11.5, net: 10, taxes: 1.5 },
-      billType: 'PERSONAL' as const,
+  },
+  officialEvidence: [
+    {
+      ruleSetFragmentId: RULESET_FRAGMENT_ID,
+      fragmentId: FRAGMENT_ID,
+      fragmentContentHash: hash,
+      source: {
+        id: SOURCE_ID,
+        title: 'Resolución de prueba',
+        issuer: 'SRI',
+        officialUrl: 'https://www.sri.gob.ec/',
+        contentHash: hash,
+      },
+      articleOrSection: 'Art. 1',
+      purposes: ['personal_expenses'],
+      taxRegimes: ['unknown'],
+      effectiveFrom: '2026-01-01',
+      effectiveTo: null,
+      markdown: 'official markdown that must remain private',
     },
-  }],
+  ],
+  userReferences: [
+    {
+      id: REFERENCE_ID,
+      name: 'Referencia privada',
+      normalizedMarkdown: 'private user reference markdown',
+      contentHash: hash,
+    },
+  ],
+  invoices: [
+    {
+      billId: INVOICE_ID,
+      contentHash: hash,
+      parserVersion: 'xml-v1' as const,
+      normalized: {
+        vendorName: 'Proveedor',
+        buyerIdentifier: '1314708916',
+        buyerName: 'Nombre privado',
+        details: [
+          { description: 'Detalle privado', quantity: 1, unitPrice: 10 },
+        ],
+        totals: { amount: 11.5, net: 10, taxes: 1.5 },
+        billType: 'PERSONAL' as const,
+      },
+    },
+  ],
 }
 
 const result = normalizeTaxAnalysisResult({
@@ -93,7 +121,15 @@ const result = normalizeTaxAnalysisResult({
   invoiceId: INVOICE_ID,
   allowedActivityRevisionIds: [ACTIVITY_ID],
   references: {
-    official: [{ sourceId: SOURCE_ID, sourceContentHash: hash, fragmentId: FRAGMENT_ID, fragmentContentHash: hash, articleOrSection: 'Art. 1' }],
+    official: [
+      {
+        sourceId: SOURCE_ID,
+        sourceContentHash: hash,
+        fragmentId: FRAGMENT_ID,
+        fragmentContentHash: hash,
+        articleOrSection: 'Art. 1',
+      },
+    ],
     user: [],
   },
   createdAt: now,
@@ -111,13 +147,15 @@ const row = {
   createdAt: now,
   completedAt: now,
   _count: { invoices: 1 },
-  results: [{
-    billId: INVOICE_ID,
-    purpose: 'personal_expenses',
-    classification: 'eligible',
-    resultSnapshot: { ...result, createdAt: result.createdAt.toISOString() },
-    createdAt: now,
-  }],
+  results: [
+    {
+      billId: INVOICE_ID,
+      purpose: 'personal_expenses',
+      classification: 'eligible',
+      resultSnapshot: { ...result, createdAt: result.createdAt.toISOString() },
+      createdAt: now,
+    },
+  ],
 }
 
 describe('analysis run history projection', () => {
@@ -125,7 +163,10 @@ describe('analysis run history projection', () => {
     const detail = projectAnalysisRunDetail(row)
     expect(detail.results[0]).toMatchObject({
       status: 'available',
-      result: { purpose: 'personal_expenses', personalExpenseCategory: 'Salud' },
+      result: {
+        purpose: 'personal_expenses',
+        personalExpenseCategory: 'Salud',
+      },
     })
     expect(detail.frozenContext).toMatchObject({
       status: 'available',
@@ -166,7 +207,11 @@ describe('analysis run history projection', () => {
       ...row,
       status: 'blocked',
       blockCode: 'MISSING_APPLICABLE_RULESET',
-      inputSnapshot: { schemaVersion: 'v2', blockCode: 'MISSING_APPLICABLE_RULESET', secret: 'never return this' },
+      inputSnapshot: {
+        schemaVersion: 'v2',
+        blockCode: 'MISSING_APPLICABLE_RULESET',
+        secret: 'never return this',
+      },
       results: [],
     })
     expect(detail.frozenContext).toEqual({
@@ -179,7 +224,10 @@ describe('analysis run history projection', () => {
 
 describe('analysis history router boundaries', () => {
   const router = readFileSync(
-    resolve(process.cwd(), 'src/integrations/trpc/procedures/collections/index.ts'),
+    resolve(
+      process.cwd(),
+      'src/integrations/trpc/procedures/collections/index.ts',
+    ),
     'utf8',
   )
 
@@ -192,7 +240,9 @@ describe('analysis history router boundaries', () => {
 
   it('orders pages and result rows deterministically without returning raw snapshots', () => {
     expect(router).toContain("orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]")
-    expect(router).toContain("orderBy: [{ createdAt: 'asc' }, { billId: 'asc' }]")
+    expect(router).toContain(
+      "orderBy: [{ createdAt: 'asc' }, { billId: 'asc' }]",
+    )
     expect(router).toContain('projectAnalysisRunHistoryItem')
     expect(router).toContain('projectAnalysisRunDetail')
   })

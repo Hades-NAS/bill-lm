@@ -38,7 +38,8 @@ function parseResultSnapshot(snapshot: unknown) {
     return TaxAnalysisResultSchema.safeParse(snapshot)
 
   const result = { ...snapshot } as Record<string, unknown>
-  if (typeof result.createdAt === 'string') result.createdAt = new Date(result.createdAt)
+  if (typeof result.createdAt === 'string')
+    result.createdAt = new Date(result.createdAt)
   return TaxAnalysisResultSchema.safeParse(result)
 }
 
@@ -201,7 +202,8 @@ export function projectAnalysisRunHistoryItem(row: AnalysisRunHistoryRow) {
     completedAt: row.completedAt,
     invoiceCount: row._count?.invoices ?? 0,
     snapshotStatus: context.status,
-    executionMode: context.status === 'available' ? context.execution.mode : null,
+    executionMode:
+      context.status === 'available' ? context.execution.mode : null,
     purpose: context.status === 'available' ? context.context.purpose : null,
     period: context.status === 'available' ? context.context.period : null,
     results: row.results.map(projectResult),

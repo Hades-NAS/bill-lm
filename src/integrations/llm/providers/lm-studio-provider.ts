@@ -69,11 +69,12 @@ export class LMStudioProvider implements ILLMProvider {
 
   async loadModel(): Promise<void> {
     const response = await withRetry(
-      () => LMStudio.loadModel({
-        model: this.config.modelId,
-        context_length: 8192,
-        flash_attention: true,
-      }),
+      () =>
+        LMStudio.loadModel({
+          model: this.config.modelId,
+          context_length: 8192,
+          flash_attention: true,
+        }),
       { maxRetries: 2, backoff: 'exponential' },
       `Load model ${this.config.modelId}`,
     )

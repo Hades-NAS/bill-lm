@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-116-tasa-por-sistemas-de-marcacion-el-servicio-de-rentas-internas-podra-esta",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 116.- Tasa por sistemas de marcación.- El Servicio de Rentas Internas podrá establecer,",
-  "sourcePages": [
-    113
-  ],
+  "sourcePages": [113],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

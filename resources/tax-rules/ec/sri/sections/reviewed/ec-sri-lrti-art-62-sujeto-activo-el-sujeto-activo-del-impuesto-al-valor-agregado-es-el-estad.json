@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-62-sujeto-activo-el-sujeto-activo-del-impuesto-al-valor-agregado-es-el-estad",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 62.- Sujeto activo.- El sujeto activo del impuesto al valor agregado es el Estado. Lo administrará",
-  "sourcePages": [
-    70
-  ],
+  "sourcePages": [70],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

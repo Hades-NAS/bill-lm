@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-97-7-credito-tributario-credito-tributario-el-iva-pagado-por-los-contribuyen",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 97.7.- Crédito Tributario.- Crédito Tributario.- El IVA pagado por los contribuyentes del Régimen",
-  "sourcePages": [
-    99
-  ],
+  "sourcePages": [99],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

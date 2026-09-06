@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-27-impuesto-a-la-renta-unico-para-las-actividades-del-sector-bananero-los-in",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 27.- Impuesto a la Renta Unico para las actividades del Sector Bananero.- Los ingresos",
-  "sourcePages": [
-    36,
-    37
-  ],
+  "sourcePages": [36, 37],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-4-remision-de-intereses-multas-y-recargos-se-dispone-la-remision-del-100-de-",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 4.- Remisión de intereses multas y recargos. Se dispone la remisión del 100% de intereses,",
-  "sourcePages": [
-    118
-  ],
+  "sourcePages": [118],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

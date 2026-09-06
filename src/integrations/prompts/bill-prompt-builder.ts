@@ -85,9 +85,15 @@ export const BILL_ANALYSIS_PROMPT_METADATA = {
         purposeInstructions: PURPOSE_INSTRUCTIONS,
         outputShapes: OUTPUT_SHAPES,
         inputProjection: [
-          'schemaVersion', 'purpose', 'period', 'contextNotes',
-          'taxpayerProfile', 'activities', 'invoice',
-          'officialEvidence', 'selfManagedReferences',
+          'schemaVersion',
+          'purpose',
+          'period',
+          'contextNotes',
+          'taxpayerProfile',
+          'activities',
+          'invoice',
+          'officialEvidence',
+          'selfManagedReferences',
         ],
         instructions: [
           'Use only frozen context.',
@@ -106,7 +112,9 @@ export class BillPromptBuilder {
   build(envelope: AnalysisExecutionEnvelope, billId: string): string {
     const invoice = envelope.invoices.find((entry) => entry.billId === billId)
     if (!invoice)
-      throw new Error('La factura solicitada no forma parte del contexto fijado.')
+      throw new Error(
+        'La factura solicitada no forma parte del contexto fijado.',
+      )
 
     const analysisInput = {
       schemaVersion: TAX_ANALYSIS_SCHEMA_VERSION,

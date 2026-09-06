@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-9-1-exoneracion-de-pago-del-impuesto-a-la-renta-para-el-desarrollo-de-invers",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 9.1.- Exoneración de pago del Impuesto a la Renta para el desarrollo de inversiones nuevas y",
-  "sourcePages": [
-    12,
-    13
-  ],
+  "sourcePages": [12, 13],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

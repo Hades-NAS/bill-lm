@@ -349,9 +349,11 @@ export type AnalysisOfficialEvidence = z.infer<
 export const AnalysisExecutionEnvelopeSchema = z.object({
   schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
   envelopeVersion: z.literal('1'),
-  execution: z.object({
-    mode: z.enum(['real', 'smoke']),
-  }).default({ mode: 'real' }),
+  execution: z
+    .object({
+      mode: z.enum(['real', 'smoke']),
+    })
+    .default({ mode: 'real' }),
   prompt: z.object({
     templateId: z.literal('bill-analysis'),
     templateVersion: z.literal('2'),
@@ -373,17 +375,19 @@ export const AnalysisExecutionEnvelopeSchema = z.object({
     vatFilingFrequency: VatFilingFrequencySchema,
     additionalFacts: z.string().nullable(),
   }),
-  activities: z.array(z.object({
-    revisionId: IdSchema,
-    revision: z.number().int().positive(),
-    displayName: z.string().min(1),
-    registeredActivityCode: z.string().nullable(),
-    registeredActivityName: z.string().min(1),
-    activityDescription: z.string().min(1),
-    necessaryPurchases: z.string().nullable(),
-    revenueVatTreatment: RevenueVatTreatmentSchema,
-    additionalFacts: z.string().nullable(),
-  })),
+  activities: z.array(
+    z.object({
+      revisionId: IdSchema,
+      revision: z.number().int().positive(),
+      displayName: z.string().min(1),
+      registeredActivityCode: z.string().nullable(),
+      registeredActivityName: z.string().min(1),
+      activityDescription: z.string().min(1),
+      necessaryPurchases: z.string().nullable(),
+      revenueVatTreatment: RevenueVatTreatmentSchema,
+      additionalFacts: z.string().nullable(),
+    }),
+  ),
   provider: z.object({
     id: IdSchema,
     provider: z.enum(['OPENAI', 'CLAUDE']),
@@ -397,18 +401,24 @@ export const AnalysisExecutionEnvelopeSchema = z.object({
     effectiveTo: CivilDateSchema.nullable(),
   }),
   officialEvidence: z.array(AnalysisOfficialEvidenceSchema).min(1),
-  userReferences: z.array(z.object({
-    id: IdSchema,
-    name: z.string().min(1),
-    normalizedMarkdown: z.string().min(1),
-    contentHash: z.string().min(1),
-  })),
-  invoices: z.array(z.object({
-    billId: IdSchema,
-    contentHash: SnapshotHashSchema,
-    parserVersion: z.literal('xml-v1'),
-    normalized: ParsedBillSchema,
-  })).min(1),
+  userReferences: z.array(
+    z.object({
+      id: IdSchema,
+      name: z.string().min(1),
+      normalizedMarkdown: z.string().min(1),
+      contentHash: z.string().min(1),
+    }),
+  ),
+  invoices: z
+    .array(
+      z.object({
+        billId: IdSchema,
+        contentHash: SnapshotHashSchema,
+        parserVersion: z.literal('xml-v1'),
+        normalized: ParsedBillSchema,
+      }),
+    )
+    .min(1),
 })
 export type AnalysisExecutionEnvelope = z.infer<
   typeof AnalysisExecutionEnvelopeSchema
@@ -421,7 +431,9 @@ export const AnalysisRunInputSnapshotSchema = z.union([
     blockCode: z.string().min(1),
   }),
 ])
-export type AnalysisRunInputSnapshot = z.infer<typeof AnalysisRunInputSnapshotSchema>
+export type AnalysisRunInputSnapshot = z.infer<
+  typeof AnalysisRunInputSnapshotSchema
+>
 
 export const AnalysisRunStatusSchema = z.enum([
   'queued',
@@ -487,18 +499,24 @@ const TaxAnalysisResultBaseSchema = z.object({
     'Resultado orientativo; no constituye un dictamen jurídico ni una determinación del SRI.',
   ),
   references: z.object({
-    official: z.array(z.object({
-      sourceId: IdSchema,
-      sourceContentHash: z.string().min(1),
-      fragmentId: IdSchema,
-      fragmentContentHash: z.string().min(1),
-      articleOrSection: z.string().min(1),
-    })).min(1),
-    user: z.array(z.object({
-      id: IdSchema,
-      name: z.string().min(1),
-      contentHash: z.string().min(1),
-    })),
+    official: z
+      .array(
+        z.object({
+          sourceId: IdSchema,
+          sourceContentHash: z.string().min(1),
+          fragmentId: IdSchema,
+          fragmentContentHash: z.string().min(1),
+          articleOrSection: z.string().min(1),
+        }),
+      )
+      .min(1),
+    user: z.array(
+      z.object({
+        id: IdSchema,
+        name: z.string().min(1),
+        contentHash: z.string().min(1),
+      }),
+    ),
   }),
   createdAt: z.date(),
 })

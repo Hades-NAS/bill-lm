@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-6-plan-excepcional-de-pago-el-plan-de-pago-al-que-hace-referencia-el-literal",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 6.- Plan excepcional de pago. El plan de pago al que hace referencia el literal b) del artículo",
-  "sourcePages": [
-    118
-  ],
+  "sourcePages": [118],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

@@ -5,6 +5,7 @@ import { invalidateQueriesByKeys } from '#/hooks/invalidate-utils'
 import { UPDATE_COLLECTION_INVALIDATION_KEYS } from '#/hooks/mutation/collection'
 
 import { getContext } from '../tanstack-query/root-provider'
+import { toDate } from '#/utils/firestore-date'
 
 import type { AnalyzeJobNotification } from '#/schema/collections'
 
@@ -12,6 +13,14 @@ const ACTIVE_JOBS_LIMIT = 20
 const COMPLETED_JOB_RETENTION_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 export type JobStatusItem = AnalyzeJobNotification
+
+function normalizeJobDates(job: JobStatusItem): JobStatusItem {
+  return {
+    ...job,
+    createdAt: toDate(job.createdAt),
+    updatedAt: toDate(job.updatedAt),
+  }
+}
 
 interface JobsStore {
   activeJobs: Array<JobStatusItem>
@@ -36,7 +45,7 @@ export const useJobsStore = create<JobsStore>()(
           const exists = state.activeJobs.find((j) => j.jobId === job.jobId)
           if (exists) return state
 
-          let newJobs = [...state.activeJobs, job]
+          let newJobs = [...state.activeJobs, normalizeJobDates(job)]
 
           // Keep only the N most recent jobs (prepend new)
           if (newJobs.length > ACTIVE_JOBS_LIMIT) {
@@ -69,36 +78,18 @@ export const useJobsStore = create<JobsStore>()(
       },
 
       /**
-       * Batch update multiple jobs at once
-       * Used by Firestore subscription to update all active jobs in one operation
+       * Reconcile against the complete unread-jobs Firestore snapshot.
+       * Jobs absent from that snapshot were deleted or marked as read and must
+       * not remain as stale browser notifications.
        */
       updateJobs: (jobs: Array<Partial<JobStatusItem> & { jobId: string }>) => {
-        set((state) => {
-          // Build a map of job IDs to updates
-          const updatesMap = new Map(jobs.map((j) => [j.jobId, j]))
-
-          // Update existing jobs or add new ones
-          let updated = state.activeJobs.map((job) => {
-            const updates = updatesMap.get(job.jobId)
-            return updates ? { ...job, ...updates } : job
-          })
-
-          // Add new jobs that don't exist
-          for (const jobUpdate of jobs) {
-            if (!updated.find((j) => j.jobId === jobUpdate.jobId)) {
-              updated.push(jobUpdate as JobStatusItem)
-            }
-          }
-
-          // Sort by updatedAt descending (most recent first)
-          updated = updated.sort(
-            (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-          )
+        set(() => {
+          const updated = jobs
+            .map((job) => normalizeJobDates(job as JobStatusItem))
+            .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 
           // Limit to N most recent jobs
-          if (updated.length > ACTIVE_JOBS_LIMIT) {
-            updated = updated.slice(0, ACTIVE_JOBS_LIMIT)
-          }
+          const limitedJobs = updated.slice(0, ACTIVE_JOBS_LIMIT)
 
           // Invalidate all collections cache on update to ensure consistency
           const completedOrFailedJobs = jobs.filter(
@@ -119,7 +110,7 @@ export const useJobsStore = create<JobsStore>()(
             )
           }
 
-          return { activeJobs: updated }
+          return { activeJobs: limitedJobs }
         })
       },
 
@@ -144,7 +135,7 @@ export const useJobsStore = create<JobsStore>()(
             }
 
             // Keep completed/failed jobs if recent
-            const updatedTime = job.updatedAt.getTime()
+            const updatedTime = toDate(job.updatedAt).getTime()
             return updatedTime > cutoff
           }),
         }))
@@ -165,7 +156,17 @@ export const useJobsStore = create<JobsStore>()(
     }),
     {
       name: 'jobs-storage-v2', // Bumped version for schema change
-      version: 2,
+      version: 3,
+      merge: (persistedState, currentState) => {
+        const persistedJobs = (persistedState as Partial<JobsStore>)?.activeJobs
+
+        return {
+          ...currentState,
+          activeJobs: Array.isArray(persistedJobs)
+            ? persistedJobs.map((job) => normalizeJobDates(job))
+            : currentState.activeJobs,
+        }
+      },
     },
   ),
 )

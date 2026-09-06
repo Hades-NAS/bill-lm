@@ -1,17 +1,28 @@
 import { DateTime } from 'luxon'
 
-import { AppError, CircuitBreaker, ErrorType, withRetry } from '#/integrations/errors/error-handler'
+import {
+  AppError,
+  CircuitBreaker,
+  ErrorType,
+  withRetry,
+} from '#/integrations/errors/error-handler'
 import { adminDb } from '#/integrations/firebase/firebase.server'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { createBillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
-import { normalizeTaxAnalysisResult, referencesFromExecutionEnvelope } from '#/integrations/tax-analysis/result-adapter'
+import {
+  normalizeTaxAnalysisResult,
+  referencesFromExecutionEnvelope,
+} from '#/integrations/tax-analysis/result-adapter'
 
 import { FireCollections } from '#/constants/firebase'
 
 import type { ILLMProvider } from '#/integrations/llm/provider.interface'
 import type { BillPromptBuilder } from '#/integrations/prompts/bill-prompt-builder'
 import type { AnalyzeJobData } from '#/schema/collections'
-import type { AnalysisExecutionEnvelope, TaxAnalysisResult } from '#/schema/tax-analysis'
+import type {
+  AnalysisExecutionEnvelope,
+  TaxAnalysisResult,
+} from '#/schema/tax-analysis'
 import type { ParsedBill } from '#/schema/bill-analysis'
 
 const logger = getServiceLogger('BillAnalysisService')
@@ -60,15 +71,21 @@ export class BillAnalysisService {
       try {
         const prompt = this.promptBuilder.build(envelope, bill.billId)
         const payload = await this.circuitBreaker.execute(
-          () => this.provider.process(prompt, context.preset, {
-            billId: bill.billId,
-            jobId: context.jobId,
-            promptVersion: envelope.prompt.templateVersion,
-          }),
+          () =>
+            this.provider.process(prompt, context.preset, {
+              billId: bill.billId,
+              jobId: context.jobId,
+              promptVersion: envelope.prompt.templateVersion,
+            }),
           `Analyze bill ${bill.billId}`,
         )
         if (!payload)
-          throw new AppError(ErrorType.AI_ENGINE, `${this.provider.getProviderName()} provider returned null for analysis`, { billId: bill.billId }, true)
+          throw new AppError(
+            ErrorType.AI_ENGINE,
+            `${this.provider.getProviderName()} provider returned null for analysis`,
+            { billId: bill.billId },
+            true,
+          )
 
         results.push({
           billId: bill.billId,
@@ -78,7 +95,9 @@ export class BillAnalysisService {
             purpose: envelope.context.purpose,
             runId,
             invoiceId: bill.billId,
-            allowedActivityRevisionIds: envelope.activities.map((activity) => activity.revisionId),
+            allowedActivityRevisionIds: envelope.activities.map(
+              (activity) => activity.revisionId,
+            ),
             references: referencesFromExecutionEnvelope(envelope),
           }),
         })
@@ -87,9 +106,20 @@ export class BillAnalysisService {
           jobId: context.jobId,
           error: error instanceof Error ? error.message : String(error),
         })
-        results.push({ billId: bill.billId, success: false, error: error instanceof Error ? error.message : 'Error desconocido durante el análisis.' })
+        results.push({
+          billId: bill.billId,
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Error desconocido durante el análisis.',
+        })
       }
-      await this.updateFirestoreProgress(context.jobId, results.length, bills.length)
+      await this.updateFirestoreProgress(
+        context.jobId,
+        results.length,
+        bills.length,
+      )
     }
     return results
   }
@@ -97,18 +127,32 @@ export class BillAnalysisService {
   private async ensureModelLoaded(): Promise<void> {
     const modelId = this.provider.getModelId()
     if (await this.provider.isModelLoaded()) return
-    await withRetry(() => this.provider.loadModel(), { maxRetries: this.maxRetries, backoff: 'exponential' }, `Load model ${modelId}`)
+    await withRetry(
+      () => this.provider.loadModel(),
+      { maxRetries: this.maxRetries, backoff: 'exponential' },
+      `Load model ${modelId}`,
+    )
   }
 
-  private async updateFirestoreProgress(jobId: string, completed: number, total: number): Promise<void> {
+  private async updateFirestoreProgress(
+    jobId: string,
+    completed: number,
+    total: number,
+  ): Promise<void> {
     try {
-      await adminDb.collection(FireCollections.ANALYZE_COLLECTION).doc(jobId).update({
-        percentage: total === 0 ? 100 : Math.round((completed / total) * 100),
-        status: completed === total ? 'completed' : 'in-progress',
-        updatedAt: DateTime.now().toJSDate(),
-      })
+      await adminDb
+        .collection(FireCollections.ANALYZE_COLLECTION)
+        .doc(jobId)
+        .update({
+          percentage: total === 0 ? 100 : Math.round((completed / total) * 100),
+          status: completed === total ? 'completed' : 'in-progress',
+          updatedAt: DateTime.now().toJSDate(),
+        })
     } catch (error) {
-      this.logger.error('Failed to update Firestore progress', { jobId, error: error instanceof Error ? error.message : String(error) })
+      this.logger.error('Failed to update Firestore progress', {
+        jobId,
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 
@@ -121,6 +165,8 @@ export class BillAnalysisService {
   }
 }
 
-export function createBillAnalysisService(deps: ServiceDependencies): BillAnalysisService {
+export function createBillAnalysisService(
+  deps: ServiceDependencies,
+): BillAnalysisService {
   return new BillAnalysisService(deps)
 }

@@ -56,11 +56,11 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
               ? job.status === 'pending'
                 ? 'gray'
                 : 'blue'
-                : isCompleted
+              : isCompleted
                 ? 'green'
                 : isBlocked
                   ? 'orange'
-                : 'red'
+                  : 'red'
           }
           size="sm"
           variant="light"
@@ -73,7 +73,7 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
                 ? 'Completado'
                 : job.status === 'blocked'
                   ? 'Bloqueado'
-                : 'Error'}
+                  : 'Error'}
         </Badge>
       </Group>
 
@@ -122,8 +122,13 @@ function JobCard({ job, onCollectionClick }: JobCardProps) {
 
       {/* Terminal error or prerequisite message */}
       {(job.status === 'failed' || job.status === 'blocked') && (
-        <Text c={job.status === 'blocked' ? 'orange.8' : 'red.8'} mb="xs" size="xs">
-          {job.status === 'blocked' ? 'Bloqueado: ' : 'Error: '}{job.error}
+        <Text
+          c={job.status === 'blocked' ? 'orange.8' : 'red.8'}
+          mb="xs"
+          size="xs"
+        >
+          {job.status === 'blocked' ? 'Bloqueado: ' : 'Error: '}
+          {job.error}
         </Text>
       )}
 

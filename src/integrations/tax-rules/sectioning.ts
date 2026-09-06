@@ -64,9 +64,7 @@ function articleHeading(match: RegExpMatchArray) {
 
   const title = match[2]?.trim().replace(/^[-–—:.\s]+/, '')
   const article = match[3]?.trim()
-  return title && article
-    ? `Art. ${article}.- ${title}`
-    : 'Sección sin título'
+  return title && article ? `Art. ${article}.- ${title}` : 'Sección sin título'
 }
 
 function ambiguousSection(

@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-41-pago-del-impuesto-los-sujetos-pasivos-deberan-efectuar-el-pago-del-impues",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 41.- Pago del impuesto.- Los sujetos pasivos deberán efectuar el pago del impuesto a la renta",
-  "sourcePages": [
-    54,
-    55
-  ],
+  "sourcePages": [54, 55],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

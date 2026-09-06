@@ -10,13 +10,13 @@ La fuente es `ec-sri-lrti-2026`; no reemplaza ni reclasifica la fuente históric
 `ec-sri-lrti`. El PDF adquirido tiene el hash
 `sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547`.
 
-| Artículo | Páginas | Decisión de alcance |
-| --- | --- | --- |
-| 64 | 62 | Evidencia para comprobar que el comprobante separe IVA. No determina por sí mismo derecho a crédito. |
-| 65 | 62–63 | Contexto de tarifa y excepciones. El modelo no puede asumir una tarifa ni elegibilidad automáticamente. |
-| 66 | 63–65 | Regla central del crédito: exige destino gravado, comprobante y, cuando aplica, proporcionalidad. Si falta esa evidencia, el resultado debe requerir revisión. |
-| 67 | 65 | Fundamenta la selección mensual; también deja visible la excepción semestral. |
-| 69 | 65 | Contexto para saldo, arrastre y retenciones; no permite concluir el resultado de una factura aislada. |
+| Artículo | Páginas | Decisión de alcance                                                                                                                                            |
+| -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 64       | 62      | Evidencia para comprobar que el comprobante separe IVA. No determina por sí mismo derecho a crédito.                                                           |
+| 65       | 62–63   | Contexto de tarifa y excepciones. El modelo no puede asumir una tarifa ni elegibilidad automáticamente.                                                        |
+| 66       | 63–65   | Regla central del crédito: exige destino gravado, comprobante y, cuando aplica, proporcionalidad. Si falta esa evidencia, el resultado debe requerir revisión. |
+| 67       | 65      | Fundamenta la selección mensual; también deja visible la excepción semestral.                                                                                  |
+| 69       | 65      | Contexto para saldo, arrastre y retenciones; no permite concluir el resultado de una factura aislada.                                                          |
 
 Cada artefacto revisado guarda la razón de la curación, revisor y fecha. La
 sección 66 contiene supuestos sectoriales posteriores dentro del mismo bloque

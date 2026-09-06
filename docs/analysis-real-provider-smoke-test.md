@@ -49,12 +49,12 @@ desactiva la variable en ambos procesos.
 
 ## Fallos esperados
 
-| Situación | Resultado esperado |
-| --- | --- |
-| Conexión inactiva o modelo distinto al fijado | Run `blocked`; no se llama al proveedor. |
+| Situación                                     | Resultado esperado                                          |
+| --------------------------------------------- | ----------------------------------------------------------- |
+| Conexión inactiva o modelo distinto al fijado | Run `blocked`; no se llama al proveedor.                    |
 | Contexto incompleto o sin evidencia aplicable | Run `blocked` con un mensaje seguro y una siguiente acción. |
-| XML inválido | Run `blocked`; no entra a la cola. |
-| Error del proveedor o red | Run `failed`; no aparece un resultado fiscal inventado. |
+| XML inválido                                  | Run `blocked`; no entra a la cola.                          |
+| Error del proveedor o red                     | Run `failed`; no aparece un resultado fiscal inventado.     |
 
 ## Evidencia que debes revisar
 

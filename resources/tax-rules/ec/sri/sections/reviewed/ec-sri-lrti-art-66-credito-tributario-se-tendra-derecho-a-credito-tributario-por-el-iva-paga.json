@@ -3,18 +3,10 @@
   "id": "ec-sri-lrti-art-66-credito-tributario-se-tendra-derecho-a-credito-tributario-por-el-iva-paga",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 66.- Crédito tributario.- Se tendrá derecho a crédito tributario por el IVA pagado en las",
-  "sourcePages": [
-    72,
-    73,
-    74
-  ],
+  "sourcePages": [72, 73, 74],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

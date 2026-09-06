@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-2026-art-67-declaracion-del-impuesto-los-sujetos-pasivos-del-iva-declararan-el-impues",
   "sourceId": "ec-sri-lrti-2026",
   "articleOrSection": "Art. 67.- Declaración del impuesto.- Los sujetos pasivos del IVA declararán el impuesto de las operaciones que realicen",
-  "sourcePages": [
-    65
-  ],
+  "sourcePages": [65],
   "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-  "purposes": [
-    "vat_credit"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["vat_credit"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

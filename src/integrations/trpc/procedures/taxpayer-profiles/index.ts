@@ -58,7 +58,10 @@ async function requireProfile(userId: string, id: string) {
   return profile
 }
 
-async function ensureOwnedActivityRevisions(userId: string, ids: Array<string>) {
+async function ensureOwnedActivityRevisions(
+  userId: string,
+  ids: Array<string>,
+) {
   const activities = await prisma.economicActivityRevision.findMany({
     where: { id: { in: ids }, userId, activity: { deletedAt: null } },
     select: { id: true },

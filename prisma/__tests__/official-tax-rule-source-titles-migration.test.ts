@@ -13,10 +13,10 @@ const sql = readFileSync(
 describe('official tax rule source title migration', () => {
   it('replaces only the two legacy technical source titles', () => {
     expect(sql).toContain(
-      "SET \"title\" = 'Ley de Régimen Tributario Interno (LRTI)'",
+      'SET "title" = \'Ley de Régimen Tributario Interno (LRTI)\'',
     )
     expect(sql).toContain(
-      "SET \"title\" = 'Reglamento para la Aplicación de la Ley de Régimen Tributario Interno (RLRTI)'",
+      'SET "title" = \'Reglamento para la Aplicación de la Ley de Régimen Tributario Interno (RLRTI)\'',
     )
     expect(sql).toContain('AND "title" = \'ec-sri-lrti\'')
     expect(sql).toContain('AND "title" = \'ec-sri-rlrti\'')

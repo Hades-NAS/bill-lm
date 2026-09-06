@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-116-nota-art-derogado-por-art-150-de-decreto-legislativo-no-0-publicado-en-r",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 116.-Nota: Artículo derogado por Art. 150 de Decreto Legislativo No. 0, publicado en Registro",
-  "sourcePages": [
-    113
-  ],
+  "sourcePages": [113],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

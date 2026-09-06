@@ -61,16 +61,10 @@
       "id": "ec-sri-lrti-art-107-b-orden-de-cobro-o-aplicacion-de-diferencias-si-dentro-del-plazo-senalad",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 107-B.- Orden de cobro o Aplicación de Diferencias.- Si dentro del plazo señalado en el artículo",
-      "sourcePages": [
-        110
-      ],
+      "sourcePages": [110],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -83,17 +77,10 @@
       "id": "ec-sri-lrti-art-68-liquidacion-del-impuesto-los-sujetos-pasivos-del-iva-obligados-a-presenta",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 68.- Liquidación del impuesto.- Los sujetos pasivos del IVA obligados a presentar declaración",
-      "sourcePages": [
-        74,
-        75
-      ],
+      "sourcePages": [74, 75],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -106,16 +93,10 @@
       "id": "ec-sri-lrti-art-120-entregas-a-consignacion-todas-las-mercaderias-sujetas-al-impuesto-a-los-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 120.- Entregas a consignación.- Todas las mercaderías sujetas al impuesto a los consumos",
-      "sourcePages": [
-        114
-      ],
+      "sourcePages": [114],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -128,16 +109,10 @@
       "id": "ec-sri-lrti-art-18-base-imponible-en-caso-de-determinacion-presuntiva-cuando-las-rentas-se-d",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 18.- Base imponible en caso de determinación presuntiva.- Cuando las rentas se determinen",
-      "sourcePages": [
-        31
-      ],
+      "sourcePages": [31],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -150,17 +125,10 @@
       "id": "ec-sri-lrti-art-61-hecho-generador-el-hecho-generador-del-iva-se-verificara-en-los-siguiente",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 61.- Hecho generador.- El hecho generador del IVA se verificará en los siguientes momentos:",
-      "sourcePages": [
-        69,
-        70
-      ],
+      "sourcePages": [69, 70],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -173,18 +141,10 @@
       "id": "ec-sri-lrti-2026-art-66-credito-tributario-se-tendra-derecho-a-credito-tributario-por-el-iva-paga",
       "sourceId": "ec-sri-lrti-2026",
       "articleOrSection": "Art. 66.- Crédito tributario.- Se tendrá derecho a crédito tributario por el IVA pagado en las adquisiciones locales o",
-      "sourcePages": [
-        63,
-        64,
-        65
-      ],
+      "sourcePages": [63, 64, 65],
       "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -198,16 +158,10 @@
       "id": "ec-sri-lrti-art-83-declaracion-del-impuesto-los-sujetos-pasivos-del-ice-declararan-el-impues",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 83.- Declaración del impuesto.- Los sujetos pasivos del ICE declararán el impuesto de las",
-      "sourcePages": [
-        90
-      ],
+      "sourcePages": [90],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -220,16 +174,10 @@
       "id": "ec-sri-lrti-art-22-sistemas-de-determinacion-la-determinacion-del-impuesto-a-la-renta-se-efe",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 22.- Sistemas de determinación.- La determinación del impuesto a la renta se efectuará por",
-      "sourcePages": [
-        33
-      ],
+      "sourcePages": [33],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -242,17 +190,10 @@
       "id": "ec-sri-lrti-art-97-17-contribuyentes-sujetos-al-regimen-se-sujetaran-a-este-regimen-los-cont",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.17.- Contribuyentes sujetos al Régimen.- Se sujetarán a este régimen los contribuyentes",
-      "sourcePages": [
-        102,
-        103
-      ],
+      "sourcePages": [102, 103],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -265,17 +206,10 @@
       "id": "ec-sri-lrti-art-111-sanciones-para-funcionarios-y-empleados-publicos-los-funcionarios-y-empl",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 111.- Sanciones para funcionarios y empleados públicos.- Los funcionarios y empleados del",
-      "sourcePages": [
-        111,
-        112
-      ],
+      "sourcePages": [111, 112],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -288,19 +222,10 @@
       "id": "ec-sri-lrti-art-82-estan-gravados-con-el-impuesto-a-los-consumos-especiales-los-siguientes-b",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 82.- Están gravados con el impuesto a los consumos especiales los siguientes bienes y",
-      "sourcePages": [
-        87,
-        88,
-        89,
-        90
-      ],
+      "sourcePages": [87, 88, 89, 90],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -313,17 +238,10 @@
       "id": "ec-sri-lrti-art-60-base-imponible-en-casos-especiales-en-los-casos-de-permuta-de-retiro-de-b",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 60.- Base imponible en casos especiales.- En los casos de permuta, de retiro de bienes para",
-      "sourcePages": [
-        68,
-        69
-      ],
+      "sourcePages": [68, 69],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -336,19 +254,10 @@
       "id": "ec-sri-lrti-art-55-transferencias-e-importaciones-con-tarifa-cero-tendran-tarifa-cero-las-tr",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 55.- Transferencias e importaciones con tarifa cero.- Tendrán tarifa cero las transferencias e",
-      "sourcePages": [
-        62,
-        63,
-        64,
-        65
-      ],
+      "sourcePages": [62, 63, 64, 65],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -361,16 +270,10 @@
       "id": "ec-sri-lrti-art-115-valor-de-las-especies-fiscales-facultase-al-ministro-de-economia-y-finan",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 115.- Valor de las especies fiscales.- Facúltase al Ministro de Economía y Finanzas para que fije",
-      "sourcePages": [
-        113
-      ],
+      "sourcePages": [113],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -383,19 +286,10 @@
       "id": "ec-sri-lrti-art-37-tarifa-del-impuesto-a-la-renta-para-sociedades-los-ingresos-gravables-obt",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 37.- Tarifa del impuesto a la renta para sociedades.- Los ingresos gravables obtenidos por",
-      "sourcePages": [
-        46,
-        47,
-        48,
-        49
-      ],
+      "sourcePages": [46, 47, 48, 49],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -408,17 +302,10 @@
       "id": "ec-sri-lrti-art-47-credito-tributario-y-devolucion-en-el-caso-de-que-las-retenciones-en-la-f",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 47.- Crédito Tributario y Devolución.- En el caso de que las retenciones en la fuente del",
-      "sourcePages": [
-        57,
-        58
-      ],
+      "sourcePages": [57, 58],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -431,16 +318,10 @@
       "id": "ec-sri-lrti-art-28-ingresos-por-contratos-de-construccion-los-contribuyentes-que-obtengan-in",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 28.- Ingresos por contratos de construcción.- Los contribuyentes que obtengan ingresos por",
-      "sourcePages": [
-        38
-      ],
+      "sourcePages": [38],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -453,16 +334,10 @@
       "id": "ec-sri-lrti-2026-art-67-declaracion-del-impuesto-los-sujetos-pasivos-del-iva-declararan-el-impues",
       "sourceId": "ec-sri-lrti-2026",
       "articleOrSection": "Art. 67.- Declaración del impuesto.- Los sujetos pasivos del IVA declararán el impuesto de las operaciones que realicen",
-      "sourcePages": [
-        65
-      ],
+      "sourcePages": [65],
       "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -476,16 +351,10 @@
       "id": "ec-sri-lrti-art-97-contratos-de-obras-y-servicios-especificos-los-contratistas-que-han-celeb",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.- Contratos de obras y servicios específicos.- Los contratistas que han celebrado contratos de",
-      "sourcePages": [
-        95
-      ],
+      "sourcePages": [95],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -498,17 +367,10 @@
       "id": "ec-sri-lrti-art-107-valor-de-la-declaracion-para-el-cobro-de-los-impuestos-establecidos-en-e",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 107.- Valor de la declaración.- Para el cobro de los impuestos establecidos en esta Ley y demás",
-      "sourcePages": [
-        109,
-        110
-      ],
+      "sourcePages": [109, 110],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -521,17 +383,10 @@
       "id": "ec-sri-lrti-art-103-emision-de-comprobantes-de-venta-los-sujetos-pasivos-de-los-impuestos-al",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 103.- Emisión de Comprobantes de Venta.- Los sujetos pasivos de los impuestos al valor",
-      "sourcePages": [
-        107,
-        108
-      ],
+      "sourcePages": [107, 108],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -544,17 +399,10 @@
       "id": "ec-sri-lrti-art-42-1-liquidacion-del-impuesto-a-la-renta-de-fideicomisos-mercantiles-y-fondo",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 42.1.- Liquidación del Impuesto a la Renta de Fideicomisos Mercantiles y Fondos de Inversión.-",
-      "sourcePages": [
-        55,
-        56
-      ],
+      "sourcePages": [55, 56],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -567,17 +415,10 @@
       "id": "ec-sri-lrti-art-97-21-deberes-formales-los-contribuyentes-que-se-acojan-a-este-regimen-cumpl",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.21.- Deberes formales.- Los contribuyentes que se acojan a este régimen cumplirán los",
-      "sourcePages": [
-        103,
-        104
-      ],
+      "sourcePages": [103, 104],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -590,16 +431,10 @@
       "id": "ec-sri-lrti-art-4-2-residencia-fiscal-de-sociedades-una-sociedad-tiene-residencia-fiscal-en-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 4.2.- Residencia fiscal de sociedades.- Una sociedad tiene residencia fiscal en Ecuador cuando",
-      "sourcePages": [
-        4
-      ],
+      "sourcePages": [4],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -612,16 +447,10 @@
       "id": "ec-sri-lrti-art-42-quienes-no-estan-obligados-a-declarar-no-estan-obligados-a-presentar-decl",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 42.- Quiénes no están obligados a declarar.- No están obligados a presentar declaración del",
-      "sourcePages": [
-        55
-      ],
+      "sourcePages": [55],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -634,16 +463,10 @@
       "id": "ec-sri-lrti-art-53-concepto-de-transferencia-para-efectos-de-este-impuesto-se-considera-tran",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 53.- Concepto de transferencia.- Para efectos de este impuesto, se considera transferencia:",
-      "sourcePages": [
-        61
-      ],
+      "sourcePages": [61],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -656,17 +479,10 @@
       "id": "ec-sri-lrti-art-105-sancion-por-falta-de-declaracion-cuando-al-realizar-actos-de-determinaci",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 105.- Sanción por falta de declaración.- Cuando al realizar actos de determinación la",
-      "sourcePages": [
-        108,
-        109
-      ],
+      "sourcePages": [108, 109],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -679,18 +495,10 @@
       "id": "ec-sri-lrti-art-23-determinacion-por-la-administracion-la-administracion-efectuara-las-deter",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 23.- Determinación por la administración.- La administración efectuará las determinaciones",
-      "sourcePages": [
-        33,
-        34,
-        35
-      ],
+      "sourcePages": [33, 34, 35],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -703,17 +511,10 @@
       "id": "ec-sri-lrti-art-97-3-exclusiones-no-podran-acogerse-al-regimen-simplificado-rs-las-personas-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.3.- Exclusiones.- No podrán acogerse al Régimen Simplificado (RS) las personas naturales",
-      "sourcePages": [
-        96,
-        97
-      ],
+      "sourcePages": [96, 97],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -726,16 +527,10 @@
       "id": "ec-sri-lrti-art-44-retenciones-en-la-fuente-sobre-rendimientos-financieros-las-instituciones",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 44.- Retenciones en la fuente sobre rendimientos financieros.- Las instituciones, entidades",
-      "sourcePages": [
-        56
-      ],
+      "sourcePages": [56],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -748,18 +543,10 @@
       "id": "ec-sri-lrti-art-63-sujetos-pasivos-son-sujetos-pasivos-del-iva",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 63.- Sujetos pasivos.- Son sujetos pasivos del IVA:",
-      "sourcePages": [
-        70,
-        71,
-        72
-      ],
+      "sourcePages": [70, 71, 72],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -772,17 +559,10 @@
       "id": "ec-sri-lrti-art-52-objeto-del-impuesto-se-establece-el-impuesto-al-valor-agregado-iva-que-gr",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 52.- Objeto del impuesto.- Se establece el Impuesto al Valor Agregado (IVA), que grava al valor",
-      "sourcePages": [
-        60,
-        61
-      ],
+      "sourcePages": [60, 61],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -795,16 +575,10 @@
       "id": "ec-sri-lrti-art-92-liquidacion-del-impuesto-a-la-renta",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 92.- Liquidación del impuesto a la renta.-",
-      "sourcePages": [
-        94
-      ],
+      "sourcePages": [94],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -817,17 +591,10 @@
       "id": "ec-sri-lrti-art-8-ingresos-de-fuente-ecuatoriana-se-consideraran-de-fuente-ecuatoriana-los-s",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 8.- Ingresos de fuente ecuatoriana.- Se considerarán de fuente ecuatoriana los siguientes",
-      "sourcePages": [
-        5,
-        6
-      ],
+      "sourcePages": [5, 6],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -840,16 +607,10 @@
       "id": "ec-sri-lrti-art-86-declaracion-liquidacion-y-pago-del-ice-para-mercaderias-importadas-en-el-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 86.- Declaración, liquidación y pago del ICE para mercaderías importadas.- En el caso de",
-      "sourcePages": [
-        90
-      ],
+      "sourcePages": [90],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -862,17 +623,10 @@
       "id": "ec-sri-lrti-art-9-2-en-el-caso-de-inversiones-nuevas-y-productivas-en-los-sectores-economico",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.2.- En el caso de inversiones nuevas y productivas en los sectores económicos determinados",
-      "sourcePages": [
-        13,
-        14
-      ],
+      "sourcePages": [13, 14],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -885,16 +639,10 @@
       "id": "ec-sri-lrti-art-94-liquidacion-del-gravamen-a-la-actividad-petrolera",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 94.- Liquidación del gravamen a la actividad petrolera.-",
-      "sourcePages": [
-        94
-      ],
+      "sourcePages": [94],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -907,16 +655,10 @@
       "id": "ec-sri-rlrti-art-196-part-4",
       "sourceId": "ec-sri-rlrti",
       "articleOrSection": "Art. 196 (repetido; revisar límites)",
-      "sourcePages": [
-        163
-      ],
+      "sourcePages": [163],
       "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "unknown"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["unknown"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -930,17 +672,10 @@
       "id": "ec-sri-lrti-art-70-declaracion-liquidacion-y-pago-del-iva-para-mercaderias-y-servicios-impor",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 70.- Declaración, liquidación y pago del IVA para mercaderías y servicios importados.- En el",
-      "sourcePages": [
-        75,
-        76
-      ],
+      "sourcePages": [75, 76],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -953,17 +688,10 @@
       "id": "ec-sri-lrti-art-7-suspension-de-procesos-coactivos-la-autoridad-tributaria-suspendera-de-ofi",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 7.- Suspensión de procesos coactivos. La autoridad tributaria suspenderá de oficio los procesos",
-      "sourcePages": [
-        118,
-        119
-      ],
+      "sourcePages": [118, 119],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -976,16 +704,10 @@
       "id": "ec-sri-lrti-art-9-3-exoneracion-del-impuesto-a-la-renta-en-el-desarrollo-de-proyectos-public",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.3.- Exoneración del impuesto a la renta en el desarrollo de proyectos públicos en asociación",
-      "sourcePages": [
-        14
-      ],
+      "sourcePages": [14],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -998,16 +720,10 @@
       "id": "ec-sri-lrti-art-97-26-retencion-del-iva-quienes-se-sujeten-a-este-regimen-no-seran-agentes-d",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.26.- Retención del IVA.- Quienes se sujeten a este régimen no serán agentes de retención",
-      "sourcePages": [
-        104
-      ],
+      "sourcePages": [104],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1020,16 +736,10 @@
       "id": "ec-sri-lrti-art-106-sanciones-para-los-sujetos-pasivos-las-personas-naturales-o-juridicas-na",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 106.- Sanciones para los sujetos pasivos.- Las personas naturales o jurídicas, nacionales o",
-      "sourcePages": [
-        109
-      ],
+      "sourcePages": [109],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1042,17 +752,10 @@
       "id": "ec-sri-rlrti-art-4-part-2",
       "sourceId": "ec-sri-rlrti",
       "articleOrSection": "Art. 4 (repetido; revisar límites)",
-      "sourcePages": [
-        195,
-        196
-      ],
+      "sourcePages": [195, 196],
       "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "unknown"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["unknown"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1066,16 +769,10 @@
       "id": "ec-sri-lrti-art-30-ingresos-por-arrendamiento-de-inmuebles-las-sociedades-y-demas-contribuye",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 30.- Ingresos por arrendamiento de inmuebles.- Las sociedades y demás contribuyentes",
-      "sourcePages": [
-        39
-      ],
+      "sourcePages": [39],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1088,16 +785,10 @@
       "id": "ec-sri-lrti-art-35-ingresos-por-contratos-de-agencia-y-representacion-las-personas-naturales",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 35.- Ingresos por contratos de agencia y representación.- Las personas naturales o jurídicas,",
-      "sourcePages": [
-        41
-      ],
+      "sourcePages": [41],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1110,26 +801,10 @@
       "id": "ec-sri-lrti-art-10-deducciones-en-general-con-el-proposito-de-determinar-la-base-imponible-s",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 10.- Deducciones.- En general, con el propósito de determinar la base imponible sujeta a este",
-      "sourcePages": [
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25
-      ],
+      "sourcePages": [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1142,17 +817,10 @@
       "id": "ec-sri-lrti-art-39-2-distribucion-de-dividendos-o-utilidades-los-dividendos-o-utilidades-que",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 39.2.- Distribución de dividendos o utilidades.- Los dividendos o utilidades que distribuyan las",
-      "sourcePages": [
-        52,
-        53
-      ],
+      "sourcePages": [52, 53],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1165,16 +833,10 @@
       "id": "ec-sri-lrti-art-102-responsabilidad-de-los-auditores-externos-promotores-asesores-consultore",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 102.- Responsabilidad de los auditores externos, promotores, asesores, consultores y estudios",
-      "sourcePages": [
-        107
-      ],
+      "sourcePages": [107],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1187,19 +849,10 @@
       "id": "ec-sri-lrti-art-76-base-imponible-la-base-imponible-de-los-bienes-y-servicios-sujetos-al-ice",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 76.- Base imponible.- La base imponible de los bienes y servicios sujetos al ICE, de producción",
-      "sourcePages": [
-        81,
-        82,
-        83,
-        84
-      ],
+      "sourcePages": [81, 82, 83, 84],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1212,16 +865,10 @@
       "id": "ec-sri-lrti-art-91-ingresos-gravables",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 91.- Ingresos gravables.-",
-      "sourcePages": [
-        94
-      ],
+      "sourcePages": [94],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1234,17 +881,10 @@
       "id": "ec-sri-lrti-art-57-las-personas-naturales-y-sociedades-exportadoras-que-hayan-pagado-y-reten",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 57.- Las personas naturales y sociedades exportadoras que hayan pagado y retenido el IVA en",
-      "sourcePages": [
-        67,
-        68
-      ],
+      "sourcePages": [67, 68],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1257,16 +897,10 @@
       "id": "ec-sri-lrti-2026-art-69-pago-del-impuesto-la-diferencia-resultante-luego-de-la-deduccion-indicada",
       "sourceId": "ec-sri-lrti-2026",
       "articleOrSection": "Art. 69.- Pago del impuesto.- La diferencia resultante, luego de la deducción indicada en el artículo anterior, constituye el",
-      "sourcePages": [
-        65
-      ],
+      "sourcePages": [65],
       "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1280,17 +914,10 @@
       "id": "ec-sri-rlrti-art-196-part-3",
       "sourceId": "ec-sri-rlrti",
       "articleOrSection": "Art. 196 (repetido; revisar límites)",
-      "sourcePages": [
-        162,
-        163
-      ],
+      "sourcePages": [162, 163],
       "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "unknown"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["unknown"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1304,17 +931,10 @@
       "id": "ec-sri-lrti-art-118-prohibicion-prohibase-la-tenencia-de-todo-producto-gravado-con-ice-con-e",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 118.- Prohibición.- Prohíbase la tenencia de todo producto gravado con ICE, con el fin de",
-      "sourcePages": [
-        113,
-        114
-      ],
+      "sourcePages": [113, 114],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1327,17 +947,10 @@
       "id": "ec-sri-lrti-art-39-1-la-sociedad-cuyo-capital-accionario-en-un-monto-no-menor-al-5-se-transf",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 39.1.- La sociedad cuyo capital accionario, en un monto no menor al 5%, se transfiera a título",
-      "sourcePages": [
-        51,
-        52
-      ],
+      "sourcePages": [51, 52],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1350,16 +963,10 @@
       "id": "ec-sri-lrti-art-117-normas-tecnicas-el-aguardiente-obtenido-de-la-destilacion-directa-del-ju",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 117.- Normas técnicas.- El aguardiente obtenido de la destilación directa del jugo de caña u",
-      "sourcePages": [
-        113
-      ],
+      "sourcePages": [113],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1372,17 +979,10 @@
       "id": "ec-sri-lrti-art-97-14-sanciones-la-inobservancia-a-los-preceptos-establecidos-en-este-titulo",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.14.- Sanciones.- La inobservancia a los preceptos establecidos en éste título, dará lugar a la",
-      "sourcePages": [
-        101,
-        102
-      ],
+      "sourcePages": [101, 102],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1395,16 +995,10 @@
       "id": "ec-sri-lrti-art-97-13-auditoria-la-verificacion-de-las-operaciones-de-los-contribuyentes-ins",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.13.- Auditoria.- La verificación de las operaciones de los contribuyentes inscritos en el",
-      "sourcePages": [
-        101
-      ],
+      "sourcePages": [101],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1417,17 +1011,10 @@
       "id": "ec-sri-lrti-art-96-companias-de-economia-mixta-en-la-actividad-hidrocarburifera-las-compania",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 96.- Compañías de economía mixta en la actividad hidrocarburífera.- Las compañías de",
-      "sourcePages": [
-        94,
-        95
-      ],
+      "sourcePages": [94, 95],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1440,16 +1027,10 @@
       "id": "ec-sri-lrti-art-6-plan-excepcional-de-pago-el-plan-de-pago-al-que-hace-referencia-el-literal",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 6.- Plan excepcional de pago. El plan de pago al que hace referencia el literal b) del artículo",
-      "sourcePages": [
-        118
-      ],
+      "sourcePages": [118],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1462,17 +1043,10 @@
       "id": "ec-sri-lrti-art-45-otras-retenciones-en-la-fuente-los-contribuyentes-que-sean-calificados-po",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 45.- Otras retenciones en la fuente.- Los contribuyentes que sean calificados por el Servicio de",
-      "sourcePages": [
-        56,
-        57
-      ],
+      "sourcePages": [56, 57],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1485,17 +1059,10 @@
       "id": "ec-sri-lrti-art-113-sanciones-por-no-depositar-los-valores-recaudados-cuando-realizada-la-re",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 113.- Sanciones por no depositar los valores recaudados.- Cuando realizada la recaudación",
-      "sourcePages": [
-        112,
-        113
-      ],
+      "sourcePages": [112, 113],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1508,16 +1075,10 @@
       "id": "ec-sri-lrti-art-81-facturacion-del-impuesto-los-sujetos-pasivos-que-actuen-como-agentes-de-p",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 81.- Facturación del impuesto.- Los sujetos pasivos que actúen como agentes de percepción",
-      "sourcePages": [
-        87
-      ],
+      "sourcePages": [87],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1530,16 +1091,10 @@
       "id": "ec-sri-lrti-art-90-los-contratistas-que-han-celebrado-contratos-de-prestacion-de-servicios-p",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 90.- Los contratistas que han celebrado contratos de prestación de servicios para la exploración",
-      "sourcePages": [
-        94
-      ],
+      "sourcePages": [94],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1552,18 +1107,10 @@
       "id": "ec-sri-lrti-art-4-sujetos-pasivos-son-sujetos-pasivos-del-impuesto-a-la-renta-las-personas-n",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 4.- Sujetos pasivos.- Son sujetos pasivos del impuesto a la renta las personas naturales, las",
-      "sourcePages": [
-        1,
-        2,
-        3
-      ],
+      "sourcePages": [1, 2, 3],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1576,17 +1123,10 @@
       "id": "ec-sri-lrti-art-21-estados-financieros-los-estados-financieros-serviran-de-base-para-la-pres",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 21.- Estados financieros.- Los estados financieros servirán de base para la presentación de las",
-      "sourcePages": [
-        32,
-        33
-      ],
+      "sourcePages": [32, 33],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1599,16 +1139,10 @@
       "id": "ec-sri-lrti-art-97-4-inscripcion-renuncia-y-cese-de-actividades-los-contribuyentes-que-reuna",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.4.- Inscripción, Renuncia y Cese de Actividades.- Los contribuyentes que reúnan las",
-      "sourcePages": [
-        97
-      ],
+      "sourcePages": [97],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1621,16 +1155,10 @@
       "id": "ec-sri-lrti-art-9-7-los-sujetos-pasivos-que-sean-administradores-u-operadores-de-una-zona-es",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.7.- Los sujetos pasivos que sean administradores u operadores de una Zona Especial de",
-      "sourcePages": [
-        15
-      ],
+      "sourcePages": [15],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1643,16 +1171,10 @@
       "id": "ec-sri-lrti-art-107-a-diferencias-de-declaraciones-y-pagos-el-servicio-de-rentas-internas-no",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 107-A.- Diferencias de Declaraciones y pagos.- El Servicio de Rentas Internas notificará a los",
-      "sourcePages": [
-        110
-      ],
+      "sourcePages": [110],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1665,17 +1187,10 @@
       "id": "ec-sri-lrti-art-54-transferencias-que-no-son-objeto-del-impuesto-no-se-causara-el-iva-en-los",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 54.- Transferencias que no son objeto del impuesto.- No se causará el IVA en los siguientes",
-      "sourcePages": [
-        61,
-        62
-      ],
+      "sourcePages": [61, 62],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1688,16 +1203,10 @@
       "id": "ec-sri-lrti-art-109-casos-especiales-de-defraudacion",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 109.- Casos especiales de defraudación.-",
-      "sourcePages": [
-        111
-      ],
+      "sourcePages": [111],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1710,17 +1219,10 @@
       "id": "ec-sri-lrti-art-25-determinacion-presuntiva-por-coeficientes-cuando-no-sea-posible-realizar-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 25.- Determinación presuntiva por coeficientes.- Cuando no sea posible realizar la determinación",
-      "sourcePages": [
-        35,
-        36
-      ],
+      "sourcePages": [35, 36],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1733,16 +1235,10 @@
       "id": "ec-sri-rlrti-art-196-part-2",
       "sourceId": "ec-sri-rlrti",
       "articleOrSection": "Art. 196 (repetido; revisar límites)",
-      "sourcePages": [
-        162
-      ],
+      "sourcePages": [162],
       "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "unknown"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["unknown"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1756,17 +1252,10 @@
       "id": "ec-sri-lrti-art-97-6-categorias-de-acuerdo-con-los-ingresos-brutos-anuales-los-limites-maxim",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.6.- Categorías.- De acuerdo con los ingresos brutos anuales, los límites máximos",
-      "sourcePages": [
-        98,
-        99
-      ],
+      "sourcePages": [98, 99],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1779,19 +1268,10 @@
       "id": "ec-sri-lrti-art-121-derogatorias-salvo-lo-que-se-establece-en-las-disposiciones-transitorias",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 121.- Derogatorias.- Salvo lo que se establece en las disposiciones transitorias, a partir de la",
-      "sourcePages": [
-        114,
-        115,
-        116,
-        117
-      ],
+      "sourcePages": [114, 115, 116, 117],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1804,16 +1284,10 @@
       "id": "ec-sri-lrti-art-97-15-normativa-el-servicio-de-rentas-internas-establecera-la-forma-plazos-y",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.15.- Normativa.- El Servicio de Rentas Internas establecerá la forma, plazos y lugares para la",
-      "sourcePages": [
-        102
-      ],
+      "sourcePages": [102],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1826,16 +1300,10 @@
       "id": "ec-sri-lrti-art-97-10-presentacion-de-declaraciones-y-registro-los-contribuyentes-que-reunan",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.10.- Presentación de Declaraciones y Registro.- Los contribuyentes que reúnan las",
-      "sourcePages": [
-        100
-      ],
+      "sourcePages": [100],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1848,17 +1316,10 @@
       "id": "ec-sri-lrti-2026-art-65-la-tarifa-del-impuesto-al-valor-agregado-es-del-13",
       "sourceId": "ec-sri-lrti-2026",
       "articleOrSection": "Art. 65.- La tarifa del impuesto al valor agregado es del \"13%\".",
-      "sourcePages": [
-        62,
-        63
-      ],
+      "sourcePages": [62, 63],
       "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1872,16 +1333,10 @@
       "id": "ec-sri-lrti-art-51-destino-del-impuesto-el-producto-del-impuesto-a-la-renta-se-depositara-en",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 51.- Destino del impuesto.- El producto del impuesto a la renta se depositará en la cuenta del",
-      "sourcePages": [
-        60
-      ],
+      "sourcePages": [60],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1894,17 +1349,10 @@
       "id": "ec-sri-lrti-art-29-ingresos-de-la-actividad-de-urbanizacion-lotizacion-y-otras-similares-qui",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 29.- Ingresos de la actividad de urbanización, lotización y otras similares.- Quienes obtuvieren",
-      "sourcePages": [
-        38,
-        39
-      ],
+      "sourcePages": [38, 39],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1917,16 +1365,10 @@
       "id": "ec-sri-lrti-art-116-nota-art-derogado-por-art-150-de-decreto-legislativo-no-0-publicado-en-r",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 116.-Nota: Artículo derogado por Art. 150 de Decreto Legislativo No. 0, publicado en Registro",
-      "sourcePages": [
-        113
-      ],
+      "sourcePages": [113],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1939,16 +1381,10 @@
       "id": "ec-sri-lrti-art-9-6-exoneracion-del-pago-del-impuesto-a-la-renta-para-nuevas-microempresas-l",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.6.- Exoneración del pago del impuesto a la renta para nuevas microempresas.- Las nuevas",
-      "sourcePages": [
-        15
-      ],
+      "sourcePages": [15],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1961,17 +1397,10 @@
       "id": "ec-sri-lrti-art-74-el-iva-pagado-por-personas-con-discapacidad-las-personas-con-discapacidad",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 74.- El IVA pagado por personas con discapacidad.- Las personas con discapacidad tienen",
-      "sourcePages": [
-        79,
-        80
-      ],
+      "sourcePages": [79, 80],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -1984,16 +1413,10 @@
       "id": "ec-sri-lrti-art-7-ejercicio-impositivo-el-ejercicio-impositivo-es-anual-y-comprende-el-lapso",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 7.- Ejercicio impositivo.- El ejercicio impositivo es anual y comprende el lapso que va del 1o. de",
-      "sourcePages": [
-        5
-      ],
+      "sourcePages": [5],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2006,19 +1429,10 @@
       "id": "ec-sri-lrti-art-89-destino-del-impuesto-el-producto-del-impuesto-a-los-consumos-especiales-s",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 89.- Destino del impuesto.- El producto del impuesto a los consumos especiales se depositará",
-      "sourcePages": [
-        91,
-        92,
-        93,
-        94
-      ],
+      "sourcePages": [91, 92, 93, 94],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2031,17 +1445,10 @@
       "id": "ec-sri-lrti-art-75-objeto-del-impuesto-establecese-el-impuesto-a-los-consumos-especiales-ice",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 75.- Objeto del impuesto.- Establécese el impuesto a los consumos especiales ICE, el mismo",
-      "sourcePages": [
-        80,
-        81
-      ],
+      "sourcePages": [80, 81],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2054,17 +1461,10 @@
       "id": "ec-sri-lrti-art-97-11-recategorizacion-de-oficio-el-servicio-de-rentas-internas-modificara-d",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.11.- Recategorización de oficio.- El Servicio de Rentas Internas modificará de oficio, previa",
-      "sourcePages": [
-        100,
-        101
-      ],
+      "sourcePages": [100, 101],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2077,16 +1477,10 @@
       "id": "ec-sri-lrti-art-64-facturacion-del-impuesto-los-sujetos-pasivos-del-iva-tienen-la-obligacion",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 64.- Facturación del impuesto.- Los sujetos pasivos del IVA tienen la obligación de emitir y",
-      "sourcePages": [
-        72
-      ],
+      "sourcePages": [72],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2099,17 +1493,10 @@
       "id": "ec-sri-lrti-art-97-9-comprobantes-de-venta-los-contribuyentes-inscritos-en-el-regimen-imposi",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.9.- Comprobantes de venta.- Los contribuyentes inscritos en el Régimen Impositivo",
-      "sourcePages": [
-        99,
-        100
-      ],
+      "sourcePages": [99, 100],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2122,17 +1509,10 @@
       "id": "ec-sri-lrti-art-48-retenciones-en-la-fuente-sobre-pagos-al-exterior-quienes-realicen-pagos-o",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 48.- Retenciones en la fuente sobre pagos al exterior.- Quienes realicen pagos o créditos en",
-      "sourcePages": [
-        58,
-        59
-      ],
+      "sourcePages": [58, 59],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2145,16 +1525,10 @@
       "id": "ec-sri-lrti-art-97-2-contribuyente-sujeto-al-regimen-simplificado-para-efectos-de-esta-ley-p",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.2.- Contribuyente sujeto al Régimen Simplificado.- Para efectos de esta Ley, pueden",
-      "sourcePages": [
-        96
-      ],
+      "sourcePages": [96],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2167,16 +1541,10 @@
       "id": "ec-sri-lrti-art-12-amortizacion-sera-deducible-la-amortizacion-de-los-valores-que-se-deban-r",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 12.- Amortización.- Será deducible la amortización de los valores que se deban registrar como",
-      "sourcePages": [
-        26
-      ],
+      "sourcePages": [26],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2189,17 +1557,10 @@
       "id": "ec-sri-rlrti-art-6-part-2",
       "sourceId": "ec-sri-rlrti",
       "articleOrSection": "Art. 6 (repetido; revisar límites)",
-      "sourcePages": [
-        196,
-        197
-      ],
+      "sourcePages": [196, 197],
       "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "unknown"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["unknown"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2213,16 +1574,10 @@
       "id": "ec-sri-lrti-art-43-retenciones-en-la-fuente-de-ingresos-del-trabajo-con-relacion-de-dependen",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 43.- Retenciones en la fuente de ingresos del trabajo con relación de dependencia.- Los pagos",
-      "sourcePages": [
-        56
-      ],
+      "sourcePages": [56],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2235,18 +1590,10 @@
       "id": "ec-sri-lrti-art-15-rentas-ciertas-o-vitalicias-de-las-sumas-que-se-perciban-como-rentas-cier",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 15.- Rentas ciertas o vitalicias.- De las sumas que se perciban como rentas ciertas o vitalicias,",
-      "sourcePages": [
-        29,
-        30,
-        31
-      ],
+      "sourcePages": [29, 30, 31],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2259,17 +1606,10 @@
       "id": "ec-sri-lrti-art-80-sujetos-pasivos-son-sujetos-pasivos-del-ice",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 80.- Sujetos pasivos.- Son sujetos pasivos del ICE:",
-      "sourcePages": [
-        86,
-        87
-      ],
+      "sourcePages": [86, 87],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2282,16 +1622,10 @@
       "id": "ec-sri-lrti-art-93-gravamenes-a-la-actividad-petrolera",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 93.- Gravámenes a la actividad petrolera.-",
-      "sourcePages": [
-        94
-      ],
+      "sourcePages": [94],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2304,16 +1638,10 @@
       "id": "ec-sri-lrti-art-9-4-exoneracion-del-impuesto-a-la-renta-de-los-ingresos-obtenidos-por-los-su",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.4.- Exoneración del impuesto a la renta de los ingresos obtenidos por los sujetos pasivos que",
-      "sourcePages": [
-        14
-      ],
+      "sourcePages": [14],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2326,17 +1654,10 @@
       "id": "ec-sri-lrti-art-27-impuesto-a-la-renta-unico-para-las-actividades-del-sector-bananero-los-in",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 27.- Impuesto a la Renta Unico para las actividades del Sector Bananero.- Los ingresos",
-      "sourcePages": [
-        36,
-        37
-      ],
+      "sourcePages": [36, 37],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2349,16 +1670,10 @@
       "id": "ec-sri-lrti-art-4-remision-de-intereses-multas-y-recargos-se-dispone-la-remision-del-100-de-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 4.- Remisión de intereses multas y recargos. Se dispone la remisión del 100% de intereses,",
-      "sourcePages": [
-        118
-      ],
+      "sourcePages": [118],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2371,16 +1686,10 @@
       "id": "ec-sri-lrti-art-71-reintegro-del-iva",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 71.- Reintegro del IVA.-",
-      "sourcePages": [
-        76
-      ],
+      "sourcePages": [76],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2393,16 +1702,10 @@
       "id": "ec-sri-lrti-art-79-sujeto-activo-el-sujeto-activo-de-este-impuesto-es-el-estado-lo-administr",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 79.- Sujeto activo.- El sujeto activo de este impuesto es el Estado. Lo administrará a través del",
-      "sourcePages": [
-        86
-      ],
+      "sourcePages": [86],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2415,16 +1718,10 @@
       "id": "ec-sri-lrti-art-4-3-residencia-fiscal-en-los-terminos-del-presente-titulo-se-entenderan-indi",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 4.3.- Residencia fiscal.- En los términos del presente Título, se entenderán indistintamente como",
-      "sourcePages": [
-        4
-      ],
+      "sourcePages": [4],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2437,17 +1734,10 @@
       "id": "ec-sri-lrti-art-97-1-establecese-el-regimen-simplificado-rs-que-comprende-las-declaraciones-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.1.- Establécese el Régimen Simplificado (RS) que comprende las declaraciones de los",
-      "sourcePages": [
-        95,
-        96
-      ],
+      "sourcePages": [95, 96],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2460,16 +1750,10 @@
       "id": "ec-sri-lrti-art-49-tratamiento-sobre-rentas-del-extranjero-toda-persona-natural-o-sociedad-r",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 49.- Tratamiento sobre rentas del extranjero.- Toda persona natural o sociedad residente en el",
-      "sourcePages": [
-        59
-      ],
+      "sourcePages": [59],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2482,16 +1766,10 @@
       "id": "ec-sri-lrti-art-65-tarifa-la-tarifa-del-impuesto-al-valor-agregado-es-del-12",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 65.- Tarifa.- La tarifa del impuesto al valor agregado es del 12%.",
-      "sourcePages": [
-        72
-      ],
+      "sourcePages": [72],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2504,16 +1782,10 @@
       "id": "ec-sri-lrti-art-20-principios-generales-la-contabilidad-se-llevara-por-el-sistema-de-part-id",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 20.- Principios generales.- La contabilidad se llevará por el sistema de partida doble, en idioma",
-      "sourcePages": [
-        32
-      ],
+      "sourcePages": [32],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2526,16 +1798,10 @@
       "id": "ec-sri-lrti-art-34-limite-de-la-determinacion-presuntiva-el-impuesto-resultante-de-la-aplica",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 34.- Límite de la determinación presuntiva.- El impuesto resultante de la aplicación de la",
-      "sourcePages": [
-        41
-      ],
+      "sourcePages": [41],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2548,17 +1814,10 @@
       "id": "ec-sri-lrti-art-101-responsabilidad-por-la-declaracion-la-declaracion-hace-responsable-al-de",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 101.- Responsabilidad por la declaración.- La declaración hace responsable al declarante y, en",
-      "sourcePages": [
-        106,
-        107
-      ],
+      "sourcePages": [106, 107],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2571,17 +1830,10 @@
       "id": "ec-sri-lrti-art-9-1-exoneracion-de-pago-del-impuesto-a-la-renta-para-el-desarrollo-de-invers",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.1.- Exoneración de pago del Impuesto a la Renta para el desarrollo de inversiones nuevas y",
-      "sourcePages": [
-        12,
-        13
-      ],
+      "sourcePages": [12, 13],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2594,16 +1846,10 @@
       "id": "ec-sri-lrti-art-116-tasa-por-sistemas-de-marcacion-el-servicio-de-rentas-internas-podra-esta",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 116.- Tasa por sistemas de marcación.- El Servicio de Rentas Internas podrá establecer,",
-      "sourcePages": [
-        113
-      ],
+      "sourcePages": [113],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2616,18 +1862,10 @@
       "id": "ec-sri-lrti-art-73-compensacion-presupuestaria-del-valor-equivalente-al-impuesto-al-valor-ag",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 73.- Compensación presupuestaria del valor equivalente al Impuesto al Valor Agregado (IVA)",
-      "sourcePages": [
-        77,
-        78,
-        79
-      ],
+      "sourcePages": [77, 78, 79],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2640,17 +1878,10 @@
       "id": "ec-sri-lrti-art-31-ingresos-de-las-companias-de-transporte-internacional-los-ingresos-de-fue",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 31.- Ingresos de las compañías de transporte internacional.- Los ingresos de fuente ecuatoriana",
-      "sourcePages": [
-        39,
-        40
-      ],
+      "sourcePages": [39, 40],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2663,16 +1894,10 @@
       "id": "ec-sri-lrti-art-38-credito-tributario-para-sociedades-extranjeras-y-personas-naturales-no-re",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 38.- Crédito tributario para sociedades extranjeras y personas naturales no residentes.-",
-      "sourcePages": [
-        50
-      ],
+      "sourcePages": [50],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2685,17 +1910,10 @@
       "id": "ec-sri-lrti-art-50-obligaciones-de-los-agentes-de-retencion-la-retencion-en-la-fuente-debera",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 50.- Obligaciones de los agentes de retención.- La retención en la fuente deberá realizarse al",
-      "sourcePages": [
-        59,
-        60
-      ],
+      "sourcePages": [59, 60],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2708,16 +1926,10 @@
       "id": "ec-sri-lrti-art-58-base-imponible-general-la-base-imponible-del-iva-es-el-valor-total-de-los",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 58.- Base imponible general.- La base imponible del IVA es el valor total de los bienes muebles",
-      "sourcePages": [
-        68
-      ],
+      "sourcePages": [68],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2730,16 +1942,10 @@
       "id": "ec-sri-lrti-art-114-terminacion-de-los-convenios-el-director-general-del-servicio-de-rentas-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 114.- Terminación de los convenios.- El Director General del Servicio de Rentas Internas podrá,",
-      "sourcePages": [
-        113
-      ],
+      "sourcePages": [113],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2752,16 +1958,10 @@
       "id": "ec-sri-lrti-art-62-sujeto-activo-el-sujeto-activo-del-impuesto-al-valor-agregado-es-el-estad",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 62.- Sujeto activo.- El sujeto activo del impuesto al valor agregado es el Estado. Lo administrará",
-      "sourcePages": [
-        70
-      ],
+      "sourcePages": [70],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2774,16 +1974,10 @@
       "id": "ec-sri-lrti-art-110-facilidades-de-pago-los-contribuyentes-que-paguen-sus-impuestos-una-vez-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 110.- Facilidades de pago.- Los contribuyentes que paguen sus impuestos una vez vencidos los",
-      "sourcePages": [
-        111
-      ],
+      "sourcePages": [111],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2796,18 +1990,10 @@
       "id": "ec-sri-lrti-art-66-credito-tributario-se-tendra-derecho-a-credito-tributario-por-el-iva-paga",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 66.- Crédito tributario.- Se tendrá derecho a crédito tributario por el IVA pagado en las",
-      "sourcePages": [
-        72,
-        73,
-        74
-      ],
+      "sourcePages": [72, 73, 74],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2820,16 +2006,10 @@
       "id": "ec-sri-lrti-art-85-pago-del-impuesto-el-impuesto-liquidado-debera-ser-pagado-en-los-mismos-p",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 85.- Pago del impuesto.- El impuesto liquidado deberá ser pagado en los mismos plazos",
-      "sourcePages": [
-        90
-      ],
+      "sourcePages": [90],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2842,16 +2022,10 @@
       "id": "ec-sri-lrti-art-97-8-retenciones-de-impuesto-a-la-renta-los-contribuyentes-inscritos-en-el-r",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.8.- Retenciones de Impuesto a la Renta.- Los contribuyentes inscritos en el Régimen",
-      "sourcePages": [
-        99
-      ],
+      "sourcePages": [99],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2864,16 +2038,10 @@
       "id": "ec-sri-lrti-art-95-agente-de-retencion",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 95.- Agente de retención.-",
-      "sourcePages": [
-        94
-      ],
+      "sourcePages": [94],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2886,16 +2054,10 @@
       "id": "ec-sri-lrti-art-97-25-declaracion-y-pago-de-los-impuestos-los-contribuyentes-sujetos-a-este-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.25.- Declaración y pago de los impuestos.- Los contribuyentes sujetos a este régimen",
-      "sourcePages": [
-        104
-      ],
+      "sourcePages": [104],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2908,17 +2070,10 @@
       "id": "ec-sri-lrti-art-37-1-reduccion-de-la-tarifa-del-impuesto-a-la-renta-para-el-impulso-al-depor",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 37.1.- Reducción de la tarifa del impuesto a la renta para el impulso al deporte, la cultura y al",
-      "sourcePages": [
-        49,
-        50
-      ],
+      "sourcePages": [49, 50],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2931,16 +2086,10 @@
       "id": "ec-sri-lrti-art-3-sujeto-activo-el-sujeto-activo-de-este-impuesto-es-el-estado-lo-administra",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 3.- Sujeto activo.- El sujeto activo de este impuesto es el Estado. Lo administrará a través del",
-      "sourcePages": [
-        1
-      ],
+      "sourcePages": [1],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2953,16 +2102,10 @@
       "id": "ec-sri-lrti-art-97-23-declaracion-y-pago-del-impuesto-los-contribuyentes-sujetos-a-este-regi",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.23.- Declaración y pago del impuesto.- Los contribuyentes sujetos a este régimen",
-      "sourcePages": [
-        104
-      ],
+      "sourcePages": [104],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2975,18 +2118,10 @@
       "id": "ec-sri-lrti-art-56-impuesto-al-valor-agregado-sobre-los-servicios-el-impuesto-al-valor-agreg",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 56.- Impuesto al valor agregado sobre los servicios.- El impuesto al valor agregado IVA, grava a",
-      "sourcePages": [
-        65,
-        66,
-        67
-      ],
+      "sourcePages": [65, 66, 67],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -2999,17 +2134,10 @@
       "id": "ec-sri-lrti-art-87-control-facultase-al-servicio-de-rentas-internas-para-que-establezca-los-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 87.- Control.- Facúltase al Servicio de Rentas Internas para que establezca los mecanismos de",
-      "sourcePages": [
-        90,
-        91
-      ],
+      "sourcePages": [90, 91],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3022,24 +2150,10 @@
       "id": "ec-sri-lrti-art-8-extincion-de-obligaciones-vencidas-el-servicio-de-rentas-internas-dara-de-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 8.- Extinción de obligaciones vencidas. El Servicio de Rentas Internas dará de baja de oficio y de",
-      "sourcePages": [
-        119,
-        120,
-        121,
-        122,
-        123,
-        124,
-        125,
-        126,
-        127
-      ],
+      "sourcePages": [119, 120, 121, 122, 123, 124, 125, 126, 127],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3052,16 +2166,10 @@
       "id": "ec-sri-lrti-art-40-plazos-para-la-declaracion-las-declaraciones-del-impuesto-a-la-renta-sera",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 40.- Plazos para la declaración.- Las declaraciones del impuesto a la renta serán presentadas",
-      "sourcePages": [
-        53
-      ],
+      "sourcePages": [53],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3074,17 +2182,10 @@
       "id": "ec-sri-lrti-art-98-definicion-de-sociedad-para-efectos-de-esta-ley-el-termino-sociedad-compr",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 98.- Definición de sociedad.- Para efectos de esta Ley el término sociedad comprende la",
-      "sourcePages": [
-        104,
-        105
-      ],
+      "sourcePages": [104, 105],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3097,16 +2198,10 @@
       "id": "ec-sri-lrti-art-26-forma-de-determinar-la-utilidad-en-la-transferencia-de-activos-fijos-la-u",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 26.- Forma de determinar la utilidad en la transferencia de activos fijos.- La utilidad o pérdida en",
-      "sourcePages": [
-        36
-      ],
+      "sourcePages": [36],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3119,21 +2214,10 @@
       "id": "ec-sri-lrti-art-36-tarifa-del-impuesto-a-la-renta-de-personas-naturales-y-sucesiones-indivis",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 36.- Tarifa del impuesto a la renta de personas naturales y sucesiones indivisas:",
-      "sourcePages": [
-        41,
-        42,
-        43,
-        44,
-        45,
-        46
-      ],
+      "sourcePages": [41, 42, 43, 44, 45, 46],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3146,17 +2230,10 @@
       "id": "ec-sri-lrti-art-39-ingresos-de-no-residentes-los-ingresos-gravables-de-no-residentes-que-no-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 39.- Ingresos de no residentes.- Los ingresos gravables de no residentes que no sean atribuibles",
-      "sourcePages": [
-        50,
-        51
-      ],
+      "sourcePages": [50, 51],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3169,16 +2246,10 @@
       "id": "ec-sri-lrti-art-97-22-tarifa-del-impuesto-a-la-renta-los-contribuyentes-determinaran-el-impu",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.22.- Tarifa del impuesto a la renta.- Los contribuyentes determinarán el impuesto a la renta",
-      "sourcePages": [
-        104
-      ],
+      "sourcePages": [104],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3191,17 +2262,10 @@
       "id": "ec-sri-lrti-art-11-perdidas-las-sociedades-las-personas-naturales-obligadas-a-llevar-contabi",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 11.- Pérdidas.- Las sociedades, las personas naturales obligadas a llevar contabilidad y las",
-      "sourcePages": [
-        25,
-        26
-      ],
+      "sourcePages": [25, 26],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3214,16 +2278,10 @@
       "id": "ec-sri-lrti-art-97-7-credito-tributario-credito-tributario-el-iva-pagado-por-los-contribuyen",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.7.- Crédito Tributario.- Crédito Tributario.- El IVA pagado por los contribuyentes del Régimen",
-      "sourcePages": [
-        99
-      ],
+      "sourcePages": [99],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3236,16 +2294,10 @@
       "id": "ec-sri-lrti-art-59-base-imponible-en-los-bienes-importados-la-base-imponible-en-las-importac",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 59.- Base imponible en los bienes importados.- La base imponible, en las importaciones, es el",
-      "sourcePages": [
-        68
-      ],
+      "sourcePages": [68],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3258,16 +2310,10 @@
       "id": "ec-sri-lrti-art-24-criterios-generales-para-la-determinacion-presuntiva-cuando-segun-lo-disp",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 24.- Criterios generales para la determinación presuntiva.- Cuando, según lo dispuesto en el",
-      "sourcePages": [
-        35
-      ],
+      "sourcePages": [35],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3280,16 +2326,10 @@
       "id": "ec-sri-lrti-art-67-declaracion-del-impuesto-los-sujetos-pasivos-del-iva-declararan-el-impues",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 67.- Declaración del impuesto.- Los sujetos pasivos del IVA declararán el impuesto de las",
-      "sourcePages": [
-        74
-      ],
+      "sourcePages": [74],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3302,16 +2342,10 @@
       "id": "ec-sri-lrti-art-108-accion-publica-se-concede-accion-publica-para-denunciar-violaciones-a-lo",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 108.- Acción pública.- Se concede acción pública para denunciar violaciones a lo dispuesto en",
-      "sourcePages": [
-        111
-      ],
+      "sourcePages": [111],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3324,16 +2358,10 @@
       "id": "ec-sri-lrti-art-5-plazo-de-la-remision-para-beneficiarse-de-la-remision-del-cien-por-ciento-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 5.- Plazo de la remisión. Para beneficiarse de la remisión del cien por ciento (100%) de",
-      "sourcePages": [
-        118
-      ],
+      "sourcePages": [118],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3346,16 +2374,10 @@
       "id": "ec-sri-lrti-art-46-credito-tributario-los-valores-retenidos-de-acuerdo-con-los-art-s-anterio",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 46.- Crédito tributario.- Los valores retenidos de acuerdo con los artículos anteriores constituirán",
-      "sourcePages": [
-        57
-      ],
+      "sourcePages": [57],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3368,16 +2390,10 @@
       "id": "ec-sri-lrti-art-97-16-regimen-para-microempresas-se-establece-un-regimen-impositivo-aplicabl",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.16.- Régimen para microempresas.- Se establece un régimen impositivo, aplicable a los",
-      "sourcePages": [
-        102
-      ],
+      "sourcePages": [102],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3390,17 +2406,10 @@
       "id": "ec-sri-lrti-art-122-compensaciones-con-el-rendimiento-de-los-impuestos-establecidos-por-esta",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 122.- Compensaciones.- Con el rendimiento de los impuestos establecidos por esta Ley se",
-      "sourcePages": [
-        117,
-        118
-      ],
+      "sourcePages": [117, 118],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3413,16 +2422,10 @@
       "id": "ec-sri-lrti-art-97-24-retencion-del-impuesto-a-la-renta-quienes-se-sujeten-a-este-regimen-no",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.24.- Retención del impuesto a la renta.- Quienes se sujeten a este régimen no serán agentes",
-      "sourcePages": [
-        104
-      ],
+      "sourcePages": [104],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3435,17 +2438,10 @@
       "id": "ec-sri-lrti-art-72-iva-pagado-en-actividades-de-exportacion-las-personas-naturales-y-las-soc",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 72.- IVA pagado en actividades de exportación.- Las personas naturales y las sociedades que",
-      "sourcePages": [
-        76,
-        77
-      ],
+      "sourcePages": [76, 77],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3458,16 +2454,10 @@
       "id": "ec-sri-lrti-art-99-cobro-de-intereses-para-el-cobro-de-intereses-sobre-obligaciones-tributar",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 99.- Cobro de intereses.- Para el cobro de intereses sobre obligaciones tributarias determinadas",
-      "sourcePages": [
-        105
-      ],
+      "sourcePages": [105],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3480,17 +2470,10 @@
       "id": "ec-sri-lrti-art-14-pagos-a-companias-verificadoras-los-pagos-que-los-importadores-realicen-a",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 14.- Pagos a compañías verificadoras.- Los pagos que los importadores realicen a las",
-      "sourcePages": [
-        28,
-        29
-      ],
+      "sourcePages": [28, 29],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3503,19 +2486,10 @@
       "id": "ec-sri-lrti-art-9-exenciones-para-fines-de-la-determinacion-y-liquidacion-del-impuesto-a-la-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.- Exenciones.- Para fines de la determinación y liquidación del impuesto a la renta, están",
-      "sourcePages": [
-        6,
-        7,
-        8,
-        9
-      ],
+      "sourcePages": [6, 7, 8, 9],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3528,18 +2502,10 @@
       "id": "ec-sri-lrti-art-77-exenciones-estaran-exentos-del-impuesto-a-los-consumos-especiales",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 77.- Exenciones.- Estarán exentos del impuesto a los consumos especiales:",
-      "sourcePages": [
-        84,
-        85,
-        86
-      ],
+      "sourcePages": [84, 85, 86],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3552,17 +2518,10 @@
       "id": "ec-sri-lrti-art-33-contratos-por-espectaculos-publicos-las-personas-naturales-residentes-en-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 33.- Contratos por espectáculos públicos.- Las personas naturales residentes en el exterior y las",
-      "sourcePages": [
-        40,
-        41
-      ],
+      "sourcePages": [40, 41],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3575,16 +2534,10 @@
       "id": "ec-sri-lrti-art-1-objeto-del-impuesto-establecese-el-impuesto-a-la-renta-global-que-obtengan",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 1.- Objeto del impuesto.- Establécese el impuesto a la renta global que obtengan las personas",
-      "sourcePages": [
-        1
-      ],
+      "sourcePages": [1],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3597,17 +2550,10 @@
       "id": "ec-sri-lrti-art-4-1-residencia-fiscal-de-personas-naturales-seran-considerados-residentes-fi",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 4.1.- Residencia fiscal de personas naturales.- Serán considerados residentes fiscales del",
-      "sourcePages": [
-        3,
-        4
-      ],
+      "sourcePages": [3, 4],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3620,16 +2566,10 @@
       "id": "ec-sri-lrti-art-97-12-exclusion-el-servicio-de-rentas-internas-excluira-de-este-regimen-a-lo",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.12.- Exclusión.- El Servicio de Rentas Internas excluirá de este Régimen a los",
-      "sourcePages": [
-        101
-      ],
+      "sourcePages": [101],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3642,16 +2582,10 @@
       "id": "ec-sri-lrti-art-78-hecho-generador-el-hecho-generador-en-el-caso-de-consumos-de-bienes-de-pr",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 78.- Hecho generador.- El hecho generador en el caso de consumos de bienes de producción",
-      "sourcePages": [
-        86
-      ],
+      "sourcePages": [86],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3664,16 +2598,10 @@
       "id": "ec-sri-lrti-art-112-recaudacion-en-instituciones-financieras-autorizase-a-la-administracion-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 112.- Recaudación en instituciones financieras.- Autorizase a la administración tributaria para",
-      "sourcePages": [
-        112
-      ],
+      "sourcePages": [112],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3686,19 +2614,10 @@
       "id": "ec-sri-lrti-art-42-1-de-esta-ley-ni-cuando-alguno-de-los-constituyentes-o-beneficiarios-sean",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "artículo 42.1 de esta Ley, ni cuando alguno de los constituyentes o beneficiarios sean personas",
-      "sourcePages": [
-        9,
-        10,
-        11,
-        12
-      ],
+      "sourcePages": [9, 10, 11, 12],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3711,16 +2630,10 @@
       "id": "ec-sri-lrti-art-97-18-limitaciones-al-regimen-no-podran-acogerse-al-regimen-de-microempresas",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.18.- Limitaciones al Régimen.- No podrán acogerse al régimen de microempresas los",
-      "sourcePages": [
-        103
-      ],
+      "sourcePages": [103],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3733,17 +2646,10 @@
       "id": "ec-sri-lrti-art-6-ingresos-de-los-bienes-sucesorios-los-ingresos-generados-por-bienes-suceso",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 6.- Ingresos de los bienes sucesorios.- Los ingresos generados por bienes sucesorios indivisos,",
-      "sourcePages": [
-        4,
-        5
-      ],
+      "sourcePages": [4, 5],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3756,17 +2662,10 @@
       "id": "ec-sri-lrti-art-97-5-categorizacion-o-re-categorizacion-los-contribuyentes-del-regimen-impos",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.5.- Categorización o Re categorización.- Los contribuyentes del Régimen Impositivo",
-      "sourcePages": [
-        97,
-        98
-      ],
+      "sourcePages": [97, 98],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3779,16 +2678,10 @@
       "id": "ec-sri-lrti-art-119-residuos-no-podran-venderse-para-el-consumo-humano-los-residuos-y-subpro",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 119.- Residuos.- No podrán venderse para el consumo humano los residuos y subproductos",
-      "sourcePages": [
-        114
-      ],
+      "sourcePages": [114],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3801,16 +2694,10 @@
       "id": "ec-sri-lrti-2026-art-64-facturacion-del-impuesto-los-sujetos-pasivos-del-iva-tienen-la-obligacion",
       "sourceId": "ec-sri-lrti-2026",
       "articleOrSection": "Art. 64.- Facturación del impuesto.- Los sujetos pasivos del IVA tienen la obligación de emitir y entregar al adquirente del",
-      "sourcePages": [
-        62
-      ],
+      "sourcePages": [62],
       "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-      "purposes": [
-        "vat_credit"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["vat_credit"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3824,16 +2711,10 @@
       "id": "ec-sri-lrti-art-16-base-imponible-en-general-la-base-imponible-esta-constituida-por-la-total",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 16.- Base imponible.- En general, la base imponible está constituida por la totalidad de los",
-      "sourcePages": [
-        31
-      ],
+      "sourcePages": [31],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3846,17 +2727,10 @@
       "id": "ec-sri-lrti-art-19-obligacion-de-llevar-contabilidad-todas-las-sociedades-estan-obligadas-a-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 19.- Obligación de llevar contabilidad.- Todas las sociedades están obligadas a llevar",
-      "sourcePages": [
-        31,
-        32
-      ],
+      "sourcePages": [31, 32],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3869,16 +2743,10 @@
       "id": "ec-sri-lrti-art-32-seguros-cesiones-y-reaseguros-contratados-en-el-exterior-el-impuesto-que-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 32.- Seguros, cesiones y reaseguros contratados en el exterior.- El impuesto que corresponda",
-      "sourcePages": [
-        40
-      ],
+      "sourcePages": [40],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3891,18 +2759,10 @@
       "id": "ec-sri-lrti-art-13-pagos-al-exterior-son-deducibles-los-gastos-efectuados-en-el-exterior-que",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 13.- Pagos al exterior.- Son deducibles los gastos efectuados en el exterior que sean necesarios",
-      "sourcePages": [
-        26,
-        27,
-        28
-      ],
+      "sourcePages": [26, 27, 28],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3915,16 +2775,10 @@
       "id": "ec-sri-lrti-art-88-sanciones-los-sujetos-pasivos-del-ice-estaran-sujetos-al-regimen-sanciona",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 88.- Sanciones.- Los sujetos pasivos del ICE estarán sujetos al régimen sancionatorio previsto",
-      "sourcePages": [
-        91
-      ],
+      "sourcePages": [91],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3937,16 +2791,10 @@
       "id": "ec-sri-lrti-art-107-c-cruce-de-informacion-si-al-confrontar-la-informacion-de-las-declaracio",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 107-C.- Cruce de información.- Si al confrontar la información de las declaraciones del",
-      "sourcePages": [
-        110
-      ],
+      "sourcePages": [110],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3959,16 +2807,10 @@
       "id": "ec-sri-lrti-art-2-concepto-de-renta-para-efectos-de-este-impuesto-se-considera-renta",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 2.- Concepto de renta.- Para efectos de este impuesto se considera renta:",
-      "sourcePages": [
-        1
-      ],
+      "sourcePages": [1],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -3981,16 +2823,10 @@
       "id": "ec-sri-lrti-art-97-19-inclusion-en-el-regimen-los-contribuyentes-previstos-en-este-titulo-de",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.19.- Inclusión en el Régimen.- Los contribuyentes previstos en este título, deberán sujetarse",
-      "sourcePages": [
-        103
-      ],
+      "sourcePages": [103],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4003,17 +2839,10 @@
       "id": "ec-sri-lrti-art-40-a-informacion-sobre-patrimonio-las-personas-naturales-presentaran-una-dec",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 40-A.- Información sobre patrimonio.- Las personas naturales presentarán una declaración de su",
-      "sourcePages": [
-        53,
-        54
-      ],
+      "sourcePages": [53, 54],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4026,16 +2855,10 @@
       "id": "ec-sri-lrti-art-17-base-imponible-de-los-ingresos-del-trabajo-en-relacion-de-dependencia-la-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 17.- Base imponible de los ingresos del trabajo en relación de dependencia.- La base imponible",
-      "sourcePages": [
-        31
-      ],
+      "sourcePages": [31],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4048,17 +2871,10 @@
       "id": "ec-sri-lrti-art-41-pago-del-impuesto-los-sujetos-pasivos-deberan-efectuar-el-pago-del-impues",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 41.- Pago del impuesto.- Los sujetos pasivos deberán efectuar el pago del impuesto a la renta",
-      "sourcePages": [
-        54,
-        55
-      ],
+      "sourcePages": [54, 55],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4071,17 +2887,10 @@
       "id": "ec-sri-lrti-art-9-5-exoneracion-de-impuesto-a-la-renta-en-la-fusion-de-entidades-del-sector-",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 9.5.- Exoneración de Impuesto a la Renta en la fusión de entidades del sector financiero popular",
-      "sourcePages": [
-        14,
-        15
-      ],
+      "sourcePages": [14, 15],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4094,16 +2903,10 @@
       "id": "ec-sri-lrti-art-69-pago-del-impuesto-la-diferencia-resultante-luego-de-la-deduccion-indicada",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 69.- Pago del impuesto.- La diferencia resultante, luego de la deducción indicada en el artículo",
-      "sourcePages": [
-        75
-      ],
+      "sourcePages": [75],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4116,17 +2919,10 @@
       "id": "ec-sri-lrti-art-27-1-ingresos-de-actividades-agropecuarias-los-ingresos-provenientes-de-acti",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 27.1.- Ingresos de actividades agropecuarias.- Los ingresos provenientes de actividades",
-      "sourcePages": [
-        37,
-        38
-      ],
+      "sourcePages": [37, 38],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4139,17 +2935,10 @@
       "id": "ec-sri-lrti-art-100-cobro-de-multas-los-sujetos-pasivos-que-dentro-de-los-plazos-establecido",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 100.- Cobro de multas.- Los sujetos pasivos que, dentro de los plazos establecidos en el",
-      "sourcePages": [
-        105,
-        106
-      ],
+      "sourcePages": [105, 106],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4162,16 +2951,10 @@
       "id": "ec-sri-lrti-art-84-liquidacion-del-impuesto-los-sujetos-pasivos-del-ice-efectuaran-la-corres",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 84.- Liquidación del impuesto.- Los sujetos pasivos del ICE efectuarán la correspondiente",
-      "sourcePages": [
-        90
-      ],
+      "sourcePages": [90],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4184,16 +2967,10 @@
       "id": "ec-sri-lrti-art-5-ingresos-de-los-conyuges-los-ingresos-de-la-sociedad-conyugal-seran-imputa",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 5.- Ingresos de los cónyuges.- Los ingresos de la sociedad conyugal serán imputados a cada",
-      "sourcePages": [
-        4
-      ],
+      "sourcePages": [4],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4206,16 +2983,10 @@
       "id": "ec-sri-lrti-art-97-20-exclusion-de-oficio-el-servicio-de-rentas-internas-podra-excluir-de-of",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 97.20.- Exclusión de oficio.- El Servicio de Rentas Internas podrá excluir de oficio a los",
-      "sourcePages": [
-        103
-      ],
+      "sourcePages": [103],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4228,16 +2999,10 @@
       "id": "ec-sri-lrti-art-104-comprobantes-de-retencion-los-agentes-de-retencion-entregaran-los-compro",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 104.- Comprobantes de retención.- Los agentes de retención entregarán los comprobantes de",
-      "sourcePages": [
-        108
-      ],
+      "sourcePages": [108],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4250,17 +3015,10 @@
       "id": "ec-sri-lrti-art-107-d-inconsistencias-en-la-declaracion-y-anexos-de-informacion-si-el-servic",
       "sourceId": "ec-sri-lrti",
       "articleOrSection": "Art. 107-D.- Inconsistencias en la declaración y anexos de información.- Si el Servicio de Rentas",
-      "sourcePages": [
-        110,
-        111
-      ],
+      "sourcePages": [110, 111],
       "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "general"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["general"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",
@@ -4273,16 +3031,10 @@
       "id": "ec-sri-rlrti-art-5-part-2",
       "sourceId": "ec-sri-rlrti",
       "articleOrSection": "Art. 5 (repetido; revisar límites)",
-      "sourcePages": [
-        196
-      ],
+      "sourcePages": [196],
       "sourceContentHash": "sha256:0d9d17940b98df7949d80837aee72770e9a44e4678db2d2df0f1c24a8e57b260",
-      "purposes": [
-        "business_income_tax"
-      ],
-      "taxRegimes": [
-        "unknown"
-      ],
+      "purposes": ["business_income_tax"],
+      "taxRegimes": ["unknown"],
       "effectiveFrom": "2026-01-01",
       "effectiveTo": null,
       "reviewStatus": "reviewed",

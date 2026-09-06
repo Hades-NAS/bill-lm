@@ -14,7 +14,9 @@ function getAdminApp() {
   }
 
   if (!env.GOOGLE_APPLICATION_CREDENTIALS) {
-    logger.error('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
+    logger.error(
+      'GOOGLE_APPLICATION_CREDENTIALS environment variable is not set',
+    )
     throw new Error(
       'GOOGLE_APPLICATION_CREDENTIALS environment variable is required to initialize Firebase Admin SDK',
     )
@@ -69,5 +71,7 @@ function createLazyFirebaseService<T extends object>(factory: () => T): T {
 
 // Route modules may import Firebase Admin during application bootstrap. Delay
 // credential-file access until a server operation actually needs the service.
-export const adminDb = createLazyFirebaseService(() => getAdminApp().firestore())
+export const adminDb = createLazyFirebaseService(() =>
+  getAdminApp().firestore(),
+)
 export const adminAuth = createLazyFirebaseService(() => getAdminApp().auth())

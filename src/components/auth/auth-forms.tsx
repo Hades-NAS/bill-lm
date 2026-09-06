@@ -10,7 +10,7 @@ import {
   TextInput,
 } from '@mantine/core'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   EmailPasswordCredentialsSchema,
@@ -26,8 +26,38 @@ import {
   signUpWithEmail,
 } from '#/integrations/firebase/auth'
 import { getFirebaseAuthErrorMessage } from '#/integrations/firebase/auth-error'
+import { useUserAuth } from '#/hooks/auth'
+
+import type { AuthType } from '#/schema/auth'
 
 type AuthFormError = Record<string, Array<string> | undefined>
+
+export function shouldNavigateToCollections(
+  navigationRequested: boolean,
+  auth: AuthType,
+) {
+  return (
+    navigationRequested &&
+    auth.isLoaded &&
+    auth.isSignedIn &&
+    auth.isEmailVerified
+  )
+}
+
+function useAuthenticatedCollectionNavigation() {
+  const navigate = useNavigate()
+  const auth = useUserAuth()
+  const [navigationRequested, setNavigationRequested] = useState(false)
+
+  useEffect(() => {
+    if (!shouldNavigateToCollections(navigationRequested, auth)) return
+
+    setNavigationRequested(false)
+    void navigate({ to: '/collections' })
+  }, [auth, navigate, navigationRequested])
+
+  return setNavigationRequested
+}
 
 function GoogleDivider() {
   return <Divider label="o" labelPosition="center" />
@@ -54,7 +84,7 @@ function GoogleButton({
 }
 
 export function SignInForm() {
-  const navigate = useNavigate()
+  const requestCollectionNavigation = useAuthenticatedCollectionNavigation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<AuthFormError>({})
@@ -67,7 +97,7 @@ export function SignInForm() {
       setNeedsVerification(true)
       return
     }
-    await navigate({ to: '/collections' })
+    requestCollectionNavigation(true)
   }
 
   const handleEmailSignIn = async () => {
@@ -168,7 +198,7 @@ export function SignInForm() {
 }
 
 export function SignUpForm() {
-  const navigate = useNavigate()
+  const requestCollectionNavigation = useAuthenticatedCollectionNavigation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
@@ -210,7 +240,7 @@ export function SignUpForm() {
         setFormError('Verifica tu correo de Google antes de continuar.')
         return
       }
-      await navigate({ to: '/collections' })
+      requestCollectionNavigation(true)
     } catch (error) {
       setFormError(getFirebaseAuthErrorMessage(error))
     } finally {

@@ -36,21 +36,24 @@ describe('SmokeTestProvider', () => {
     ['vat_credit', [ACTIVITY_ID]],
     ['business_income_tax', [ACTIVITY_ID]],
     ['personal_expenses', []],
-  ] as const)('returns a valid deterministic payload for %s without real-provider I/O', async (purpose, activityIds) => {
-    const real = realProvider()
-    const provider = new SmokeTestProvider(real, {
-      context: { purpose },
-      activities: activityIds.map((revisionId) => ({ revisionId })),
-    } as any)
+  ] as const)(
+    'returns a valid deterministic payload for %s without real-provider I/O',
+    async (purpose, activityIds) => {
+      const real = realProvider()
+      const provider = new SmokeTestProvider(real, {
+        context: { purpose },
+        activities: activityIds.map((revisionId) => ({ revisionId })),
+      } as any)
 
-    await provider.isModelLoaded()
-    await provider.loadModel()
-    const payload = await provider.process('private prompt', 'balanced')
+      await provider.isModelLoaded()
+      await provider.loadModel()
+      const payload = await provider.process('private prompt', 'balanced')
 
-    expect(ModelTaxAnalysisPayloadSchema.parse(payload)).toEqual(payload)
-    expect(real.isEngineHealthy).not.toHaveBeenCalled()
-    expect(real.isModelLoaded).not.toHaveBeenCalled()
-    expect(real.loadModel).not.toHaveBeenCalled()
-    expect(real.process).not.toHaveBeenCalled()
-  })
+      expect(ModelTaxAnalysisPayloadSchema.parse(payload)).toEqual(payload)
+      expect(real.isEngineHealthy).not.toHaveBeenCalled()
+      expect(real.isModelLoaded).not.toHaveBeenCalled()
+      expect(real.loadModel).not.toHaveBeenCalled()
+      expect(real.process).not.toHaveBeenCalled()
+    },
+  )
 })

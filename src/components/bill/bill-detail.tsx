@@ -39,8 +39,7 @@ export function getAnalysisResult(snapshot: unknown) {
   const createdAt = candidate.createdAt
   const result = TaxAnalysisResultSchema.safeParse({
     ...candidate,
-    createdAt:
-      typeof createdAt === 'string' ? new Date(createdAt) : createdAt,
+    createdAt: typeof createdAt === 'string' ? new Date(createdAt) : createdAt,
   })
   return result.success ? result.data : null
 }

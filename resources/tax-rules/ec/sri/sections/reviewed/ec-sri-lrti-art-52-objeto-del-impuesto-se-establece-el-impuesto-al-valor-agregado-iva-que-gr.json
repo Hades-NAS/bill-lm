@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-52-objeto-del-impuesto-se-establece-el-impuesto-al-valor-agregado-iva-que-gr",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 52.- Objeto del impuesto.- Se establece el Impuesto al Valor Agregado (IVA), que grava al valor",
-  "sourcePages": [
-    60,
-    61
-  ],
+  "sourcePages": [60, 61],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

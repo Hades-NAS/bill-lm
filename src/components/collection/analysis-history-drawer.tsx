@@ -116,13 +116,7 @@ function formatCurrency(amount: number) {
   }).format(amount)
 }
 
-function DetailField({
-  label,
-  value,
-}: {
-  label: string
-  value: string
-}) {
+function DetailField({ label, value }: { label: string; value: string }) {
   return (
     <Stack gap={2}>
       <Text c="dimmed" size="xs">
@@ -413,7 +407,8 @@ function RunSummary({
       </Group>
       {detail.executionMode === 'smoke' && (
         <Alert color="orange" title="Ejecución simulada">
-          Esta ejecución validó el flujo sin consultar al proveedor. No uses sus resultados para decisiones fiscales.
+          Esta ejecución validó el flujo sin consultar al proveedor. No uses sus
+          resultados para decisiones fiscales.
         </Alert>
       )}
       <Text c="dimmed" size="sm">
@@ -663,9 +658,7 @@ export function AnalysisHistoryDrawer({
                     Volver al resumen
                   </Button>
                   <Stack gap="md">
-                    <Title order={3}>
-                      Factura {selectedResultIndex + 1}
-                    </Title>
+                    <Title order={3}>Factura {selectedResultIndex + 1}</Title>
                     {detailQuery.data.results[selectedResultIndex] ? (
                       <InvoiceResultDetail
                         result={detailQuery.data.results[selectedResultIndex]}

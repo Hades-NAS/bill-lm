@@ -44,7 +44,9 @@ const RUN_C = '44444444-4444-4444-8444-444444444444'
 const CONNECTION_ID = '55555555-5555-4555-8555-555555555555'
 const CONTEXT_ID = '66666666-6666-4666-8666-666666666666'
 const PROFILE_ID = '77777777-7777-4777-8777-777777777777'
-const caller = createTRPCRouter({ collections: collectionsRouter }).createCaller({
+const caller = createTRPCRouter({
+  collections: collectionsRouter,
+}).createCaller({
   principal: { userId: 'owner-1' },
 } as any)
 
@@ -57,7 +59,10 @@ function run(id: string, createdAt: string) {
     provider: null,
     modelId: null,
     promptVersion: '2',
-    inputSnapshot: { schemaVersion: 'v2', blockCode: 'MISSING_APPLICABLE_RULESET' },
+    inputSnapshot: {
+      schemaVersion: 'v2',
+      blockCode: 'MISSING_APPLICABLE_RULESET',
+    },
     createdAt: new Date(createdAt),
     completedAt: new Date(createdAt),
     results: [],
@@ -75,20 +80,24 @@ describe('analysis history router behavior', () => {
     async () => {
       mocks.collectionFindFirst.mockResolvedValue(null)
 
-      await expect(caller.collections.listAnalysisRunHistory({
-        collectionId: COLLECTION_ID,
-      })).rejects.toMatchObject({
+      await expect(
+        caller.collections.listAnalysisRunHistory({
+          collectionId: COLLECTION_ID,
+        }),
+      ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Colección no encontrada.',
       })
 
-      expect(mocks.collectionFindFirst).toHaveBeenCalledWith(expect.objectContaining({
-        where: expect.objectContaining({
-          id: COLLECTION_ID,
-          userId: 'owner-1',
-          deletedAt: null,
+      expect(mocks.collectionFindFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: COLLECTION_ID,
+            userId: 'owner-1',
+            deletedAt: null,
+          }),
         }),
-      }))
+      )
       expect(mocks.analysisRunFindMany).not.toHaveBeenCalled()
     },
   )
@@ -107,7 +116,10 @@ describe('analysis history router behavior', () => {
       limit: 2,
     })
     expect(pageOne.items.map((item) => item.id)).toEqual([RUN_A, RUN_B])
-    expect(pageOne.nextCursor).toEqual({ createdAt: second.createdAt, id: RUN_B })
+    expect(pageOne.nextCursor).toEqual({
+      createdAt: second.createdAt,
+      id: RUN_B,
+    })
 
     const pageTwo = await caller.collections.listAnalysisRunHistory({
       collectionId: COLLECTION_ID,
@@ -134,24 +146,31 @@ describe('analysis history router behavior', () => {
     mocks.collectionFindFirst.mockResolvedValue({ id: COLLECTION_ID })
     mocks.analysisRunFindFirst.mockResolvedValue(null)
 
-    await expect(caller.collections.getAnalysisRunDetail({
-      collectionId: COLLECTION_ID,
-      runId: RUN_A,
-    })).rejects.toMatchObject({
+    await expect(
+      caller.collections.getAnalysisRunDetail({
+        collectionId: COLLECTION_ID,
+        runId: RUN_A,
+      }),
+    ).rejects.toMatchObject({
       code: 'NOT_FOUND',
       message: 'Análisis no encontrado.',
     })
-    expect(mocks.analysisRunFindFirst).toHaveBeenCalledWith(expect.objectContaining({
-      where: expect.objectContaining({
-        id: RUN_A,
-        collectionId: COLLECTION_ID,
-        userId: 'owner-1',
+    expect(mocks.analysisRunFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: RUN_A,
+          collectionId: COLLECTION_ID,
+          userId: 'owner-1',
+        }),
       }),
-    }))
+    )
   })
 
   it('persists a blocked run and never enqueues when the pre-enqueue gate rejects the context', async () => {
-    mocks.collectionFindFirst.mockResolvedValue({ id: COLLECTION_ID, name: 'Prueba' })
+    mocks.collectionFindFirst.mockResolvedValue({
+      id: COLLECTION_ID,
+      name: 'Prueba',
+    })
     mocks.providerConnectionFindFirst.mockResolvedValue({ id: CONNECTION_ID })
     mocks.collectionContextRevisionFindFirst.mockResolvedValue({
       id: CONTEXT_ID,
@@ -170,21 +189,25 @@ describe('analysis history router behavior', () => {
     })
     mocks.analysisRunCreate.mockResolvedValue({ id: RUN_A })
 
-    await expect(caller.collections.analyze({
-      collectionId: COLLECTION_ID,
-      collectionName: 'Prueba',
-      credentialId: CONNECTION_ID,
-      type: 'all',
-      billIds: [],
-    })).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' })
-
-    expect(mocks.analysisRunCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({
-        status: 'blocked',
-        blockCode: 'MISSING_TAXPAYER_PROFILE',
+    await expect(
+      caller.collections.analyze({
         collectionId: COLLECTION_ID,
+        collectionName: 'Prueba',
+        credentialId: CONNECTION_ID,
+        type: 'all',
+        billIds: [],
       }),
-    }))
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' })
+
+    expect(mocks.analysisRunCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'blocked',
+          blockCode: 'MISSING_TAXPAYER_PROFILE',
+          collectionId: COLLECTION_ID,
+        }),
+      }),
+    )
     expect(mocks.analyzeQueueAdd).not.toHaveBeenCalled()
   })
 })

@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-40-a-informacion-sobre-patrimonio-las-personas-naturales-presentaran-una-dec",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 40-A.- Información sobre patrimonio.- Las personas naturales presentarán una declaración de su",
-  "sourcePages": [
-    53,
-    54
-  ],
+  "sourcePages": [53, 54],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

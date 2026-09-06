@@ -102,17 +102,16 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 
     assertEnvelopeMatchesAnalysisRun(envelope, run, data.collectionId)
 
-    const [connection, collection] =
-      await Promise.all([
-        prisma.providerConnection.findFirst({
-          where: { id: credentialId, userId, isActive: true, deletedAt: null },
-        }),
+    const [connection, collection] = await Promise.all([
+      prisma.providerConnection.findFirst({
+        where: { id: credentialId, userId, isActive: true, deletedAt: null },
+      }),
 
-        prisma.collection.findFirst({
-          where: { id: data.collectionId, userId, deletedAt: null },
-          select: { id: true },
-        }),
-      ])
+      prisma.collection.findFirst({
+        where: { id: data.collectionId, userId, deletedAt: null },
+        select: { id: true },
+      }),
+    ])
     if (!collection)
       throw new AnalysisPrerequisiteError(
         'MISSING_COLLECTION_CONTEXT',
@@ -147,9 +146,10 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
       timeout: parseInt(env.LLM_TIMEOUT_MS ?? '30000'),
       agentInstructions: '',
     })
-    const provider = envelope.execution.mode === 'smoke'
-      ? new SmokeTestProvider(realProvider, envelope)
-      : realProvider
+    const provider =
+      envelope.execution.mode === 'smoke'
+        ? new SmokeTestProvider(realProvider, envelope)
+        : realProvider
     const useCase = createAnalyzeBillsUseCase(provider)
     const results = await useCase.execute(
       envelope.invoices.map((invoice) => ({
@@ -164,13 +164,15 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
     await prisma.analysisResult.createMany({
       data: results.flatMap((result) => {
         if (!result.success || !result.result) return []
-        return [{
-          runId: run.id,
-          billId: result.billId,
-          purpose: result.result.purpose,
-          classification: result.result.classification,
-          resultSnapshot: JSON.parse(JSON.stringify(result.result)),
-        }]
+        return [
+          {
+            runId: run.id,
+            billId: result.billId,
+            purpose: result.result.purpose,
+            classification: result.result.classification,
+            resultSnapshot: JSON.parse(JSON.stringify(result.result)),
+          },
+        ]
       }),
       skipDuplicates: true,
     })
@@ -230,7 +232,8 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
         .doc(jobId)
         .update({
           status: prerequisiteError ? 'blocked' : 'failed',
-          error: prerequisiteError?.message ?? 'No se pudo completar el análisis.',
+          error:
+            prerequisiteError?.message ?? 'No se pudo completar el análisis.',
           updatedAt: DateTime.now().toJSDate(),
         })
     } catch (updateError) {

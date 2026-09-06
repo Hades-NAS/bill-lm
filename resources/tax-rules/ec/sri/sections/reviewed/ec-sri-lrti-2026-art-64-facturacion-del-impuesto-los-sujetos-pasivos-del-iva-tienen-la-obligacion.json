@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-2026-art-64-facturacion-del-impuesto-los-sujetos-pasivos-del-iva-tienen-la-obligacion",
   "sourceId": "ec-sri-lrti-2026",
   "articleOrSection": "Art. 64.- Facturación del impuesto.- Los sujetos pasivos del IVA tienen la obligación de emitir y entregar al adquirente del",
-  "sourcePages": [
-    62
-  ],
+  "sourcePages": [62],
   "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-  "purposes": [
-    "vat_credit"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["vat_credit"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

@@ -16,8 +16,8 @@ If it exits non-zero, stop and report the issue. Do not proceed with codebase ch
 
 ## Harness data (source of truth)
 
-| File | Purpose |
-|------|---------|
+| File                  | Purpose                                              |
+| --------------------- | ---------------------------------------------------- |
 | `.harness/harness.db` | SQLite: all tasks, actions, file changes, tool calls |
 
 ## MCP tools (preferred)
@@ -64,13 +64,13 @@ docs.search          query                                  → search ./docs fo
 
 ## Agent roles
 
-| Agent | Responsibility |
-|-------|---------------|
-| lead | Decomposes the task into a plan, assigns sub-agents |
-| explorer | Reads and maps relevant code, never writes |
+| Agent      | Responsibility                                                             |
+| ---------- | -------------------------------------------------------------------------- |
+| lead       | Decomposes the task into a plan, assigns sub-agents                        |
+| explorer   | Reads and maps relevant code, never writes                                 |
 | consultant | Technical advisor, runs after explorer, before builder. Never writes code. |
-| builder | Implements the plan, writes files |
-| reviewer | Verifies acceptance criteria, approves or blocks |
+| builder    | Implements the plan, writes files                                          |
+| reviewer   | Verifies acceptance criteria, approves or blocks                           |
 
 ## What to read
 

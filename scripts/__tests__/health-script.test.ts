@@ -1,5 +1,12 @@
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -8,10 +15,18 @@ import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
-const healthScriptPath = fileURLToPath(new URL('../../health.sh', import.meta.url))
-const healthFixturePath = fileURLToPath(new URL('../../.env.health', import.meta.url))
-const packageJsonPath = fileURLToPath(new URL('../../package.json', import.meta.url))
-const viteConfigPath = fileURLToPath(new URL('../../vite.config.ts', import.meta.url))
+const healthScriptPath = fileURLToPath(
+  new URL('../../health.sh', import.meta.url),
+)
+const healthFixturePath = fileURLToPath(
+  new URL('../../.env.health', import.meta.url),
+)
+const packageJsonPath = fileURLToPath(
+  new URL('../../package.json', import.meta.url),
+)
+const viteConfigPath = fileURLToPath(
+  new URL('../../vite.config.ts', import.meta.url),
+)
 const playwrightConfigPath = fileURLToPath(
   new URL('../../playwright.config.ts', import.meta.url),
 )
@@ -19,7 +34,10 @@ const viteBinaryPath = fileURLToPath(
   new URL('../../node_modules/.bin/vite', import.meta.url),
 )
 const firebaseServerPath = fileURLToPath(
-  new URL('../../src/integrations/firebase/firebase.server.ts', import.meta.url),
+  new URL(
+    '../../src/integrations/firebase/firebase.server.ts',
+    import.meta.url,
+  ),
 )
 
 const requiredRuntimeKeys = [
@@ -135,7 +153,9 @@ describe('health.sh', () => {
     const script = readFileSync(healthScriptPath, 'utf8')
 
     expect(script).toContain('HEALTH_ENV_FILE=".env.health"')
-    expect(script).toContain('HEALTH_PLAYWRIGHT_PORT="${PLAYWRIGHT_PORT:-3000}"')
+    expect(script).toContain(
+      'HEALTH_PLAYWRIGHT_PORT="${PLAYWRIGHT_PORT:-3000}"',
+    )
     expect(script).toContain('HEALTH_SKIP_E2E="${SKIP_E2E:-false}"')
     expect(script).toContain('env -i')
     expect(script).toContain('./node_modules/.bin/dotenv -e "$HEALTH_ENV_FILE"')
@@ -195,8 +215,12 @@ describe('health.sh', () => {
     expect(firebaseServer).toContain('function createLazyFirebaseService')
     expect(firebaseServer).toContain('getAdminApp().firestore()')
     expect(firebaseServer).toContain('getAdminApp().auth()')
-    expect(firebaseServer).not.toContain('export const adminDb = admin.firestore()')
-    expect(firebaseServer).not.toContain('export const adminAuth = admin.auth()')
+    expect(firebaseServer).not.toContain(
+      'export const adminDb = admin.firestore()',
+    )
+    expect(firebaseServer).not.toContain(
+      'export const adminAuth = admin.auth()',
+    )
   })
 
   it('disables Bun env auto-loading for the nested Playwright command', () => {
@@ -251,7 +275,14 @@ describe('health.sh', () => {
       const port = await reservePort()
       const devServer = spawn(
         viteBinaryPath,
-        ['--config', 'vite.config.ts', '--host', '127.0.0.1', '--port', String(port)],
+        [
+          '--config',
+          'vite.config.ts',
+          '--host',
+          '127.0.0.1',
+          '--port',
+          String(port),
+        ],
         {
           cwd: tempDirectory,
           env: {

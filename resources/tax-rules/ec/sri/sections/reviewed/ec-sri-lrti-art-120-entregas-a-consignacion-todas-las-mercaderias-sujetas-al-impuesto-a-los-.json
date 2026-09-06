@@ -3,16 +3,10 @@
   "id": "ec-sri-lrti-art-120-entregas-a-consignacion-todas-las-mercaderias-sujetas-al-impuesto-a-los-",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 120.- Entregas a consignación.- Todas las mercaderías sujetas al impuesto a los consumos",
-  "sourcePages": [
-    114
-  ],
+  "sourcePages": [114],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

@@ -404,9 +404,7 @@ describe('AnalysisHistoryDrawer', () => {
       screen.getByRole('button', { name: 'Volver al resumen del análisis' }),
     )
 
-    expect(
-      await screen.findByText('Resultados por factura'),
-    ).toBeTruthy()
+    expect(await screen.findByText('Resultados por factura')).toBeTruthy()
     expect(screen.queryByText('Categoría de gasto personal')).toBeNull()
   })
 

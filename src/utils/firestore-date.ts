@@ -9,22 +9,27 @@ export function toDate(value: any): Date {
 
   // Already a Date
   if (value instanceof Date) {
-    return value
+    return Number.isNaN(value.getTime()) ? new Date() : value
   }
 
   // Firestore Timestamp (has toDate method)
   if (typeof value === 'object' && typeof value.toDate === 'function') {
-    return value.toDate()
+    const date = value.toDate()
+    return date instanceof Date && !Number.isNaN(date.getTime())
+      ? date
+      : new Date()
   }
 
   // Number (milliseconds since epoch)
   if (typeof value === 'number') {
-    return new Date(value)
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? new Date() : date
   }
 
   // String (ISO format)
   if (typeof value === 'string') {
-    return new Date(value)
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? new Date() : date
   }
 
   // Fallback for edge cases

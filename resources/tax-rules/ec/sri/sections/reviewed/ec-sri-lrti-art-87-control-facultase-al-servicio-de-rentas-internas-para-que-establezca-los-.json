@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-art-87-control-facultase-al-servicio-de-rentas-internas-para-que-establezca-los-",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 87.- Control.- Facúltase al Servicio de Rentas Internas para que establezca los mecanismos de",
-  "sourcePages": [
-    90,
-    91
-  ],
+  "sourcePages": [90, 91],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

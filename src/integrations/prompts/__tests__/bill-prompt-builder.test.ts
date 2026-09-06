@@ -33,17 +33,19 @@ function createEnvelope(purpose: TaxPurpose) {
       vatFilingFrequency: 'monthly',
       additionalFacts: null,
     },
-    activities: [{
-      revisionId: id,
-      revision: 1,
-      displayName: 'Desarrollo de software',
-      registeredActivityCode: '620100',
-      registeredActivityName: 'Servicios de programación',
-      activityDescription: 'Desarrollo para clientes.',
-      necessaryPurchases: 'Servicios de nube.',
-      revenueVatTreatment: 'taxed_nonzero',
-      additionalFacts: null,
-    }],
+    activities: [
+      {
+        revisionId: id,
+        revision: 1,
+        displayName: 'Desarrollo de software',
+        registeredActivityCode: '620100',
+        registeredActivityName: 'Servicios de programación',
+        activityDescription: 'Desarrollo para clientes.',
+        necessaryPurchases: 'Servicios de nube.',
+        revenueVatTreatment: 'taxed_nonzero',
+        additionalFacts: null,
+      },
+    ],
     provider: { id, provider: 'OPENAI', modelId: 'gpt-4o-mini' },
     ruleset: {
       id,
@@ -90,25 +92,29 @@ function createEnvelope(purpose: TaxPurpose) {
         markdown: 'Segunda evidencia oficial.',
       },
     ],
-    userReferences: [{
-      id,
-      name: 'Nota del contribuyente.md',
-      normalizedMarkdown: 'Material autogestionado.',
-      contentHash: 'reference-hash',
-    }],
-    invoices: [{
-      billId: id,
-      contentHash: 'a'.repeat(64),
-      parserVersion: 'xml-v1',
-      normalized: {
-        vendorName: 'Proveedor de nube',
-        buyerIdentifier: '0102030405',
-        buyerName: 'Persona privada',
-        details: [{ description: 'Hosting', quantity: 1, unitPrice: 10 }],
-        totals: { amount: 11.5, net: 10, taxes: 1.5 },
-        billType: 'PROFESSIONAL',
+    userReferences: [
+      {
+        id,
+        name: 'Nota del contribuyente.md',
+        normalizedMarkdown: 'Material autogestionado.',
+        contentHash: 'reference-hash',
       },
-    }],
+    ],
+    invoices: [
+      {
+        billId: id,
+        contentHash: 'a'.repeat(64),
+        parserVersion: 'xml-v1',
+        normalized: {
+          vendorName: 'Proveedor de nube',
+          buyerIdentifier: '0102030405',
+          buyerName: 'Persona privada',
+          details: [{ description: 'Hosting', quantity: 1, unitPrice: 10 }],
+          totals: { amount: 11.5, net: 10, taxes: 1.5 },
+          billType: 'PROFESSIONAL',
+        },
+      },
+    ],
   })
 }
 
@@ -131,7 +137,7 @@ describe('BillPromptBuilder', () => {
       expect(prompt).toContain('Norma A')
       expect(prompt).toContain('Nota del contribuyente.md')
       expect(prompt).toContain(BILL_ANALYSIS_PROMPT_METADATA.templateHash)
-    expect(builder.build(envelope, id)).toBe(prompt)
+      expect(builder.build(envelope, id)).toBe(prompt)
     },
   )
 
@@ -152,26 +158,30 @@ describe('BillPromptBuilder', () => {
   })
 
   it('rejects extra fields in the model-owned payload', () => {
-    expect(ModelTaxAnalysisPayloadSchema.safeParse({
-      purpose: 'personal_expenses',
-      classification: 'needs_review',
-      reasoning: 'Falta confirmar el beneficiario.',
-      uncertainties: ['No consta la relación con el beneficiario.'],
-      missingEvidence: ['Relación con el beneficiario.'],
-      runId: id,
-    }).success).toBe(false)
+    expect(
+      ModelTaxAnalysisPayloadSchema.safeParse({
+        purpose: 'personal_expenses',
+        classification: 'needs_review',
+        reasoning: 'Falta confirmar el beneficiario.',
+        uncertainties: ['No consta la relación con el beneficiario.'],
+        missingEvidence: ['Relación con el beneficiario.'],
+        runId: id,
+      }).success,
+    ).toBe(false)
 
-    expect(ModelTaxAnalysisPayloadSchema.safeParse({
-      purpose: 'vat_credit',
-      classification: 'eligible',
-      reasoning: 'La factura contiene IVA.',
-      uncertainties: [],
-      relatedActivityRevisionIds: [id],
-      invoiceVatAmount: 1.5,
-      creditType: 'total',
-      proportionalityRequired: false,
-      missingEvidence: [],
-    }).success).toBe(true)
+    expect(
+      ModelTaxAnalysisPayloadSchema.safeParse({
+        purpose: 'vat_credit',
+        classification: 'eligible',
+        reasoning: 'La factura contiene IVA.',
+        uncertainties: [],
+        relatedActivityRevisionIds: [id],
+        invoiceVatAmount: 1.5,
+        creditType: 'total',
+        proportionalityRequired: false,
+        missingEvidence: [],
+      }).success,
+    ).toBe(true)
   })
 
   it('uses stable non-secret template metadata in the frozen envelope', () => {

@@ -55,6 +55,7 @@ abrir el resultado especializado de cada factura sin salir de la colección. El
 mismo drawer conserva tres niveles —historial, run y factura— con acciones de
 volver; no abre drawers anidados. La vista de factura muestra solo una
 proyección segura: no expone IDs internos, hashes ni snapshots crudos.
+
 # Operación de migración: retiro de resultados legacy
 
 La migración `20260905100000_remove_legacy_bill_analysis_columns` elimina únicamente las columnas históricas `bills_header.percentage` y `bills_header.reason`.

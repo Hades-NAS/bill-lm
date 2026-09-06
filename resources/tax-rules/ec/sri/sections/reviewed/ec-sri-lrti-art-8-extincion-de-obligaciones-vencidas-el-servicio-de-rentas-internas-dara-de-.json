@@ -3,24 +3,10 @@
   "id": "ec-sri-lrti-art-8-extincion-de-obligaciones-vencidas-el-servicio-de-rentas-internas-dara-de-",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 8.- Extinción de obligaciones vencidas. El Servicio de Rentas Internas dará de baja de oficio y de",
-  "sourcePages": [
-    119,
-    120,
-    121,
-    122,
-    123,
-    124,
-    125,
-    126,
-    127
-  ],
+  "sourcePages": [119, 120, 121, 122, 123, 124, 125, 126, 127],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

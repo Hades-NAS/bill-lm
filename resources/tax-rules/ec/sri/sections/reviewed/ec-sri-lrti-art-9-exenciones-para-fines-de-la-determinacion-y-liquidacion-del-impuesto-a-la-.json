@@ -3,19 +3,10 @@
   "id": "ec-sri-lrti-art-9-exenciones-para-fines-de-la-determinacion-y-liquidacion-del-impuesto-a-la-",
   "sourceId": "ec-sri-lrti",
   "articleOrSection": "Art. 9.- Exenciones.- Para fines de la determinación y liquidación del impuesto a la renta, están",
-  "sourcePages": [
-    6,
-    7,
-    8,
-    9
-  ],
+  "sourcePages": [6, 7, 8, 9],
   "sourceContentHash": "sha256:32506f9928317d15a96d449d77ac85ed06d808e53a1ad5e33bee57c0d0e340fc",
-  "purposes": [
-    "business_income_tax"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["business_income_tax"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

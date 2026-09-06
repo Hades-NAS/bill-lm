@@ -731,27 +731,57 @@ export const collectionsRouter = {
       })
       const selectedRuleSet = selectApplicableTaxRuleSet(
         {
-          purpose: context.purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
+          purpose: context.purpose as
+            | 'vat_credit'
+            | 'business_income_tax'
+            | 'personal_expenses',
           period: {
             startDate: context.periodStartDate.toISOString().slice(0, 10),
             endDate: context.periodEndDate.toISOString().slice(0, 10),
           },
-          taxRegime: context.taxpayerProfileRevision.taxRegime as 'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown',
-          vatFilingFrequency: context.taxpayerProfileRevision.vatFilingFrequency as 'none' | 'monthly' | 'semiannual' | 'unknown',
+          taxRegime: context.taxpayerProfileRevision.taxRegime as
+            | 'general'
+            | 'rimpe_entrepreneur'
+            | 'rimpe_popular_business'
+            | 'unknown',
+          vatFilingFrequency: context.taxpayerProfileRevision
+            .vatFilingFrequency as
+            | 'none'
+            | 'monthly'
+            | 'semiannual'
+            | 'unknown',
         },
         ruleSetCandidates.map((candidate) => ({
           id: candidate.id,
           version: candidate.version,
-          purpose: candidate.purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
-          taxRegime: candidate.taxRegime as 'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown',
-          vatFilingFrequency: candidate.vatFilingFrequency as 'none' | 'monthly' | 'semiannual' | 'unknown',
+          purpose: candidate.purpose as
+            | 'vat_credit'
+            | 'business_income_tax'
+            | 'personal_expenses',
+          taxRegime: candidate.taxRegime as
+            | 'general'
+            | 'rimpe_entrepreneur'
+            | 'rimpe_popular_business'
+            | 'unknown',
+          vatFilingFrequency: candidate.vatFilingFrequency as
+            | 'none'
+            | 'monthly'
+            | 'semiannual'
+            | 'unknown',
           effectiveFrom: candidate.effectiveFrom.toISOString().slice(0, 10),
-          effectiveTo: candidate.effectiveTo?.toISOString().slice(0, 10) ?? null,
-          reviewStatus: candidate.reviewStatus as 'draft' | 'reviewed' | 'active' | 'retired',
+          effectiveTo:
+            candidate.effectiveTo?.toISOString().slice(0, 10) ?? null,
+          reviewStatus: candidate.reviewStatus as
+            | 'draft'
+            | 'reviewed'
+            | 'active'
+            | 'retired',
         })),
       )
       const ruleSet = selectedRuleSet
-        ? ruleSetCandidates.find((candidate) => candidate.id === selectedRuleSet.id)
+        ? ruleSetCandidates.find(
+            (candidate) => candidate.id === selectedRuleSet.id,
+          )
         : null
       if (!ruleSet) {
         const message =
@@ -828,13 +858,25 @@ export const collectionsRouter = {
 
       const officialEvidence = selectApplicableOfficialEvidence(
         {
-          purpose: context.purpose as 'vat_credit' | 'business_income_tax' | 'personal_expenses',
+          purpose: context.purpose as
+            | 'vat_credit'
+            | 'business_income_tax'
+            | 'personal_expenses',
           period: {
             startDate: context.periodStartDate.toISOString().slice(0, 10),
             endDate: context.periodEndDate.toISOString().slice(0, 10),
           },
-          taxRegime: context.taxpayerProfileRevision.taxRegime as 'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown',
-          vatFilingFrequency: context.taxpayerProfileRevision.vatFilingFrequency as 'none' | 'monthly' | 'semiannual' | 'unknown',
+          taxRegime: context.taxpayerProfileRevision.taxRegime as
+            | 'general'
+            | 'rimpe_entrepreneur'
+            | 'rimpe_popular_business'
+            | 'unknown',
+          vatFilingFrequency: context.taxpayerProfileRevision
+            .vatFilingFrequency as
+            | 'none'
+            | 'monthly'
+            | 'semiannual'
+            | 'unknown',
         },
         ruleSet.fragments.map(({ id, fragment }) => ({
           ruleSetFragmentId: id,
@@ -848,16 +890,31 @@ export const collectionsRouter = {
             contentHash: fragment.source.contentHash,
           },
           articleOrSection: fragment.articleOrSection,
-          purposes: fragment.purposes as Array<'vat_credit' | 'business_income_tax' | 'personal_expenses'>,
-          taxRegimes: fragment.taxRegimes as Array<'general' | 'rimpe_entrepreneur' | 'rimpe_popular_business' | 'unknown'>,
+          purposes: fragment.purposes as Array<
+            'vat_credit' | 'business_income_tax' | 'personal_expenses'
+          >,
+          taxRegimes: fragment.taxRegimes as Array<
+            | 'general'
+            | 'rimpe_entrepreneur'
+            | 'rimpe_popular_business'
+            | 'unknown'
+          >,
           effectiveFrom: fragment.effectiveFrom.toISOString().slice(0, 10),
           effectiveTo: fragment.effectiveTo?.toISOString().slice(0, 10) ?? null,
           markdown: fragment.contentMarkdown,
         })),
       )
       if (officialEvidence.length === 0) {
-        const message = 'El ruleset activo no contiene evidencia oficial aplicable para este contexto.'
-        await persistBlockedRun({ userId: principal.userId, collectionId: collection.id, contextRevisionId: context.id, taxpayerProfileRevisionId: context.taxpayerProfileRevisionId, code: 'NO_APPLICABLE_OFFICIAL_EVIDENCE', message })
+        const message =
+          'El ruleset activo no contiene evidencia oficial aplicable para este contexto.'
+        await persistBlockedRun({
+          userId: principal.userId,
+          collectionId: collection.id,
+          contextRevisionId: context.id,
+          taxpayerProfileRevisionId: context.taxpayerProfileRevisionId,
+          code: 'NO_APPLICABLE_OFFICIAL_EVIDENCE',
+          message,
+        })
         throw new TRPCError({ code: 'PRECONDITION_FAILED', message })
       }
 
@@ -873,18 +930,23 @@ export const collectionsRouter = {
         normalized: ReturnType<typeof transformRawToParsed>
       }>
       try {
-        invoiceSnapshots = await Promise.all(billsToAnalyze.map(async (bill) => {
-          const xml = await StorageHelper.getObject(bill.storagePath)
-          const parsed = parseAndValidateInvoiceXML(xml)
-          if (!parsed.success)
-            throw new TRPCError({ code: 'BAD_REQUEST', message: `No se pudo leer la factura ${bill.number}; vuelve a cargar un XML válido.` })
-          return {
-            billId: bill.id,
-            contentHash: sha256(xml),
-            parserVersion: 'xml-v1' as const,
-            normalized: transformRawToParsed(parsed.data),
-          }
-        }))
+        invoiceSnapshots = await Promise.all(
+          billsToAnalyze.map(async (bill) => {
+            const xml = await StorageHelper.getObject(bill.storagePath)
+            const parsed = parseAndValidateInvoiceXML(xml)
+            if (!parsed.success)
+              throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: `No se pudo leer la factura ${bill.number}; vuelve a cargar un XML válido.`,
+              })
+            return {
+              billId: bill.id,
+              contentHash: sha256(xml),
+              parserVersion: 'xml-v1' as const,
+              normalized: transformRawToParsed(parsed.data),
+            }
+          }),
+        )
       } catch (error) {
         const message =
           error instanceof TRPCError
@@ -898,46 +960,95 @@ export const collectionsRouter = {
           code: 'UNRESOLVED_ANALYSIS_CONFIGURATION',
           message,
         })
-        throw new TRPCError({ code: 'PRECONDITION_FAILED', message, cause: error })
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message,
+          cause: error,
+        })
       }
-      const userReferences = await Promise.all(references.map(async (reference) => ({
-        id: reference.id,
-        name: reference.name,
-        normalizedMarkdown: normalizeFiscalReferenceMarkdown((await StorageHelper.getObject(reference.storagePath)).toString('utf8')),
-        contentHash: reference.contentHash,
-      })))
+      const userReferences = await Promise.all(
+        references.map(async (reference) => ({
+          id: reference.id,
+          name: reference.name,
+          normalizedMarkdown: normalizeFiscalReferenceMarkdown(
+            (await StorageHelper.getObject(reference.storagePath)).toString(
+              'utf8',
+            ),
+          ),
+          contentHash: reference.contentHash,
+        })),
+      )
       const envelope = AnalysisExecutionEnvelopeSchema.parse({
-        schemaVersion: 'v2', envelopeVersion: '1',
+        schemaVersion: 'v2',
+        envelopeVersion: '1',
         execution: { mode: env.LLM_SMOKE_TEST ? 'smoke' : 'real' },
         prompt: BILL_ANALYSIS_PROMPT_METADATA,
         context: {
-          collectionContextRevisionId: context.id, revision: context.revision,
+          collectionContextRevisionId: context.id,
+          revision: context.revision,
           purpose: context.purpose,
-          period: { startDate: context.periodStartDate.toISOString().slice(0, 10), endDate: context.periodEndDate.toISOString().slice(0, 10) },
+          period: {
+            startDate: context.periodStartDate.toISOString().slice(0, 10),
+            endDate: context.periodEndDate.toISOString().slice(0, 10),
+          },
           notes: context.notes,
         },
         taxpayerProfile: {
-          revisionId: context.taxpayerProfileRevision.id, revision: context.taxpayerProfileRevision.revision,
-          hasRuc: context.taxpayerProfileRevision.hasRuc, hasEmploymentIncome: context.taxpayerProfileRevision.hasEmploymentIncome,
-          taxRegime: context.taxpayerProfileRevision.taxRegime, vatFilingFrequency: context.taxpayerProfileRevision.vatFilingFrequency,
+          revisionId: context.taxpayerProfileRevision.id,
+          revision: context.taxpayerProfileRevision.revision,
+          hasRuc: context.taxpayerProfileRevision.hasRuc,
+          hasEmploymentIncome:
+            context.taxpayerProfileRevision.hasEmploymentIncome,
+          taxRegime: context.taxpayerProfileRevision.taxRegime,
+          vatFilingFrequency:
+            context.taxpayerProfileRevision.vatFilingFrequency,
           additionalFacts: context.taxpayerProfileRevision.additionalFacts,
         },
-        activities: context.activities.map(({ economicActivityRevision: activity }) => ({
-          revisionId: activity.id, revision: activity.revision, displayName: activity.displayName,
-          registeredActivityCode: activity.registeredActivityCode, registeredActivityName: activity.registeredActivityName,
-          activityDescription: activity.activityDescription, necessaryPurchases: activity.necessaryPurchases,
-          revenueVatTreatment: activity.revenueVatTreatment, additionalFacts: activity.additionalFacts,
-        })),
-        provider: { id: connection.id, provider: connection.provider, modelId: connection.modelId },
-        ruleset: { id: ruleSet.id, version: ruleSet.version, contentHash: ruleSet.contentHash, effectiveFrom: ruleSet.effectiveFrom.toISOString().slice(0, 10), effectiveTo: ruleSet.effectiveTo?.toISOString().slice(0, 10) ?? null },
-        officialEvidence, userReferences, invoices: invoiceSnapshots,
+        activities: context.activities.map(
+          ({ economicActivityRevision: activity }) => ({
+            revisionId: activity.id,
+            revision: activity.revision,
+            displayName: activity.displayName,
+            registeredActivityCode: activity.registeredActivityCode,
+            registeredActivityName: activity.registeredActivityName,
+            activityDescription: activity.activityDescription,
+            necessaryPurchases: activity.necessaryPurchases,
+            revenueVatTreatment: activity.revenueVatTreatment,
+            additionalFacts: activity.additionalFacts,
+          }),
+        ),
+        provider: {
+          id: connection.id,
+          provider: connection.provider,
+          modelId: connection.modelId,
+        },
+        ruleset: {
+          id: ruleSet.id,
+          version: ruleSet.version,
+          contentHash: ruleSet.contentHash,
+          effectiveFrom: ruleSet.effectiveFrom.toISOString().slice(0, 10),
+          effectiveTo: ruleSet.effectiveTo?.toISOString().slice(0, 10) ?? null,
+        },
+        officialEvidence,
+        userReferences,
+        invoices: invoiceSnapshots,
       })
       try {
         assertAnalysisEnvelopeCanExecute(envelope)
       } catch (error) {
         if (!(error instanceof AnalysisPrerequisiteError)) throw error
-        await persistBlockedRun({ userId: principal.userId, collectionId: collection.id, contextRevisionId: context.id, taxpayerProfileRevisionId: context.taxpayerProfileRevisionId, code: error.code, message: error.message })
-        throw new TRPCError({ code: 'PRECONDITION_FAILED', message: error.message })
+        await persistBlockedRun({
+          userId: principal.userId,
+          collectionId: collection.id,
+          contextRevisionId: context.id,
+          taxpayerProfileRevisionId: context.taxpayerProfileRevisionId,
+          code: error.code,
+          message: error.message,
+        })
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: error.message,
+        })
       }
 
       const analysisRun = await prisma.analysisRun.create({

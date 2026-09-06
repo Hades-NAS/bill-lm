@@ -3,17 +3,10 @@
   "id": "ec-sri-lrti-2026-art-65-la-tarifa-del-impuesto-al-valor-agregado-es-del-13",
   "sourceId": "ec-sri-lrti-2026",
   "articleOrSection": "Art. 65.- La tarifa del impuesto al valor agregado es del \"13%\".",
-  "sourcePages": [
-    62,
-    63
-  ],
+  "sourcePages": [62, 63],
   "sourceContentHash": "sha256:7ee8bf7b5a436d401a982cf46e0ab74f640d99e19154a627286cd3475918c547",
-  "purposes": [
-    "vat_credit"
-  ],
-  "taxRegimes": [
-    "general"
-  ],
+  "purposes": ["vat_credit"],
+  "taxRegimes": ["general"],
   "effectiveFrom": "2026-01-01",
   "effectiveTo": null,
   "reviewStatus": "reviewed",

@@ -43,7 +43,13 @@ describe('execution envelope budget', () => {
       ruleSetFragmentId: '550e8400-e29b-41d4-a716-446655440000',
       fragmentId: id,
       fragmentContentHash: 'fragment',
-      source: { id: 'source-a', title: 'Norma', issuer: 'SRI', officialUrl: 'https://www.sri.gob.ec/', contentHash: 'source' },
+      source: {
+        id: 'source-a',
+        title: 'Norma',
+        issuer: 'SRI',
+        officialUrl: 'https://www.sri.gob.ec/',
+        contentHash: 'source',
+      },
       articleOrSection: id,
       purposes: ['vat_credit'],
       taxRegimes: ['general'],
@@ -52,12 +58,14 @@ describe('execution envelope budget', () => {
       markdown: `# ${id}`,
       ...overrides,
     })
-    expect(selectApplicableOfficialEvidence(selector, [
-      candidate('valid'),
-      candidate('wrong-purpose', { purposes: ['personal_expenses'] }),
-      candidate('wrong-regime', { taxRegimes: ['rimpe_entrepreneur'] }),
-      candidate('expired', { effectiveTo: '2026-01-15' }),
-    ] as any).map((item) => item.fragmentId)).toEqual(['valid'])
+    expect(
+      selectApplicableOfficialEvidence(selector, [
+        candidate('valid'),
+        candidate('wrong-purpose', { purposes: ['personal_expenses'] }),
+        candidate('wrong-regime', { taxRegimes: ['rimpe_entrepreneur'] }),
+        candidate('expired', { effectiveTo: '2026-01-15' }),
+      ] as any).map((item) => item.fragmentId),
+    ).toEqual(['valid'])
   })
 
   it('does not add secret or raw-file fields to a persisted envelope contract', () => {
@@ -91,25 +99,39 @@ describe('analysis execution gate', () => {
       vatFilingFrequency: 'none' as const,
     },
     activities: [],
-    officialEvidence: [{
-      ruleSetFragmentId: '550e8400-e29b-41d4-a716-446655440000',
-      fragmentId: '550e8400-e29b-41d4-a716-446655440000',
-      fragmentContentHash: 'fragment',
-      source: { id: 'source-a', title: 'Norma', issuer: 'SRI', officialUrl: 'https://www.sri.gob.ec/', contentHash: 'source' },
-      articleOrSection: 'Art. 1',
-      purposes: ['personal_expenses'],
-      taxRegimes: ['unknown'],
-      effectiveFrom: '2026-01-01',
-      effectiveTo: null,
-      markdown: 'Contenido oficial',
-    }],
+    officialEvidence: [
+      {
+        ruleSetFragmentId: '550e8400-e29b-41d4-a716-446655440000',
+        fragmentId: '550e8400-e29b-41d4-a716-446655440000',
+        fragmentContentHash: 'fragment',
+        source: {
+          id: 'source-a',
+          title: 'Norma',
+          issuer: 'SRI',
+          officialUrl: 'https://www.sri.gob.ec/',
+          contentHash: 'source',
+        },
+        articleOrSection: 'Art. 1',
+        purposes: ['personal_expenses'],
+        taxRegimes: ['unknown'],
+        effectiveFrom: '2026-01-01',
+        effectiveTo: null,
+        markdown: 'Contenido oficial',
+      },
+    ],
     userReferences: [],
     invoices: [{ billId: '550e8400-e29b-41d4-a716-446655440000' }],
-    provider: { id: 'connection-1', provider: 'OPENAI' as const, modelId: 'gpt-4o-mini' },
+    provider: {
+      id: 'connection-1',
+      provider: 'OPENAI' as const,
+      modelId: 'gpt-4o-mini',
+    },
   })
 
   it('permits a prepared envelope only when its immutable prerequisites remain valid', () => {
-    expect(() => assertAnalysisEnvelopeCanExecute(validEnvelope() as any)).not.toThrow()
+    expect(() =>
+      assertAnalysisEnvelopeCanExecute(validEnvelope() as any),
+    ).not.toThrow()
   })
 
   it('blocks before a provider can run when evidence or purpose prerequisites are invalid', () => {
@@ -123,20 +145,25 @@ describe('analysis execution gate', () => {
     )
 
     const missingActivities = validEnvelope()
-    ;(missingActivities.context as { purpose: string }).purpose = 'business_income_tax'
-    expect(() => assertAnalysisEnvelopeCanExecute(missingActivities as any)).toThrow(
-      'Selecciona al menos una actividad económica',
-    )
+    ;(missingActivities.context as { purpose: string }).purpose =
+      'business_income_tax'
+    expect(() =>
+      assertAnalysisEnvelopeCanExecute(missingActivities as any),
+    ).toThrow('Selecciona al menos una actividad económica')
   })
 
   it('rejects an inactive or changed provider connection before decryption', () => {
     const execution = validEnvelope()
-    expect(() => assertFrozenProviderConnection(execution as any, null)).toThrow(
-      'ya no está activa',
-    )
-    expect(() => assertFrozenProviderConnection(execution as any, {
-      id: 'connection-1', provider: 'OPENAI', modelId: 'other-model',
-    })).toThrow('cambió después de preparar')
+    expect(() =>
+      assertFrozenProviderConnection(execution as any, null),
+    ).toThrow('ya no está activa')
+    expect(() =>
+      assertFrozenProviderConnection(execution as any, {
+        id: 'connection-1',
+        provider: 'OPENAI',
+        modelId: 'other-model',
+      }),
+    ).toThrow('cambió después de preparar')
   })
 
   it('claims queued runs atomically before decrypting a provider secret', () => {

@@ -65,7 +65,9 @@ export class SmokeTestProvider implements ILLMProvider {
           creditablePercentage: 0,
           creditType: 'undetermined',
           proportionalityRequired: false,
-          missingEvidence: ['Ejecución simulada: no se evaluó evidencia fiscal.'],
+          missingEvidence: [
+            'Ejecución simulada: no se evaluó evidencia fiscal.',
+          ],
         }
       case 'business_income_tax':
         return {
@@ -77,8 +79,12 @@ export class SmokeTestProvider implements ILLMProvider {
           businessUsePercentage: 0,
           potentialExpenseAmount: 0,
           mixedUseDetected: false,
-          substantiationIssues: ['Ejecución simulada: no se evaluó sustento fiscal.'],
-          missingEvidence: ['Ejecución simulada: no se evaluó evidencia fiscal.'],
+          substantiationIssues: [
+            'Ejecución simulada: no se evaluó sustento fiscal.',
+          ],
+          missingEvidence: [
+            'Ejecución simulada: no se evaluó evidencia fiscal.',
+          ],
         }
       case 'personal_expenses':
         return {
@@ -87,7 +93,9 @@ export class SmokeTestProvider implements ILLMProvider {
           personalExpenseCategory: 'Simulación',
           potentialEligibleAmount: 0,
           beneficiaryRelationship: 'No evaluado',
-          missingEvidence: ['Ejecución simulada: no se evaluó evidencia fiscal.'],
+          missingEvidence: [
+            'Ejecución simulada: no se evaluó evidencia fiscal.',
+          ],
         }
     }
   }
