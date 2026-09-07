@@ -70,35 +70,22 @@ bun --bun run check
 
 ## Rulesets tributarios oficiales
 
-La guía operativa para consultar fuentes del SRI, descargar PDFs oficiales,
-extraer texto, generar borradores y revisarlos está en
-[resources/tax-rules/ec/sri/README.md](resources/tax-rules/ec/sri/README.md).
-El material descargado no se activa por sí solo: una persona responsable debe
-revisarlo y aprobarlo antes de que pueda formar parte de un ruleset.
+Bill-LM usa únicamente fuentes oficiales revisadas y publicadas para dar
+contexto a sus análisis. El material descargado no se activa por sí solo: una
+persona responsable debe revisarlo y aprobarlo antes de que pueda formar parte
+de un ruleset.
 
-## Fase 2-A: referencias fiscales autogestionadas
-
-En **Configuración** cada usuario puede cargar hasta tres referencias globales
-para sus análisis. Aceptan Markdown o PDFs con texto seleccionable; el servidor
-normaliza el contenido a Markdown y lo guarda en MinIO. Son material aportado y
-autoaprobado por el usuario, no normativa oficial ni un dictamen jurídico. Son
-opcionales: cada ejecución fija las que existían junto con la evidencia oficial
-del ruleset y las facturas normalizadas. Por eso, eliminar o editar una
-referencia después no altera un análisis anterior. Los PDFs escaneados sin texto
-se rechazan: OCR no forma parte de esta fase.
-
-Antes de encolar, el servidor crea un `AnalysisRun` con un envelope inmutable:
-contexto, reglas oficiales aplicables, referencias autogestionadas y datos
-normalizados de las facturas. Si la evidencia excede el presupuesto, se bloquea
-el run sin truncar ni llamar al proveedor.
+- [Fuentes oficiales para los análisis](docs/sri/fuentes-oficiales-para-analisis.md): guía en lenguaje simple sobre el origen del material, su revisión, cómo se usa en una colección y sus límites.
+- [Flujo técnico de fuentes oficiales y rulesets SRI](docs/architecture/sri-rulesets-flujo-tecnico.md): detalle de web, servidor, DB, worker, snapshots y gates.
+- [README operativo de rulesets SRI](resources/tax-rules/ec/sri/README.md): comandos para revisar, preparar, publicar, sincronizar y activar fuentes.
 
 ## Ejecución de análisis y trazabilidad
 
 Cada ejecución selecciona el ruleset por propósito, régimen, periodicidad y
 período completo. Solo conserva los fragmentos oficiales vigentes y aplicables;
 también guarda los hashes y el Markdown exacto usado. El worker procesa ese
-snapshot fijo, por lo que cambios posteriores en MinIO, referencias o reglas no
-modifican el análisis ya encolado. El detalle técnico está en
+snapshot fijo, por lo que cambios posteriores en las reglas no modifican el
+análisis ya encolado. El detalle técnico está en
 [docs/analysis-flow.md](docs/analysis-flow.md).
 
 Antes de enviarlo a la cola y otra vez en el worker, el servidor comprueba los

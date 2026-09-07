@@ -6,8 +6,7 @@ ejecución.
 
 1. El usuario configura propósito, período, perfil tributario y actividades.
 2. El servidor valida los requisitos, selecciona el ruleset oficial vigente y
-   crea un envelope inmutable con facturas normalizadas, evidencia oficial y
-   referencias autogestionadas.
+   crea un envelope inmutable con facturas normalizadas y evidencia oficial.
 3. Se guarda un `AnalysisRun` y un snapshot por factura antes de enviar el
    trabajo a la cola.
 4. El worker vuelve a validar el envelope, la conexión de proveedor fijada y
@@ -44,7 +43,7 @@ expone su historial.
 
 Las respuestas muestran solo una proyección segura del snapshot fijado: contexto
 tributario, proveedor/modelo, versión del ruleset y resultados especializados.
-No devuelven Markdown de evidencia oficial o referencias personales, notas,
+No devuelven Markdown de evidencia oficial, notas,
 datos adicionales del perfil ni el contenido normalizado de la factura. Si un
 snapshot histórico no puede validarse, se muestra como no disponible sin revelar
 su JSON ni el error interno.
