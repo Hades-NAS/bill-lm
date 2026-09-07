@@ -75,9 +75,23 @@ contexto a sus análisis. El material descargado no se activa por sí solo: una
 persona responsable debe revisarlo y aprobarlo antes de que pueda formar parte
 de un ruleset.
 
-- [Fuentes oficiales para los análisis](docs/sri/fuentes-oficiales-para-analisis.md): guía en lenguaje simple sobre el origen del material, su revisión, cómo se usa en una colección y sus límites.
+- [Fuentes oficiales para los análisis](docs/guides/fuentes-oficiales-para-analisis.md): guía en lenguaje simple sobre el origen del material, su revisión, cómo se usa en una colección y sus límites.
 - [Flujo técnico de fuentes oficiales y rulesets SRI](docs/architecture/sri-rulesets-flujo-tecnico.md): detalle de web, servidor, DB, worker, snapshots y gates.
 - [README operativo de rulesets SRI](resources/tax-rules/ec/sri/README.md): comandos para revisar, preparar, publicar, sincronizar y activar fuentes.
+
+## Cómo se organiza la documentación
+
+La documentación separa el contenido por audiencia y propósito:
+
+- `docs/guides/`: explica el producto y sus límites con lenguaje simple.
+- `docs/architecture/`: describe los contratos y decisiones técnicas vigentes.
+- `docs/operations/`: reúne procedimientos de prueba, despliegue y mantenimiento.
+- `docs/internal/`: conserva planes, auditorías, reportes e investigación del equipo. No funciona como guía de producto.
+
+El [índice de documentación](docs/README.md) enlaza cada documento y explica
+cuándo usarlo. Las fuentes, secciones revisadas y bundles operativos del SRI se
+mantienen aparte en `resources/tax-rules/`, porque son artifacts versionados y
+no documentación general.
 
 ## Ejecución de análisis y trazabilidad
 
@@ -86,7 +100,7 @@ período completo. Solo conserva los fragmentos oficiales vigentes y aplicables;
 también guarda los hashes y el Markdown exacto usado. El worker procesa ese
 snapshot fijo, por lo que cambios posteriores en las reglas no modifican el
 análisis ya encolado. El detalle técnico está en
-[docs/analysis-flow.md](docs/analysis-flow.md).
+[docs/architecture/analysis-flow.md](docs/architecture/analysis-flow.md).
 
 Antes de enviarlo a la cola y otra vez en el worker, el servidor comprueba los
 prerrequisitos del envelope y que la conexión activa siga siendo exactamente la

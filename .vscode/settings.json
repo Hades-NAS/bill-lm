@@ -1,9 +1,19 @@
 {
   "files.watcherExclude": {
-    "**/routeTree.gen.ts": true
+    "**/routeTree.gen.ts": true,
+    ".harness/**": true
+  },
+  "files.exclude": {
+    ".harness/**": true,
+    ".tanstack/**": true,
+    ".husky/**": true,
+    ".superpowers/**": true,
+    ".cache/**": true,
+    "dist/**": true
   },
   "search.exclude": {
-    "**/routeTree.gen.ts": true
+    "**/routeTree.gen.ts": true,
+    ".harness/**": true
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true

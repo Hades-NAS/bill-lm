@@ -442,7 +442,7 @@ La implementación deberá revisar, como mínimo:
   actividades y selección de facturas.
 - `src/routes/(private)/profiles.tsx`: situación laboral, RUC, régimen,
   periodicidad y actividades.
-- `docs/analysis-flow.md`: actualizar solo cuando el comportamiento exista y
+- `docs/architecture/analysis-flow.md`: actualizar solo cuando el comportamiento exista y
   haya sido verificado.
 - `docs/architecture/byok-local-execution-design.md`: alinear nombres y marcar
   con claridad qué sigue siendo arquitectura destino.

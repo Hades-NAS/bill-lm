@@ -2,7 +2,7 @@
 
 Este documento describe cómo Bill-LM prepara fuentes oficiales del SRI y cómo
 las usa en un análisis. Complementa la guía para personas no técnicas:
-[Fuentes oficiales para los análisis](../sri/fuentes-oficiales-para-analisis.md).
+[Fuentes oficiales para los análisis](../guides/fuentes-oficiales-para-analisis.md).
 
 ## 1. Preparación y publicación del material
 
