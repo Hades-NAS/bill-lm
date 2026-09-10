@@ -1,0 +1,35 @@
+name: Registry Retention
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview is safe; apply deletes only candidates selected during this run.
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - apply
+      confirm:
+        description: Required only for apply. Enter DELETE exactly.
+        required: false
+        type: string
+
+concurrency:
+  group: bill-lm-deploy
+  cancel-in-progress: false
+
+jobs:
+  registry-retention:
+    name: Preview or apply registry retention
+    runs-on:
+      group: Default
+      labels: self-hosted
+    steps:
+      - uses: actions/checkout@v7
+      - name: Apply retention policy
+        env:
+          RETENTION_MODE: ${{ inputs.mode }}
+          RETENTION_CONFIRM: ${{ inputs.confirm }}
+        run: bash scripts/registry-retention.sh

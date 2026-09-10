@@ -30,7 +30,9 @@ env:
 jobs:
   quality:
     name: Quality Gate
-    runs-on: self-hosted
+    runs-on:
+      group: Tests
+      labels: tests
 
     steps:
       - uses: actions/checkout@v7
@@ -56,7 +58,9 @@ jobs:
 
   build:
     name: Build Docker Images
-    runs-on: self-hosted
+    runs-on:
+      group: Default
+      labels: self-hosted
 
     outputs:
       image_tag: ${{ steps.set_image_tag.outputs.image_tag }}
@@ -88,10 +92,17 @@ jobs:
 
       - name: BuildX setup
         uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: network=host
 
       - name: Build Server Docker image
         run: |
           IMAGE="localhost:5000/bill-lm-server:${{ env.IMAGE_TAG }}"
+          CACHE_IMAGE="127.0.0.1:5000/bill-lm-server:buildcache"
+          cache_from=()
+          if docker manifest inspect "$CACHE_IMAGE" >/dev/null 2>&1; then
+            cache_from=(--cache-from "type=registry,ref=$CACHE_IMAGE")
+          fi
           docker buildx build --load \
             -f docker/Dockerfile \
             --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
@@ -109,6 +120,8 @@ jobs:
             --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID=${{ env.VITE_FIREBASE_MESSAGING_SENDER_ID }} \
             --build-arg VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }} \
             --build-arg ANALYZE_QUEUE_NAME=${{ env.ANALYZE_QUEUE_NAME }} \
+            "${cache_from[@]}" \
+            --cache-to "type=registry,ref=$CACHE_IMAGE,mode=max" \
             -t $IMAGE .
 
           echo "✅ Server Image loaded: $IMAGE"
@@ -116,6 +129,11 @@ jobs:
       - name: Build Worker Docker image
         run: |
           IMAGE="localhost:5000/bill-lm-worker:${{ env.IMAGE_TAG }}"
+          CACHE_IMAGE="127.0.0.1:5000/bill-lm-worker:buildcache"
+          cache_from=()
+          if docker manifest inspect "$CACHE_IMAGE" >/dev/null 2>&1; then
+            cache_from=(--cache-from "type=registry,ref=$CACHE_IMAGE")
+          fi
           docker buildx build --load \
             -f docker/Dockerfile.worker \
             --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
@@ -133,6 +151,8 @@ jobs:
             --build-arg VITE_FIREBASE_STORAGE_BUCKET=${{ env.VITE_FIREBASE_STORAGE_BUCKET }} \
             --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID=${{ env.VITE_FIREBASE_MESSAGING_SENDER_ID }} \
             --build-arg VITE_FIREBASE_APP_ID=${{ env.VITE_FIREBASE_APP_ID }} \
+            "${cache_from[@]}" \
+            --cache-to "type=registry,ref=$CACHE_IMAGE,mode=max" \
             -t $IMAGE .
 
           echo "✅ Worker Image loaded: $IMAGE"
@@ -140,7 +160,9 @@ jobs:
   validate-health:
     name: Validate Docker Images Health
     needs: build
-    runs-on: self-hosted
+    runs-on:
+      group: Default
+      labels: self-hosted
 
     steps:
       - name: Checkout code
@@ -264,7 +286,9 @@ jobs:
   push-to-registry:
     name: Push Docker Images to Registry
     needs: [quality, validate-health, build]
-    runs-on: self-hosted
+    runs-on:
+      group: Default
+      labels: self-hosted
 
     steps:
       - name: Checkout code
@@ -320,10 +344,10 @@ jobs:
             echo "| Triggered by | ${{ github.actor }} |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Cleanup old images (keep only last 3)
+      - name: Cleanup local runner images only (keep only last 3)
         if: always()
         run: |
-          echo "🧹 Cleaning old images..."
+          echo "🧹 Cleaning local runner images only; published registry tags are unchanged."
 
           # Server images
           IMAGES=$(docker images --filter=reference="localhost:5000/bill-lm-server:*" --format "{{.Repository}}:{{.Tag}}" --no-trunc | sort -r)
@@ -357,7 +381,9 @@ jobs:
     name: Notify Deployment Failure
     needs: [quality, build, validate-health, push-to-registry]
     if: ${{ always() && (needs.quality.result == 'failure' || needs.build.result == 'failure' || needs.validate-health.result == 'failure' || needs.push-to-registry.result == 'failure') }}
-    runs-on: self-hosted
+    runs-on:
+      group: Default
+      labels: self-hosted
 
     steps:
       - name: Send optional Discord failure alert
@@ -407,7 +433,9 @@ jobs:
     name: Notify Deployment Success
     needs: [quality, build, push-to-registry]
     if: ${{ needs.quality.result == 'success' && needs.build.result == 'success' && needs.push-to-registry.result == 'success' }}
-    runs-on: self-hosted
+    runs-on:
+      group: Default
+      labels: self-hosted
 
     steps:
       - name: Send optional Discord success alert

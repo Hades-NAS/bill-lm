@@ -109,6 +109,16 @@ explica cómo la web, el servidor y el worker consumen un bundle activo.
 migraciones para el despliegue. Mantén `BYOK_ENCRYPTION_KEY` fuera de la imagen
 y compártela únicamente entre procesos que usen la misma base de datos.
 
+El despliegue separa calidad (`Tests`/`tests`) de construcción, validación y
+publicación (`Default`/`self-hosted`). Antes de mover el job de calidad, prueba
+en el runner Tests: `PLAYWRIGHT_PORT=3100 GOOGLE_APPLICATION_CREDENTIALS=/home/cardor/secrets/bill-lm/bill-lm-firebase.json SKIP_E2E=true bash health.sh`.
+Las cachés BuildKit de servidor y worker son independientes. Para revisar la
+retención del registry, ejecuta manualmente el workflow **Registry Retention**
+en `preview`; `apply` exige además confirmar exactamente `DELETE`. Conserva
+tres tags de producción, tres `-dev` y `buildcache` por repositorio. La
+eliminación de tags no ejecuta garbage collection ni garantiza liberar espacio:
+esa ventana corresponde al NAS.
+
 ## Más referencias
 
 - [Índice de documentación](docs/README.md)

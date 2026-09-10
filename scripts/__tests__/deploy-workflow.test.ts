@@ -40,6 +40,42 @@ describe('deploy workflow', () => {
     expect(workflow).toContain('QUALITY_RESULT: ${{ needs.quality.result }}')
   })
 
+  it('asigna calidad al runner Tests y los trabajos Docker al runner Default', () => {
+    const workflow = readFileSync(workflowPath, 'utf8')
+    const quality = workflow.slice(
+      workflow.indexOf('  quality:'),
+      workflow.indexOf('  build:'),
+    )
+
+    expect(quality).toContain('group: Tests')
+    expect(quality).toContain('labels: tests')
+    for (const job of [
+      'build:',
+      'validate-health:',
+      'push-to-registry:',
+      'notify-deployment-failure:',
+      'notify-deployment-success:',
+    ]) {
+      expect(workflow).toMatch(
+        new RegExp(
+          `  ${job}\\n(?:    [^\\n]*\\n)*    runs-on:\\n      group: Default\\n      labels: self-hosted`,
+        ),
+      )
+    }
+  })
+
+  it('usa cachés BuildKit aisladas para servidor y worker', () => {
+    const workflow = readFileSync(workflowPath, 'utf8')
+
+    expect(workflow).toContain('driver-opts: network=host')
+    expect(workflow).toContain('127.0.0.1:5000/bill-lm-server:buildcache')
+    expect(workflow).toContain('127.0.0.1:5000/bill-lm-worker:buildcache')
+    expect(workflow).toContain(
+      '--cache-to "type=registry,ref=$CACHE_IMAGE,mode=max"',
+    )
+    expect(workflow).toContain('Cleanup local runner images only')
+  })
+
   it('no pasa API keys de proveedores a builds ni imágenes', () => {
     const workflow = readFileSync(workflowPath, 'utf8')
 
