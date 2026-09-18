@@ -1,0 +1,22 @@
+{
+  "name": "@bill-lm/local-daemon",
+  "private": true,
+  "type": "module",
+  "description": "Loopback-only Bun, Hono, SQLite, disk and GPU daemon for the local viewer.",
+  "exports": {
+    ".": "./src/main.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/main.ts",
+    "start": "bun run src/main.ts",
+    "test": "bun test ./src/__tests__/app.bun.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@bill-lm/application": "workspace:*",
+    "@bill-lm/contracts": "workspace:*",
+    "@bill-lm/domain": "workspace:*",
+    "hono": "4.11.4",
+    "zod": "^4.3.6"
+  }
+}

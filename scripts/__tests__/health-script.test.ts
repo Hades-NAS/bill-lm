@@ -26,7 +26,7 @@ const packageJsonPath = fileURLToPath(
   new URL('../../package.json', import.meta.url),
 )
 const viteConfigPath = fileURLToPath(
-  new URL('../../vite.config.ts', import.meta.url),
+  new URL('../../apps/web/vite.config.ts', import.meta.url),
 )
 const playwrightConfigPath = fileURLToPath(
   new URL('../../playwright.config.ts', import.meta.url),
@@ -36,7 +36,7 @@ const viteBinaryPath = fileURLToPath(
 )
 const firebaseServerPath = fileURLToPath(
   new URL(
-    '../../src/integrations/firebase/firebase.server.ts',
+    '../../apps/web/src/integrations/firebase/firebase.server.ts',
     import.meta.url,
   ),
 )
@@ -231,12 +231,14 @@ describe('health.sh', () => {
     expect(packageJson).not.toContain('npx playwright test')
   })
 
-  it('disables Vite .env loading for the health build and Playwright dev server', () => {
+  it('disables Vite .env loading for the health build and uses the built web server for Playwright', () => {
     const viteConfig = readFileSync(viteConfigPath, 'utf8')
     const playwrightConfig = readFileSync(playwrightConfigPath, 'utf8')
 
     expect(viteConfig).toContain('envDir: false')
-    expect(playwrightConfig).toContain('vite dev --port ${port}')
+    expect(playwrightConfig).toContain(
+      'PORT=${port} bun run --cwd apps/web start',
+    )
   })
 
   it('does not expose a VITE-only .env value in an isolated Vite build or dev server', async () => {

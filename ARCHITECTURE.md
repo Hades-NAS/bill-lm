@@ -243,7 +243,7 @@ Telemetría → Firestore (telemetry collection)
 
 ### 1. **analyze-job.ts** (Job Handler)
 
-**Ubicación:** `src/integrations/jobs/analyze-job.ts`
+**Ubicación:** `apps/web/src/integrations/jobs/analyze-job.ts`
 
 **Responsabilidad:** Punto de entrada del worker async
 
@@ -300,7 +300,7 @@ export const jobHandler = async (job: Job<AnalyzeJobData>) => {
 
 ### 2. **analyze-bills.use-case.ts** (Orquestador)
 
-**Ubicación:** `src/use-cases/analyze-bills.use-case.ts`
+**Ubicación:** `apps/web/src/use-cases/analyze-bills.use-case.ts`
 
 **Responsabilidad:** Orquestar la lógica de negocio
 
@@ -344,7 +344,7 @@ userId: "internal_user_id",
 
 ### 3. **bill-analysis.service.ts** (Máquina Técnica)
 
-**Ubicación:** `src/integrations/services/bill-analysis.service.ts`
+**Ubicación:** `apps/web/src/integrations/services/bill-analysis.service.ts`
 
 **Responsabilidad:** Implementar la lógica técnica
 
@@ -403,7 +403,7 @@ userId: "internal_user_id",
 
 ### 4. **agents/index.ts** (Protector del LLM)
 
-**Ubicación:** `src/integrations/agents/index.ts`
+**Ubicación:** `apps/web/src/integrations/agents/index.ts`
 
 **Responsabilidad:** Proteger llamadas al LLM
 
@@ -611,7 +611,7 @@ class CircuitBreaker {
 ## 📁 Estructura de Archivos
 
 ```
-src/
+apps/web/src/
 ├── integrations/
 │   ├── jobs/
 │   │   └── analyze-job.ts              # Job handler

@@ -1,0 +1,1 @@
+{"name":"@bill-lm/contracts","exports":{"./*":"./src/*.mjs","./missing":"./src/missing.mjs"}}

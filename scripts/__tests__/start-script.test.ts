@@ -9,7 +9,10 @@ describe('start.sh', () => {
     const script = readFileSync(startScriptPath, 'utf8')
 
     expect(script).toContain('SKIP_DB_MIGRATION')
-    expect(script).toContain('./node_modules/.bin/prisma migrate deploy')
+    expect(script).toContain(
+      './node_modules/.bin/prisma migrate deploy --config apps/web/prisma.config.ts',
+    )
+    expect(script).toContain('bun run --cwd apps/web start')
     expect(script).not.toContain('db:push')
   })
 })

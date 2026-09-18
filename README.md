@@ -32,6 +32,60 @@ Lee [Fuentes oficiales para los análisis](docs/guides/fuentes-oficiales-para-an
 para entender ese proceso en lenguaje simple. La guía también explica qué puede
 y qué no puede garantizar la aplicación.
 
+## Visor y daemon locales
+
+El visor local y el daemon ya se pueden ejecutar en tu equipo. Requieren
+[Bun](https://bun.sh/) y las dependencias del proyecto instaladas:
+
+```bash
+bun install
+```
+
+Abre dos terminales desde la raíz del repositorio. En la primera inicia el
+daemon, que guarda la biblioteca local y atiende únicamente en
+`http://127.0.0.1:4318`:
+
+```bash
+bun run daemon:local
+```
+
+En la segunda inicia el visor de React, que reenvía las llamadas `/api` al
+daemon:
+
+```bash
+bun run dev:local
+```
+
+Luego abre [http://127.0.0.1:4319](http://127.0.0.1:4319). Por defecto la
+biblioteca local se guarda en `$XDG_DATA_HOME/bill-lm` o, si esa variable no
+está definida, en `~/.local/share/bill-lm`. Puedes elegir otro directorio con
+una ruta absoluta:
+
+El comando de raíz delega al workspace ejecutable
+`apps/local-viewer`; también puedes ejecutar sus comprobaciones aisladas con
+`bun run --cwd apps/local-viewer typecheck`, `test` o `build`.
+
+```bash
+BILL_LM_LOCAL_LIBRARY_DIR=/ruta/absoluta/a/mis-facturas bun run daemon:local
+```
+
+Detén el daemon con `Ctrl+C`; cerrará el servidor y la biblioteca local de
+forma ordenada. Este flujo no inicia OAuth ni guarda tokens OAuth: la conexión
+de agentes locales mediante OAuth sigue pendiente.
+
+El visor opera perfiles, actividades y colecciones contra ese daemon local. Los
+contextos de una colección se guardan como revisiones en SQLite; no usan la
+sesión, Firebase, tRPC ni el servidor cloud.
+Si el daemon no responde al cargar colecciones, el visor muestra un estado local
+de error y permite reintentar la consulta sin salir de la aplicación.
+
+## Estructura de aplicaciones
+
+La aplicación web cloud se ejecuta desde `apps/web`; la raíz conserva comandos
+delegados para comodidad (`bun run dev`, `build`, `start`, `test` y
+`typecheck`). Sus rutas, interfaz, integraciones cloud, configuración Vite,
+servidor de producción y artefactos de build pertenecen a ese workspace.
+
 ## Modos locales planificados
 
 Bill-LM se diseñó para extender el mismo flujo de facturas, contexto y reglas a
@@ -42,9 +96,9 @@ actual:
    Code u OpenCode desde su equipo. Un servidor MCP local conectaría ese agente
    con su biblioteca y un visor en `localhost`, sin guardar tokens OAuth en
    Bill-LM.
-2. **Modelo local con GPU.** Un daemon local enviaría el análisis a un modelo
-   ejecutado por la propia persona, normalmente mediante un endpoint compatible.
-   La biblioteca, archivos y resultados vivirían en su equipo.
+2. **Modelo local con GPU.** El daemon y visor locales ya ofrecen la base para
+   una biblioteca que vive en el equipo. La configuración y validación con un
+   servidor GPU real siguen pendientes.
 
 La [arquitectura de ejecución local](docs/architecture/byok-local-execution-design.md)
 describe esas propuestas, sus límites y el trabajo que falta antes de ofrecerlas.

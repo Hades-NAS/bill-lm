@@ -1,0 +1,14 @@
+{
+  "name": "@bill-lm/ui",
+  "private": true,
+  "type": "module",
+  "description": "Presentation-only shared UI for cloud and local viewers.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.3.17",
+    "lucide-react": "^0.545.0",
+    "react": "^19.2.0"
+  }
+}

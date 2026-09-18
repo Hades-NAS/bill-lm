@@ -1,0 +1,13 @@
+{
+  "name": "@bill-lm/application",
+  "private": true,
+  "type": "module",
+  "description": "Application use cases and ports for reusable workspace verticals.",
+  "dependencies": {
+    "@bill-lm/contracts": "workspace:*",
+    "@bill-lm/domain": "workspace:*"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

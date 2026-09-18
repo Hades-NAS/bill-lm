@@ -1,0 +1,20 @@
+:root {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#local-viewer {
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+ol,
+ul {
+  list-style: initial;
+}

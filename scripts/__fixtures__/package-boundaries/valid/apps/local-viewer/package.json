@@ -1,0 +1,1 @@
+{"name":"@bill-lm/local-viewer","type":"module","dependencies":{"@bill-lm/ui":"workspace:*"},"exports":{".":"./src/index.mjs"}}

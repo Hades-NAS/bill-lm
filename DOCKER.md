@@ -30,7 +30,7 @@ No uses `--build-arg` para `BYOK_ENCRYPTION_KEY`, `OPENAI_API_KEY`, `CLAUDE_API_
 
 Web y worker reciben las mismas conexiones a infraestructura desde la imagen. Ambos requieren el mismo valor runtime de `BYOK_ENCRYPTION_KEY` cuando comparten PostgreSQL.
 
-La API web usa las variables públicas `VITE_FIREBASE_*` para su bundle. El worker no usa API keys de proveedores, pero hoy comparte `src/env.ts` con la web y esa validación exige `VITE_FIREBASE_*` al iniciar. Por tanto, inclúyelas también como build args de la imagen worker; son configuración pública de Firebase, no claves de proveedor ni de usuarios.
+La API web usa las variables públicas `VITE_FIREBASE_*` para su bundle. El worker no usa API keys de proveedores, pero comparte `apps/web/src/env.ts` con la web y esa validación exige `VITE_FIREBASE_*` al iniciar. Por tanto, inclúyelas también como build args de la imagen worker; son configuración pública de Firebase, no claves de proveedor ni de usuarios.
 
 ## Arranque de referencia
 

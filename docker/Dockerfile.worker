@@ -5,11 +5,12 @@ WORKDIR /app
 
 # Copy dependency files
 COPY package.json bun.lock tsconfig.json ./
-COPY src ./src
-COPY prisma ./prisma
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages ./packages
+COPY apps/web ./apps/web
 
 # Generar cliente de Prisma
-RUN bun install && bun run db:gen
+RUN bun install && bun run --cwd apps/web db:gen
 
 # ===== STAGE 2: Runtime =====
 FROM oven/bun:latest
@@ -28,7 +29,7 @@ ARG REDIS_PORT
 ARG MINIO_BUCKET_NAME=invoices
 ARG GOOGLE_APPLICATION_CREDENTIALS
 ARG ANALYZE_QUEUE_NAME
-# `src/env.ts` is shared by the web process and the worker, and validates the
+# `apps/web/src/env.ts` is shared by the web process and the worker, and validates the
 # Firebase client configuration during module load. These are Firebase public
 # client settings, not provider or user API keys.
 ARG VITE_FIREBASE_API_KEY
@@ -58,8 +59,9 @@ ENV TZ=UTC
 
 # Copy dependencies and source
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/src ./src
+COPY --from=builder /app/apps/web ./apps/web
+COPY --from=builder /app/packages ./packages
 COPY package.json bun.lock tsconfig.json ./
 
 # Ejecutar el worker
-CMD ["bun", "src/integrations/jobs/analyze-job.ts"]
+CMD ["bun", "run", "--cwd", "apps/web", "worker:start"]
