@@ -1,69 +1,46 @@
 import {
   Alert,
+  AppShell,
+  ActionIcon,
   Button,
   Card,
   Container,
   FileButton,
   Group,
   Loader,
+  Modal,
   MultiSelect,
+  NavLink,
   Select,
   Stack,
-  Switch,
   Text,
   TextInput,
   Textarea,
   Title,
 } from '@mantine/core'
-import { Upload } from 'lucide-react'
+import { useMantineColorScheme } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
+import { BookOpen, BriefcaseBusiness, LibraryBig, Menu, Moon, Settings, Sun, Upload } from 'lucide-react'
 import { useEffect, useState } from 'react'
-
-import { resolveLocalAnalysisAvailability } from '@bill-lm/contracts'
 
 import { EmptyState, FieldHelpLabel } from '@bill-lm/ui'
 
-import { LocalAnalysisAction } from './local-analysis-action'
 import {
   CollectionContextRevisionInputSchema,
-  EconomicActivityRevisionInputSchema,
-  TaxpayerProfileRevisionInputSchema,
 } from '@bill-lm/contracts'
 
 import { LocalDaemonClient } from './api'
+import { LocalLibrarySection, OfficialSourcesSection } from './local-sections'
+import { LocalCollectionAnalysis } from './local-collection-analysis'
+import { LocalProfilesSection } from './local-profiles-section'
 
-import type { LocalApiFlavor, LocalConnection } from '@bill-lm/contracts'
 import type {
   CollectionContextRevisionInput,
-  EconomicActivityRevisionInput,
-  TaxpayerProfileRevisionInput,
+  LocalCollectionDetail,
 } from '@bill-lm/contracts'
 import type { LocalCollectionContext, LocalEconomicActivity, LocalTaxpayerProfile } from './api'
 
 const client = new LocalDaemonClient()
-
-const blankActivity: EconomicActivityRevisionInput = {
-  displayName: '',
-  registeredActivityCode: '',
-  registeredActivityName: '',
-  activityDescription: '',
-  necessaryPurchases: '',
-  revenueVatTreatment: 'unknown',
-  revenueVatTreatmentOther: '',
-  mixedUseDescription: '',
-  additionalFacts: '',
-}
-
-const blankProfile: TaxpayerProfileRevisionInput = {
-  displayName: '',
-  personalIdNumber: '',
-  professionalIdNumber: '',
-  hasEmploymentIncome: false,
-  hasRuc: false,
-  taxRegime: 'unknown',
-  vatFilingFrequency: 'none',
-  activityRevisionIds: [],
-  additionalFacts: '',
-}
 
 const today = new Date().toISOString().slice(0, 10)
 const blankCollectionContext: CollectionContextRevisionInput = {
@@ -74,46 +51,83 @@ const blankCollectionContext: CollectionContextRevisionInput = {
   notes: '',
 }
 
+type LocalRoute =
+  | { section: 'collections'; collectionId?: string }
+  | { section: 'profiles' | 'settings' | 'official-sources' | 'library' }
+
+const navigation = [
+  { section: 'collections' as const, label: 'Colecciones', icon: LibraryBig },
+  { section: 'profiles' as const, label: 'Perfiles y actividades', icon: BriefcaseBusiness },
+  { section: 'settings' as const, label: 'Configuración', icon: Settings },
+  { section: 'official-sources' as const, label: 'Fuentes oficiales', icon: BookOpen },
+  { section: 'library' as const, label: 'Biblioteca local', icon: LibraryBig },
+]
+const localHashPrefix = '#' + '/'
+
+function parseLocalRoute(hash: string): LocalRoute {
+  const parts = hash.replace(new RegExp('^#' + '/?'), '').split('/').filter(Boolean)
+  if (parts[0] === 'collections')
+    return { section: 'collections', collectionId: parts[1] }
+  if (parts[0] === 'account') return { section: 'library' }
+  if (parts[0] === 'profiles' || parts[0] === 'settings' || parts[0] === 'official-sources' || parts[0] === 'library')
+    return { section: parts[0] }
+  return { section: 'collections' }
+}
+
+function hashForRoute(section: LocalRoute['section'], collectionId?: string) {
+  return section === 'collections' && collectionId
+    ? `${localHashPrefix}collections/${collectionId}`
+    : `${localHashPrefix}${section}`
+}
+
 export function LocalViewer() {
+  const [mobileOpened, { close: closeMobile, toggle: toggleMobile }] = useDisclosure(false)
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme()
+  const [route, setRoute] = useState<LocalRoute>(() => parseLocalRoute(window.location.hash))
   const [message, setMessage] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
-  const [connections, setConnections] = useState<Array<LocalConnection>>([])
-  const [label, setLabel] = useState('')
-  const [apiFlavor, setApiFlavor] = useState<LocalApiFlavor>('openai-like')
-  const [baseUrl, setBaseUrl] = useState('http://127.0.0.1:1234/v1')
-  const [model, setModel] = useState('')
   const [rulesetLabel, setRulesetLabel] = useState('Cargando ruleset aprobado…')
-  const [runCount, setRunCount] = useState<number | null>(null)
-  const [invoiceId, setInvoiceId] = useState<string | null>(null)
   const [invoices, setInvoices] = useState<
     Array<{ id: string; fileName: string }>
   >([])
-  const [runMessage, setRunMessage] = useState<string | null>(null)
   const [activities, setActivities] = useState<Array<LocalEconomicActivity>>([])
   const [profiles, setProfiles] = useState<Array<LocalTaxpayerProfile>>([])
-  const [activityDraft, setActivityDraft] = useState(blankActivity)
-  const [profileDraft, setProfileDraft] = useState(blankProfile)
-  const [editingActivityId, setEditingActivityId] = useState<string | null>(null)
-  const [editingProfileId, setEditingProfileId] = useState<string | null>(null)
-  const [savingProfileData, setSavingProfileData] = useState(false)
-  const [loadingProfileData, setLoadingProfileData] = useState(true)
   const [collections, setCollections] = useState<Array<LocalCollectionContext>>([])
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null)
   const [collectionDraft, setCollectionDraft] = useState(blankCollectionContext)
   const [loadingCollections, setLoadingCollections] = useState(true)
   const [collectionLoadError, setCollectionLoadError] = useState(false)
   const [savingCollection, setSavingCollection] = useState(false)
+  const [collectionDetail, setCollectionDetail] = useState<LocalCollectionDetail | null>(null)
+  const [loadingCollectionDetail, setLoadingCollectionDetail] = useState(false)
+  const [collectionDetailError, setCollectionDetailError] = useState(false)
+  const [attachInvoiceId, setAttachInvoiceId] = useState<string | null>(null)
+  const [invoiceFilter, setInvoiceFilter] = useState('')
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([])
+  const [detachInvoiceId, setDetachInvoiceId] = useState<string | null>(null)
 
   useEffect(() => {
-    void client
-      .listConnections()
-      .then(setConnections)
-      .catch(() => {
-        setMessage(
-          'No se pudo conectar al daemon local. Ábrelo y vuelve a intentar.',
-        )
-      })
-  }, [])
+    const syncRoute = () => {
+      const nextRoute = parseLocalRoute(window.location.hash)
+      const canonicalHash = hashForRoute(
+        nextRoute.section,
+        nextRoute.section === 'collections' ? nextRoute.collectionId : undefined,
+      )
+      if (window.location.hash !== canonicalHash)
+        window.location.hash = canonicalHash
+      setRoute(nextRoute)
+      closeMobile()
+    }
+    syncRoute()
+    window.addEventListener('hashchange', syncRoute)
+    return () => window.removeEventListener('hashchange', syncRoute)
+  }, [closeMobile])
+
+  function navigate(section: LocalRoute['section'], collectionId?: string) {
+    window.location.hash = hashForRoute(section, collectionId)
+    setRoute(section === 'collections' ? { section, collectionId } : { section })
+    closeMobile()
+  }
 
   async function refreshCollections() {
     setLoadingCollections(true)
@@ -134,6 +148,23 @@ export function LocalViewer() {
     }
   }
 
+  async function refreshCollectionDetail(collectionId = selectedCollectionId) {
+    if (!collectionId) {
+      setCollectionDetail(null)
+      return
+    }
+    setLoadingCollectionDetail(true)
+    setCollectionDetailError(false)
+    try {
+      setCollectionDetail(await client.getCollectionDetail(collectionId))
+    } catch {
+      setCollectionDetail(null)
+      setCollectionDetailError(true)
+    } finally {
+      setLoadingCollectionDetail(false)
+    }
+  }
+
   useEffect(() => {
     void refreshCollections().catch(() => {})
   }, [])
@@ -141,6 +172,24 @@ export function LocalViewer() {
   const selectedCollection = collections.find(
     (collection) => collection.id === selectedCollectionId,
   )
+  const collectionRouteId = route.section === 'collections' ? route.collectionId : undefined
+
+  useEffect(() => {
+    if (route.section !== 'collections' || !route.collectionId || loadingCollections)
+      return
+
+    const deepLinkedCollection = collections.find(
+      (collection) => collection.id === route.collectionId,
+    )
+    if (deepLinkedCollection) {
+      setSelectedCollectionId(deepLinkedCollection.id)
+      return
+    }
+
+    setMessage('La colección local solicitada no existe en esta biblioteca.')
+    window.location.hash = hashForRoute('collections')
+    setRoute({ section: 'collections' })
+  }, [collections, loadingCollections, route])
 
   useEffect(() => {
     if (!selectedCollection) return
@@ -157,6 +206,11 @@ export function LocalViewer() {
     )
   }, [selectedCollection])
 
+  useEffect(() => {
+    if (collectionRouteId && selectedCollectionId) void refreshCollectionDetail(selectedCollectionId)
+    else setCollectionDetail(null)
+  }, [collectionRouteId, selectedCollectionId])
+
   function selectCollection(collection: LocalCollectionContext) {
     setSelectedCollectionId(collection.id)
     setCollectionDraft(
@@ -170,6 +224,7 @@ export function LocalViewer() {
           }
         : blankCollectionContext,
     )
+    navigate('collections', collection.id)
   }
 
   async function createCollection() {
@@ -211,6 +266,7 @@ export function LocalViewer() {
     try {
       await client.reviseCollection(selectedCollectionId, parsed.data)
       await refreshCollections()
+      await refreshCollectionDetail(selectedCollectionId)
       setMessage('Contexto de colección guardado como una revisión local.')
     } catch {
       setMessage('No se pudo guardar el contexto de la colección local.')
@@ -219,90 +275,15 @@ export function LocalViewer() {
     }
   }
 
-  async function refreshProfileData() {
-    setLoadingProfileData(true)
-    try {
-      const [nextActivities, nextProfiles] = await Promise.all([
-        client.listActivities(),
-        client.listProfiles(),
-      ])
-      setActivities(nextActivities)
-      setProfiles(nextProfiles)
-    } finally {
-      setLoadingProfileData(false)
-    }
-  }
+  useEffect(() => {
+    if (route.section !== 'collections') return
+    void Promise.all([client.listActivities(), client.listProfiles()])
+      .then(([nextActivities, nextProfiles]) => { setActivities(nextActivities); setProfiles(nextProfiles) })
+      .catch(() => setMessage('No se pudieron cargar los perfiles y actividades locales.'))
+  }, [route.section])
 
   useEffect(() => {
-    void refreshProfileData().catch(() =>
-      setMessage('No se pudieron cargar los perfiles y actividades locales.'),
-    )
-  }, [])
-
-  function editActivity(activity: LocalEconomicActivity) {
-    const { id: _id, activityId: _activityId, revision: _revision, createdAt: _createdAt, ...draft } = activity.latestRevision
-    setActivityDraft(draft)
-    setEditingActivityId(activity.id)
-  }
-
-  function editProfile(profile: LocalTaxpayerProfile) {
-    const { id: _id, taxpayerProfileId: _taxpayerProfileId, revision: _revision, createdAt: _createdAt, ...draft } = profile.latestRevision
-    setProfileDraft(draft)
-    setEditingProfileId(profile.id)
-  }
-
-  async function saveActivity() {
-    const parsed = EconomicActivityRevisionInputSchema.safeParse(activityDraft)
-    if (!parsed.success)
-      return setMessage(parsed.error.issues[0]?.message ?? 'Revisa la actividad.')
-    setSavingProfileData(true)
-    try {
-      if (editingActivityId)
-        await client.reviseActivity(editingActivityId, parsed.data)
-      else await client.createActivity(parsed.data)
-      await refreshProfileData()
-      setActivityDraft(blankActivity)
-      setEditingActivityId(null)
-      setMessage('Actividad económica guardada como una revisión local.')
-    } catch {
-      setMessage('No se pudo guardar la actividad económica local.')
-    } finally {
-      setSavingProfileData(false)
-    }
-  }
-
-  async function saveProfile() {
-    const parsed = TaxpayerProfileRevisionInputSchema.safeParse(profileDraft)
-    if (!parsed.success)
-      return setMessage(parsed.error.issues[0]?.message ?? 'Revisa el perfil.')
-    setSavingProfileData(true)
-    try {
-      if (editingProfileId)
-        await client.reviseProfile(editingProfileId, parsed.data)
-      else await client.createProfile(parsed.data)
-      await refreshProfileData()
-      setProfileDraft(blankProfile)
-      setEditingProfileId(null)
-      setMessage('Perfil tributario guardado como una revisión local.')
-    } catch {
-      setMessage('No se pudo guardar el perfil tributario local.')
-    } finally {
-      setSavingProfileData(false)
-    }
-  }
-
-  useEffect(() => {
-    void client.listInvoices().then((result) => {
-      setInvoices(result.items)
-      setInvoiceId((current) => current ?? result.items.at(0)?.id ?? null)
-    })
-  }, [])
-
-  useEffect(() => {
-    void client
-      .listRuns()
-      .then((result) => setRunCount(result.items.length))
-      .catch(() => setRunCount(null))
+    void client.listInvoices().then((result) => setInvoices(result.items))
   }, [])
 
   useEffect(() => {
@@ -319,41 +300,25 @@ export function LocalViewer() {
       .catch(() => setRulesetLabel('No se pudo consultar el ruleset local.'))
   }, [])
 
-  async function saveConnection() {
-    try {
-      const connection = await client.createConnection({
-        label,
-        apiFlavor,
-        baseUrl,
-        model,
-        makeDefault: connections.length === 0,
-      })
-      setConnections((current) => [...current, connection])
-      setLabel('')
-      setModel('')
-      setMessage(
-        'Conexión local guardada. Se probará de nuevo antes de cada análisis.',
-      )
-    } catch {
-      setMessage('Revisa los datos de la conexión local e inténtalo otra vez.')
-    }
-  }
-
   async function importInvoice(file: File | null) {
     if (!file) return
+    if (!selectedCollectionId) {
+      setMessage('Crea o selecciona una colección antes de importar una factura XML.')
+      return
+    }
     setImporting(true)
     try {
-      const result = await client.importXml(file)
+      const result = await client.importCollectionXml(selectedCollectionId, file)
       const importedInvoiceId = result.invoiceId
-      if (importedInvoiceId) setInvoiceId(importedInvoiceId)
       if (importedInvoiceId)
         setInvoices((current) => [
           { id: importedInvoiceId, fileName: file.name },
           ...current,
         ])
+      await refreshCollectionDetail(selectedCollectionId)
       setMessage(
         result.kind === 'imported'
-          ? 'Factura XML importada en tu biblioteca local.'
+          ? 'Factura XML importada y asociada a esta colección local.'
           : result.kind === 'duplicate'
             ? 'Esta factura ya existe en la biblioteca local.'
             : (result.message ?? 'No se pudo importar el XML.'),
@@ -367,38 +332,125 @@ export function LocalViewer() {
     }
   }
 
+  async function attachExistingInvoice() {
+    if (!selectedCollectionId || !attachInvoiceId) return
+    setSavingCollection(true)
+    try {
+      const result = await client.attachInvoice(selectedCollectionId, attachInvoiceId)
+      await refreshCollectionDetail(selectedCollectionId)
+      setAttachInvoiceId(null)
+      setMessage(result.kind === 'attached' ? 'Factura asociada a esta colección local.' : 'La factura ya pertenece a esta colección local.')
+    } catch {
+      setMessage('No se pudo asociar la factura a esta colección local.')
+    } finally {
+      setSavingCollection(false)
+    }
+  }
+
+  async function detachCollectionInvoice(invoiceId: string) {
+    if (!selectedCollectionId) return
+    setSavingCollection(true)
+    try {
+      await client.detachInvoice(selectedCollectionId, invoiceId)
+      await refreshCollectionDetail(selectedCollectionId)
+      setSelectedInvoiceIds((current) => current.filter((id) => id !== invoiceId))
+      setDetachInvoiceId(null)
+      setMessage('La factura se quitó de esta colección; el XML sigue en la biblioteca local.')
+    } catch {
+      setMessage('No se pudo quitar la factura de esta colección local.')
+    } finally {
+      setSavingCollection(false)
+    }
+  }
+
   return (
-    <Container py="xl" size="md">
+    <AppShell
+      header={{ height: 60 }}
+      navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !mobileOpened, desktop: false } }}
+      padding="md"
+    >
+      <AppShell.Header>
+        <Group h="100%" justify="space-between" px="md">
+          <Group gap="xs">
+            <Button
+              aria-label="Abrir navegación"
+              aria-expanded={mobileOpened}
+              hiddenFrom="sm"
+              onClick={toggleMobile}
+              px={8}
+              variant="subtle"
+            >
+              <Menu size={20} />
+            </Button>
+            <Text fw="bolder" size="xl">
+              Bill-<Text c="violet" inherit span>LM</Text>
+              <Text c="dimmed" fw={500} inherit span> local</Text>
+            </Text>
+          </Group>
+          <Group gap="xs">
+            <Text c="dimmed" size="sm" visibleFrom="sm">Sólo datos de este equipo</Text>
+            <ActionIcon
+              aria-label="Alternar tema"
+              onClick={() => toggleColorScheme()}
+              variant="default"
+            >
+              {colorScheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </ActionIcon>
+          </Group>
+        </Group>
+      </AppShell.Header>
+      <AppShell.Navbar p="md">
+        <Stack gap="xs">
+          {navigation.map(({ section, label: navigationLabel, icon: Icon }) => (
+            <NavLink
+              active={route.section === section}
+              aria-current={route.section === section ? 'page' : undefined}
+              key={section}
+              label={navigationLabel}
+              leftSection={<Icon size={18} />}
+              onClick={() => navigate(section)}
+            />
+          ))}
+        </Stack>
+      </AppShell.Navbar>
+      <AppShell.Main>
+    <Container py="xl" size="xl">
       <Stack gap="xl">
-        <header>
-          <Title order={1}>Bill LM local</Title>
+        {route.section !== 'profiles' && <header>
+          <Title order={1}>{navigation.find((item) => item.section === route.section)?.label ?? 'Colecciones'}</Title>
           <Text c="dimmed">
-            Tu biblioteca se conserva en este equipo. Sólo se importan
-            comprobantes XML.
+            {route.section === 'collections'
+              ? 'Tu biblioteca se conserva en este equipo. Sólo se importan comprobantes XML.'
+              : 'Esta sección se guarda y opera únicamente con el daemon local.'}
           </Text>
-        </header>
+        </header>}
         {message && <Alert title="Biblioteca local">{message}</Alert>}
+        {route.section === 'collections' && route.collectionId && <>
+        <Group justify="space-between">
+          <Button aria-label="Volver a colecciones" onClick={() => navigate('collections')} variant="subtle">Volver a colecciones</Button>
+          <Text c="dimmed" size="sm">Detalle de colección local</Text>
+        </Group>
         <Alert color="violet" title="Fuentes SRI aprobadas">
           {rulesetLabel}
         </Alert>
         <Text c="dimmed" size="sm">
-          Historial local:{' '}
-          {runCount === null ? 'no disponible' : `${runCount} ejecuciones`}
-        </Text>
-        <Text c="dimmed" size="sm">
           Facturas XML locales: {invoices.length}
         </Text>
-        {runMessage && <Alert title="Progreso persistido">{runMessage}</Alert>}
         <Card withBorder>
           <Stack>
             <div>
               <Title order={2} size="h3">
-                Importar factura
+                Facturas de la colección
               </Title>
               <Text c="dimmed" size="sm">
-                No se aceptan PDF, ZIP ni reglas tributarias externas.
+                Importa XML directamente a la colección actual o vincula un XML que ya está en tu biblioteca local.
               </Text>
             </div>
+            {!selectedCollectionId ? (
+              <Alert color="blue" title="Selecciona una colección">
+                Crea o selecciona una colección antes de importar o asociar facturas.
+              </Alert>
+            ) : <>
             <Group>
               <FileButton
                 accept="application/xml,text/xml,.xml"
@@ -410,13 +462,63 @@ export function LocalViewer() {
                     leftSection={<Upload size={16} />}
                     loading={importing}
                   >
-                    Elegir XML
+                    Importar XML a esta colección
                   </Button>
                 )}
               </FileButton>
             </Group>
+            <Group align="end" grow>
+              <Select
+                data={invoices.filter((invoice) => !collectionDetail?.invoices.some((attached) => attached.id === invoice.id)).map((invoice) => ({ value: invoice.id, label: invoice.fileName }))}
+                label="Factura existente"
+                placeholder="Selecciona un XML de tu biblioteca"
+                value={attachInvoiceId}
+                onChange={setAttachInvoiceId}
+              />
+              <Button disabled={!attachInvoiceId} loading={savingCollection} onClick={() => void attachExistingInvoice()}>
+                Asociar factura
+              </Button>
+            </Group>
+            {loadingCollectionDetail ? (
+              <Group gap="xs"><Loader size="sm" /><Text c="dimmed" size="sm">Cargando facturas de la colección…</Text></Group>
+            ) : collectionDetailError ? (
+              <Alert color="red" title="No se pudo abrir la colección">
+                La colección no se pudo cargar desde el daemon local.
+                <Group mt="sm"><Button variant="light" onClick={() => void refreshCollectionDetail()}>Reintentar detalle</Button></Group>
+              </Alert>
+            ) : collectionDetail?.invoices.length ? (
+              <Stack gap="xs">
+                <TextInput
+                  aria-label="Filtrar facturas de la colección"
+                  onChange={(event) => setInvoiceFilter(event.currentTarget.value)}
+                  placeholder="Filtrar por nombre de archivo"
+                  value={invoiceFilter}
+                />
+                <Text c="dimmed" size="sm">{selectedInvoiceIds.length} factura(s) seleccionada(s)</Text>
+                {collectionDetail.invoices.filter((invoice) => invoice.fileName.toLowerCase().includes(invoiceFilter.trim().toLowerCase())).map((invoice) => (
+                  <Group justify="space-between" key={invoice.id}>
+                    <Group gap="xs"><input aria-label={`Seleccionar ${invoice.fileName}`} checked={selectedInvoiceIds.includes(invoice.id)} onChange={(event) => setSelectedInvoiceIds((current) => event.currentTarget.checked ? [...current, invoice.id] : current.filter((id) => id !== invoice.id))} type="checkbox" /><div><Text fw={500}>{invoice.fileName}</Text><Text c="dimmed" size="xs">Importada {new Date(invoice.createdAt).toLocaleDateString('es-EC')}</Text></div></Group>
+                    <Button color="red" loading={savingCollection} onClick={() => setDetachInvoiceId(invoice.id)} variant="subtle">Quitar de colección</Button>
+                  </Group>
+                ))}
+              </Stack>
+            ) : (
+              <EmptyState title="Aún no hay facturas en esta colección" description="Importa un XML o asocia una factura existente de tu biblioteca local." />
+            )}
+            </>}
           </Stack>
         </Card>
+        {collectionDetail && !loadingCollectionDetail && !collectionDetailError && (
+          <LocalCollectionAnalysis client={client} collection={collectionDetail} onChanged={() => refreshCollectionDetail(selectedCollectionId)} />
+        )}
+        <Modal opened={detachInvoiceId !== null} onClose={() => setDetachInvoiceId(null)} title="Quitar factura de la colección">
+          <Stack>
+            <Text>La factura se quitará de esta colección, pero su XML seguirá disponible en la biblioteca local.</Text>
+            <Group justify="flex-end"><Button onClick={() => setDetachInvoiceId(null)} variant="default">Cancelar</Button><Button color="red" loading={savingCollection} onClick={() => detachInvoiceId && void detachCollectionInvoice(detachInvoiceId)}>Confirmar quitar</Button></Group>
+          </Stack>
+        </Modal>
+        </>}
+        {route.section === 'collections' && <>
         <Card withBorder>
           <Stack>
             <Group justify="space-between">
@@ -430,6 +532,7 @@ export function LocalViewer() {
                 Nueva colección
               </Button>
             </Group>
+            {!route.collectionId && <>
             {loadingCollections ? (
               <Group gap="xs"><Loader size="sm" /><Text c="dimmed" size="sm">Cargando colecciones locales…</Text></Group>
             ) : collectionLoadError ? (
@@ -444,22 +547,24 @@ export function LocalViewer() {
             ) : collections.length === 0 ? (
               <EmptyState title="No hay colecciones locales" description="Crea una colección para definir su contexto tributario local." />
             ) : (
-              <Select
-                data={collections.map((collection, index) => ({
-                  value: collection.id,
-                  label: collection.latestRevision
-                    ? `Colección ${index + 1} · revisión ${collection.latestRevision.revision}`
-                    : `Colección ${index + 1} · sin contexto`,
-                }))}
-                label="Colección seleccionada"
-                value={selectedCollectionId}
-                onChange={(id) => {
-                  const collection = collections.find((candidate) => candidate.id === id)
-                  if (collection) selectCollection(collection)
-                }}
-              />
+              <Stack gap="xs">
+                {collections.map((collection, index) => (
+                  <Button
+                    aria-label={`Abrir colección ${index + 1}`}
+                    justify="space-between"
+                    key={collection.id}
+                    onClick={() => selectCollection(collection)}
+                    variant="light"
+                  >
+                    {collection.latestRevision
+                      ? `Colección ${index + 1} · revisión ${collection.latestRevision.revision}`
+                      : `Colección ${index + 1} · sin contexto`}
+                  </Button>
+                ))}
+              </Stack>
             )}
-            {selectedCollection && (
+            </>}
+            {route.collectionId && selectedCollection && (
               <>
                 {selectedCollection.latestRevision === null && (
                   <Alert color="blue" title="Contexto pendiente">
@@ -498,217 +603,14 @@ export function LocalViewer() {
             )}
           </Stack>
         </Card>
-        <Card withBorder>
-          <Stack>
-            <div>
-              <Title order={2} size="h3">Actividades económicas</Title>
-              <Text c="dimmed" size="sm">
-                Las ediciones crean revisiones locales y no modifican análisis anteriores.
-              </Text>
-            </div>
-            {loadingProfileData ? (
-              <Group gap="xs">
-                <Loader size="sm" />
-                <Text c="dimmed" size="sm">Cargando actividades locales…</Text>
-              </Group>
-            ) : activities.length === 0 ? (
-              <EmptyState
-                description="Agrega una actividad si este equipo analiza gastos vinculados a un RUC."
-                title="No hay actividades locales"
-              />
-            ) : (
-              activities.map((activity) => (
-                <Group justify="space-between" key={activity.id}>
-                  <Text>{activity.latestRevision.displayName}</Text>
-                  <Button variant="subtle" onClick={() => editActivity(activity)}>
-                    Nueva revisión
-                  </Button>
-                </Group>
-              ))
-            )}
-            <TextInput
-              label={<FieldHelpLabel hint="Un nombre para reconocer esta actividad." label="Nombre de actividad" />}
-              value={activityDraft.displayName}
-              onChange={(event) => setActivityDraft((current) => ({ ...current, displayName: event.currentTarget.value }))}
-            />
-            <TextInput
-              label="Nombre de actividad registrada"
-              value={activityDraft.registeredActivityName}
-              onChange={(event) => setActivityDraft((current) => ({ ...current, registeredActivityName: event.currentTarget.value }))}
-            />
-            <TextInput
-              label="Código registrado (opcional)"
-              value={activityDraft.registeredActivityCode}
-              onChange={(event) => setActivityDraft((current) => ({ ...current, registeredActivityCode: event.currentTarget.value }))}
-            />
-            <Textarea
-              label="¿En qué consiste esta actividad?"
-              value={activityDraft.activityDescription}
-              onChange={(event) => setActivityDraft((current) => ({ ...current, activityDescription: event.currentTarget.value }))}
-            />
-            <Select
-              data={[
-                { value: 'taxed_nonzero', label: 'Gravada con IVA' },
-                { value: 'zero_with_credit', label: 'Tarifa 0% con crédito' },
-                { value: 'zero_without_credit', label: 'Tarifa 0% sin crédito' },
-                { value: 'mixed', label: 'Uso mixto' },
-                { value: 'export', label: 'Exportación' },
-                { value: 'unknown', label: 'Aún no lo sé' },
-                { value: 'other', label: 'Otro' },
-              ]}
-              label="Tratamiento de ingresos/IVA"
-              value={activityDraft.revenueVatTreatment}
-              onChange={(value) => setActivityDraft((current) => ({ ...current, revenueVatTreatment: (value ?? 'unknown') as EconomicActivityRevisionInput['revenueVatTreatment'] }))}
-            />
-            {activityDraft.revenueVatTreatment === 'other' && (
-              <Textarea label="Describe el tratamiento" value={activityDraft.revenueVatTreatmentOther} onChange={(event) => setActivityDraft((current) => ({ ...current, revenueVatTreatmentOther: event.currentTarget.value }))} />
-            )}
-            {activityDraft.revenueVatTreatment === 'mixed' && (
-              <Textarea label="Explica el uso mixto (opcional)" value={activityDraft.mixedUseDescription} onChange={(event) => setActivityDraft((current) => ({ ...current, mixedUseDescription: event.currentTarget.value }))} />
-            )}
-            <Textarea label="Compras o gastos necesarios (opcional)" value={activityDraft.necessaryPurchases} onChange={(event) => setActivityDraft((current) => ({ ...current, necessaryPurchases: event.currentTarget.value }))} />
-            <Textarea label="Datos adicionales (opcional)" value={activityDraft.additionalFacts} onChange={(event) => setActivityDraft((current) => ({ ...current, additionalFacts: event.currentTarget.value }))} />
-            <Group justify="flex-end">
-              {editingActivityId && <Button variant="default" onClick={() => { setActivityDraft(blankActivity); setEditingActivityId(null) }}>Cancelar</Button>}
-              <Button loading={savingProfileData} onClick={() => void saveActivity()}>
-                {editingActivityId ? 'Guardar revisión' : 'Agregar actividad'}
-              </Button>
-            </Group>
-          </Stack>
-        </Card>
-        <Card withBorder>
-          <Stack>
-            <div>
-              <Title order={2} size="h3">Perfil tributario</Title>
-              <Text c="dimmed" size="sm">Los perfiles locales vinculan las revisiones actuales de tus actividades.</Text>
-            </div>
-            {loadingProfileData ? (
-              <Group gap="xs">
-                <Loader size="sm" />
-                <Text c="dimmed" size="sm">Cargando perfiles locales…</Text>
-              </Group>
-            ) : profiles.length === 0 ? (
-              <EmptyState description="Crea un perfil para conservar tu contexto tributario local." title="No hay perfiles locales" />
-            ) : (
-              profiles.map((profile) => (
-                <Group justify="space-between" key={profile.id}>
-                  <Text>{profile.latestRevision.displayName}</Text>
-                  <Button variant="subtle" onClick={() => editProfile(profile)}>Nueva revisión</Button>
-                </Group>
-              ))
-            )}
-            <TextInput label={<FieldHelpLabel hint="Un nombre para reconocer esta configuración." label="Nombre del perfil" />} value={profileDraft.displayName} onChange={(event) => setProfileDraft((current) => ({ ...current, displayName: event.currentTarget.value }))} />
-            <Switch checked={profileDraft.hasEmploymentIncome} label="También tengo ingresos en relación de dependencia" onChange={(event) => setProfileDraft((current) => ({ ...current, hasEmploymentIncome: event.currentTarget.checked }))} />
-            <Switch checked={profileDraft.hasRuc} label="Tengo RUC" onChange={(event) => setProfileDraft((current) => ({ ...current, hasRuc: event.currentTarget.checked, vatFilingFrequency: event.currentTarget.checked ? current.vatFilingFrequency : 'none', activityRevisionIds: event.currentTarget.checked ? current.activityRevisionIds : [] }))} />
-            <TextInput label="Cédula (opcional)" maxLength={10} value={profileDraft.personalIdNumber} onChange={(event) => setProfileDraft((current) => ({ ...current, personalIdNumber: event.currentTarget.value }))} />
-            <TextInput disabled={!profileDraft.hasRuc} label="RUC (opcional)" maxLength={13} value={profileDraft.professionalIdNumber} onChange={(event) => setProfileDraft((current) => ({ ...current, professionalIdNumber: event.currentTarget.value }))} />
-            <Select disabled={!profileDraft.hasRuc} data={[{ value: 'general', label: 'General' }, { value: 'rimpe_entrepreneur', label: 'RIMPE emprendedor' }, { value: 'rimpe_popular_business', label: 'RIMPE negocio popular' }, { value: 'unknown', label: 'Aún no lo sé' }]} label="Régimen tributario" value={profileDraft.taxRegime} onChange={(value) => setProfileDraft((current) => ({ ...current, taxRegime: (value ?? 'unknown') as TaxpayerProfileRevisionInput['taxRegime'] }))} />
-            <Select disabled={!profileDraft.hasRuc} data={[{ value: 'none', label: 'Sin obligación de IVA' }, { value: 'monthly', label: 'Mensual' }, { value: 'semiannual', label: 'Semestral' }, { value: 'unknown', label: 'Aún no lo sé' }]} label="Periodicidad de IVA" value={profileDraft.vatFilingFrequency} onChange={(value) => setProfileDraft((current) => ({ ...current, vatFilingFrequency: (value ?? 'none') as TaxpayerProfileRevisionInput['vatFilingFrequency'] }))} />
-            <MultiSelect disabled={!profileDraft.hasRuc} data={activities.map((activity) => ({ value: activity.latestRevision.id, label: activity.latestRevision.displayName }))} label="Actividades" value={profileDraft.activityRevisionIds} onChange={(value) => setProfileDraft((current) => ({ ...current, activityRevisionIds: value }))} />
-            <Textarea label="Datos adicionales (opcional)" value={profileDraft.additionalFacts} onChange={(event) => setProfileDraft((current) => ({ ...current, additionalFacts: event.currentTarget.value }))} />
-            <Group justify="flex-end">
-              {editingProfileId && <Button variant="default" onClick={() => { setProfileDraft(blankProfile); setEditingProfileId(null) }}>Cancelar</Button>}
-              <Button loading={savingProfileData} onClick={() => void saveProfile()}>{editingProfileId ? 'Guardar revisión' : 'Agregar perfil'}</Button>
-            </Group>
-          </Stack>
-        </Card>
-        <Card withBorder>
-          <Stack>
-            <div>
-              <Title order={2} size="h3">
-                Conexión local-GPU
-              </Title>
-              <Text c="dimmed" size="sm">
-                Si no registras una conexión, Analizar te guiará al modo OAuth.
-              </Text>
-            </div>
-            <TextInput
-              label={
-                <FieldHelpLabel
-                  hint="Un nombre para reconocer esta GPU o servidor local."
-                  label="Nombre"
-                />
-              }
-              value={label}
-              onChange={(event) => setLabel(event.currentTarget.value)}
-            />
-            <Select
-              data={[
-                { value: 'openai-like', label: 'OpenAI-like' },
-                { value: 'claude-like', label: 'Claude-like' },
-              ]}
-              label={
-                <FieldHelpLabel
-                  hint="Elige el contrato que implementa tu servidor local."
-                  label="Tipo de API"
-                />
-              }
-              value={apiFlavor}
-              onChange={(value) => setApiFlavor(value as LocalApiFlavor)}
-            />
-            <TextInput
-              label={
-                <FieldHelpLabel
-                  hint="Una URL localhost o de tu red privada; nunca se envía a Bill LM cloud."
-                  label="URL base"
-                />
-              }
-              value={baseUrl}
-              onChange={(event) => setBaseUrl(event.currentTarget.value)}
-            />
-            <TextInput
-              label={
-                <FieldHelpLabel
-                  hint="El identificador que expone tu servidor de inferencia."
-                  label="Modelo"
-                />
-              }
-              value={model}
-              onChange={(event) => setModel(event.currentTarget.value)}
-            />
-            <Group justify="space-between">
-              <Button
-                disabled={!label || !model}
-                onClick={() => void saveConnection()}
-              >
-                Guardar conexión
-              </Button>
-              <LocalAnalysisAction
-                availability={resolveLocalAnalysisAvailability(connections)}
-                onStartGpu={(id) =>
-                  void (
-                    invoiceId
-                      ? client.analyze(invoiceId)
-                      : client.probeConnection(id)
-                  )
-                    .then((result) =>
-                      setMessage(
-                        'id' in result
-                          ? (void client
-                              .listRunEvents(result.id)
-                              .then((events) =>
-                                setRunMessage(
-                                  events.items.at(0)?.message ?? 'Run creado.',
-                                ),
-                              ),
-                            `Run local ${result.id} creado.`)
-                          : result.ok
-                            ? 'La conexión respondió. Importa una factura XML para analizarla.'
-                            : (result.message ??
-                              'La prueba de conexión falló; puedes continuar con OAuth.'),
-                      ),
-                    )
-                    .catch(() =>
-                      setMessage(
-                        'La prueba de conexión falló; puedes continuar con OAuth.',
-                      ),
-                    )
-                }
-              />
-            </Group>
-          </Stack>
-        </Card>
+        </>}
+        {route.section === 'profiles' && <LocalProfilesSection client={client} />}
+        {route.section === 'official-sources' && <OfficialSourcesSection client={client} />}
+        {route.section === 'library' && <LocalLibrarySection client={client} navigate={(section) => navigate(section)} />}
+        {route.section === 'settings' && <Alert title="Configuración local">Las conexiones Local-GPU se configuran dentro del detalle de cada colección. Esta sección no inicia análisis ni usa servicios cloud.</Alert>}
       </Stack>
     </Container>
+      </AppShell.Main>
+    </AppShell>
   )
 }

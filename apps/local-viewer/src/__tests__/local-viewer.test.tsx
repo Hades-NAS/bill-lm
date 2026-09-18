@@ -19,6 +19,7 @@ describe('LocalViewer', () => {
   })
 
   beforeEach(() => {
+    window.location.hash = '#' + '/collections'
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} })
     vi.stubGlobal('matchMedia', () => ({
       matches: false,
@@ -33,6 +34,14 @@ describe('LocalViewer', () => {
           return Response.json({
             items: [{ id: 'ec-sri-2026.3', effectiveFrom: '2026-01-01' }],
           })
+        if (input.endsWith('/official-sources'))
+          return Response.json({ items: [{
+            id: 'ec-sri-lrti', title: 'Ley tributaria local', issuer: 'SRI', jurisdiction: 'EC', sourceKind: 'law', officialUrl: null, resolvedUrl: null, contentHash: 'sha256:test', effectiveFrom: '2026-01-01', effectiveTo: null, reviewStatus: 'reviewed', sectionCount: 1,
+          }] })
+        if (input.includes('/official-sources/'))
+          return Response.json({ id: 'ec-sri-lrti', title: 'Ley tributaria local', issuer: 'SRI', jurisdiction: 'EC', sourceKind: 'law', officialUrl: null, resolvedUrl: null, contentHash: 'sha256:test', effectiveFrom: '2026-01-01', effectiveTo: null, reviewStatus: 'reviewed', sectionCount: 1, fragments: [], ruleset: { id: 'ec-sri-2026.3', version: '3', jurisdiction: 'EC', reviewStatus: 'local-snapshot' } })
+        if (input.endsWith('/library/summary'))
+          return Response.json({ invoiceCount: 0, collectionCount: 1, profileCount: 1, activityCount: 1, runCount: 0, ruleset: { id: 'ec-sri-2026.3', version: '3', effectiveFrom: '2026-01-01', effectiveTo: null } })
         if (input.endsWith('/runs')) return Response.json({ items: [] })
         if (input.endsWith('/invoices')) return Response.json({ items: [] })
         if (input.endsWith('/activities'))
@@ -98,6 +107,7 @@ describe('LocalViewer', () => {
   })
 
   it('shows loading before local profile data resolves, then its empty state', async () => {
+    window.location.hash = '#' + '/profiles'
     let resolveActivities: (value: Response) => void = () => {}
     let resolveProfiles: (value: Response) => void = () => {}
     vi.stubGlobal('fetch', vi.fn((input: string) => {
@@ -137,25 +147,45 @@ describe('LocalViewer', () => {
     expect(screen.queryByText('Cargando perfiles locales…')).toBeNull()
   })
 
-  it('renders a Firebase-free local XML workflow with OAuth guidance available', async () => {
+  it('renders a Firebase-free local XML workflow and keeps GPU execution out of settings', async () => {
     render(
       <MantineProvider>
         <LocalViewer />
       </MantineProvider>,
     )
-    expect(await screen.findByText('Bill LM local')).not.toBeNull()
+    expect(await screen.findByRole('heading', { name: 'Colecciones' })).not.toBeNull()
     expect(screen.getByText(/Sólo se importan comprobantes XML/)).not.toBeNull()
-    expect(screen.getByRole('button', { name: 'Analizar' })).not.toBeNull()
+    fireEvent.click(screen.getAllByText('Configuración').at(0)!)
+    expect(await screen.findByText(/Las conexiones Local-GPU se configuran dentro del detalle/)).not.toBeNull()
+    expect(screen.queryByRole('button', { name: 'Guardar conexión' })).toBeNull()
+  })
+
+  it('uses the web-app navigation order and canonical local hash fallback', async () => {
+    window.location.hash = '#' + '/unknown-route'
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    expect(await screen.findByRole('heading', { name: 'Colecciones' })).not.toBeNull()
+    expect(window.location.hash).toBe('#' + '/collections')
+    expect(
+      ['Colecciones', 'Perfiles y actividades', 'Configuración', 'Fuentes oficiales', 'Biblioteca local'].map((label) =>
+        screen.getAllByText(label).at(0)?.textContent,
+      ),
+    ).toEqual(['Colecciones', 'Perfiles y actividades', 'Configuración', 'Fuentes oficiales', 'Biblioteca local'])
+
+    fireEvent.click(screen.getAllByText('Perfiles y actividades').at(0)!)
+    expect((await screen.findAllByRole('heading', { name: 'Perfiles y actividades' })).length).toBeGreaterThan(0)
+    expect(document.querySelector('[aria-current="page"]')?.textContent).toContain('Perfiles y actividades')
   })
 
   it('renders latest revisions and sends an activity revision through the local daemon', async () => {
+    window.location.hash = '#' + '/profiles'
     const fetchMock = vi.mocked(fetch)
     render(<MantineProvider><LocalViewer /></MantineProvider>)
 
     expect((await screen.findAllByText('Desarrollo local')).length).toBeGreaterThan(0)
     expect(screen.getAllByText('Perfil local').length).toBeGreaterThan(0)
     fireEvent.click(screen.getAllByRole('button', { name: 'Nueva revisión' })[0]!)
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar revisión' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Guardar revisión' }))
 
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
@@ -165,11 +195,73 @@ describe('LocalViewer', () => {
     )
   })
 
+  it('uses the local profile stepper and persists a profile revision through Hono', async () => {
+    window.location.hash = '#' + '/profiles'
+    const fetchMock = vi.mocked(fetch)
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    await screen.findByText('Perfil local')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Nueva revisión' })[1]!)
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Guardar revisión' }))
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/profiles/${profileId}/revisions`,
+      expect.objectContaining({ method: 'POST' }),
+    ))
+  })
+
+  it('keeps an invalid local profile on the first step and never posts it', async () => {
+    window.location.hash = '#' + '/profiles'
+    const fetchMock = vi.mocked(fetch)
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    await screen.findByText('Perfil local')
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo perfil' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
+
+    expect(await screen.findByText('Ingresa un nombre para el perfil.')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Continuar' })).not.toBeNull()
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringMatching(/\/profiles(?:\/|$)/),
+      expect.objectContaining({ method: 'POST' }),
+    )
+  })
+
+  it('shows activity detail and linked local activities on revision cards', async () => {
+    window.location.hash = '#' + '/profiles'
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    expect(await screen.findByText('Servicios de desarrollo.')).not.toBeNull()
+    expect(screen.getByText('Actividades: Desarrollo local')).not.toBeNull()
+  })
+
+  it('mounts the deep-linked local sections without rendering collection content everywhere', async () => {
+    window.location.hash = '#' + '/official-sources'
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    expect((await screen.findAllByRole('heading', { name: 'Fuentes oficiales' })).length).toBeGreaterThan(0)
+    expect(screen.getByText('Snapshot local incluido con este visor. No se consulta al SRI mientras navegas estas fuentes.')).not.toBeNull()
+    expect(screen.queryByText('Importar factura')).toBeNull()
+    expect(screen.queryByText('Conexión local-GPU')).toBeNull()
+  })
+
+  it('opens the mobile drawer control and closes it after local navigation', async () => {
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    const navigationButton = screen.getByRole('button', { name: 'Abrir navegación' })
+    expect(navigationButton.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(navigationButton)
+    expect(navigationButton.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(screen.getAllByText('Biblioteca local').at(0)!)
+    expect(navigationButton.getAttribute('aria-expanded')).toBe('false')
+  })
+
   it('renders a collection without a context revision safely and creates another only through Hono', async () => {
     const fetchMock = vi.mocked(fetch)
     render(<MantineProvider><LocalViewer /></MantineProvider>)
 
-    expect(await screen.findByText('Contexto pendiente')).not.toBeNull()
+    expect(await screen.findByRole('button', { name: 'Abrir colección 1' })).not.toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Nueva colección' }))
 
     await waitFor(() =>
@@ -178,7 +270,37 @@ describe('LocalViewer', () => {
         expect.objectContaining({ method: 'POST' }),
       ),
     )
-    expect(screen.getByText('Esta colección todavía no tiene una revisión de contexto.')).not.toBeNull()
+    expect(await screen.findByText('Esta colección todavía no tiene una revisión de contexto.')).not.toBeNull()
+  })
+
+  it('selects the collection identified by a local deep link after loading multiple collections', async () => {
+    const secondCollectionId = '550e8400-e29b-41d4-a716-446655440099'
+    window.location.hash = '#' + `/collections/${secondCollectionId}`
+    vi.stubGlobal('fetch', vi.fn((input: string) => {
+      if (input.endsWith('/collections')) return Response.json({
+        items: [
+          { id: collectionId, latestRevision: null },
+          { id: secondCollectionId, latestRevision: null },
+        ],
+      })
+      if (input.endsWith(`/collections/${secondCollectionId}`)) return Response.json({ id: secondCollectionId, latestRevision: null, invoices: [], runs: [] })
+      if (input.endsWith('/activities') || input.endsWith('/profiles') || input.endsWith('/connections') || input.endsWith('/runs') || input.endsWith('/invoices')) return Response.json({ items: [] })
+      if (input.endsWith('/rulesets')) return Response.json({ items: [] })
+      return new Response(null, { status: 404 })
+    }))
+
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    expect(await screen.findByText('Contexto pendiente')).not.toBeNull()
+    expect(window.location.hash).toBe('#' + `/collections/${secondCollectionId}`)
+  })
+
+  it('falls back safely when a local collection deep link does not exist', async () => {
+    window.location.hash = '#' + '/collections/missing-local-collection'
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    expect(await screen.findByText('La colección local solicitada no existe en esta biblioteca.')).not.toBeNull()
+    expect(window.location.hash).toBe('#' + '/collections')
   })
 
   it('shows collection loading before resolving its empty state', async () => {
@@ -221,6 +343,7 @@ describe('LocalViewer', () => {
   })
 
   it('hydrates a selected collection context and posts its next revision only through Hono', async () => {
+    window.location.hash = '#' + `/collections/${collectionId}`
     vi.stubGlobal('fetch', vi.fn((input: string) => {
       if (input.endsWith('/collections')) return Response.json({
         items: [{
@@ -238,6 +361,7 @@ describe('LocalViewer', () => {
           },
         }],
       })
+      if (input.endsWith(`/collections/${collectionId}`)) return Response.json({ id: collectionId, latestRevision: null, invoices: [], runs: [] })
       if (input.endsWith('/activities')) return Response.json({ items: [{ id: activityId, latestRevision: { id: activityRevisionId, activityId, revision: 1, createdAt: '2026-09-17T00:00:00.000Z', displayName: 'Desarrollo local' } }] })
       if (input.endsWith('/profiles')) return Response.json({ items: [{ id: profileId, latestRevision: { id: profileRevisionId, taxpayerProfileId: profileId, revision: 1, createdAt: '2026-09-17T00:00:00.000Z', displayName: 'Perfil local', activityRevisionIds: [activityRevisionId] } }] })
       if (input.includes('/collections/') && input.endsWith('/revisions')) return Response.json({ id: '550e8400-e29b-41d4-a716-446655440006' }, { status: 201 })
@@ -257,5 +381,42 @@ describe('LocalViewer', () => {
         expect.objectContaining({ method: 'POST' }),
       ),
     )
+  })
+
+  it('renders collection-scoped invoices from the typed detail aggregate', async () => {
+    window.location.hash = '#' + `/collections/${collectionId}`
+    vi.stubGlobal('fetch', vi.fn((input: string) => {
+      if (input.endsWith('/collections')) return Response.json({ items: [{ id: collectionId, latestRevision: null }] })
+      if (input.endsWith(`/collections/${collectionId}`)) return Response.json({
+        id: collectionId, latestRevision: null, invoices: [{ id: activityId, fileName: 'IVA-septiembre.xml', createdAt: '2026-09-18T00:00:00.000Z' }], runs: [],
+      })
+      if (input.endsWith('/activities') || input.endsWith('/profiles') || input.endsWith('/connections') || input.endsWith('/runs')) return Response.json({ items: [] })
+      if (input.endsWith('/invoices')) return Response.json({ items: [] })
+      if (input.endsWith('/rulesets')) return Response.json({ items: [] })
+      return new Response(null, { status: 404 })
+    }))
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+    expect(await screen.findByText('IVA-septiembre.xml')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Quitar de colección' })).not.toBeNull()
+  })
+
+  it('filters attached invoices and asks for confirmation before detaching one', async () => {
+    window.location.hash = '#' + `/collections/${collectionId}`
+    vi.stubGlobal('fetch', vi.fn((input: string) => {
+      if (input.endsWith('/collections')) return Response.json({ items: [{ id: collectionId, latestRevision: null }] })
+      if (input.endsWith(`/collections/${collectionId}`)) return Response.json({ id: collectionId, latestRevision: null, invoices: [{ id: activityId, fileName: 'IVA-septiembre.xml', createdAt: '2026-09-18T00:00:00.000Z' }, { id: profileId, fileName: 'IR-anual.xml', createdAt: '2026-09-18T00:00:00.000Z' }], runs: [] })
+      if (input.endsWith('/activities') || input.endsWith('/profiles') || input.endsWith('/connections') || input.endsWith('/runs') || input.endsWith('/invoices')) return Response.json({ items: [] })
+      if (input.endsWith('/rulesets')) return Response.json({ items: [] })
+      return new Response(null, { status: 404 })
+    }))
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+    expect(await screen.findByText('IVA-septiembre.xml')).not.toBeNull()
+    fireEvent.change(screen.getByRole('textbox', { name: 'Filtrar facturas de la colección' }), { target: { value: 'anual' } })
+    expect(screen.queryByText('IVA-septiembre.xml')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar de colección' }))
+    expect(await screen.findByRole('dialog', { name: 'Quitar factura de la colección' })).not.toBeNull()
+    expect(screen.getByText(/seguirá disponible en la biblioteca local/)).not.toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Quitar factura de la colección' })).toBeNull())
   })
 })

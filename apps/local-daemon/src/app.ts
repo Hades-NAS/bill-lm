@@ -8,7 +8,12 @@ import {
   CollectionContextRevisionInputSchema,
   CreateLocalConnectionSchema,
   EconomicActivityRevisionInputSchema,
+  LocalCollectionDetailSchema,
+  LocalConnectionResponseSchema,
   ModelTaxAnalysisPayloadSchema,
+  LocalCollectionAnalysisInputSchema,
+  LocalCollectionInvoiceInputSchema,
+  LocalCollectionInvoiceMembershipSchema,
   TaxpayerProfileRevisionInputSchema,
   resolveLocalAnalysisAvailability,
 } from '@bill-lm/contracts'
@@ -21,10 +26,7 @@ import { createLocalLlmAdapter } from './adapters'
 import type { LocalLlmAdapter } from './adapters'
 import type { LocalLibrary } from './library'
 
-const AnalyzeLocalInvoiceSchema = z.object({
-  invoiceId: z.string().uuid(),
-  connectionId: z.string().uuid().optional(),
-})
+const AnalyzeLocalInvoiceSchema = LocalCollectionAnalysisInputSchema
 
 type LocalConnectionProbe = (
   input: LocalConnection,
@@ -63,6 +65,15 @@ async function requestJson(context: Context): Promise<unknown> {
   } catch {
     return undefined
   }
+}
+
+function contractJson<Output>(
+  context: Context,
+  schema: z.ZodType<Output>,
+  value: unknown,
+  status: 200 | 201 = 200,
+) {
+  return context.json(schema.parse(JSON.parse(JSON.stringify(value))), status)
 }
 
 export function createLocalDaemon(
@@ -197,9 +208,98 @@ export function createLocalDaemon(
       return c.json({ code: 'COLLECTION_STORAGE_FAILURE' }, 500)
     return c.json({ code: 'INVALID_COLLECTION_CONTEXT' }, 400)
   })
+  app.get('/collections/:id', async (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('id'))
+    if (!collectionId.success) return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
+    const collection = await library
+      .collectionContexts()
+      .findCollectionContext(library.actorScope(), collectionId.data)
+    if (!collection.ok) {
+      return c.json(
+        { code: collection.error.code === 'resource.not_found' ? 'COLLECTION_NOT_FOUND' : 'COLLECTION_STORAGE_FAILURE' },
+        collection.error.code === 'resource.not_found' ? 404 : 500,
+      )
+    }
+    return contractJson(c, LocalCollectionDetailSchema, {
+      ...collection.value,
+      invoices: library.listCollectionInvoices(collectionId.data),
+      runs: library.listRuns(collectionId.data),
+    })
+  })
+  app.post('/collections/:id/invoices', async (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('id'))
+    const parsed = LocalCollectionInvoiceInputSchema.safeParse(await requestJson(c))
+    if (!collectionId.success || !parsed.success)
+      return c.json({ code: 'INVALID_COLLECTION_INVOICE', ...(parsed.success ? {} : { issues: parsed.error.flatten() }) }, 400)
+    const result = library.attachInvoiceToCollection(collectionId.data, parsed.data.invoiceId)
+    if (result.kind === 'collection-not-found') return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
+    if (result.kind === 'invoice-not-found') return c.json({ code: 'INVOICE_NOT_FOUND' }, 404)
+    return contractJson(
+      c,
+      LocalCollectionInvoiceMembershipSchema,
+      result,
+      result.kind === 'attached' ? 201 : 200,
+    )
+  })
+  app.delete('/collections/:id/invoices/:invoiceId', async (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('id'))
+    const invoiceId = IdSchema.safeParse(c.req.param('invoiceId'))
+    if (!collectionId.success || !invoiceId.success)
+      return c.json({ code: 'INVALID_COLLECTION_INVOICE' }, 400)
+    const result = library.detachInvoiceFromCollection(collectionId.data, invoiceId.data)
+    if (result.kind === 'collection-not-found') return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
+    if (result.kind === 'membership-not-found') return c.json({ code: 'COLLECTION_INVOICE_NOT_FOUND' }, 404)
+    return contractJson(c, LocalCollectionInvoiceMembershipSchema, result)
+  })
+  app.post('/collections/:id/invoices/xml', async (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('id'))
+    const body = await requestJson(c) as { fileName?: unknown; xml?: unknown } | undefined
+    if (!collectionId.success || typeof body?.fileName !== 'string' || typeof body.xml !== 'string')
+      return c.json({ code: 'INVALID_XML_IMPORT', message: 'Envía un nombre y contenido XML.' }, 400)
+    if (!library.hasCollection(collectionId.data)) return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
+    const imported = library.importXml(body.fileName, new TextEncoder().encode(body.xml))
+    if (imported.kind === 'invalid-xml') return c.json(imported, 400)
+    const membership = library.attachInvoiceToCollection(collectionId.data, imported.invoiceId)
+    return c.json(
+      {
+        ...imported,
+        membership: LocalCollectionInvoiceMembershipSchema.parse(membership),
+      },
+      membership.kind === 'attached' ? 201 : 200,
+    )
+  })
 
-  app.get('/connections', (c) => c.json({ items: library.listConnections() }))
+  const publicConnection = ({ secretRef: _secretRef, ...connection }: LocalConnection) => connection
+  app.get('/connections', (c) => c.json({
+    items: library.listConnections().map((connection) =>
+      LocalConnectionResponseSchema.parse(JSON.parse(JSON.stringify(publicConnection(connection)))),
+    ),
+  }))
   app.get('/rulesets', (c) => c.json({ items: library.listRulesets() }))
+  app.get('/official-sources', (c) => {
+    try {
+      return c.json({ items: library.listOfficialSources() })
+    } catch {
+      return c.json({ code: 'LOCAL_RULESET_UNAVAILABLE' }, 500)
+    }
+  })
+  app.get('/official-sources/:id', (c) => {
+    try {
+      const source = library.getOfficialSource(c.req.param('id'))
+      return source
+        ? c.json(source)
+        : c.json({ code: 'OFFICIAL_SOURCE_NOT_FOUND' }, 404)
+    } catch {
+      return c.json({ code: 'LOCAL_RULESET_UNAVAILABLE' }, 500)
+    }
+  })
+  app.get('/library/summary', (c) => {
+    try {
+      return c.json(library.getLibrarySummary())
+    } catch {
+      return c.json({ code: 'LOCAL_RULESET_UNAVAILABLE' }, 500)
+    }
+  })
   app.post('/connections', async (c) => {
     const parsed = CreateLocalConnectionSchema.safeParse(await c.req.json())
     if (!parsed.success)
@@ -207,7 +307,10 @@ export function createLocalDaemon(
         { code: 'INVALID_CONNECTION', issues: parsed.error.flatten() },
         400,
       )
-    return c.json(library.createConnection(parsed.data), 201)
+    return c.json(
+      LocalConnectionResponseSchema.parse(JSON.parse(JSON.stringify(publicConnection(library.createConnection(parsed.data))))),
+      201,
+    )
   })
   app.post('/connections/:id/probe', async (c) => {
     const connection = library.getConnection(c.req.param('id'))
@@ -249,6 +352,10 @@ export function createLocalDaemon(
       )
     if (!library.hasInvoice(parsed.data.invoiceId))
       return c.json({ code: 'INVOICE_NOT_FOUND' }, 404)
+    if (!library.hasCollection(parsed.data.collectionId))
+      return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
+    if (!library.hasCollectionInvoice(parsed.data.collectionId, parsed.data.invoiceId))
+      return c.json({ code: 'INVOICE_NOT_IN_COLLECTION' }, 409)
 
     const availability = resolveLocalAnalysisAvailability(
       library.listConnections(),
@@ -273,6 +380,7 @@ export function createLocalDaemon(
     const ruleset = library.listRulesets()[0]
     const run = library.createRun({
       invoiceId: parsed.data.invoiceId,
+      collectionId: parsed.data.collectionId,
       connectionId: connection.id,
       rulesetId: ruleset.id,
     })

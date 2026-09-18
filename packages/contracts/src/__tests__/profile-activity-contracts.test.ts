@@ -4,6 +4,8 @@ import {
   CollectionContextRevisionInputSchema,
   EconomicActivityRevisionInputSchema,
   EconomicActivityRevisionSchema,
+  LocalCollectionDetailSchema,
+  LocalCollectionInvoiceMembershipSchema,
   TaxpayerProfileRevisionDataSchema,
   TaxpayerProfileRevisionInputSchema,
 } from '../index'
@@ -92,5 +94,16 @@ describe('profile and activity contracts', () => {
         revenueVatTreatment: 'taxed_nonzero',
       }).success,
     ).toBe(true)
+  })
+
+  it('defines serializable collection membership and aggregate detail responses', () => {
+    expect(LocalCollectionInvoiceMembershipSchema.parse({ kind: 'attached' }))
+      .toEqual({ kind: 'attached' })
+    expect(LocalCollectionDetailSchema.parse({
+      id,
+      latestRevision: null,
+      invoices: [{ id, fileName: 'factura.xml', createdAt: '2026-09-18T20:00:00.000Z' }],
+      runs: [{ id, invoiceId: id, collectionId: id, status: 'completed', createdAt: '2026-09-18T20:00:00.000Z' }],
+    })).toMatchObject({ id, invoices: [{ id }], runs: [{ collectionId: id }] })
   })
 })

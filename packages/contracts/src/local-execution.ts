@@ -33,6 +33,16 @@ export const LocalConnectionSchema = CreateLocalConnectionSchema.omit({ makeDefa
 })
 export type LocalConnection = z.infer<typeof LocalConnectionSchema>
 
+/** Safe response shape returned by the local Hono API. Secret references stay daemon-only. */
+export const LocalConnectionResponseSchema = LocalConnectionSchema
+  .omit({ secretRef: true })
+  .extend({
+    lastProbedAt: z.string().datetime().nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+export type LocalConnectionResponse = z.infer<typeof LocalConnectionResponseSchema>
+
 export const OauthGuidanceSchema = z.object({
   kind: z.literal('oauth-guidance'),
   title: z.literal('Continúa con OAuth'),

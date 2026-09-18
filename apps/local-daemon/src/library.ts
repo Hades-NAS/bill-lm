@@ -126,10 +126,22 @@ export class LocalLibrary {
     } catch {
       // The column is already present in libraries created by this daemon.
     }
+    this.database.run(`CREATE TABLE IF NOT EXISTS local_collection_invoices (
+      collection_id TEXT NOT NULL, invoice_id TEXT NOT NULL, created_at TEXT NOT NULL,
+      PRIMARY KEY (collection_id, invoice_id),
+      FOREIGN KEY (collection_id) REFERENCES local_collections(id),
+      FOREIGN KEY (invoice_id) REFERENCES local_invoices(id)
+    )`)
     this.database.run(`CREATE TABLE IF NOT EXISTS local_runs (
-      id TEXT PRIMARY KEY, invoice_id TEXT NOT NULL, connection_id TEXT NOT NULL,
+      id TEXT PRIMARY KEY, invoice_id TEXT NOT NULL, collection_id TEXT,
+      connection_id TEXT NOT NULL,
       ruleset_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL
     )`)
+    try {
+      this.database.run('ALTER TABLE local_runs ADD COLUMN collection_id TEXT')
+    } catch {
+      // Existing local libraries already have the nullable association column.
+    }
     this.database.run(`CREATE TABLE IF NOT EXISTS local_run_events (
       id TEXT PRIMARY KEY, run_id TEXT NOT NULL, status TEXT NOT NULL,
       message TEXT NOT NULL, created_at TEXT NOT NULL
@@ -222,6 +234,52 @@ export class LocalLibrary {
     )
   }
 
+  hasCollection(id: string) {
+    return Boolean(
+      this.database
+        .query('SELECT 1 FROM local_collections WHERE id = ? AND scope_id = ?')
+        .get(id, this.localScope.userId),
+    )
+  }
+
+  hasCollectionInvoice(collectionId: string, invoiceId: string) {
+    return Boolean(
+      this.database
+        .query(
+          `SELECT 1 FROM local_collection_invoices
+           WHERE collection_id = ? AND invoice_id = ?`,
+        )
+        .get(collectionId, invoiceId),
+    )
+  }
+
+  attachInvoiceToCollection(collectionId: string, invoiceId: string) {
+    if (!this.hasCollection(collectionId)) return { kind: 'collection-not-found' as const }
+    if (!this.hasInvoice(invoiceId)) return { kind: 'invoice-not-found' as const }
+    if (this.hasCollectionInvoice(collectionId, invoiceId))
+      return { kind: 'already-attached' as const }
+    this.database
+      .query(
+        `INSERT INTO local_collection_invoices (collection_id, invoice_id, created_at)
+         VALUES (?, ?, ?)`,
+      )
+      .run(collectionId, invoiceId, new Date().toISOString())
+    return { kind: 'attached' as const }
+  }
+
+  detachInvoiceFromCollection(collectionId: string, invoiceId: string) {
+    if (!this.hasCollection(collectionId)) return { kind: 'collection-not-found' as const }
+    if (!this.hasCollectionInvoice(collectionId, invoiceId))
+      return { kind: 'membership-not-found' as const }
+    this.database
+      .query(
+        `DELETE FROM local_collection_invoices
+         WHERE collection_id = ? AND invoice_id = ?`,
+      )
+      .run(collectionId, invoiceId)
+    return { kind: 'detached' as const }
+  }
+
   listInvoices() {
     return this.database
       .query(
@@ -238,18 +296,44 @@ export class LocalLibrary {
       })
   }
 
+  listCollectionInvoices(collectionId: string) {
+    return this.database
+      .query(
+        `SELECT invoice.id, invoice.file_name, invoice.created_at
+         FROM local_collection_invoices membership
+         JOIN local_invoices invoice ON invoice.id = membership.invoice_id
+         WHERE membership.collection_id = ?
+         ORDER BY membership.created_at DESC`,
+      )
+      .all(collectionId)
+      .map((row) => {
+        const invoice = row as Record<string, unknown>
+        return {
+          id: String(invoice.id),
+          fileName: String(invoice.file_name),
+          createdAt: new Date(String(invoice.created_at)),
+        }
+      })
+  }
+
   createRun(input: {
     invoiceId: string
+    collectionId?: string
     connectionId: string
     rulesetId: string
   }) {
     const id = crypto.randomUUID()
     const createdAt = new Date().toISOString()
     this.database
-      .query('INSERT INTO local_runs VALUES (?, ?, ?, ?, ?, ?)')
+      .query(
+        `INSERT INTO local_runs
+         (id, invoice_id, collection_id, connection_id, ruleset_id, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      )
       .run(
         id,
         input.invoiceId,
+        input.collectionId ?? null,
         input.connectionId,
         input.rulesetId,
         'queued',
@@ -338,15 +422,19 @@ export class LocalLibrary {
       })
   }
 
-  listRuns() {
+  listRuns(collectionId?: string) {
+    const query = collectionId
+      ? 'SELECT * FROM local_runs WHERE collection_id = ? ORDER BY created_at DESC'
+      : 'SELECT * FROM local_runs ORDER BY created_at DESC'
     return this.database
-      .query('SELECT * FROM local_runs ORDER BY created_at DESC')
-      .all()
+      .query(query)
+      .all(...(collectionId ? [collectionId] : []))
       .map((row) => {
         const run = row as Record<string, unknown>
         return {
           id: String(run.id),
           invoiceId: String(run.invoice_id),
+          collectionId: run.collection_id ? String(run.collection_id) : null,
           status: run.status as LocalAnalysisRunStatus,
           createdAt: new Date(String(run.created_at)),
         }
@@ -421,9 +509,7 @@ export class LocalLibrary {
   }
 
   listRulesets() {
-    const bundle = JSON.parse(
-      readFileSync(this.rulesetBundlePath, 'utf-8'),
-    ) as Record<string, unknown>
+    const bundle = this.readRulesetBundle()
     return [
       {
         id: String(bundle.rulesetId),
@@ -437,6 +523,88 @@ export class LocalLibrary {
           : 0,
       },
     ]
+  }
+
+  listOfficialSources() {
+    const bundle = this.readRulesetBundle()
+    const sections = Array.isArray(bundle.sections) ? bundle.sections : []
+    const manifests = Array.isArray(bundle.sourceManifests)
+      ? bundle.sourceManifests
+      : []
+    return manifests.flatMap((manifest) => {
+      if (!manifest || typeof manifest !== 'object') return []
+      const source = manifest as Record<string, unknown>
+      if (typeof source.id !== 'string') return []
+      return [{
+        id: source.id,
+        title: String(source.title ?? source.id),
+        issuer: String(source.issuer ?? 'Sin emisor declarado'),
+        jurisdiction: String(source.jurisdiction ?? bundle.jurisdiction ?? ''),
+        sourceKind: String(source.sourceKind ?? 'other'),
+        officialUrl: typeof source.officialUrl === 'string' ? source.officialUrl : null,
+        resolvedUrl: typeof source.resolvedUrl === 'string' ? source.resolvedUrl : null,
+        contentHash: typeof source.contentHash === 'string' ? source.contentHash : null,
+        effectiveFrom: typeof source.effectiveFrom === 'string' ? source.effectiveFrom : null,
+        effectiveTo: typeof source.effectiveTo === 'string' ? source.effectiveTo : null,
+        reviewStatus: String(source.reviewStatus ?? 'local-snapshot'),
+        sectionCount: sections.filter(
+          (section) => section && typeof section === 'object' && (section as Record<string, unknown>).sourceId === source.id,
+        ).length,
+      }]
+    })
+  }
+
+  getOfficialSource(sourceId: string) {
+    const source = this.listOfficialSources().find((item) => item.id === sourceId)
+    if (!source) return null
+    const bundle = this.readRulesetBundle()
+    const sections = Array.isArray(bundle.sections) ? bundle.sections : []
+    return {
+      ...source,
+      fragments: sections.flatMap((section) => {
+        if (!section || typeof section !== 'object') return []
+        const item = section as Record<string, unknown>
+        if (item.sourceId !== sourceId || typeof item.id !== 'string') return []
+        return [{
+          id: item.id,
+          articleOrSection: String(item.articleOrSection ?? item.id),
+          effectiveFrom: typeof item.effectiveFrom === 'string' ? item.effectiveFrom : null,
+          effectiveTo: typeof item.effectiveTo === 'string' ? item.effectiveTo : null,
+          purposes: Array.isArray(item.purposes) ? item.purposes.map(String) : [],
+          taxRegimes: Array.isArray(item.taxRegimes) ? item.taxRegimes.map(String) : [],
+          reviewStatus: String(item.reviewStatus ?? 'local-snapshot'),
+          contentMarkdown: typeof item.contentMarkdown === 'string' ? item.contentMarkdown : null,
+          sourcePages: Array.isArray(item.sourcePages) ? item.sourcePages.map(Number) : [],
+        }]
+      }),
+      ruleset: {
+        id: String(bundle.rulesetId),
+        version: String(bundle.version),
+        jurisdiction: String(bundle.jurisdiction),
+        reviewStatus: 'local-snapshot' as const,
+      },
+    }
+  }
+
+  getLibrarySummary() {
+    const count = (table: string) =>
+      Number((this.database.query(`SELECT COUNT(*) AS count FROM ${table}`).get() as { count: number }).count)
+    const ruleset = this.listRulesets()[0] ?? null
+    return {
+      invoiceCount: count('local_invoices'),
+      collectionCount: count('local_collections'),
+      profileCount: count('local_taxpayer_profiles'),
+      activityCount: count('local_economic_activities'),
+      runCount: count('local_runs'),
+      ruleset: ruleset
+        ? {
+            id: ruleset.id,
+            version: ruleset.version,
+            effectiveFrom: ruleset.effectiveFrom,
+            effectiveTo: ruleset.effectiveTo,
+          }
+        : null,
+    }
   }
 
   close() {
@@ -461,6 +629,10 @@ export class LocalLibrary {
       createdAt: new Date(String(row.created_at)),
       updatedAt: new Date(String(row.updated_at)),
     }
+  }
+
+  private readRulesetBundle() {
+    return JSON.parse(readFileSync(this.rulesetBundlePath, 'utf-8')) as Record<string, unknown>
   }
 
   private toRunResult(row: Record<string, unknown>) {

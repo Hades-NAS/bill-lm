@@ -1,10 +1,44 @@
 import z from 'zod'
+import { LocalAnalysisRunStatusSchema } from './local-analysis'
 
 export * from './local-analysis'
 export * from './local-execution'
 export * from './local-invoice-xml'
 
 const IdSchema = z.string().uuid()
+const IsoDateTimeSchema = z.string().datetime()
+export const LocalCollectionInvoiceInputSchema = z.object({
+  invoiceId: IdSchema,
+})
+export type LocalCollectionInvoiceInput = z.infer<
+  typeof LocalCollectionInvoiceInputSchema
+>
+
+export const LocalCollectionAnalysisInputSchema = z.object({
+  invoiceId: IdSchema,
+  /** Analyses are always owned by a local collection and an explicit GPU host. */
+  collectionId: IdSchema,
+  connectionId: IdSchema,
+})
+export type LocalCollectionAnalysisInput = z.infer<
+  typeof LocalCollectionAnalysisInputSchema
+>
+
+export const LocalCollectionInvoiceSchema = z.object({
+  id: IdSchema,
+  fileName: z.string().min(1),
+  createdAt: IsoDateTimeSchema,
+})
+export type LocalCollectionInvoice = z.infer<
+  typeof LocalCollectionInvoiceSchema
+>
+
+export const LocalCollectionInvoiceMembershipSchema = z.object({
+  kind: z.enum(['attached', 'already-attached', 'detached']),
+})
+export type LocalCollectionInvoiceMembership = z.infer<
+  typeof LocalCollectionInvoiceMembershipSchema
+>
 const CivilDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Usa una fecha civil YYYY-MM-DD')
@@ -206,6 +240,35 @@ export const CollectionContextRevisionSchema =
 export type CollectionContextRevision = z.infer<
   typeof CollectionContextRevisionSchema
 >
+
+const LocalCollectionContextResponseSchema = z.object({
+  id: IdSchema,
+  latestRevision: CollectionContextRevisionInputSchema.extend({
+    id: IdSchema,
+    collectionId: IdSchema,
+    revision: z.number().int().positive(),
+    createdAt: IsoDateTimeSchema,
+  }).nullable(),
+})
+export type LocalCollectionContextResponse = z.infer<
+  typeof LocalCollectionContextResponseSchema
+>
+
+export const LocalCollectionRunSchema = z.object({
+  id: IdSchema,
+  invoiceId: IdSchema,
+  collectionId: IdSchema.nullable(),
+  status: LocalAnalysisRunStatusSchema,
+  createdAt: IsoDateTimeSchema,
+})
+export type LocalCollectionRun = z.infer<typeof LocalCollectionRunSchema>
+
+export const LocalCollectionDetailSchema =
+  LocalCollectionContextResponseSchema.extend({
+    invoices: z.array(LocalCollectionInvoiceSchema),
+    runs: z.array(LocalCollectionRunSchema),
+  })
+export type LocalCollectionDetail = z.infer<typeof LocalCollectionDetailSchema>
 
 export const TaxpayerProfileContextSchema = z.object({
   hasRuc: z.boolean(),
