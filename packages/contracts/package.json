@@ -1,0 +1,13 @@
+{
+  "name": "@bill-lm/contracts",
+  "private": true,
+  "type": "module",
+  "description": "Serializable shared contracts for taxpayer profiles and economic activities.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.5.5",
+    "zod": "^4.3.6"
+  }
+}

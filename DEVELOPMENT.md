@@ -2,7 +2,7 @@
 
 Esta guía reúne los requisitos y procedimientos para ejecutar, probar y operar
 Bill-LM. El [README](README.md) explica el producto, su alcance actual y los
-modos locales propuestos.
+límites de sus modos locales.
 
 ## Stack
 
@@ -51,6 +51,64 @@ modos locales propuestos.
 
 La web corre en el puerto 3000 por defecto.
 
+El comando de raíz delega al app root `apps/web`. También puedes ejecutar las
+comprobaciones de la aplicación directamente desde ese workspace:
+
+```bash
+bun run --cwd apps/web typecheck
+bun run --cwd apps/web test
+bun run --cwd apps/web build
+```
+
+La configuración Vite, el servidor de producción, las rutas, la interfaz y el
+artefacto `apps/web/dist` pertenecen a `apps/web`. La raíz solo delega los
+comandos de comodidad y conserva la orquestación compartida.
+
+## Visor y daemon locales
+
+Este flujo es independiente de la aplicación web, PostgreSQL, Redis, MinIO y
+Firebase. Después de ejecutar `bun install`, abre dos terminales desde la raíz
+del repositorio.
+
+En la primera, inicia el daemon que mantiene la biblioteca local y escucha solo
+en `127.0.0.1:4318`:
+
+```bash
+bun run daemon:local
+```
+
+En la segunda, inicia el visor React. Vite lo publica en
+`http://127.0.0.1:4319` y reenvía `/api` al daemon:
+
+```bash
+bun run dev:local
+```
+
+Abre `http://127.0.0.1:4319` en el navegador. La biblioteca se guarda en
+`$XDG_DATA_HOME/bill-lm` o, si `XDG_DATA_HOME` no está definida, en
+`~/.local/share/bill-lm`. Para usar otra ubicación, define
+`BILL_LM_LOCAL_LIBRARY_DIR` con una ruta absoluta antes de iniciar el daemon:
+
+`dev:local` delega al app root `apps/local-viewer`. Para revisar solamente el
+visor, ejecuta `bun run --cwd apps/local-viewer typecheck`, `test` o `build`.
+
+```bash
+BILL_LM_LOCAL_LIBRARY_DIR=/ruta/absoluta/a/mis-facturas bun run daemon:local
+```
+
+Como verificación mínima, el daemon debe mostrar que escucha en
+`http://127.0.0.1:4318`; después confirma la API y ejecuta la suite enfocada:
+
+```bash
+curl http://127.0.0.1:4318/api/v1/rulesets
+bun run test:local
+```
+
+Usa `Ctrl+C` para detener cada proceso. Este flujo no inicia OAuth ni persiste
+tokens OAuth; la integración de un agente local mediante OAuth sigue pendiente.
+Perfiles, actividades y colecciones del visor usan exclusivamente la API Hono
+local y SQLite, sin llamadas a la aplicación cloud.
+
 ## Variables de entorno
 
 `.env.example` documenta las variables requeridas. Las categorías principales
@@ -71,16 +129,20 @@ app las cifra en el servidor.
 
 ## Comandos frecuentes
 
-| Objetivo | Comando |
-| --- | --- |
-| Desarrollo web | `bun run dev` |
-| Worker en desarrollo | `bun run worker:dev` |
-| Typecheck | `bun run typecheck` |
-| Tests unitarios | `bun run test` |
-| Build | `bun run build` |
-| Verificación completa | `bash health.sh` |
-| Cliente Prisma | `bun run db:gen` |
-| Migraciones autorizadas | `bun run db:deploy` |
+| Objetivo                 | Comando                |
+| ------------------------ | ---------------------- |
+| Desarrollo web           | `bun run dev`          |
+| Worker en desarrollo     | `bun run worker:dev`   |
+| Daemon local             | `bun run daemon:local` |
+| Visor local              | `bun run dev:local`    |
+| Pruebas del daemon local | `bun run test:local`   |
+| Typecheck                | `bun run typecheck`    |
+| Límites de workspace     | `bun run boundaries:check` |
+| Tests unitarios          | `bun run test`         |
+| Build                    | `bun run build`        |
+| Verificación completa    | `bash health.sh`       |
+| Cliente Prisma           | `bun run db:gen`       |
+| Migraciones autorizadas  | `bun run db:deploy`    |
 
 `health.sh` usa `.env.health` y no carga credenciales reales. Ejecuta
 typecheck, build, Vitest y Playwright. Puedes omitir Playwright con:
@@ -88,6 +150,14 @@ typecheck, build, Vitest y Playwright. Puedes omitir Playwright con:
 ```bash
 SKIP_E2E=true bash health.sh
 ```
+
+`boundaries:check` comprueba que no haya código de aplicación en la raíz ni
+referencias desde `apps/*` o configuración hacia una antigua `src/`. Cada
+responsabilidad pertenece a su app de composición o a `packages/*`; el
+inventario final y sus regresiones viven en
+[`scripts/legacy-root-source-manifest.json`](scripts/legacy-root-source-manifest.json).
+La guía de propiedad del workspace está en
+[`docs/architecture/physical-workspace-ownership.md`](docs/architecture/physical-workspace-ownership.md).
 
 ## Rulesets SRI
 

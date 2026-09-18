@@ -1,0 +1,1 @@
+{"name":"@bill-lm/application","dependencies":{"@bill-lm/contracts":"workspace:*"},"exports":{".":"./src/index.mjs"}}

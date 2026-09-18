@@ -1,0 +1,35 @@
+{
+  "name": "@bill-lm/local-viewer",
+  "private": true,
+  "type": "module",
+  "description": "Offline local Vite viewer backed only by the loopback Hono daemon.",
+  "exports": {
+    ".": "./src/main.tsx"
+  },
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run src/__tests__ && bun test ./src/__tests__/api.bun.ts"
+  },
+  "dependencies": {
+    "@bill-lm/contracts": "workspace:*",
+    "@bill-lm/ui": "workspace:*",
+    "@mantine/core": "^8.3.17",
+    "@mantine/hooks": "^8.3.17",
+    "@mantine/modals": "^8.3.17",
+    "@mantine/notifications": "^8.3.17",
+    "lucide-react": "^0.545.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.11",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "vite": "^7.3.1",
+    "vitest": "^3.0.5"
+  }
+}

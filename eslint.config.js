@@ -138,7 +138,7 @@ export default [
     ignores: [
       'eslint.config.js',
       'prettier.config.js',
-      'prisma/seed.ts',
+      'apps/web/prisma/seed.ts',
       '.claude',
       '.output',
       '.tanstack',

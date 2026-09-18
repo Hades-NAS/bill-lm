@@ -29,24 +29,21 @@ ENV VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}
 # Copiar dependencias
 COPY package.json bun.lock ./
 COPY tsconfig.json ./
-COPY prisma.config.ts ./
-COPY vite.config.ts ./
 COPY postcss.config.cjs ./
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages ./packages
 
 # Copiar código fuente
-COPY src ./src
-COPY prisma ./prisma
-COPY public ./public
-COPY index.html ./
+COPY apps/web ./apps/web
 
 # Instalar dependencias (incluyendo dev para build)
 RUN bun install
 
 # Generar cliente de Prisma
-RUN bun run db:gen
+RUN bun run --cwd apps/web db:gen
 
 # Build de la aplicación
-RUN bun run build
+RUN bun run --cwd apps/web build
 
 # ===== STAGE 2: Runtime =====
 FROM oven/bun:latest
@@ -84,15 +81,10 @@ ENV TZ=UTC
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copiar output del build (TanStack Start)
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/generated ./src/generated
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/index.html ./
-# Copiar package.json para referencia
-COPY package.json bun.lock tsconfig.json prisma.config.ts ./
+COPY --from=builder /app/apps/web ./apps/web
+COPY --from=builder /app/packages ./packages
+COPY package.json bun.lock tsconfig.json ./
 COPY scripts/start.sh ./start.sh
-COPY server.ts ./server.ts
 # Exponer puerto
 EXPOSE $PORT
 

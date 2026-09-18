@@ -50,15 +50,15 @@ chore(deps): update firebase to v12
 
 | What                | Path                                           |
 | ------------------- | ---------------------------------------------- |
-| tRPC router         | `src/integrations/trpc/router.ts`              |
-| tRPC init + context | `src/integrations/trpc/init.ts`                |
-| Firebase Admin      | `src/integrations/firebase/firebase.server.ts` |
-| Firebase Web SDK    | `src/integrations/firebase/firebase.client.ts` |
-| Logger (server)     | `src/integrations/logger.server.ts`            |
-| Prisma client       | `src/db.ts`                                    |
-| Env schema          | `src/env.ts`                                   |
-| Routes              | `src/routes/`                                  |
-| Components          | `src/components/`                              |
+| tRPC router         | `apps/web/src/integrations/trpc/router.ts`              |
+| tRPC init + context | `apps/web/src/integrations/trpc/init.ts`                |
+| Firebase Admin      | `apps/web/src/integrations/firebase/firebase.server.ts` |
+| Firebase Web SDK    | `apps/web/src/integrations/firebase/firebase.ts`        |
+| Logger (server)     | `apps/web/src/integrations/logger.server.ts`            |
+| Prisma client       | `apps/web/src/integrations/prisma/index.ts`             |
+| Env schema          | `apps/web/src/env.ts`                                   |
+| Routes              | `apps/web/src/routes/`                                  |
+| Components          | `apps/web/src/components/`                              |
 
 ---
 
@@ -76,25 +76,25 @@ User clicks "Analyze" → tRPC mutation → creates Firestore `bg_jobs` doc → 
 
 ## Structure
 
-- src/components: reusable UI (buttons, inputs, modals)
-- src/routes: page-level components (one per route)
-- src/integrations: external services (tRPC, Firebase, Logger, Clerk). This project has a firebase server and client integration, use them correctly, server for tRPC routers and API routes, client for React components.
-- src/utils: shared utilities (formatting, helpers)
-- src/constants: shared constants (enums, config)
-- src/generated: auto-generated code (e.g. Prisma client)
-- src/hooks: custom React hooks (e.g. useAuth, useInvoices for useQuery or useMutation)
-- src/env.ts: env var schema and validation (using zod)
+- apps/web/src/components: reusable cloud UI (buttons, inputs, modals)
+- apps/web/src/routes: page-level cloud components (one per route)
+- apps/web/src/integrations: web external services (tRPC, Firebase, Logger). Use server integrations for tRPC routers and API routes and browser integrations for React components.
+- apps/web/src/utils: web utilities (formatting, helpers)
+- apps/web/src/constants: web constants (enums, config)
+- apps/web/src/generated: auto-generated Prisma client
+- apps/web/src/hooks: web React hooks (e.g. useAuth, useInvoices for useQuery or useMutation)
+- apps/web/src/env.ts: web environment schema and validation (using zod)
 
-- /prisma/schema.prisma: data models and Prisma config
+- /apps/web/prisma/schema.prisma: web data models; config lives beside it in `apps/web/prisma.config.ts`
 
 ## UI Components
 
-All UI components must be in `src/components`. All route-level components must be in `src/routes`. Never mix them.
+All web UI components must be in `apps/web/src/components`. All web route-level components must be in `apps/web/src/routes`. Never mix them.
 Follow guide Mantine under https://mantine.dev/llms.txt
 
 ## API / Endpoints
 
-Please define and create new `routers` on src/integrations/trpc/routers/, then use it and add it under src/integrations/trpc/router.ts. Never create new API routes or tRPC routers outside of this pattern.
+Please define and create new `routers` under apps/web/src/integrations/trpc/, then use it and add it under apps/web/src/integrations/trpc/router.ts. Never create new API routes or tRPC routers outside of this pattern.
 For now the todo router is the only that is defined on router.ts, but as you add new features, you should create new routers for them and import them in router.ts. For example, if you add a collection feature, you should create a collections.router.ts file and define all the collection related tRPC procedures there, then import it in router.ts.
 
 Also please always try to export in the same file of router, all single-type of entity returned by the procedures. For example, if you have a collection router, and it has procedures that return a Collection type, you should export the Collection type in the same file as the router, so that when you import the router in other files, you can also import the Collection type from the same file. This will help to keep the code organized and maintainable.

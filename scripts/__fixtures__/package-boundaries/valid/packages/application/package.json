@@ -1,0 +1,1 @@
+{"name":"@bill-lm/application","type":"module","dependencies":{"@bill-lm/domain":"workspace:*"},"exports":{".":"./src/index.mjs"}}

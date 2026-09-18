@@ -9,7 +9,7 @@ case "${SKIP_DB_MIGRATION:-false}" in
   false|'')
     echo "🔄 Aplicando migraciones pendientes de Prisma..."
     echo "ENVIRONMENT: ${ENVIRONMENT:-unknown}"
-    ./node_modules/.bin/prisma migrate deploy
+    ./node_modules/.bin/prisma migrate deploy --config apps/web/prisma.config.ts
     echo "✅ Migraciones de base de datos aplicadas"
     ;;
   true)
@@ -26,4 +26,4 @@ echo "🚀 Iniciando servidor Bill-LM"
 echo ""
 echo ""
 
-exec bun run start
+exec bun run --cwd apps/web start

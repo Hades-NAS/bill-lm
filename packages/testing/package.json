@@ -1,0 +1,6 @@
+{
+  "name": "@bill-lm/testing",
+  "private": true,
+  "type": "module",
+  "description": "Shared test fakes and fixtures; populated by a later vertical migration."
+}

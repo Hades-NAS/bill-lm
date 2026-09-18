@@ -1,0 +1,9 @@
+{
+  "name": "@bill-lm/domain",
+  "private": true,
+  "type": "module",
+  "description": "Runtime-neutral domain package; populated by a later vertical migration.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

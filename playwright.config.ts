@@ -11,7 +11,9 @@ export default defineConfig({
     ...devices['Desktop Chrome'],
   },
   webServer: {
-    command: `./node_modules/.bin/vite dev --port ${port}`,
+    // The health check builds the app first, so browser tests exercise the
+    // same TanStack Start server entry that deployment uses.
+    command: `PORT=${port} bun run --cwd apps/web start`,
     reuseExistingServer: !process.env.CI,
     url: baseURL,
   },

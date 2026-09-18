@@ -11,6 +11,6 @@ describe('Playwright configuration', () => {
     const config = readFileSync(configPath, 'utf8')
 
     expect(config).toContain('process.env.PLAYWRIGHT_PORT ?? 3000')
-    expect(config).toContain('vite dev --port ${port}')
+    expect(config).toContain('PORT=${port} bun run --cwd apps/web start')
   })
 })

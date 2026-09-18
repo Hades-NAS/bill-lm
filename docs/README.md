@@ -10,6 +10,7 @@ usan Bill-LM, dan soporte o necesitan entender el alcance de un análisis.
 
 - [Fuentes oficiales para los análisis](guides/fuentes-oficiales-para-analisis.md): origen, revisión y uso de las secciones del SRI.
 - [Resultados de análisis](guides/resultados-de-analisis.md): significado y límites de los resultados que muestra la app.
+- [Visor local con un modelo local](guides/visor-local-con-modelo-local.md): cómo levantar el daemon Hono, el visor y una conexión local-GPU sin depender de la cloud app.
 
 ## Arquitectura
 
