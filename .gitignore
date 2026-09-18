@@ -24,3 +24,7 @@ tests/
 .cache/tax-rules/
 
 skills/
+
+# El ignore global descarta docs/*; esta guía es documentación versionada.
+!docs/guides/
+!docs/guides/visor-local-con-modelo-local.md

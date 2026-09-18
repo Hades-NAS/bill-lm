@@ -86,22 +86,20 @@ delegados para comodidad (`bun run dev`, `build`, `start`, `test` y
 `typecheck`). Sus rutas, interfaz, integraciones cloud, configuración Vite,
 servidor de producción y artefactos de build pertenecen a ese workspace.
 
-## Modos locales planificados
+## Modos de uso actuales
 
-Bill-LM se diseñó para extender el mismo flujo de facturas, contexto y reglas a
-otros entornos. Estas modalidades aún no forman parte de la aplicación web
-actual:
+- **Web app:** usa la aplicación cloud en
+  [bill-lm.cardor.dev](https://bill-lm.cardor.dev).
+- **Visor local — OAuth (provisional):** el visor puede orientar al modo OAuth
+  cuando no hay conexión local-GPU, pero la ejecución OAuth local todavía está
+  pendiente; hoy sólo existe la guía y el diseño del flujo.
+- **Visor local — Local-GPU:** el visor y el daemon Hono conservan XML,
+  colecciones, perfiles, actividades y resultados en SQLite/disco local, y
+  pueden conectarse a un host OpenAI-compatible.
 
-1. **Agente local con OAuth o suscripción.** La persona usaría Codex, Claude
-   Code u OpenCode desde su equipo. Un servidor MCP local conectaría ese agente
-   con su biblioteca y un visor en `localhost`, sin guardar tokens OAuth en
-   Bill-LM.
-2. **Modelo local con GPU.** El daemon y visor locales ya ofrecen la base para
-   una biblioteca que vive en el equipo. La configuración y validación con un
-   servidor GPU real siguen pendientes.
-
-La [arquitectura de ejecución local](docs/architecture/byok-local-execution-design.md)
-describe esas propuestas, sus límites y el trabajo que falta antes de ofrecerlas.
+Consulta la [guía del visor local con un modelo local](docs/guides/visor-local-con-modelo-local.md)
+para levantar ambos procesos, configurar `/v1` y conocer los límites de
+seguridad y evidencia.
 
 ## Documentación
 
