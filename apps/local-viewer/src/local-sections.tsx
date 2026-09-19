@@ -6,8 +6,10 @@ import {
   Card,
   Drawer,
   Group,
+  Modal,
   Select,
   Skeleton,
+  ScrollArea,
   Stack,
   Text,
   TextInput,
@@ -17,7 +19,7 @@ import { ExternalLink } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { LocalApiFlavor, LocalConnectionResponse } from '@bill-lm/contracts'
-import { EmptyState, FieldHelpLabel } from '@bill-lm/ui'
+import { ContextGuideButton, EmptyState, FieldHelpLabel } from '@bill-lm/ui'
 
 import {
   LocalDaemonClient,
@@ -118,39 +120,54 @@ function dateLabel(value: string | null) { return value ?? 'Sin fecha declarada'
 
 export function OfficialSourcesSection({ client }: Pick<LocalSectionProps, 'client'>) {
   const [sources, setSources] = useState<Array<LocalOfficialSource>>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selected, setSelected] = useState<LocalOfficialSourceDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [sourceError, setSourceError] = useState<string | null>(null)
+  const [detailError, setDetailError] = useState<string | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [guideOpened, setGuideOpened] = useState(false)
 
   const refresh = async () => {
-    setLoading(true); setError(null)
-    try { setSources(await client.listOfficialSources()) } catch { setError('No se pudo leer el snapshot local de fuentes oficiales.') } finally { setLoading(false) }
+    setLoading(true); setSourceError(null)
+    try { setSources(await client.listOfficialSources()) } catch { setSourceError('No se pudo leer el snapshot local de fuentes oficiales.') } finally { setLoading(false) }
   }
   useEffect(() => { void refresh() }, [])
   async function openSource(id: string) {
-    try { setSelected(await client.getOfficialSource(id)) } catch { setError('No se pudieron cargar las secciones de esta fuente local.') }
+    setSelectedId(id)
+    setSelected(null)
+    setDetailError(null)
+    setDetailLoading(true)
+    try { setSelected(await client.getOfficialSource(id)) } catch { setDetailError('No se pudieron cargar las secciones de esta fuente local.') } finally { setDetailLoading(false) }
   }
 
   return <>
     <Card withBorder><Stack>
-      <div><Title order={2} size="h3">Fuentes oficiales</Title><Text c="dimmed" size="sm">Snapshot local incluido con este visor. No se consulta al SRI mientras navegas estas fuentes.</Text></div>
-      {error && <Alert color="red" title="Fuentes locales no disponibles">{error}<Group mt="sm"><Button variant="light" onClick={() => void refresh()}>Reintentar</Button></Group></Alert>}
+      <div><Group gap="xs"><Title order={2} size="h3">Fuentes oficiales</Title><ContextGuideButton title="fuentes oficiales" onClick={() => setGuideOpened(true)} /></Group><Text c="dimmed" size="sm">Snapshot local de solo lectura incluido con este visor. No se consulta al SRI mientras navegas estas fuentes.</Text></div>
+      {sourceError && <Alert color="red" title="Fuentes locales no disponibles">{sourceError}<Group mt="sm"><Button variant="light" onClick={() => void refresh()}>Reintentar</Button></Group></Alert>}
       {loading ? <Stack><Skeleton height={100} /><Skeleton height={100} /></Stack> : sources.length === 0 ? <EmptyState title="No hay fuentes en el snapshot local" description="El daemon no encontró manifiestos de fuentes en el ruleset incluido." /> : sources.map((source) => <Card key={source.id} withBorder padding="md"><Stack gap="xs"><Group justify="space-between"><Text fw={600}>{source.title}</Text><Badge color="violet">Snapshot local</Badge></Group><Text c="dimmed" size="sm">{source.issuer} · {source.jurisdiction} · {source.sourceKind}</Text><Text c="dimmed" size="xs">Vigencia: {dateLabel(source.effectiveFrom)} — {dateLabel(source.effectiveTo)} · {source.sectionCount} secciones</Text><Group justify="space-between"><Text c="dimmed" size="xs">{source.contentHash ?? 'Sin hash declarado'}</Text><Group gap="xs"><Button variant="light" onClick={() => void openSource(source.id)}>Ver secciones</Button>{(source.officialUrl ?? source.resolvedUrl) && <Anchor href={source.officialUrl ?? source.resolvedUrl ?? undefined} target="_blank" rel="noreferrer" size="sm">Abrir fuente <ExternalLink size={13} /></Anchor>}</Group></Group></Stack></Card>)}
     </Stack></Card>
-    <Drawer opened={selected !== null} onClose={() => setSelected(null)} position="right" size="lg" title={selected?.title ?? 'Fuente oficial'}>
-      {selected && <Stack><Alert color="violet" title="Snapshot local">{selected.ruleset.id} · versión {selected.ruleset.version}</Alert><Text c="dimmed" size="sm">{selected.fragments.length} secciones vinculadas a esta fuente.</Text>{selected.fragments.length === 0 ? <EmptyState title="Sin secciones locales" description="Este snapshot no contiene fragmentos indexados para la fuente." /> : selected.fragments.map((fragment) => <Card key={fragment.id} withBorder><Stack gap="xs"><Text fw={600}>{fragment.articleOrSection}</Text><Text c="dimmed" size="xs">Vigencia: {dateLabel(fragment.effectiveFrom)} — {dateLabel(fragment.effectiveTo)}</Text>{fragment.contentMarkdown && <Text size="sm">{fragment.contentMarkdown}</Text>}<Text c="dimmed" size="xs">Páginas: {fragment.sourcePages.join(', ') || 'sin referencia'} · {fragment.reviewStatus}</Text></Stack></Card>)}</Stack>}
+    <Drawer opened={selectedId !== null} onClose={() => { setSelectedId(null); setSelected(null); setDetailError(null) }} position="right" size="lg" scrollAreaComponent={ScrollArea.Autosize} title={selected?.title ?? 'Fuente oficial'}>
+      {detailLoading && <Stack><Skeleton height={100} /><Skeleton height={140} /></Stack>}
+      {detailError && <Alert color="red" title="Secciones locales no disponibles">{detailError}<Group mt="sm"><Button variant="light" onClick={() => selectedId && void openSource(selectedId)}>Reintentar</Button></Group></Alert>}
+      {selected && <Stack><Alert color="violet" title="Snapshot local de solo lectura">{selected.ruleset.id} · versión {selected.ruleset.version}</Alert><Text c="dimmed" size="sm">{selected.issuer} · {selected.jurisdiction} · {selected.sourceKind}</Text><Text c="dimmed" size="xs">Hash: {selected.contentHash ?? 'Sin hash declarado'}</Text><Text c="dimmed" size="sm">{selected.fragments.length} secciones vinculadas a esta fuente.</Text>{selected.fragments.length === 0 ? <EmptyState title="Sin secciones locales" description="Este snapshot no contiene fragmentos indexados para la fuente." /> : selected.fragments.map((fragment) => <Card key={fragment.id} withBorder><Stack gap="xs"><Text fw={600}>{fragment.articleOrSection}</Text><Text c="dimmed" size="xs">Vigencia: {dateLabel(fragment.effectiveFrom)} — {dateLabel(fragment.effectiveTo)}</Text><Group gap="xs">{fragment.purposes.map((purpose) => <Badge key={purpose} variant="light">{purpose}</Badge>)}{fragment.taxRegimes.map((taxRegime) => <Badge key={taxRegime} color="grape" variant="light">{taxRegime}</Badge>)}</Group>{fragment.contentMarkdown && <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>{fragment.contentMarkdown}</Text>}<Text c="dimmed" size="xs">Páginas: {fragment.sourcePages.join(', ') || 'sin referencia'} · {fragment.reviewStatus}</Text></Stack></Card>)}</Stack>}
     </Drawer>
+    <Modal opened={guideOpened} onClose={() => setGuideOpened(false)} title="Guía de fuentes oficiales"><Stack><Text>Estas fuentes son un snapshot incluido en el ruleset local. Se muestran solo para dar contexto al análisis.</Text><Text size="sm" c="dimmed">Navegarlas no consulta al SRI. Los enlaces externos solo se abren cuando los seleccionas.</Text></Stack></Modal>
   </>
 }
 
 export function LocalLibrarySection({ client, navigate }: LocalSectionProps) {
   const [summary, setSummary] = useState<LocalLibrarySummary | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const refresh = async () => { setError(null); try { setSummary(await client.getLibrarySummary()) } catch { setError('No se pudo leer el resumen de esta biblioteca local.') } }
+  const [loading, setLoading] = useState(true)
+  const [guideOpened, setGuideOpened] = useState(false)
+  const refresh = async () => { setLoading(true); setError(null); try { setSummary(await client.getLibrarySummary()) } catch { setError('No se pudo leer el resumen de esta biblioteca local.') } finally { setLoading(false) } }
   useEffect(() => { void refresh() }, [])
+  const isEmpty = summary !== null && summary.invoiceCount === 0 && summary.collectionCount === 0 && summary.profileCount === 0 && summary.activityCount === 0 && summary.runCount === 0
   return <Card withBorder><Stack>
-    <div><Title order={2} size="h3">Biblioteca local</Title><Text c="dimmed" size="sm">Las facturas XML, colecciones, perfiles, actividades e historial se conservan en este equipo.</Text></div>
+    <div><Group gap="xs"><Title order={2} size="h3">Biblioteca local</Title><ContextGuideButton title="biblioteca local" onClick={() => setGuideOpened(true)} /></Group><Text c="dimmed" size="sm">Las facturas XML, colecciones, perfiles, actividades e historial se conservan en este equipo. No hay sincronización cloud, rutas de disco ni acciones de borrado aquí.</Text></div>
     {error && <Alert color="red" title="Biblioteca local no disponible">{error}<Group mt="sm"><Button variant="light" onClick={() => void refresh()}>Reintentar</Button></Group></Alert>}
-    {!summary ? <Stack><Skeleton height={72} /><Skeleton height={72} /></Stack> : <><Group grow><Card withBorder><Text c="dimmed" size="sm">Facturas XML</Text><Title order={3}>{summary.invoiceCount}</Title></Card><Card withBorder><Text c="dimmed" size="sm">Colecciones</Text><Title order={3}>{summary.collectionCount}</Title></Card><Card withBorder><Text c="dimmed" size="sm">Análisis</Text><Title order={3}>{summary.runCount}</Title></Card></Group><Group grow><Card withBorder><Text c="dimmed" size="sm">Perfiles</Text><Title order={3}>{summary.profileCount}</Title></Card><Card withBorder><Text c="dimmed" size="sm">Actividades</Text><Title order={3}>{summary.activityCount}</Title></Card></Group><Alert color="violet" title="Ruleset incluido">{summary.ruleset ? `${summary.ruleset.id} · versión ${summary.ruleset.version}` : 'No hay ruleset local disponible.'}</Alert><Group><Button onClick={() => navigate('collections')}>Ver colecciones</Button><Button variant="light" onClick={() => navigate('profiles')}>Ver perfiles y actividades</Button></Group></>}
+    {loading ? <Stack><Skeleton height={72} /><Skeleton height={72} /></Stack> : isEmpty ? <EmptyState title="Tu biblioteca local está vacía" description="Todavía no hay XML, colecciones, perfiles, actividades ni análisis guardados en este equipo." action={<Group><Button onClick={() => navigate('collections')}>Ver colecciones</Button><Button variant="light" onClick={() => navigate('profiles')}>Crear perfil o actividad</Button></Group>} /> : summary && <><Group grow><Card withBorder><Text c="dimmed" size="sm">Facturas XML</Text><Title order={3}>{summary.invoiceCount}</Title></Card><Card withBorder><Text c="dimmed" size="sm">Colecciones</Text><Title order={3}>{summary.collectionCount}</Title></Card><Card withBorder><Text c="dimmed" size="sm">Análisis</Text><Title order={3}>{summary.runCount}</Title></Card></Group><Group grow><Card withBorder><Text c="dimmed" size="sm">Perfiles</Text><Title order={3}>{summary.profileCount}</Title></Card><Card withBorder><Text c="dimmed" size="sm">Actividades</Text><Title order={3}>{summary.activityCount}</Title></Card></Group><Alert color="violet" title="Ruleset incluido">{summary.ruleset ? `${summary.ruleset.id} · versión ${summary.ruleset.version}` : 'No hay ruleset local disponible.'}</Alert><Group><Button onClick={() => navigate('collections')}>Ver colecciones</Button><Button variant="light" onClick={() => navigate('profiles')}>Ver perfiles y actividades</Button></Group></>}
+    <Modal opened={guideOpened} onClose={() => setGuideOpened(false)} title="Guía de biblioteca local"><Stack><Text>Este resumen solo muestra datos que el daemon guarda en esta biblioteca local.</Text><Text size="sm" c="dimmed">No expone rutas de disco, no sincroniza con la cloud y no elimina ni exporta datos desde esta pantalla.</Text></Stack></Modal>
   </Stack></Card>
 }

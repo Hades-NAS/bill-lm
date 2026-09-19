@@ -254,6 +254,32 @@ export type LocalCollectionContextResponse = z.infer<
   typeof LocalCollectionContextResponseSchema
 >
 
+export const CreateLocalCollectionInputSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Ingresa un nombre para la colección.')
+    .max(120, 'El nombre de la colección no puede superar los 120 caracteres.'),
+  year: z
+    .number()
+    .int()
+    .min(2000, 'Ingresa un año válido.')
+    .max(2100, 'Ingresa un año válido.'),
+})
+export type CreateLocalCollectionInput = z.infer<
+  typeof CreateLocalCollectionInputSchema
+>
+
+export const LocalCollectionSummarySchema =
+  LocalCollectionContextResponseSchema.extend({
+    name: z.string().min(1),
+    year: z.number().int(),
+    invoiceCount: z.number().int().nonnegative(),
+  })
+export type LocalCollectionSummary = z.infer<
+  typeof LocalCollectionSummarySchema
+>
+
 export const LocalCollectionRunSchema = z.object({
   id: IdSchema,
   invoiceId: IdSchema,

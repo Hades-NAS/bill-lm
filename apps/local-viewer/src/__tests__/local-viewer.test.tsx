@@ -88,7 +88,7 @@ describe('LocalViewer', () => {
           })
         if (input.endsWith('/collections')) {
           if (init?.method === 'POST')
-            return Response.json({ id: collectionId, latestRevision: null }, { status: 201 })
+            return Response.json({ id: collectionId, name: 'Gastos personales', year: 2026, invoiceCount: 0, latestRevision: null }, { status: 201 })
           return Response.json({
             items: [{ id: collectionId, latestRevision: null }],
           })
@@ -121,15 +121,13 @@ describe('LocalViewer', () => {
     }))
     render(<MantineProvider><LocalViewer /></MantineProvider>)
 
-    expect(screen.getByText('Cargando actividades locales…')).not.toBeNull()
-    expect(screen.getByText('Cargando perfiles locales…')).not.toBeNull()
-    expect(screen.queryByText('No hay actividades locales')).toBeNull()
-    expect(screen.queryByText('No hay perfiles locales')).toBeNull()
+    expect(screen.queryByText('Aún no tienes actividades')).toBeNull()
+    expect(screen.queryByText('Aún no tienes perfiles')).toBeNull()
 
     resolveActivities(Response.json({ items: [] }))
     resolveProfiles(Response.json({ items: [] }))
-    expect(await screen.findByText('No hay actividades locales')).not.toBeNull()
-    expect(screen.getByText('No hay perfiles locales')).not.toBeNull()
+    expect(await screen.findByText('Aún no tienes actividades')).not.toBeNull()
+    expect(screen.getByText('Aún no tienes perfiles')).not.toBeNull()
   })
 
   it('reports a profile-data loading error after requests settle', async () => {
@@ -184,7 +182,7 @@ describe('LocalViewer', () => {
 
     expect((await screen.findAllByText('Desarrollo local')).length).toBeGreaterThan(0)
     expect(screen.getAllByText('Perfil local').length).toBeGreaterThan(0)
-    fireEvent.click(screen.getAllByRole('button', { name: 'Nueva revisión' })[0]!)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Crear nueva revisión' })[0]!)
     fireEvent.click(await screen.findByRole('button', { name: 'Guardar revisión' }))
 
     await waitFor(() =>
@@ -201,7 +199,7 @@ describe('LocalViewer', () => {
     render(<MantineProvider><LocalViewer /></MantineProvider>)
 
     await screen.findByText('Perfil local')
-    fireEvent.click(screen.getAllByRole('button', { name: 'Nueva revisión' })[1]!)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Crear nueva revisión' })[1]!)
     fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Guardar revisión' }))
 
@@ -217,7 +215,7 @@ describe('LocalViewer', () => {
     render(<MantineProvider><LocalViewer /></MantineProvider>)
 
     await screen.findByText('Perfil local')
-    fireEvent.click(screen.getByRole('button', { name: 'Nuevo perfil' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar perfil' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
 
     expect(await screen.findByText('Ingresa un nombre para el perfil.')).not.toBeNull()
@@ -236,14 +234,59 @@ describe('LocalViewer', () => {
     expect(screen.getByText('Actividades: Desarrollo local')).not.toBeNull()
   })
 
+  it('opens local profile guides and keeps profile creation available without a cloud eligibility gate', async () => {
+    window.location.hash = '#' + '/profiles'
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Ver guía sobre actividades económicas' }))
+    expect(await screen.findByRole('dialog', { name: 'Guía de actividades económicas' })).not.toBeNull()
+    fireEvent.click(screen.getByRole('dialog', { name: 'Guía de actividades económicas' }).querySelector('button')!)
+    fireEvent.click(screen.getByRole('button', { name: 'Ver guía sobre perfiles tributarios' }))
+    expect(await screen.findByText(/puedes crear un perfil aunque todavía no tengas RUC/i)).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Agregar perfil' }).hasAttribute('disabled')).toBe(false)
+  })
+
   it('mounts the deep-linked local sections without rendering collection content everywhere', async () => {
     window.location.hash = '#' + '/official-sources'
     render(<MantineProvider><LocalViewer /></MantineProvider>)
 
     expect((await screen.findAllByRole('heading', { name: 'Fuentes oficiales' })).length).toBeGreaterThan(0)
-    expect(screen.getByText('Snapshot local incluido con este visor. No se consulta al SRI mientras navegas estas fuentes.')).not.toBeNull()
+    expect(screen.getByText('Snapshot local de solo lectura incluido con este visor. No se consulta al SRI mientras navegas estas fuentes.')).not.toBeNull()
     expect(screen.queryByText('Importar factura')).toBeNull()
     expect(screen.queryByText('Conexión local-GPU')).toBeNull()
+  })
+
+  it('shows local source metadata, fragment tags, and its dedicated detail state', async () => {
+    window.location.hash = '#' + '/official-sources'
+    vi.stubGlobal('fetch', vi.fn((input: string) => {
+      if (input.endsWith('/official-sources')) return Response.json({ items: [{ id: 'ec-sri-lrti', title: 'Ley tributaria local', issuer: 'SRI', jurisdiction: 'EC', sourceKind: 'law', officialUrl: null, resolvedUrl: null, contentHash: 'sha256:test', effectiveFrom: '2026-01-01', effectiveTo: null, reviewStatus: 'reviewed', sectionCount: 1 }] })
+      if (input.endsWith('/official-sources/ec-sri-lrti')) return Response.json({ id: 'ec-sri-lrti', title: 'Ley tributaria local', issuer: 'SRI', jurisdiction: 'EC', sourceKind: 'law', officialUrl: null, resolvedUrl: null, contentHash: 'sha256:test', effectiveFrom: '2026-01-01', effectiveTo: null, reviewStatus: 'reviewed', sectionCount: 1, fragments: [{ id: 'art-1', articleOrSection: 'Artículo 1', effectiveFrom: '2026-01-01', effectiveTo: null, purposes: ['personal_expenses'], taxRegimes: ['general'], reviewStatus: 'reviewed', contentMarkdown: 'Primera línea\nSegunda línea', sourcePages: [4] }], ruleset: { id: 'ec-sri-2026.3', version: '3', jurisdiction: 'EC', reviewStatus: 'local-snapshot' } })
+      if (input.endsWith('/connections') || input.endsWith('/runs') || input.endsWith('/invoices') || input.endsWith('/activities') || input.endsWith('/profiles') || input.endsWith('/collections')) return Response.json({ items: [] })
+      if (input.endsWith('/rulesets')) return Response.json({ items: [] })
+      return new Response(null, { status: 404 })
+    }))
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Ver secciones' }))
+    expect(await screen.findByText('Hash: sha256:test')).not.toBeNull()
+    expect(screen.getByText('personal_expenses')).not.toBeNull()
+    expect(screen.getByText('general')).not.toBeNull()
+    expect(screen.getByText((_, element) => element?.textContent === 'Primera línea\nSegunda línea')).not.toBeNull()
+  })
+
+  it('distinguishes a successfully empty local library and describes its non-destructive boundary', async () => {
+    window.location.hash = '#' + '/library'
+    vi.stubGlobal('fetch', vi.fn((input: string) => {
+      if (input.endsWith('/library/summary')) return Response.json({ invoiceCount: 0, collectionCount: 0, profileCount: 0, activityCount: 0, runCount: 0, ruleset: null })
+      if (input.endsWith('/connections') || input.endsWith('/runs') || input.endsWith('/invoices') || input.endsWith('/activities') || input.endsWith('/profiles') || input.endsWith('/collections')) return Response.json({ items: [] })
+      if (input.endsWith('/rulesets')) return Response.json({ items: [] })
+      return new Response(null, { status: 404 })
+    }))
+    render(<MantineProvider><LocalViewer /></MantineProvider>)
+
+    expect(await screen.findByText('Tu biblioteca local está vacía')).not.toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Ver guía sobre biblioteca local' }))
+    expect(await screen.findByText(/No expone rutas de disco, no sincroniza con la cloud/i)).not.toBeNull()
   })
 
   it('opens the mobile drawer control and closes it after local navigation', async () => {
@@ -261,8 +304,12 @@ describe('LocalViewer', () => {
     const fetchMock = vi.mocked(fetch)
     render(<MantineProvider><LocalViewer /></MantineProvider>)
 
-    expect(await screen.findByRole('button', { name: 'Abrir colección 1' })).not.toBeNull()
+    expect(await screen.findByRole('button', { name: 'Abrir colección Colección local sin nombre' })).not.toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Nueva colección' }))
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Nombre' }), {
+      target: { value: 'Gastos personales' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Crear colección' }))
 
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
@@ -397,10 +444,12 @@ describe('LocalViewer', () => {
     }))
     render(<MantineProvider><LocalViewer /></MantineProvider>)
     expect(await screen.findByText('IVA-septiembre.xml')).not.toBeNull()
-    expect(screen.getByRole('button', { name: 'Quitar de colección' })).not.toBeNull()
+    expect(screen.getByRole('table')).not.toBeNull()
+    expect(screen.getByText('Asociada')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Quitar' })).not.toBeNull()
   })
 
-  it('filters attached invoices and asks for confirmation before detaching one', async () => {
+  it('filters, selects, and asks for collection-scoped detach confirmation', async () => {
     window.location.hash = '#' + `/collections/${collectionId}`
     vi.stubGlobal('fetch', vi.fn((input: string) => {
       if (input.endsWith('/collections')) return Response.json({ items: [{ id: collectionId, latestRevision: null }] })
@@ -413,10 +462,12 @@ describe('LocalViewer', () => {
     expect(await screen.findByText('IVA-septiembre.xml')).not.toBeNull()
     fireEvent.change(screen.getByRole('textbox', { name: 'Filtrar facturas de la colección' }), { target: { value: 'anual' } })
     expect(screen.queryByText('IVA-septiembre.xml')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Quitar de colección' }))
-    expect(await screen.findByRole('dialog', { name: 'Quitar factura de la colección' })).not.toBeNull()
-    expect(screen.getByText(/seguirá disponible en la biblioteca local/)).not.toBeNull()
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Seleccionar todas las facturas visibles' }))
+    expect(screen.getByText('1 seleccionada(s)')).not.toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar seleccionadas' }))
+    expect(await screen.findByRole('dialog', { name: 'Quitar facturas de la colección' })).not.toBeNull()
+    expect(screen.getByText(/seguirán disponibles en la biblioteca local/)).not.toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Quitar factura de la colección' })).toBeNull())
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Quitar facturas de la colección' })).toBeNull())
   })
 })

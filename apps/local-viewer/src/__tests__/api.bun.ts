@@ -12,6 +12,14 @@ describe('LocalDaemonClient', () => {
     const requests: Array<{ url: string; init?: RequestInit }> = []
     globalThis.fetch = (async (input: URL | RequestInfo, init?: RequestInit) => {
       requests.push({ url: String(input), init })
+      if (String(input).endsWith('/collections') && init?.method === 'POST')
+        return Response.json({
+          id: '00000000-0000-4000-8000-000000000001',
+          name: 'Gastos personales',
+          year: 2026,
+          invoiceCount: 0,
+          latestRevision: null,
+        })
       return Response.json({ items: [], id: '00000000-0000-4000-8000-000000000001', latestRevision: null })
     }) as typeof fetch
 
@@ -21,7 +29,7 @@ describe('LocalDaemonClient', () => {
     await client.listProfiles()
     await client.createProfile({ displayName: 'Biblioteca local', hasEmploymentIncome: false, hasRuc: false, taxRegime: 'unknown', vatFilingFrequency: 'none', activityRevisionIds: [] })
     await client.listCollections()
-    await client.createCollection()
+    await client.createCollection({ name: 'Gastos personales', year: 2026 })
 
     expect(requests.map((request) => `${request.init?.method ?? 'GET'} ${request.url}`)).toEqual([
       'GET http://127.0.0.1:4318/api/v1/activities',
@@ -31,6 +39,9 @@ describe('LocalDaemonClient', () => {
       'GET http://127.0.0.1:4318/api/v1/collections',
       'POST http://127.0.0.1:4318/api/v1/collections',
     ])
+    expect(requests.at(-1)?.init?.body).toBe(
+      JSON.stringify({ name: 'Gastos personales', year: 2026 }),
+    )
   })
 
   it('defaults to same-origin requests and keeps viewer sources cloud-free', async () => {
@@ -61,6 +72,21 @@ describe('LocalDaemonClient', () => {
       invoices: [{ fileName: 'factura.xml' }],
       runs: [{ collectionId: id }],
     })
+  })
+
+  it('loads analysis detail from its collection-scoped local route', async () => {
+    const collectionId = '00000000-0000-4000-8000-000000000001'
+    const runId = '00000000-0000-4000-8000-000000000002'
+    const requestedUrls: string[] = []
+    globalThis.fetch = (async (input: URL | RequestInfo) => {
+      requestedUrls.push(String(input))
+      return Response.json({
+        id: runId, invoiceId: collectionId, collectionId, status: 'failed', createdAt: '2026-09-18T20:00:00.000Z', events: [], result: null,
+      })
+    }) as typeof fetch
+
+    await expect(new LocalDaemonClient('http://127.0.0.1:4318').getCollectionRunDetail(collectionId, runId)).resolves.toMatchObject({ id: runId, result: null })
+    expect(requestedUrls).toEqual([`http://127.0.0.1:4318/api/v1/collections/${collectionId}/runs/${runId}`])
   })
 
   it('keeps collection-scoped XML imports and membership mutations on local Hono routes', async () => {

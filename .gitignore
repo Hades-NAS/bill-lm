@@ -22,6 +22,7 @@ tests/
 .harness/harness.db-wal
 .harness/current.md
 .cache/tax-rules/
+test-evidences/
 
 skills/
 

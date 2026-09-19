@@ -136,6 +136,30 @@ describe('local daemon', () => {
     expect(detachedAnalysis.status).toBe(409)
   })
 
+  it('returns local collection cards with persisted metadata and membership-only invoice counts', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const app = createLocalDaemon(library)
+    const created = await app.request('/api/v1/collections', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Gastos personales', year: 2026 }),
+    })
+    expect(created.status).toBe(201)
+    const collection = await created.json() as { id: string; name: string; year: number; invoiceCount: number }
+    expect(collection).toMatchObject({ name: 'Gastos personales', year: 2026, invoiceCount: 0 })
+
+    const imported = await app.request(`/api/v1/collections/${collection.id}/invoices/xml`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }),
+    })
+    expect(imported.status).toBe(201)
+    expect(await (await app.request('/api/v1/collections')).json()).toMatchObject({
+      items: [{ id: collection.id, name: 'Gastos personales', year: 2026, invoiceCount: 1 }],
+    })
+  })
+
   it('migrates a legacy local library with unscoped runs without losing its records', () => {
     const rootPath = mkdtempSync(join(tmpdir(), 'bill-lm-local-'))
     const database = new Database(join(rootPath, 'library.sqlite'))
@@ -244,6 +268,31 @@ describe('local daemon', () => {
     expect((await (await app.request(`/api/v1/runs/${run.id}/events`)).json()).items)
       .toMatchObject([{ runId: run.id, status: 'queued' }, { runId: run.id, status: 'running' }, { runId: run.id, status: 'completed' }])
     expect(library.getRunResult(run.id)).toMatchObject({ runId: run.id, payload: validPayload })
+  })
+
+  it('serves run events and result only through the owning collection', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const app = createLocalDaemon(library)
+    const collectionA = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionB = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionAId = (await collectionA.json() as { id: string }).id
+    const collectionBId = (await collectionB.json() as { id: string }).id
+    const runA = library.createRun({ invoiceId: crypto.randomUUID(), collectionId: collectionAId, connectionId: crypto.randomUUID(), rulesetId: 'local-ruleset' })
+    const runB = library.createRun({ invoiceId: crypto.randomUUID(), collectionId: collectionBId, connectionId: crypto.randomUUID(), rulesetId: 'local-ruleset' })
+    library.startRun(runA.id)
+
+    const ownDetail = await app.request(`/api/v1/collections/${collectionAId}/runs/${runA.id}`)
+    expect(ownDetail.status).toBe(200)
+    const ownBody = await ownDetail.json() as { id: string; collectionId: string; result: null; events: Array<{ runId: string; status: string }> }
+    expect(ownBody.id).toBe(runA.id)
+    expect(ownBody.collectionId).toBe(collectionAId)
+    expect(ownBody.result).toBeNull()
+    expect(ownBody.events[0]).toMatchObject({ runId: runA.id, status: 'queued' })
+
+    const foreignDetail = await app.request(`/api/v1/collections/${collectionAId}/runs/${runB.id}`)
+    expect(foreignDetail.status).toBe(404)
+    expect(await foreignDetail.json()).toEqual({ code: 'RUN_NOT_FOUND' })
   })
 
   it('uses distinct OpenAI-like and Claude-like wire contracts without leaking secrets', async () => {

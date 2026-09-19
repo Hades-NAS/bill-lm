@@ -1,21 +1,27 @@
 import {
   CollectionContextRevisionInputSchema,
+  CreateLocalCollectionInputSchema,
   CreateLocalConnectionSchema,
   EconomicActivityRevisionInputSchema,
   LocalConnectionResponseSchema,
   LocalCollectionInvoiceInputSchema,
   LocalCollectionInvoiceMembershipSchema,
+  LocalCollectionRunDetailSchema,
   LocalCollectionDetailSchema,
+  LocalCollectionSummarySchema,
   TaxpayerProfileRevisionInputSchema,
 } from '@bill-lm/contracts'
 
 import type {
   CollectionContextRevisionInput,
+  CreateLocalCollectionInput,
   CreateLocalConnection,
   EconomicActivityRevisionInput,
   LocalConnectionResponse,
   LocalCollectionDetail,
+  LocalCollectionSummary,
   LocalCollectionInvoiceMembership,
+  LocalCollectionRunDetail,
   TaxpayerProfileRevisionInput,
 } from '@bill-lm/contracts'
 
@@ -89,15 +95,7 @@ export type LocalTaxpayerProfile = {
   }
 }
 
-export type LocalCollectionContext = {
-  id: string
-  latestRevision: (CollectionContextRevisionInput & {
-    id: string
-    collectionId: string
-    revision: number
-    createdAt: string
-  }) | null
-}
+export type LocalCollectionContext = LocalCollectionSummary
 
 export class LocalDaemonClient {
   constructor(private readonly baseUrl = '') {}
@@ -146,14 +144,25 @@ export class LocalDaemonClient {
 
   async listCollections(): Promise<Array<LocalCollectionContext>> {
     const response = await this.request(`${apiPrefix}/collections`)
-    return ((await response.json()) as { items: Array<LocalCollectionContext> }).items
+    const body = (await response.json()) as { items: Array<unknown> }
+    return body.items.map((item) => {
+      const legacy = item as Partial<LocalCollectionContext>
+      return LocalCollectionSummarySchema.parse({
+        ...legacy,
+        // A viewer upgraded ahead of its daemon still keeps legacy collections readable.
+        name: legacy.name ?? 'Colección local sin nombre',
+        year: legacy.year ?? new Date().getFullYear(),
+        invoiceCount: legacy.invoiceCount ?? 0,
+      })
+    })
   }
 
-  async createCollection(): Promise<LocalCollectionContext> {
+  async createCollection(input: CreateLocalCollectionInput): Promise<LocalCollectionContext> {
     const response = await this.request(`${apiPrefix}/collections`, {
       method: 'POST',
+      body: JSON.stringify(CreateLocalCollectionInputSchema.parse(input)),
     })
-    return (await response.json()) as LocalCollectionContext
+    return LocalCollectionSummarySchema.parse(await response.json())
   }
 
   async reviseCollection(id: string, input: CollectionContextRevisionInput) {
@@ -167,6 +176,11 @@ export class LocalDaemonClient {
   async getCollectionDetail(id: string): Promise<LocalCollectionDetail> {
     const response = await this.request(`${apiPrefix}/collections/${id}`)
     return LocalCollectionDetailSchema.parse(await response.json())
+  }
+
+  async getCollectionRunDetail(collectionId: string, runId: string): Promise<LocalCollectionRunDetail> {
+    const response = await this.request(`${apiPrefix}/collections/${collectionId}/runs/${runId}`)
+    return LocalCollectionRunDetailSchema.parse(await response.json())
   }
 
   async importCollectionXml(collectionId: string, file: File) {

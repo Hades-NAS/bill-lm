@@ -151,6 +151,11 @@ no existe, el visor vuelve de forma segura a **Colecciones**.
    a comprobar el host, crea un run local con el ruleset local y solicita
    `/v1/chat/completions`. El run conserva la colección que lo originó y sólo
    completa si el host devuelve el JSON estructurado esperado.
+6. En **Historial local de análisis**, selecciona **Ver detalle** para abrir los
+   eventos y el resultado validado de ese run. El detalle sólo se consulta por
+   colección: una ejecución de otra colección se trata como no encontrada. Si
+   no existe resultado válido, el visor lo indica sin inventar una conclusión;
+   los datos de conexión y referencias de secretos no se muestran.
 
 Si el host no responde, devuelve HTTP no exitoso o su salida no es el JSON
 esperado, el run queda fallido y no se conserva un resultado de análisis
@@ -170,3 +175,21 @@ certificada de hardware. Todavía no hay evidencia manual en este repositorio
 de una sesión de navegador contra un host GPU real, de conectividad LAN, de
 rendimiento de un modelo, ni del flujo OAuth local. OAuth sigue pendiente y no
 es necesario para registrar una conexión local-GPU OpenAI-like.
+
+## Evidencia automatizada del visor
+
+La siguiente suite abre un navegador contra una instancia efímera del daemon y
+del visor. Crea una biblioteca aislada bajo el directorio temporal del sistema,
+recorre las áreas principales y crea una colección de prueba; no toca la
+biblioteca configurada para uso diario.
+
+```bash
+bun run test:e2e:local
+```
+
+No ejecutes esa prueba mientras otra instancia del daemon o del visor ocupa los
+puertos `4318` o `4319`: la configuración falla deliberadamente en ese caso
+para no reutilizar estado o servidores reales. Las capturas y trazas quedan en
+`test-evidences/local-viewer-artifacts/`, que no se versiona. Esta es evidencia
+automatizada de la interfaz local; no compara una sesión cloud autenticada ni
+prueba GPU real, LAN u OAuth.

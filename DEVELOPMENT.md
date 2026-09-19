@@ -104,6 +104,16 @@ curl http://127.0.0.1:4318/api/v1/rulesets
 bun run test:local
 ```
 
+La evidencia de navegador del visor se ejecuta aparte y crea una biblioteca
+temporal aislada, sin reutilizar los procesos o datos locales de uso diario:
+
+```bash
+bun run test:e2e:local
+```
+
+Esta cobertura comprueba la interfaz local en navegador. No demuestra paridad
+con una sesión cloud autenticada, GPU real, conectividad LAN ni OAuth.
+
 Usa `Ctrl+C` para detener cada proceso. Este flujo no inicia OAuth ni persiste
 tokens OAuth; la integración de un agente local mediante OAuth sigue pendiente.
 Perfiles, actividades y colecciones del visor usan exclusivamente la API Hono

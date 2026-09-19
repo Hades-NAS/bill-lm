@@ -6,9 +6,12 @@ import type { UseCaseError } from '@bill-lm/application'
 import type { Result } from '@bill-lm/domain'
 import {
   CollectionContextRevisionInputSchema,
+  CreateLocalCollectionInputSchema,
   CreateLocalConnectionSchema,
   EconomicActivityRevisionInputSchema,
   LocalCollectionDetailSchema,
+  LocalCollectionRunDetailSchema,
+  LocalCollectionSummarySchema,
   LocalConnectionResponseSchema,
   ModelTaxAnalysisPayloadSchema,
   LocalCollectionAnalysisInputSchema,
@@ -171,17 +174,40 @@ export function createLocalDaemon(
     const result = await collectionContexts.listCollectionContexts(
       library.actorScope(),
     )
-    return result.ok
-      ? c.json({ items: result.value })
-      : c.json({ code: 'COLLECTION_STORAGE_FAILURE' }, 500)
+    if (!result.ok)
+      return c.json({ code: 'COLLECTION_STORAGE_FAILURE' }, 500)
+    const metadata = new Map(
+      library.listCollectionMetadata().map((item) => [item.id, item]),
+    )
+    return c.json({
+      items: result.value.map((collection) =>
+        LocalCollectionSummarySchema.parse({
+          ...collection,
+          ...metadata.get(collection.id),
+        }),
+      ),
+    })
   })
   app.post('/collections', async (c) => {
+    const input = CreateLocalCollectionInputSchema.safeParse(
+      (await requestJson(c)) ?? {
+        name: 'Colección local',
+        year: new Date().getFullYear(),
+      },
+    )
+    if (!input.success)
+      return c.json({ code: 'INVALID_COLLECTION', issues: input.error.flatten() }, 400)
     const result = await collectionContexts.createCollectionContext(
       library.actorScope(),
     )
-    return result.ok
-      ? c.json(result.value, 201)
-      : c.json({ code: 'COLLECTION_STORAGE_FAILURE' }, 500)
+    if (!result.ok)
+      return c.json({ code: 'COLLECTION_STORAGE_FAILURE' }, 500)
+    library.setCollectionMetadata(result.value.id, input.data)
+    return contractJson(c, LocalCollectionSummarySchema, {
+      ...result.value,
+      ...input.data,
+      invoiceCount: 0,
+    }, 201)
   })
   app.post('/collections/:id/revisions', async (c) => {
     const collectionId = IdSchema.safeParse(c.req.param('id'))
@@ -225,6 +251,16 @@ export function createLocalDaemon(
       invoices: library.listCollectionInvoices(collectionId.data),
       runs: library.listRuns(collectionId.data),
     })
+  })
+  app.get('/collections/:collectionId/runs/:runId', (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('collectionId'))
+    const runId = IdSchema.safeParse(c.req.param('runId'))
+    if (!collectionId.success || !runId.success)
+      return c.json({ code: 'RUN_NOT_FOUND' }, 404)
+    const detail = library.getCollectionRunDetail(collectionId.data, runId.data)
+    return detail
+      ? contractJson(c, LocalCollectionRunDetailSchema, detail)
+      : c.json({ code: 'RUN_NOT_FOUND' }, 404)
   })
   app.post('/collections/:id/invoices', async (c) => {
     const collectionId = IdSchema.safeParse(c.req.param('id'))

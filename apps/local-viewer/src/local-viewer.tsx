@@ -2,8 +2,10 @@ import {
   Alert,
   AppShell,
   ActionIcon,
+  Badge,
   Button,
   Card,
+  Checkbox,
   Container,
   FileButton,
   Group,
@@ -12,7 +14,9 @@ import {
   MultiSelect,
   NavLink,
   Select,
+  SimpleGrid,
   Stack,
+  Table,
   Text,
   TextInput,
   Textarea,
@@ -20,7 +24,7 @@ import {
 } from '@mantine/core'
 import { useMantineColorScheme } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { BookOpen, BriefcaseBusiness, LibraryBig, Menu, Moon, Settings, Sun, Upload } from 'lucide-react'
+import { BookOpen, BriefcaseBusiness, Calendar, Files, LibraryBig, Menu, Moon, Plus, Settings, Sun, Upload } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { EmptyState, FieldHelpLabel } from '@bill-lm/ui'
@@ -82,6 +86,7 @@ function hashForRoute(section: LocalRoute['section'], collectionId?: string) {
 
 export function LocalViewer() {
   const [mobileOpened, { close: closeMobile, toggle: toggleMobile }] = useDisclosure(false)
+  const [createCollectionOpened, createCollectionModal] = useDisclosure(false)
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
   const [route, setRoute] = useState<LocalRoute>(() => parseLocalRoute(window.location.hash))
   const [message, setMessage] = useState<string | null>(null)
@@ -93,6 +98,10 @@ export function LocalViewer() {
   const [activities, setActivities] = useState<Array<LocalEconomicActivity>>([])
   const [profiles, setProfiles] = useState<Array<LocalTaxpayerProfile>>([])
   const [collections, setCollections] = useState<Array<LocalCollectionContext>>([])
+  const [collectionNameFilter, setCollectionNameFilter] = useState('')
+  const [collectionYearFilter, setCollectionYearFilter] = useState<string | null>(null)
+  const [newCollectionName, setNewCollectionName] = useState('')
+  const [newCollectionYear, setNewCollectionYear] = useState(String(new Date().getFullYear()))
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null)
   const [collectionDraft, setCollectionDraft] = useState(blankCollectionContext)
   const [loadingCollections, setLoadingCollections] = useState(true)
@@ -104,7 +113,7 @@ export function LocalViewer() {
   const [attachInvoiceId, setAttachInvoiceId] = useState<string | null>(null)
   const [invoiceFilter, setInvoiceFilter] = useState('')
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([])
-  const [detachInvoiceId, setDetachInvoiceId] = useState<string | null>(null)
+  const [detachInvoiceIds, setDetachInvoiceIds] = useState<string[]>([])
 
   useEffect(() => {
     const syncRoute = () => {
@@ -173,6 +182,17 @@ export function LocalViewer() {
     (collection) => collection.id === selectedCollectionId,
   )
   const collectionRouteId = route.section === 'collections' ? route.collectionId : undefined
+  const collectionYears = [...new Set(collections.map((collection) => collection.year))]
+    .sort((left, right) => right - left)
+  const visibleCollections = collections.filter((collection) =>
+    collection.name.toLocaleLowerCase('es-EC').includes(collectionNameFilter.trim().toLocaleLowerCase('es-EC')) &&
+    (!collectionYearFilter || collection.year === Number(collectionYearFilter)),
+  )
+  const visibleCollectionInvoices = collectionDetail?.invoices.filter((invoice) =>
+    invoice.fileName.toLowerCase().includes(invoiceFilter.trim().toLowerCase()),
+  ) ?? []
+  const allVisibleInvoicesSelected = visibleCollectionInvoices.length > 0 &&
+    visibleCollectionInvoices.every((invoice) => selectedInvoiceIds.includes(invoice.id))
 
   useEffect(() => {
     if (route.section !== 'collections' || !route.collectionId || loadingCollections)
@@ -228,11 +248,19 @@ export function LocalViewer() {
   }
 
   async function createCollection() {
+    const year = Number(newCollectionYear)
+    if (!newCollectionName.trim() || !Number.isInteger(year)) {
+      setMessage('Ingresa un nombre y un año válido para la colección local.')
+      return
+    }
     setSavingCollection(true)
     try {
-      const created = await client.createCollection()
+      const created = await client.createCollection({ name: newCollectionName, year })
       await refreshCollections()
       selectCollection(created)
+      setNewCollectionName('')
+      setNewCollectionYear(String(new Date().getFullYear()))
+      createCollectionModal.close()
       setMessage('Colección local creada. Ahora define su contexto tributario.')
     } catch {
       setMessage('No se pudo crear la colección local.')
@@ -347,15 +375,21 @@ export function LocalViewer() {
     }
   }
 
-  async function detachCollectionInvoice(invoiceId: string) {
+  async function detachCollectionInvoices(invoiceIds: string[]) {
     if (!selectedCollectionId) return
     setSavingCollection(true)
     try {
-      await client.detachInvoice(selectedCollectionId, invoiceId)
+      await Promise.all(invoiceIds.map((invoiceId) =>
+        client.detachInvoice(selectedCollectionId, invoiceId),
+      ))
       await refreshCollectionDetail(selectedCollectionId)
-      setSelectedInvoiceIds((current) => current.filter((id) => id !== invoiceId))
-      setDetachInvoiceId(null)
-      setMessage('La factura se quitó de esta colección; el XML sigue en la biblioteca local.')
+      setSelectedInvoiceIds((current) => current.filter((id) => !invoiceIds.includes(id)))
+      setDetachInvoiceIds([])
+      setMessage(
+        invoiceIds.length === 1
+          ? 'La factura se quitó de esta colección; el XML sigue en la biblioteca local.'
+          : `${invoiceIds.length} facturas se quitaron de esta colección; sus XML siguen en la biblioteca local.`,
+      )
     } catch {
       setMessage('No se pudo quitar la factura de esta colección local.')
     } finally {
@@ -494,13 +528,60 @@ export function LocalViewer() {
                   placeholder="Filtrar por nombre de archivo"
                   value={invoiceFilter}
                 />
-                <Text c="dimmed" size="sm">{selectedInvoiceIds.length} factura(s) seleccionada(s)</Text>
-                {collectionDetail.invoices.filter((invoice) => invoice.fileName.toLowerCase().includes(invoiceFilter.trim().toLowerCase())).map((invoice) => (
-                  <Group justify="space-between" key={invoice.id}>
-                    <Group gap="xs"><input aria-label={`Seleccionar ${invoice.fileName}`} checked={selectedInvoiceIds.includes(invoice.id)} onChange={(event) => setSelectedInvoiceIds((current) => event.currentTarget.checked ? [...current, invoice.id] : current.filter((id) => id !== invoice.id))} type="checkbox" /><div><Text fw={500}>{invoice.fileName}</Text><Text c="dimmed" size="xs">Importada {new Date(invoice.createdAt).toLocaleDateString('es-EC')}</Text></div></Group>
-                    <Button color="red" loading={savingCollection} onClick={() => setDetachInvoiceId(invoice.id)} variant="subtle">Quitar de colección</Button>
-                  </Group>
-                ))}
+                <Group justify="space-between">
+                  <Badge color={selectedInvoiceIds.length ? 'violet' : 'gray'} variant="light">
+                    {selectedInvoiceIds.length} seleccionada(s)
+                  </Badge>
+                  <Button
+                    color="red"
+                    disabled={selectedInvoiceIds.length === 0}
+                    loading={savingCollection}
+                    onClick={() => setDetachInvoiceIds(selectedInvoiceIds)}
+                    variant="subtle"
+                  >
+                    Quitar seleccionadas
+                  </Button>
+                </Group>
+                {visibleCollectionInvoices.length ? (
+                  <Table.ScrollContainer minWidth={620}>
+                    <Table highlightOnHover verticalSpacing="sm">
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>
+                            <Checkbox
+                              aria-label="Seleccionar todas las facturas visibles"
+                              checked={allVisibleInvoicesSelected}
+                              indeterminate={!allVisibleInvoicesSelected && visibleCollectionInvoices.some((invoice) => selectedInvoiceIds.includes(invoice.id))}
+                              onChange={() => setSelectedInvoiceIds((current) => allVisibleInvoicesSelected
+                                ? current.filter((id) => !visibleCollectionInvoices.some((invoice) => invoice.id === id))
+                                : [...new Set([...current, ...visibleCollectionInvoices.map((invoice) => invoice.id)])])}
+                            />
+                          </Table.Th>
+                          <Table.Th>Factura XML</Table.Th>
+                          <Table.Th>Importada</Table.Th>
+                          <Table.Th>Estado</Table.Th>
+                          <Table.Th />
+                        </Table.Tr>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {visibleCollectionInvoices.map((invoice) => {
+                          const selected = selectedInvoiceIds.includes(invoice.id)
+                          return (
+                            <Table.Tr bg={selected ? 'var(--mantine-color-violet-light)' : undefined} key={invoice.id}>
+                              <Table.Td><Checkbox aria-label={`Seleccionar ${invoice.fileName}`} checked={selected} onChange={(event) => setSelectedInvoiceIds((current) => event.currentTarget.checked ? [...current, invoice.id] : current.filter((id) => id !== invoice.id))} /></Table.Td>
+                              <Table.Td><Text fw={500}>{invoice.fileName}</Text></Table.Td>
+                              <Table.Td><Text size="sm">{new Date(invoice.createdAt).toLocaleDateString('es-EC')}</Text></Table.Td>
+                              <Table.Td><Badge color="teal" variant="light">Asociada</Badge></Table.Td>
+                              <Table.Td><Button color="red" loading={savingCollection} onClick={() => setDetachInvoiceIds([invoice.id])} size="compact-sm" variant="subtle">Quitar</Button></Table.Td>
+                            </Table.Tr>
+                          )
+                        })}
+                      </Table.Tbody>
+                    </Table>
+                  </Table.ScrollContainer>
+                ) : (
+                  <EmptyState title="No hay facturas que coincidan" description="Prueba con otro nombre de archivo o limpia el filtro." />
+                )}
               </Stack>
             ) : (
               <EmptyState title="Aún no hay facturas en esta colección" description="Importa un XML o asocia una factura existente de tu biblioteca local." />
@@ -511,10 +592,10 @@ export function LocalViewer() {
         {collectionDetail && !loadingCollectionDetail && !collectionDetailError && (
           <LocalCollectionAnalysis client={client} collection={collectionDetail} onChanged={() => refreshCollectionDetail(selectedCollectionId)} />
         )}
-        <Modal opened={detachInvoiceId !== null} onClose={() => setDetachInvoiceId(null)} title="Quitar factura de la colección">
+        <Modal opened={detachInvoiceIds.length > 0} onClose={() => setDetachInvoiceIds([])} title="Quitar facturas de la colección">
           <Stack>
-            <Text>La factura se quitará de esta colección, pero su XML seguirá disponible en la biblioteca local.</Text>
-            <Group justify="flex-end"><Button onClick={() => setDetachInvoiceId(null)} variant="default">Cancelar</Button><Button color="red" loading={savingCollection} onClick={() => detachInvoiceId && void detachCollectionInvoice(detachInvoiceId)}>Confirmar quitar</Button></Group>
+            <Text>{detachInvoiceIds.length === 1 ? 'La factura se quitará' : `${detachInvoiceIds.length} facturas se quitarán`} de esta colección, pero sus XML seguirán disponibles en la biblioteca local.</Text>
+            <Group justify="flex-end"><Button onClick={() => setDetachInvoiceIds([])} variant="default">Cancelar</Button><Button color="red" loading={savingCollection} onClick={() => void detachCollectionInvoices(detachInvoiceIds)}>Confirmar quitar</Button></Group>
           </Stack>
         </Modal>
         </>}
@@ -528,7 +609,7 @@ export function LocalViewer() {
                   Cada colección conserva revisiones de su contexto tributario en este equipo.
                 </Text>
               </div>
-              <Button loading={savingCollection} onClick={() => void createCollection()}>
+              <Button leftSection={<Plus size={16} />} onClick={createCollectionModal.open}>
                 Nueva colección
               </Button>
             </Group>
@@ -547,20 +628,53 @@ export function LocalViewer() {
             ) : collections.length === 0 ? (
               <EmptyState title="No hay colecciones locales" description="Crea una colección para definir su contexto tributario local." />
             ) : (
-              <Stack gap="xs">
-                {collections.map((collection, index) => (
-                  <Button
-                    aria-label={`Abrir colección ${index + 1}`}
-                    justify="space-between"
-                    key={collection.id}
-                    onClick={() => selectCollection(collection)}
-                    variant="light"
-                  >
-                    {collection.latestRevision
-                      ? `Colección ${index + 1} · revisión ${collection.latestRevision.revision}`
-                      : `Colección ${index + 1} · sin contexto`}
-                  </Button>
-                ))}
+              <Stack gap="md">
+                <Alert color="violet" title="Guía de colecciones">
+                  Agrupa comprobantes por período, actividad o propósito tributario. Cada colección mantiene su contexto y sus análisis de forma local e independiente.
+                </Alert>
+                <Group align="end" grow>
+                  <TextInput
+                    aria-label="Buscar colecciones por nombre"
+                    label="Buscar por nombre"
+                    onChange={(event) => setCollectionNameFilter(event.currentTarget.value)}
+                    placeholder="Ej. Gastos personales"
+                    value={collectionNameFilter}
+                  />
+                  <Select
+                    aria-label="Filtrar colecciones por año"
+                    clearable
+                    data={collectionYears.map((year) => ({ value: String(year), label: String(year) }))}
+                    label="Año"
+                    onChange={setCollectionYearFilter}
+                    placeholder="Todos los años"
+                    value={collectionYearFilter}
+                  />
+                </Group>
+                {visibleCollections.length === 0 ? (
+                  <EmptyState title="No se encontraron colecciones" description="Prueba con otro nombre o elimina el filtro de año." />
+                ) : (
+                  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+                    {visibleCollections.map((collection) => (
+                      <Card key={collection.id} padding="md" radius="md" shadow="sm" withBorder>
+                        <Stack gap="md">
+                          <div>
+                            <Title order={3} size="h4">{collection.name}</Title>
+                            <Text c="dimmed" size="sm">
+                              {collection.latestRevision
+                                ? `Contexto: revisión ${collection.latestRevision.revision}`
+                                : 'Contexto pendiente'}
+                            </Text>
+                          </div>
+                          <Group gap="xs"><Calendar size={16} /><Text size="sm">{collection.year}</Text></Group>
+                          <Group gap="xs"><Files size={16} /><Text size="sm">{collection.invoiceCount === 0 ? 'Sin facturas' : `${collection.invoiceCount} factura${collection.invoiceCount === 1 ? '' : 's'}`}</Text></Group>
+                          <Button aria-label={`Abrir colección ${collection.name}`} onClick={() => selectCollection(collection)} variant="light">
+                            Abrir colección
+                          </Button>
+                        </Stack>
+                      </Card>
+                    ))}
+                  </SimpleGrid>
+                )}
               </Stack>
             )}
             </>}
@@ -604,6 +718,27 @@ export function LocalViewer() {
           </Stack>
         </Card>
         </>}
+        <Modal opened={createCollectionOpened} onClose={createCollectionModal.close} title="Nueva colección local">
+          <Stack>
+            <Text c="dimmed" size="sm">La colección y su contexto se guardan únicamente en esta biblioteca local.</Text>
+            <TextInput
+              label="Nombre"
+              onChange={(event) => setNewCollectionName(event.currentTarget.value)}
+              placeholder="Ej. Gastos personales 2026"
+              value={newCollectionName}
+            />
+            <TextInput
+              label="Año"
+              onChange={(event) => setNewCollectionYear(event.currentTarget.value)}
+              type="number"
+              value={newCollectionYear}
+            />
+            <Group justify="flex-end">
+              <Button onClick={createCollectionModal.close} variant="default">Cancelar</Button>
+              <Button loading={savingCollection} onClick={() => void createCollection()}>Crear colección</Button>
+            </Group>
+          </Stack>
+        </Modal>
         {route.section === 'profiles' && <LocalProfilesSection client={client} />}
         {route.section === 'official-sources' && <OfficialSourcesSection client={client} />}
         {route.section === 'library' && <LocalLibrarySection client={client} navigate={(section) => navigate(section)} />}

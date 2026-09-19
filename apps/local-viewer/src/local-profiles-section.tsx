@@ -8,6 +8,7 @@ import {
   MultiSelect,
   Select,
   SimpleGrid,
+  Skeleton,
   Stack,
   Stepper,
   Switch,
@@ -20,7 +21,7 @@ import { useDisclosure, useMediaQuery } from '@mantine/hooks'
 import { FilePenLine, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { EmptyState, FieldHelpLabel } from '@bill-lm/ui'
+import { ContextGuideButton, EmptyState, FieldHelpLabel } from '@bill-lm/ui'
 import {
   EconomicActivityRevisionInputSchema,
   TaxpayerProfileRevisionDataSchema,
@@ -51,7 +52,9 @@ export function LocalProfilesSection({ client }: Props) {
   const [activities, setActivities] = useState<LocalEconomicActivity[]>([])
   const [profiles, setProfiles] = useState<LocalTaxpayerProfile[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [mutationError, setMutationError] = useState<string | null>(null)
+  const [guide, setGuide] = useState<'activity' | 'profile' | null>(null)
   const [saving, setSaving] = useState(false)
   const [activityDraft, setActivityDraft] = useState(blankActivity)
   const [profileDraft, setProfileDraft] = useState(blankProfile)
@@ -65,7 +68,7 @@ export function LocalProfilesSection({ client }: Props) {
 
   async function refresh() {
     setLoading(true)
-    setError(null)
+    setLoadError(null)
     try {
       const [nextActivities, nextProfiles] = await Promise.all([
         client.listActivities(), client.listProfiles(),
@@ -73,7 +76,7 @@ export function LocalProfilesSection({ client }: Props) {
       setActivities(nextActivities)
       setProfiles(nextProfiles)
     } catch {
-      setError('No se pudieron cargar los perfiles y actividades locales.')
+      setLoadError('No se pudieron cargar los perfiles y actividades locales.')
     } finally {
       setLoading(false)
     }
@@ -119,27 +122,29 @@ export function LocalProfilesSection({ client }: Props) {
 
   async function saveActivity() {
     const parsed = EconomicActivityRevisionInputSchema.safeParse(activityDraft)
-    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Revisa la actividad.')
+    if (!parsed.success) return setMutationError(parsed.error.issues[0]?.message ?? 'Revisa la actividad.')
     setSaving(true)
+    setMutationError(null)
     try {
       if (editingActivityId) await client.reviseActivity(editingActivityId, parsed.data)
       else await client.createActivity(parsed.data)
       activityModal.close()
       await refresh()
-    } catch { setError('No se pudo guardar la actividad económica local.') }
+    } catch { setMutationError('No se pudo guardar la actividad económica local.') }
     finally { setSaving(false) }
   }
 
   async function saveProfile() {
     const parsed = TaxpayerProfileRevisionInputSchema.safeParse(profileDraft)
-    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Revisa el perfil.')
+    if (!parsed.success) return setMutationError(parsed.error.issues[0]?.message ?? 'Revisa el perfil.')
     setSaving(true)
+    setMutationError(null)
     try {
       if (editingProfileId) await client.reviseProfile(editingProfileId, parsed.data)
       else await client.createProfile(parsed.data)
       profileModal.close()
       await refresh()
-    } catch { setError('No se pudo guardar el perfil tributario local.') }
+    } catch { setMutationError('No se pudo guardar el perfil tributario local.') }
     finally { setSaving(false) }
   }
 
@@ -150,36 +155,38 @@ export function LocalProfilesSection({ client }: Props) {
         <Text c="dimmed">Describe tu realidad tributaria. Cada edición crea una revisión local.</Text>
       </div>
     </Group>
-    {error && <Alert color="red" title="Biblioteca local no disponible">{error}<Group mt="sm"><Button variant="light" onClick={() => void refresh()}>Reintentar</Button></Group></Alert>}
+    {loadError && <Alert color="red" title="No pudimos cargar esta configuración">{loadError}<Group mt="sm"><Button variant="light" onClick={() => void refresh()}>Reintentar</Button></Group></Alert>}
+    {mutationError && <Alert color="red" title="No pudimos guardar la revisión">{mutationError}</Alert>}
 
     <section aria-labelledby="local-activities-heading">
       <Group justify="space-between" mb="md">
-        <div><Title id="local-activities-heading" order={2}>Actividades económicas</Title><Text c="dimmed" size="sm">Las revisiones no cambian análisis anteriores.</Text></div>
-        <Button leftSection={<Plus size={18} />} onClick={() => openActivity()}>Nueva actividad</Button>
+        <div><Group gap="xs"><Title id="local-activities-heading" order={2}>Actividades económicas</Title><ContextGuideButton title="actividades económicas" onClick={() => setGuide('activity')} /></Group><Text c="dimmed" size="sm">Son actividades que declaras; no es un catálogo oficial.</Text></div>
+        <Button leftSection={<Plus size={18} />} onClick={() => openActivity()}>Agregar actividad</Button>
       </Group>
-      {loading ? <Text c="dimmed">Cargando actividades locales…</Text> : activities.length === 0 ? <EmptyState title="No hay actividades locales" description="Agrega una actividad si este equipo analiza gastos vinculados a un RUC." /> :
+      {loading ? <SimpleGrid cols={{ base: 1, sm: 2 }}><Skeleton height={150} /><Skeleton height={150} /></SimpleGrid> : activities.length === 0 ? <EmptyState title="Aún no tienes actividades" description="Empieza con la actividad que mejor describe cómo generas ingresos." action={<Button onClick={() => openActivity()}>Agregar actividad</Button>} /> :
         <SimpleGrid cols={{ base: 1, sm: 2 }}>{activities.map((activity) => <Card key={activity.id} withBorder>
           <Group justify="space-between" align="start"><div><Text fw={600}>{activity.latestRevision.displayName}</Text><Text c="dimmed" size="sm">{activity.latestRevision.registeredActivityName || 'Sin nombre registrado'}</Text></div><Badge variant="light">Rev. {activity.latestRevision.revision}</Badge></Group>
           <Text c="dimmed" lineClamp={2} mt="sm" size="sm">{activity.latestRevision.activityDescription}</Text>
-          <Group mt="md" justify="flex-end"><Button variant="subtle" leftSection={<FilePenLine size={16} />} onClick={() => openActivity(activity)}>Nueva revisión</Button></Group>
+          <Group mt="md" justify="flex-end"><Button variant="subtle" leftSection={<FilePenLine size={16} />} onClick={() => openActivity(activity)}>Crear nueva revisión</Button></Group>
         </Card>)}</SimpleGrid>}
     </section>
 
     <section aria-labelledby="local-profiles-heading">
       <Group justify="space-between" mb="md">
-        <div><Title id="local-profiles-heading" order={2}>Perfiles tributarios</Title><Text c="dimmed" size="sm">Los perfiles vinculan las revisiones actuales de tus actividades.</Text></div>
-        <Button leftSection={<Plus size={18} />} onClick={() => openProfile()}>Nuevo perfil</Button>
+        <div><Group gap="xs"><Title id="local-profiles-heading" order={2}>Perfiles tributarios</Title><ContextGuideButton title="perfiles tributarios" onClick={() => setGuide('profile')} /></Group><Text c="dimmed" size="sm">Un perfil agrupa identificadores y las revisiones de actividades que usarás.</Text></div>
+        <Button leftSection={<Plus size={18} />} onClick={() => openProfile()}>Agregar perfil</Button>
       </Group>
-      {loading ? <Text c="dimmed">Cargando perfiles locales…</Text> : profiles.length === 0 ? <EmptyState title="No hay perfiles locales" description="Crea un perfil para conservar tu contexto tributario local." /> :
+      {loading ? <Skeleton height={130} /> : profiles.length === 0 ? <EmptyState title="Aún no tienes perfiles" description="Crea un perfil para conservar tu contexto tributario local, incluso si todavía no tienes RUC o actividades." action={<Button onClick={() => openProfile()}>Agregar perfil</Button>} /> :
         <SimpleGrid cols={{ base: 1, sm: 2 }}>{profiles.map((profile) => <Card key={profile.id} withBorder>
           <Group justify="space-between" align="start"><div><Text fw={600}>{profile.latestRevision.displayName}</Text><Text c="dimmed" size="sm">{profile.latestRevision.hasRuc ? profile.latestRevision.taxRegime : 'Sin RUC'}</Text></div><Badge variant="light">Rev. {profile.latestRevision.revision}</Badge></Group>
           <Text c="dimmed" mt="sm" size="sm">Actividades: {profile.latestRevision.activityRevisionIds.map((id) => activities.find((activity) => activity.latestRevision.id === id)?.latestRevision.displayName).filter(Boolean).join(', ') || 'Sin actividades vinculadas'}</Text>
-          <Group mt="md" justify="flex-end"><Button variant="subtle" leftSection={<FilePenLine size={16} />} onClick={() => openProfile(profile)}>Nueva revisión</Button></Group>
+          <Group mt="md" justify="flex-end"><Button variant="subtle" leftSection={<FilePenLine size={16} />} onClick={() => openProfile(profile)}>Crear nueva revisión</Button></Group>
         </Card>)}</SimpleGrid>}
     </section>
 
-    <Modal fullScreen={isMobile} opened={activityOpened} onClose={activityModal.close} title={editingActivityId ? 'Nueva revisión de actividad' : 'Nueva actividad económica'} size="lg">
+    <Modal fullScreen={isMobile} opened={activityOpened} onClose={activityModal.close} title={editingActivityId ? 'Nueva revisión de actividad' : 'Agregar actividad'} size="lg">
       <Stack>
+        <Text size="sm">No modificaremos la revisión anterior; esta versión se usará en configuraciones nuevas.</Text>
         <TextInput label={<FieldHelpLabel label="Nombre de actividad" hint="Un nombre para reconocer esta actividad." />} value={activityDraft.displayName} onChange={(event) => setActivityDraft((current) => ({ ...current, displayName: event.currentTarget.value }))} />
         <TextInput label="Nombre de actividad registrada" value={activityDraft.registeredActivityName} onChange={(event) => setActivityDraft((current) => ({ ...current, registeredActivityName: event.currentTarget.value }))} />
         <TextInput label="Código registrado (opcional)" value={activityDraft.registeredActivityCode} onChange={(event) => setActivityDraft((current) => ({ ...current, registeredActivityCode: event.currentTarget.value }))} />
@@ -195,6 +202,7 @@ export function LocalProfilesSection({ client }: Props) {
 
     <Modal fullScreen={isMobile} opened={profileOpened} onClose={profileModal.close} title={editingProfileId ? 'Nueva revisión de perfil' : 'Nuevo perfil tributario'} size="lg">
       {profileStepError && <Alert color="red" mb="md" title="Revisa el perfil">{profileStepError}</Alert>}
+      <Text size="sm">No modificaremos la revisión anterior; esta versión se usará en configuraciones nuevas.</Text>
       <Stepper active={profileStep} onStepClick={setProfileStep} allowNextStepsSelect={false}>
         <Stepper.Step label="Identidad"><Stack mt="md">
           <TextInput label={<FieldHelpLabel label="Nombre del perfil" hint="Un nombre para reconocer esta configuración." />} value={profileDraft.displayName} onChange={(event) => setProfileDraft((current) => ({ ...current, displayName: event.currentTarget.value }))} />
@@ -212,6 +220,9 @@ export function LocalProfilesSection({ client }: Props) {
         <Stepper.Completed><Text mt="md">Revisa los datos y guarda una nueva revisión local.</Text></Stepper.Completed>
       </Stepper>
       <Group justify="space-between" mt="xl"><Button variant="default" onClick={profileModal.close}>Cancelar</Button><Group>{profileStep > 0 && <Button variant="subtle" onClick={() => setProfileStep((step) => step - 1)}>Atrás</Button>}{profileStep < 1 ? <Button onClick={advanceProfileStep}>Continuar</Button> : <Button loading={saving} onClick={() => void saveProfile()}>{editingProfileId ? 'Guardar revisión' : 'Agregar perfil'}</Button>}</Group></Group>
+    </Modal>
+    <Modal opened={guide !== null} onClose={() => setGuide(null)} title={guide === 'activity' ? 'Guía de actividades económicas' : 'Guía del perfil tributario'}>
+      {guide === 'activity' ? <Stack><Text>Describe las actividades que declaras y los gastos necesarios para realizarlas. No es un catálogo oficial.</Text><Text size="sm" c="dimmed">Ejemplo: desarrollo de software, con equipos, conectividad y servicios necesarios para prestar el servicio.</Text></Stack> : <Stack><Text>Un perfil reúne tus identificadores, régimen y revisiones de actividad para conservar el contexto de análisis.</Text><Text size="sm" c="dimmed">En esta biblioteca local puedes crear un perfil aunque todavía no tengas RUC ni actividades vinculadas.</Text></Stack>}
     </Modal>
   </Stack>
 }

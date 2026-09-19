@@ -90,8 +90,19 @@ export class LocalLibrary {
     )`)
     this.database.run(`CREATE TABLE IF NOT EXISTS local_collections (
       id TEXT PRIMARY KEY, scope_id TEXT NOT NULL, created_at TEXT NOT NULL,
+      name TEXT, year INTEGER,
       FOREIGN KEY (scope_id) REFERENCES local_library_metadata(scope_id)
     )`)
+    for (const statement of [
+      'ALTER TABLE local_collections ADD COLUMN name TEXT',
+      'ALTER TABLE local_collections ADD COLUMN year INTEGER',
+    ]) {
+      try {
+        this.database.run(statement)
+      } catch {
+        // The column is already present in libraries created by this daemon.
+      }
+    }
     this.database.run(`CREATE TABLE IF NOT EXISTS local_collection_context_revisions (
       id TEXT PRIMARY KEY, collection_id TEXT NOT NULL, scope_id TEXT NOT NULL,
       revision INTEGER NOT NULL, revision_json TEXT NOT NULL, created_at TEXT NOT NULL,
@@ -240,6 +251,43 @@ export class LocalLibrary {
         .query('SELECT 1 FROM local_collections WHERE id = ? AND scope_id = ?')
         .get(id, this.localScope.userId),
     )
+  }
+
+  setCollectionMetadata(id: string, input: { name: string; year: number }) {
+    this.database
+      .query(
+        `UPDATE local_collections SET name = ?, year = ?
+         WHERE id = ? AND scope_id = ?`,
+      )
+      .run(input.name, input.year, id, this.localScope.userId)
+  }
+
+  listCollectionMetadata() {
+    return this.database
+      .query(
+        `SELECT collection.id, collection.name, collection.year,
+                COUNT(membership.invoice_id) AS invoice_count
+         FROM local_collections collection
+         LEFT JOIN local_collection_invoices membership
+           ON membership.collection_id = collection.id
+         WHERE collection.scope_id = ?
+         GROUP BY collection.id, collection.name, collection.year
+         ORDER BY collection.created_at ASC`,
+      )
+      .all(this.localScope.userId)
+      .map((row) => {
+        const collection = row as Record<string, unknown>
+        return {
+          id: String(collection.id),
+          name: typeof collection.name === 'string' && collection.name.trim()
+            ? collection.name
+            : 'Colección local sin nombre',
+          year: typeof collection.year === 'number'
+            ? collection.year
+            : new Date().getFullYear(),
+          invoiceCount: Number(collection.invoice_count),
+        }
+      })
   }
 
   hasCollectionInvoice(collectionId: string, invoiceId: string) {
@@ -393,6 +441,22 @@ export class LocalLibrary {
   getRunResult(runId: string) {
     const row = this.database.query('SELECT * FROM local_analysis_results WHERE run_id = ?').get(runId) as Record<string, unknown> | null
     return row ? this.toRunResult(row) : null
+  }
+
+  getCollectionRunDetail(collectionId: string, runId: string) {
+    const row = this.database
+      .query('SELECT * FROM local_runs WHERE id = ? AND collection_id = ?')
+      .get(runId, collectionId) as Record<string, unknown> | null
+    if (!row) return null
+    return {
+      id: String(row.id),
+      invoiceId: String(row.invoice_id),
+      collectionId: String(row.collection_id),
+      status: row.status as LocalAnalysisRunStatus,
+      createdAt: new Date(String(row.created_at)),
+      events: this.listRunEvents(runId),
+      result: this.getRunResult(runId),
+    }
   }
 
   listRunResults() {

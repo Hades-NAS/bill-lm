@@ -19,6 +19,7 @@
     "test:boundaries": "bun test ./scripts/__tests__/check-package-boundaries.bun.ts",
     "test:local": "bun run --cwd apps/local-daemon test && bun run --cwd apps/local-viewer test",
     "test:e2e": "if [ \"$SKIP_E2E\" = \"true\" ]; then echo 'Skipping e2e tests (SKIP_E2E=true)'; else bun --no-env-file x playwright test; fi",
+    "test:e2e:local": "if [ \"$SKIP_E2E\" = \"true\" ]; then echo 'Skipping e2e tests (SKIP_E2E=true)'; else bun --no-env-file x playwright test --config playwright.local-viewer.config.ts; fi",
     "worker:dev": "bun run --cwd apps/web worker:dev",
     "worker:start": "bun run --cwd apps/web worker:start",
     "rules:sri:check": "bun run --cwd apps/web rules:sri:check",

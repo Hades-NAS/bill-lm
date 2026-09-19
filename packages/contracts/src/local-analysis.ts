@@ -4,9 +4,10 @@ const IdSchema = z.string().uuid()
 export const LocalAnalysisRunStatusSchema = z.enum(['queued', 'running', 'completed', 'failed', 'blocked'])
 export type LocalAnalysisRunStatus = z.infer<typeof LocalAnalysisRunStatusSchema>
 export const LocalTaxAnalysisClassificationSchema = z.enum(['eligible', 'ineligible', 'needs_review'])
+export const LocalTaxAnalysisPurposeSchema = z.enum(['vat_credit', 'business_income_tax', 'personal_expenses'])
 
 const ModelTaxAnalysisPayloadBaseSchema = z.object({
-  purpose: z.enum(['vat_credit', 'business_income_tax', 'personal_expenses']),
+  purpose: LocalTaxAnalysisPurposeSchema,
   classification: LocalTaxAnalysisClassificationSchema,
   reasoning: z.string().trim().min(1).max(10_000),
   uncertainties: z.array(z.string().trim().min(1).max(1_000)).max(20),
@@ -19,3 +20,37 @@ export const ModelTaxAnalysisPayloadSchema = z.discriminatedUnion('purpose', [
   ModelTaxAnalysisPayloadBaseSchema.extend({ purpose: z.literal('personal_expenses'), personalExpenseCategory: z.string().trim().min(1).max(120).optional(), potentialEligibleAmount: z.number().nonnegative().optional(), beneficiaryRelationship: z.string().trim().min(1).max(500).optional(), missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20) }).strict(),
 ])
 export type ModelTaxAnalysisPayload = z.infer<typeof ModelTaxAnalysisPayloadSchema>
+
+/** A local event emitted while a collection-scoped analysis run progresses. */
+export const LocalAnalysisRunEventSchema = z.object({
+  id: IdSchema,
+  runId: IdSchema,
+  status: LocalAnalysisRunStatusSchema,
+  message: z.string().trim().min(1).max(1_000),
+  createdAt: z.string().datetime(),
+})
+export type LocalAnalysisRunEvent = z.infer<typeof LocalAnalysisRunEventSchema>
+
+/** Model output persisted by the local daemon, without connection or secret metadata. */
+export const LocalAnalysisRunResultSchema = z.object({
+  id: IdSchema,
+  runId: IdSchema,
+  invoiceId: IdSchema,
+  purpose: LocalTaxAnalysisPurposeSchema,
+  classification: LocalTaxAnalysisClassificationSchema,
+  payload: ModelTaxAnalysisPayloadSchema,
+  createdAt: z.string().datetime(),
+})
+export type LocalAnalysisRunResult = z.infer<typeof LocalAnalysisRunResultSchema>
+
+/** Detail is intentionally collection-scoped so one collection cannot read another's run. */
+export const LocalCollectionRunDetailSchema = z.object({
+  id: IdSchema,
+  invoiceId: IdSchema,
+  collectionId: IdSchema,
+  status: LocalAnalysisRunStatusSchema,
+  createdAt: z.string().datetime(),
+  events: z.array(LocalAnalysisRunEventSchema),
+  result: LocalAnalysisRunResultSchema.nullable(),
+})
+export type LocalCollectionRunDetail = z.infer<typeof LocalCollectionRunDetailSchema>

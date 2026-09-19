@@ -83,6 +83,16 @@ SRI; sus enlaces externos sólo se abren si la persona los selecciona.
 Si el daemon no responde al cargar colecciones, el visor muestra un estado local
 de error y permite reintentar la consulta sin salir de la aplicación.
 
+Para comprobar el visor en un navegador con una biblioteca local aislada, usa:
+
+```bash
+bun run test:e2e:local
+```
+
+La prueba inicia su propio daemon y visor con estado temporal; no reutiliza la
+biblioteca de uso diario. Es evidencia automatizada de la interfaz local, no
+una comparación cloud autenticada ni una prueba de GPU real, LAN u OAuth.
+
 ## Estructura de aplicaciones
 
 La aplicación web cloud se ejecuta desde `apps/web`; la raíz conserva comandos
