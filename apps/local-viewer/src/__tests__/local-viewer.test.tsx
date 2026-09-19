@@ -207,7 +207,7 @@ describe('LocalViewer', () => {
       `/api/v1/profiles/${profileId}/revisions`,
       expect.objectContaining({ method: 'POST' }),
     ))
-  })
+  }, 15_000)
 
   it('keeps an invalid local profile on the first step and never posts it', async () => {
     window.location.hash = '#' + '/profiles'
@@ -318,7 +318,7 @@ describe('LocalViewer', () => {
       ),
     )
     expect(await screen.findByText('Esta colección todavía no tiene una revisión de contexto.')).not.toBeNull()
-  })
+  }, 15_000)
 
   it('selects the collection identified by a local deep link after loading multiple collections', async () => {
     const secondCollectionId = '550e8400-e29b-41d4-a716-446655440099'

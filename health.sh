@@ -29,7 +29,8 @@ run_check "Package boundaries" bun --no-env-file run boundaries:check
 run_check "Typecheck" bun --no-env-file run typecheck
 run_check "Build" bun --no-env-file run build
 run_check "Vitest" bun --no-env-file run test -- --passWithNoTests
-run_check "Local daemon" bun --no-env-file run test:local
+run_check "Local daemon" bun --no-env-file run --cwd apps/local-daemon test
+run_check "Local viewer" bun --no-env-file run --cwd apps/local-viewer test
 run_check "Playwright" bun --no-env-file run test:e2e
 
 printf '\nNote: Vitest may report that no tests exist yet; this bootstrap exception does not replace migration test coverage.\n'
