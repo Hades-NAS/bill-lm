@@ -3,6 +3,11 @@ FROM oven/bun:latest AS builder
 
 WORKDIR /app
 
+# Prisma evaluates its config before `generate`. Generation does not connect to
+# the database, so keep a non-production fallback available in this build stage.
+ARG DATABASE_URL=postgresql://localhost/bill-lm
+ENV DATABASE_URL=${DATABASE_URL}
+
 # Copy dependency files
 COPY package.json bun.lock tsconfig.json ./
 COPY apps/web/package.json ./apps/web/package.json
