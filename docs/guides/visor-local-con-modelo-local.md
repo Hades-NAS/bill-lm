@@ -121,20 +121,36 @@ modelo produzca el JSON tributario requerido.
 
 ## Flujo en el visor
 
+El visor usa un drawer lateral con las mismas áreas principales de la web:
+**Colecciones**, **Perfiles y actividades**, **Configuración**, **Fuentes
+oficiales** y **Biblioteca local**. Sus rutas son hashes locales, por ejemplo
+`#/collections` o `#/profiles`; no crean sesión ni sincronizan datos con la
+cloud app. Cada ruta muestra sólo su sección correspondiente. Las conexiones
+Local-GPU se registran y prueban desde el detalle de la **colección**; sólo
+aceptan hosts OpenAI-like o Claude-like mediante el daemon local y no
+expone credenciales, claves cloud ni proveedores remotos. **Fuentes oficiales**
+muestra el snapshot de solo lectura que viene en el ruleset local y **Biblioteca
+local** resume los conteos conservados en el equipo, sin rutas de disco ni
+acciones de borrado. Un enlace
+`#/collections/<id-local>` abre esa colección si existe en la biblioteca; si
+no existe, el visor vuelve de forma segura a **Colecciones**.
+
 1. Abre el visor local y crea las actividades y el perfil tributario que
    correspondan a tu caso. Se guardan como revisiones locales en SQLite.
 2. Crea una colección y guarda su contexto tributario, seleccionando el perfil
    y las actividades aplicables. Las revisiones quedan asociadas a esa
    colección local.
-3. En **Importar factura**, elige un comprobante XML. No se aceptan PDF ni ZIP;
-   el XML se guarda en la biblioteca local.
-4. En **Conexión local-GPU**, guarda la conexión OpenAI-like con la URL `/v1` y
-   el ID literal del modelo. Pulsa **Analizar** sin una factura para comprobar
-   la conexión; el daemon consulta `/v1/models`.
-5. Con una factura XML importada, pulsa **Analizar** otra vez. El daemon vuelve
+3. Dentro del detalle de la colección, importa un comprobante XML. No se
+   aceptan PDF ni ZIP; el XML se guarda una sola vez en la biblioteca local y
+   queda asociado a esa colección. Quitar la factura de la colección no borra
+   su XML, resultados ni una posible asociación con otra colección.
+4. En **Conexión local-GPU** de esa colección, guarda la conexión OpenAI-like
+   con la URL `/v1` y el ID literal del modelo. Pulsa **Probar conexión**;
+   el daemon consulta `/v1/models`.
+5. Con una factura asociada a la colección, pulsa **Analizar**. El daemon vuelve
    a comprobar el host, crea un run local con el ruleset local y solicita
-   `/v1/chat/completions`. Sólo completa el run si el host devuelve el JSON
-   estructurado esperado.
+   `/v1/chat/completions`. El run conserva la colección que lo originó y sólo
+   completa si el host devuelve el JSON estructurado esperado.
 
 Si el host no responde, devuelve HTTP no exitoso o su salida no es el JSON
 esperado, el run queda fallido y no se conserva un resultado de análisis

@@ -76,6 +76,10 @@ de agentes locales mediante OAuth sigue pendiente.
 El visor opera perfiles, actividades y colecciones contra ese daemon local. Los
 contextos de una colección se guardan como revisiones en SQLite; no usan la
 sesión, Firebase, tRPC ni el servidor cloud.
+El drawer local también incluye **Biblioteca local**, un resumen no destructivo
+de los datos guardados en el equipo, y **Fuentes oficiales**, un snapshot de
+solo lectura incluido en el ruleset local. Navegar esas fuentes no consulta al
+SRI; sus enlaces externos sólo se abren si la persona los selecciona.
 Si el daemon no responde al cargar colecciones, el visor muestra un estado local
 de error y permite reintentar la consulta sin salir de la aplicación.
 

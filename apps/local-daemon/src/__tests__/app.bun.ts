@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { Database } from 'bun:sqlite'
 
 import { createLocalDaemon } from '../app'
 import { createLocalLlmAdapter } from '../adapters'
@@ -40,7 +41,7 @@ describe('local daemon', () => {
       .toThrow('BILL_LM_LOCAL_LIBRARY_DIR must be an absolute path.')
   })
 
-  it('persists a non-secret local connection through its localhost API contract', async () => {
+  it('persists a local connection without exposing its secret reference through localhost HTTP', async () => {
     const library = new LocalLibrary(
       mkdtempSync(join(tmpdir(), 'bill-lm-local-')),
     )
@@ -58,10 +59,8 @@ describe('local daemon', () => {
       }),
     })
     expect(response.status).toBe(201)
-    expect(await response.json()).toMatchObject({
-      label: 'GPU casa',
-      secretRef: 'keychain:gpu',
-    })
+    expect(await response.json()).toMatchObject({ label: 'GPU casa' })
+    expect(JSON.stringify(await (await app.request('/api/v1/connections')).json())).not.toContain('keychain:gpu')
     expect(
       (await (await app.request('/api/v1/connections')).json()).items,
     ).toHaveLength(1)
@@ -83,6 +82,79 @@ describe('local daemon', () => {
     expect(first.status).toBe(201)
     expect(second.status).toBe(200)
     expect((await second.json()).kind).toBe('duplicate')
+  })
+
+  it('associates a shared XML with collections without deleting its local object on detach', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const app = createLocalDaemon(library, () => ({ ok: true }), () => successAdapter)
+    const firstCollection = await app.request('/api/v1/collections', { method: 'POST' })
+    const secondCollection = await app.request('/api/v1/collections', { method: 'POST' })
+    const firstId = (await firstCollection.json() as { id: string }).id
+    const secondId = (await secondCollection.json() as { id: string }).id
+
+    const imported = await app.request(`/api/v1/collections/${firstId}/invoices/xml`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }),
+    })
+    expect(imported.status).toBe(201)
+    const invoiceId = (await imported.json() as { invoiceId: string }).invoiceId
+    const duplicateMembership = await app.request(`/api/v1/collections/${firstId}/invoices/xml`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }),
+    })
+    expect(duplicateMembership.status).toBe(200)
+    const sharedMembership = await app.request(`/api/v1/collections/${secondId}/invoices`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ invoiceId }),
+    })
+    expect(sharedMembership.status).toBe(201)
+    expect((await (await app.request(`/api/v1/collections/${firstId}`)).json() as { invoices: unknown[] }).invoices).toHaveLength(1)
+    expect((await (await app.request(`/api/v1/collections/${secondId}`)).json() as { invoices: unknown[] }).invoices).toHaveLength(1)
+
+    expect((await app.request(`/api/v1/collections/${firstId}/invoices/${invoiceId}`, { method: 'DELETE' })).status).toBe(200)
+    expect((await (await app.request('/api/v1/invoices')).json() as { items: unknown[] }).items).toHaveLength(1)
+    expect((await (await app.request(`/api/v1/collections/${secondId}`)).json() as { invoices: unknown[] }).invoices).toHaveLength(1)
+
+    const localConnection = await app.request('/api/v1/connections', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ label: 'GPU local', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'modelo' }),
+    })
+    const scopedAnalysis = await app.request('/api/v1/analysis', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ invoiceId, collectionId: secondId, connectionId: (await localConnection.json() as { id: string }).id }),
+    })
+    expect(scopedAnalysis.status).toBe(201)
+    expect((await (await app.request(`/api/v1/collections/${secondId}`)).json() as { runs: Array<{ collectionId: string }> }).runs).toMatchObject([{ collectionId: secondId }])
+    const detachedAnalysis = await app.request('/api/v1/analysis', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ invoiceId, collectionId: firstId, connectionId: crypto.randomUUID() }),
+    })
+    expect(detachedAnalysis.status).toBe(409)
+  })
+
+  it('migrates a legacy local library with unscoped runs without losing its records', () => {
+    const rootPath = mkdtempSync(join(tmpdir(), 'bill-lm-local-'))
+    const database = new Database(join(rootPath, 'library.sqlite'))
+    const scopeId = crypto.randomUUID()
+    const invoiceId = crypto.randomUUID()
+    const runId = crypto.randomUUID()
+    database.run('CREATE TABLE local_library_metadata (scope_id TEXT PRIMARY KEY)')
+    database.run('CREATE TABLE local_invoices (id TEXT PRIMARY KEY, content_hash TEXT UNIQUE NOT NULL, file_name TEXT NOT NULL, object_path TEXT NOT NULL, created_at TEXT NOT NULL)')
+    database.run('CREATE TABLE local_runs (id TEXT PRIMARY KEY, invoice_id TEXT NOT NULL, connection_id TEXT NOT NULL, ruleset_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL)')
+    database.query('INSERT INTO local_library_metadata VALUES (?)').run(scopeId)
+    database.query('INSERT INTO local_invoices VALUES (?, ?, ?, ?, ?)').run(invoiceId, 'legacy-hash', 'legado.xml', '.bill-lm/objects/legacy.xml', new Date().toISOString())
+    database.query('INSERT INTO local_runs VALUES (?, ?, ?, ?, ?, ?)').run(runId, invoiceId, crypto.randomUUID(), 'legacy-ruleset', 'completed', new Date().toISOString())
+    database.close()
+
+    const library = new LocalLibrary(rootPath)
+    libraries.push(library)
+    expect(library.listInvoices()).toMatchObject([{ id: invoiceId, fileName: 'legado.xml' }])
+    expect(library.listRuns()).toMatchObject([{ id: runId, invoiceId, collectionId: null }])
+    expect(library.listCollectionInvoices(crypto.randomUUID())).toEqual([])
   })
 
   it('rejects malformed invoices and exposes the bundled SRI ruleset read-only', async () => {
@@ -118,6 +190,26 @@ describe('local daemon', () => {
     ).toBe(404)
   })
 
+  it('serves official-source manifests and the local library summary without disk paths or scope identifiers', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const app = createLocalDaemon(library)
+    const sources = await app.request('/api/v1/official-sources')
+    expect(sources.status).toBe(200)
+    const source = (await sources.json() as { items: Array<{ id: string; title: string; sectionCount: number }> }).items[0]
+    expect(source).toMatchObject({ id: 'ec-sri-lrti', title: 'Ley de Régimen Tributario Interno (LRTI)' })
+    expect(source.sectionCount).toBeGreaterThan(0)
+    const detail = await app.request(`/api/v1/official-sources/${source.id}`)
+    expect(detail.status).toBe(200)
+    expect(await detail.json()).toMatchObject({ id: source.id, ruleset: { reviewStatus: 'local-snapshot' } })
+    expect((await app.request('/api/v1/official-sources/no-existe')).status).toBe(404)
+    const summary = await app.request('/api/v1/library/summary')
+    expect(summary.status).toBe(200)
+    const serialized = JSON.stringify(await summary.json())
+    expect(serialized).not.toContain(library.rootPath)
+    expect(serialized).not.toContain('scope_id')
+  })
+
   it('creates a run only after XML and a fresh successful GPU probe', async () => {
     const library = new LocalLibrary(
       mkdtempSync(join(tmpdir(), 'bill-lm-local-')),
@@ -135,7 +227,9 @@ describe('local daemon', () => {
         makeDefault: true,
       }),
     })
-    const invoice = await app.request('/api/v1/invoices/xml', {
+    const collection = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionId = (await collection.json() as { id: string }).id
+    const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }),
@@ -143,7 +237,7 @@ describe('local daemon', () => {
     const analysis = await app.request('/api/v1/analysis', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId }),
+      body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId: (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id }),
     })
     expect(analysis.status).toBe(201)
     const run = await analysis.json()
@@ -189,8 +283,10 @@ describe('local daemon', () => {
     }))
     const connection = await app.request('/api/v1/connections', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ label: 'GPU', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'qwen', makeDefault: true }) })
     expect(connection.status).toBe(201)
-    const invoice = await app.request('/api/v1/invoices/xml', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
-    const response = await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId }) })
+    const collection = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionId = (await collection.json() as { id: string }).id
+    const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
+    const response = await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId: (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id }) })
     expect(response.status).toBe(422)
     const body = await response.json()
     expect(body).toMatchObject({ cause: 'invalid-output', oauthGuidance: { kind: 'oauth-guidance' } })
@@ -203,8 +299,10 @@ describe('local daemon', () => {
     libraries.push(library)
     const app = createLocalDaemon(library, () => ({ ok: false, cause: 'transport', message: 'No se pudo conectar al servidor local.' }))
     await app.request('/api/v1/connections', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ label: 'GPU', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'qwen', makeDefault: true }) })
-    const invoice = await app.request('/api/v1/invoices/xml', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
-    const response = await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId }) })
+    const collection = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionId = (await collection.json() as { id: string }).id
+    const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
+    const response = await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId: (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id }) })
     expect(response.status).toBe(422)
     expect(await response.json()).toMatchObject({ code: 'GPU_PROBE_FAILED', cause: 'transport', oauthGuidance: { kind: 'oauth-guidance' } })
     expect(library.listRuns()).toHaveLength(0)

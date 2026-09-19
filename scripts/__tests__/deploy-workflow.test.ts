@@ -105,4 +105,18 @@ describe('deploy workflow', () => {
       'ENV VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}',
     )
   })
+
+  it('permite generar Prisma del worker sin una URL de producción', () => {
+    const workerDockerfile = readFileSync(workerDockerfilePath, 'utf8')
+    const builderStage = workerDockerfile.slice(
+      0,
+      workerDockerfile.indexOf('# ===== STAGE 2: Runtime ====='),
+    )
+
+    expect(builderStage).toContain(
+      'ARG DATABASE_URL=postgresql://localhost/bill-lm',
+    )
+    expect(builderStage).toContain('ENV DATABASE_URL=${DATABASE_URL}')
+    expect(builderStage).toContain('bun run --cwd apps/web db:gen')
+  })
 })
