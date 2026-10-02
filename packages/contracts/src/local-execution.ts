@@ -23,6 +23,13 @@ export const CreateLocalConnectionSchema = z.object({
 })
 export type CreateLocalConnection = z.infer<typeof CreateLocalConnectionSchema>
 
+/** Editable local-host settings. The daemon keeps secret references write-only. */
+export const UpdateLocalConnectionSchema = CreateLocalConnectionSchema
+  .omit({ secretRef: true })
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, 'Incluye al menos un cambio.')
+export type UpdateLocalConnection = z.infer<typeof UpdateLocalConnectionSchema>
+
 export const LocalConnectionSchema = CreateLocalConnectionSchema.omit({ makeDefault: true }).extend({
   id: LocalConnectionIdSchema,
   isDefault: z.boolean(),

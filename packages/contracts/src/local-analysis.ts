@@ -43,6 +43,17 @@ export const LocalAnalysisRunResultSchema = z.object({
 })
 export type LocalAnalysisRunResult = z.infer<typeof LocalAnalysisRunResultSchema>
 
+/** Safe, immutable inputs captured when a local execution is queued. */
+export const LocalAnalysisRunSnapshotSchema = z.object({
+  invoice: z.unknown(),
+  collectionContext: z.unknown().nullable(),
+  taxpayerProfile: z.unknown().nullable(),
+  activities: z.array(z.unknown()),
+  connection: z.object({ id: IdSchema, label: z.string(), apiFlavor: z.string(), baseUrl: z.string(), model: z.string() }),
+  ruleset: z.object({ id: z.string(), version: z.string(), jurisdiction: z.string() }),
+})
+export type LocalAnalysisRunSnapshot = z.infer<typeof LocalAnalysisRunSnapshotSchema>
+
 /** Detail is intentionally collection-scoped so one collection cannot read another's run. */
 export const LocalCollectionRunDetailSchema = z.object({
   id: IdSchema,
@@ -50,6 +61,8 @@ export const LocalCollectionRunDetailSchema = z.object({
   collectionId: IdSchema,
   status: LocalAnalysisRunStatusSchema,
   createdAt: z.string().datetime(),
+  readAt: z.string().datetime().nullish().transform((value) => value ?? null),
+  snapshot: LocalAnalysisRunSnapshotSchema.nullish().transform((value) => value ?? null),
   events: z.array(LocalAnalysisRunEventSchema),
   result: LocalAnalysisRunResultSchema.nullable(),
 })

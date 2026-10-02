@@ -7,6 +7,7 @@ import {
   Card,
   Checkbox,
   Container,
+  Drawer,
   FileButton,
   Group,
   Loader,
@@ -24,7 +25,7 @@ import {
 } from '@mantine/core'
 import { useMantineColorScheme } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { BookOpen, BriefcaseBusiness, Calendar, Files, LibraryBig, Menu, Moon, Plus, Settings, Sun, Upload } from 'lucide-react'
+import { Bell, BookOpen, BriefcaseBusiness, Calendar, Files, LibraryBig, Menu, Moon, Plus, Settings, Sun, Upload } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { EmptyState, FieldHelpLabel } from '@bill-lm/ui'
@@ -34,7 +35,7 @@ import {
 } from '@bill-lm/contracts'
 
 import { LocalDaemonClient } from './api'
-import { LocalLibrarySection, OfficialSourcesSection } from './local-sections'
+import { LocalGpuSettingsSection, LocalLibrarySection, OfficialSourcesSection } from './local-sections'
 import { LocalCollectionAnalysis } from './local-collection-analysis'
 import { LocalProfilesSection } from './local-profiles-section'
 
@@ -114,6 +115,8 @@ export function LocalViewer() {
   const [invoiceFilter, setInvoiceFilter] = useState('')
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([])
   const [detachInvoiceIds, setDetachInvoiceIds] = useState<string[]>([])
+  const [jobsOpened, setJobsOpened] = useState(false)
+  const [runs, setRuns] = useState<Array<{ id: string; collectionId: string | null; invoiceId: string; status: 'queued' | 'running' | 'completed' | 'failed' | 'blocked'; createdAt: string; readAt: string | null }>>([])
 
   useEffect(() => {
     const syncRoute = () => {
@@ -177,6 +180,24 @@ export function LocalViewer() {
   useEffect(() => {
     void refreshCollections().catch(() => {})
   }, [])
+
+  async function refreshRuns() {
+    try { setRuns(await client.listRuns()) } catch { /* A disconnected daemon must not break navigation. */ }
+  }
+  useEffect(() => {
+    void refreshRuns()
+    const timer = window.setInterval(() => { void refreshRuns() }, 5_000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const unreadRunCount = runs.filter((run) => run.readAt === null).length
+  async function openRun(run: typeof runs[number]) {
+    if (!run.collectionId) return
+    try { await client.markRunRead(run.id) } catch { /* Read state is best effort. */ }
+    setJobsOpened(false)
+    navigate('collections', run.collectionId)
+    await refreshRuns()
+  }
 
   const selectedCollection = collections.find(
     (collection) => collection.id === selectedCollectionId,
@@ -423,6 +444,10 @@ export function LocalViewer() {
           </Group>
           <Group gap="xs">
             <Text c="dimmed" size="sm" visibleFrom="sm">Sólo datos de este equipo</Text>
+            <ActionIcon aria-label="Abrir historial de análisis" onClick={() => setJobsOpened(true)} variant="default">
+              <Bell size={18} />
+              {unreadRunCount > 0 && <Badge aria-label={`${unreadRunCount} ejecuciones sin leer`} color="red" size="xs" style={{ position: 'absolute', right: -6, top: -6 }}>{unreadRunCount}</Badge>}
+            </ActionIcon>
             <ActionIcon
               aria-label="Alternar tema"
               onClick={() => toggleColorScheme()}
@@ -590,7 +615,7 @@ export function LocalViewer() {
           </Stack>
         </Card>
         {collectionDetail && !loadingCollectionDetail && !collectionDetailError && (
-          <LocalCollectionAnalysis client={client} collection={collectionDetail} onChanged={() => refreshCollectionDetail(selectedCollectionId)} />
+          <LocalCollectionAnalysis client={client} collection={collectionDetail} onChanged={() => refreshCollectionDetail(selectedCollectionId)} onOpenSettings={() => navigate('settings')} />
         )}
         <Modal opened={detachInvoiceIds.length > 0} onClose={() => setDetachInvoiceIds([])} title="Quitar facturas de la colección">
           <Stack>
@@ -742,10 +767,16 @@ export function LocalViewer() {
         {route.section === 'profiles' && <LocalProfilesSection client={client} />}
         {route.section === 'official-sources' && <OfficialSourcesSection client={client} />}
         {route.section === 'library' && <LocalLibrarySection client={client} navigate={(section) => navigate(section)} />}
-        {route.section === 'settings' && <Alert title="Configuración local">Las conexiones Local-GPU se configuran dentro del detalle de cada colección. Esta sección no inicia análisis ni usa servicios cloud.</Alert>}
+        {route.section === 'settings' && <LocalGpuSettingsSection client={client} />}
       </Stack>
     </Container>
       </AppShell.Main>
+      <Drawer opened={jobsOpened} onClose={() => setJobsOpened(false)} position="right" title="Historial local de análisis">
+        <Stack>
+          <Text c="dimmed" size="sm">Ejecuciones guardadas en esta biblioteca. No se consulta ningún servicio cloud.</Text>
+          {runs.length === 0 ? <EmptyState title="Aún no hay ejecuciones" description="Los análisis que inicies desde una colección aparecerán aquí." /> : runs.map((run) => <Card key={run.id} withBorder padding="sm"><Group justify="space-between" align="flex-start"><div><Text fw={600}>{run.status === 'running' ? 'Analizando localmente' : run.status === 'queued' ? 'Análisis en cola' : 'Análisis local'}</Text><Text c="dimmed" size="xs">{new Date(run.createdAt).toLocaleString('es-EC')}</Text></div><Button disabled={!run.collectionId} onClick={() => void openRun(run)} size="compact-sm" variant="light">Ver detalle</Button></Group></Card>)}
+        </Stack>
+      </Drawer>
     </AppShell>
   )
 }

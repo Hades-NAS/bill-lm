@@ -2,6 +2,7 @@ import {
   CollectionContextRevisionInputSchema,
   CreateLocalCollectionInputSchema,
   CreateLocalConnectionSchema,
+  UpdateLocalConnectionSchema,
   EconomicActivityRevisionInputSchema,
   LocalConnectionResponseSchema,
   LocalCollectionInvoiceInputSchema,
@@ -16,6 +17,7 @@ import type {
   CollectionContextRevisionInput,
   CreateLocalCollectionInput,
   CreateLocalConnection,
+  UpdateLocalConnection,
   EconomicActivityRevisionInput,
   LocalConnectionResponse,
   LocalCollectionDetail,
@@ -226,6 +228,17 @@ export class LocalDaemonClient {
     return LocalConnectionResponseSchema.parse(await response.json())
   }
 
+  async updateConnection(id: string, input: UpdateLocalConnection) {
+    const response = await this.request(`${apiPrefix}/connections/${id}`, {
+      method: 'PATCH', body: JSON.stringify(UpdateLocalConnectionSchema.parse(input)),
+    })
+    return LocalConnectionResponseSchema.parse(await response.json())
+  }
+
+  async deleteConnection(id: string) {
+    await this.request(`${apiPrefix}/connections/${id}`, { method: 'DELETE' })
+  }
+
   async importXml(file: File) {
     const response = await this.request(`${apiPrefix}/invoices/xml`, {
       method: 'POST',
@@ -271,9 +284,9 @@ export class LocalDaemonClient {
 
   async listRuns() {
     const response = await this.request(`${apiPrefix}/runs`)
-    return (await response.json()) as {
-      items: Array<{ id: string; status: string; createdAt: string }>
-    }
+    return ((await response.json()) as {
+      items: Array<{ id: string; collectionId: string | null; invoiceId: string; status: 'queued' | 'running' | 'completed' | 'failed' | 'blocked'; createdAt: string; readAt: string | null }>
+    }).items
   }
 
   async analyze(input: { collectionId: string; connectionId: string; invoiceId: string }) {
@@ -282,6 +295,10 @@ export class LocalDaemonClient {
       body: JSON.stringify(input),
     })
     return (await response.json()) as { id: string; status: string }
+  }
+
+  async markRunRead(id: string) {
+    await this.request(`${apiPrefix}/runs/${id}/read`, { method: 'PATCH' })
   }
 
   async listInvoices() {

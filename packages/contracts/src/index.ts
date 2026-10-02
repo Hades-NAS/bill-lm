@@ -286,6 +286,7 @@ export const LocalCollectionRunSchema = z.object({
   collectionId: IdSchema.nullable(),
   status: LocalAnalysisRunStatusSchema,
   createdAt: IsoDateTimeSchema,
+  readAt: IsoDateTimeSchema.nullish().transform((value) => value ?? null),
 })
 export type LocalCollectionRun = z.infer<typeof LocalCollectionRunSchema>
 

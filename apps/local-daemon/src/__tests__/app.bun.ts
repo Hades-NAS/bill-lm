@@ -127,7 +127,7 @@ describe('local daemon', () => {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ invoiceId, collectionId: secondId, connectionId: (await localConnection.json() as { id: string }).id }),
     })
-    expect(scopedAnalysis.status).toBe(201)
+    expect(scopedAnalysis.status).toBe(202)
     expect((await (await app.request(`/api/v1/collections/${secondId}`)).json() as { runs: Array<{ collectionId: string }> }).runs).toMatchObject([{ collectionId: secondId }])
     const detachedAnalysis = await app.request('/api/v1/analysis', {
       method: 'POST', headers: { 'content-type': 'application/json' },
@@ -263,8 +263,9 @@ describe('local daemon', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId: (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id }),
     })
-    expect(analysis.status).toBe(201)
+    expect(analysis.status).toBe(202)
     const run = await analysis.json()
+    await Bun.sleep(0)
     expect((await (await app.request(`/api/v1/runs/${run.id}/events`)).json()).items)
       .toMatchObject([{ runId: run.id, status: 'queued' }, { runId: run.id, status: 'running' }, { runId: run.id, status: 'completed' }])
     expect(library.getRunResult(run.id)).toMatchObject({ runId: run.id, payload: validPayload })
@@ -336,11 +337,12 @@ describe('local daemon', () => {
     const collectionId = (await collection.json() as { id: string }).id
     const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
     const response = await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId: (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id }) })
-    expect(response.status).toBe(422)
+    expect(response.status).toBe(202)
     const body = await response.json()
-    expect(body).toMatchObject({ cause: 'invalid-output', oauthGuidance: { kind: 'oauth-guidance' } })
-    expect(library.getRunResult(body.runId)).toBeNull()
-    expect(library.listRunEvents(body.runId).at(-1)).toMatchObject({ status: 'failed' })
+    await Bun.sleep(0)
+    expect(body).toMatchObject({ status: 'queued' })
+    expect(library.getRunResult(body.id)).toBeNull()
+    expect(library.listRunEvents(body.id).at(-1)).toMatchObject({ status: 'failed' })
   })
 
   it('returns a failed probe cause and OAuth guidance without creating a run', async () => {

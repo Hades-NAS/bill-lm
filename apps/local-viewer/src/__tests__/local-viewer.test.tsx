@@ -145,7 +145,7 @@ describe('LocalViewer', () => {
     expect(screen.queryByText('Cargando perfiles locales…')).toBeNull()
   })
 
-  it('renders a Firebase-free local XML workflow and keeps GPU execution out of settings', async () => {
+  it('renders a Firebase-free local XML workflow and configures global GPU hosts in settings', async () => {
     render(
       <MantineProvider>
         <LocalViewer />
@@ -154,8 +154,8 @@ describe('LocalViewer', () => {
     expect(await screen.findByRole('heading', { name: 'Colecciones' })).not.toBeNull()
     expect(screen.getByText(/Sólo se importan comprobantes XML/)).not.toBeNull()
     fireEvent.click(screen.getAllByText('Configuración').at(0)!)
-    expect(await screen.findByText(/Las conexiones Local-GPU se configuran dentro del detalle/)).not.toBeNull()
-    expect(screen.queryByRole('button', { name: 'Guardar conexión' })).toBeNull()
+    expect(await screen.findByText('Conexiones Local-GPU')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Guardar conexión' })).not.toBeNull()
   })
 
   it('uses the web-app navigation order and canonical local hash fallback', async () => {

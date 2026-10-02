@@ -15,6 +15,7 @@ import type {
   CreateLocalConnection,
   LocalConnection,
   LocalAnalysisRunStatus,
+  UpdateLocalConnection,
   ModelTaxAnalysisPayload,
 } from '@bill-lm/contracts'
 import { parseAndValidateInvoiceXML } from '@bill-lm/contracts'
@@ -146,13 +147,14 @@ export class LocalLibrary {
     this.database.run(`CREATE TABLE IF NOT EXISTS local_runs (
       id TEXT PRIMARY KEY, invoice_id TEXT NOT NULL, collection_id TEXT,
       connection_id TEXT NOT NULL,
-      ruleset_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL
+      ruleset_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL,
+      read_at TEXT, snapshot_json TEXT
     )`)
-    try {
-      this.database.run('ALTER TABLE local_runs ADD COLUMN collection_id TEXT')
-    } catch {
-      // Existing local libraries already have the nullable association column.
-    }
+    for (const statement of [
+      'ALTER TABLE local_runs ADD COLUMN collection_id TEXT',
+      'ALTER TABLE local_runs ADD COLUMN read_at TEXT',
+      'ALTER TABLE local_runs ADD COLUMN snapshot_json TEXT',
+    ]) try { this.database.run(statement) } catch { /* Existing library. */ }
     this.database.run(`CREATE TABLE IF NOT EXISTS local_run_events (
       id TEXT PRIMARY KEY, run_id TEXT NOT NULL, status TEXT NOT NULL,
       message TEXT NOT NULL, created_at TEXT NOT NULL
@@ -221,6 +223,26 @@ export class LocalLibrary {
       .query('SELECT * FROM local_connections WHERE id = ?')
       .get(id)
     return row ? this.toConnection(row as Record<string, unknown>) : null
+  }
+
+  updateConnection(id: string, input: UpdateLocalConnection): LocalConnection | null {
+    const current = this.getConnection(id)
+    if (!current) return null
+    const next = { ...current, ...input }
+    const now = new Date().toISOString()
+    if (input.makeDefault) this.database.run('UPDATE local_connections SET is_default = 0')
+    this.database.query(`UPDATE local_connections SET label = ?, api_flavor = ?, base_url = ?, model = ?, is_default = ?, updated_at = ? WHERE id = ?`).run(
+      next.label, next.apiFlavor, next.baseUrl, next.model,
+      Number(input.makeDefault ?? current.isDefault), now, id,
+    )
+    return this.getConnection(id)
+  }
+
+  deleteConnection(id: string) {
+    const activeRuns = Number((this.database.query(`SELECT COUNT(*) AS count FROM local_runs WHERE connection_id = ? AND status IN ('queued', 'running')`).get(id) as { count: number }).count)
+    if (activeRuns > 0) return { kind: 'active-runs' as const }
+    return this.database.run('DELETE FROM local_connections WHERE id = ?', [id]).changes > 0
+      ? { kind: 'deleted' as const } : { kind: 'not-found' as const }
   }
 
   recordProbe(id: string, result: { ok: boolean; message?: string }) {
@@ -369,14 +391,15 @@ export class LocalLibrary {
     collectionId?: string
     connectionId: string
     rulesetId: string
+    snapshot?: unknown
   }) {
     const id = crypto.randomUUID()
     const createdAt = new Date().toISOString()
     this.database
       .query(
         `INSERT INTO local_runs
-         (id, invoice_id, collection_id, connection_id, ruleset_id, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (id, invoice_id, collection_id, connection_id, ruleset_id, status, created_at, snapshot_json)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         id,
@@ -386,6 +409,7 @@ export class LocalLibrary {
         input.rulesetId,
         'queued',
         createdAt,
+        JSON.stringify(input.snapshot ?? null),
       )
     this.appendRunEvent({
       runId: id,
@@ -454,6 +478,8 @@ export class LocalLibrary {
       collectionId: String(row.collection_id),
       status: row.status as LocalAnalysisRunStatus,
       createdAt: new Date(String(row.created_at)),
+      readAt: row.read_at ? new Date(String(row.read_at)) : null,
+      snapshot: row.snapshot_json ? JSON.parse(String(row.snapshot_json)) : null,
       events: this.listRunEvents(runId),
       result: this.getRunResult(runId),
     }
@@ -501,8 +527,31 @@ export class LocalLibrary {
           collectionId: run.collection_id ? String(run.collection_id) : null,
           status: run.status as LocalAnalysisRunStatus,
           createdAt: new Date(String(run.created_at)),
+          readAt: run.read_at ? new Date(String(run.read_at)) : null,
         }
       })
+  }
+
+  markRunRead(runId: string) {
+    const result = this.database.run('UPDATE local_runs SET read_at = ? WHERE id = ?', [new Date().toISOString(), runId])
+    return result.changes > 0
+  }
+
+  getInvoiceSnapshot(id: string) {
+    const row = this.database.query('SELECT normalized_json FROM local_invoices WHERE id = ?').get(id) as { normalized_json: string } | null
+    return row ? JSON.parse(row.normalized_json) : null
+  }
+
+  getExecutionContext(collectionId: string) {
+    const contextRow = this.database.query(`SELECT revision_json FROM local_collection_context_revisions WHERE collection_id = ? AND scope_id = ? ORDER BY revision DESC LIMIT 1`).get(collectionId, this.localScope.userId) as { revision_json: string } | null
+    if (!contextRow) return { collectionContext: null, taxpayerProfile: null, activities: [] as unknown[] }
+    const collectionContext = JSON.parse(contextRow.revision_json) as { taxpayerProfileRevisionId?: string; activityRevisionIds?: string[] }
+    const taxpayerProfile = collectionContext.taxpayerProfileRevisionId
+      ? this.database.query('SELECT revision_json FROM local_taxpayer_profile_revisions WHERE id = ? AND scope_id = ?').get(collectionContext.taxpayerProfileRevisionId, this.localScope.userId) as { revision_json: string } | null
+      : null
+    const activityIds = collectionContext.activityRevisionIds ?? []
+    const activities = activityIds.map((id) => this.database.query('SELECT revision_json FROM local_economic_activity_revisions WHERE id = ? AND scope_id = ?').get(id, this.localScope.userId) as { revision_json: string } | null).flatMap((row) => row ? [JSON.parse(row.revision_json)] : [])
+    return { collectionContext, taxpayerProfile: taxpayerProfile ? JSON.parse(taxpayerProfile.revision_json) : null, activities }
   }
 
   importXml(fileName: string, content: Uint8Array) {

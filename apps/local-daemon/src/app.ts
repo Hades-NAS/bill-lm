@@ -8,6 +8,7 @@ import {
   CollectionContextRevisionInputSchema,
   CreateLocalCollectionInputSchema,
   CreateLocalConnectionSchema,
+  UpdateLocalConnectionSchema,
   EconomicActivityRevisionInputSchema,
   LocalCollectionDetailSchema,
   LocalCollectionRunDetailSchema,
@@ -355,6 +356,20 @@ export function createLocalDaemon(
     library.recordProbe(connection.id, probe)
     return c.json(probe, probe.ok ? 200 : 422)
   })
+  app.patch('/connections/:id', async (c) => {
+    const parsed = UpdateLocalConnectionSchema.safeParse(await requestJson(c))
+    if (!parsed.success) return c.json({ code: 'INVALID_CONNECTION', issues: parsed.error.flatten() }, 400)
+    const connection = library.updateConnection(c.req.param('id'), parsed.data)
+    return connection
+      ? c.json(LocalConnectionResponseSchema.parse(JSON.parse(JSON.stringify(publicConnection(connection)))))
+      : c.json({ code: 'CONNECTION_NOT_FOUND' }, 404)
+  })
+  app.delete('/connections/:id', (c) => {
+    const result = library.deleteConnection(c.req.param('id'))
+    if (result.kind === 'not-found') return c.json({ code: 'CONNECTION_NOT_FOUND' }, 404)
+    if (result.kind === 'active-runs') return c.json({ code: 'CONNECTION_HAS_ACTIVE_RUNS' }, 409)
+    return c.body(null, 204)
+  })
   app.post('/invoices/xml', async (c) => {
     const body = await c.req.json<{ fileName?: unknown; xml?: unknown }>()
     if (typeof body.fileName !== 'string' || typeof body.xml !== 'string')
@@ -414,31 +429,35 @@ export function createLocalDaemon(
       )
 
     const ruleset = library.listRulesets()[0]
+    const executionContext = library.getExecutionContext(parsed.data.collectionId)
+    const snapshot = {
+      invoice: library.getInvoiceSnapshot(parsed.data.invoiceId),
+      ...executionContext,
+      connection: publicConnection(connection),
+      ruleset: { id: ruleset.id, version: ruleset.version, jurisdiction: ruleset.jurisdiction },
+    }
     const run = library.createRun({
       invoiceId: parsed.data.invoiceId,
       collectionId: parsed.data.collectionId,
       connectionId: connection.id,
       rulesetId: ruleset.id,
+      snapshot,
     })
-    library.startRun(run.id)
-    const adapter = adapterFactory(connection)
-    const result = await adapter.analyze({
-      connection,
-      runId: run.id,
-      prompt: 'Devuelve solamente JSON válido que cumpla el esquema de análisis tributario.',
-      outputSchema: { type: 'object' },
-    })
-    if (!result.ok) {
-      library.failRun(run.id, 'El análisis local no pudo completarse.')
-      return c.json({ code: 'GPU_ANALYSIS_FAILED', cause: result.cause, oauthGuidance: resolveLocalAnalysisAvailability([]), runId: run.id }, 422)
-    }
-    const payload = ModelTaxAnalysisPayloadSchema.safeParse(result.payload)
-    if (!payload.success) {
-      library.failRun(run.id, 'El análisis local devolvió una salida inválida.')
-      return c.json({ code: 'GPU_ANALYSIS_FAILED', cause: 'invalid-output', oauthGuidance: resolveLocalAnalysisAvailability([]), runId: run.id }, 422)
-    }
-    library.completeRun({ runId: run.id, invoiceId: parsed.data.invoiceId, payload: payload.data })
-    return c.json({ ...run, status: 'completed' }, 201)
+    void (async () => {
+      library.startRun(run.id)
+      const adapter = adapterFactory(connection)
+      const result = await adapter.analyze({
+        connection,
+        runId: run.id,
+        prompt: `Analiza la factura ecuatoriana usando exclusivamente este snapshot local. Devuelve solamente JSON válido que cumpla el esquema tributario solicitado.\n${JSON.stringify(snapshot)}`,
+        outputSchema: { type: 'object' },
+      })
+      if (!result.ok) return library.failRun(run.id, 'El análisis local no pudo completarse.')
+      const payload = ModelTaxAnalysisPayloadSchema.safeParse(result.payload)
+      if (!payload.success) return library.failRun(run.id, 'El análisis local devolvió una salida inválida.')
+      library.completeRun({ runId: run.id, invoiceId: parsed.data.invoiceId, payload: payload.data })
+    })().catch(() => library.failRun(run.id, 'El análisis local terminó de forma inesperada.'))
+    return c.json({ ...run, status: 'queued' }, 202)
   })
   app.get('/runs/:id/events', (c) =>
     c.json({
@@ -446,6 +465,8 @@ export function createLocalDaemon(
     }),
   )
   app.get('/runs', (c) => c.json({ items: library.listRuns() }))
+  app.patch('/runs/:id/read', (c) => library.markRunRead(c.req.param('id'))
+    ? c.json({ ok: true }) : c.json({ code: 'RUN_NOT_FOUND' }, 404))
   app.get('/runs/:id/result', (c) => {
     const result = library.getRunResult(c.req.param('id'))
     return result ? c.json(result) : c.json({ code: 'RESULT_NOT_FOUND' }, 404)
