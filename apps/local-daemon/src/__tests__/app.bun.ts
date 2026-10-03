@@ -6,7 +6,14 @@ import { Database } from 'bun:sqlite'
 
 import { createLocalDaemon } from '../app'
 import { createLocalLlmAdapter } from '../adapters'
+import {
+  LocalTaxAnalysisAgentOutputType,
+  LocalTaxAnalysisOutputJsonSchema,
+  localTaxAnalysisAgentOutputTypeForPurpose,
+  omitNullOutputFields,
+} from '../analysis-output-schema'
 import { LocalLibrary } from '../library'
+import { createLocalDaemonLogger } from '../logger'
 import { startLocalDaemon } from '../server'
 import { resolveLocalLibraryPath } from '../main'
 
@@ -27,6 +34,35 @@ const validPayload = {
 const successAdapter = {
   probe: async () => ({ ok: true as const }),
   analyze: async () => ({ ok: true as const, payload: validPayload }),
+}
+
+async function configurePersonalExpensesContext(
+  app: ReturnType<typeof createLocalDaemon>,
+  collectionId: string,
+) {
+  const profile = await (await app.request('/api/v1/profiles', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      displayName: 'Perfil de gastos personales',
+      hasEmploymentIncome: true,
+      hasRuc: false,
+      taxRegime: 'unknown',
+      vatFilingFrequency: 'none',
+      activityRevisionIds: [],
+    }),
+  })).json() as { id: string }
+  const context = await app.request(`/api/v1/collections/${collectionId}/revisions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      purpose: 'personal_expenses',
+      period: { startDate: '2026-01-01', endDate: '2026-01-31' },
+      taxpayerProfileRevisionId: profile.id,
+      activityRevisionIds: [],
+    }),
+  })
+  expect(context.status).toBe(201)
 }
 
 describe('local daemon', () => {
@@ -123,6 +159,7 @@ describe('local daemon', () => {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ label: 'GPU local', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'modelo' }),
     })
+    await configurePersonalExpensesContext(app, secondId)
     const scopedAnalysis = await app.request('/api/v1/analysis', {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ invoiceId, collectionId: secondId, connectionId: (await localConnection.json() as { id: string }).id }),
@@ -253,6 +290,7 @@ describe('local daemon', () => {
     })
     const collection = await app.request('/api/v1/collections', { method: 'POST' })
     const collectionId = (await collection.json() as { id: string }).id
+    await configurePersonalExpensesContext(app, collectionId)
     const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -269,9 +307,86 @@ describe('local daemon', () => {
     expect((await (await app.request(`/api/v1/runs/${run.id}/events`)).json()).items)
       .toMatchObject([{ runId: run.id, status: 'queued' }, { runId: run.id, status: 'running' }, { runId: run.id, status: 'completed' }])
     expect(library.getRunResult(run.id)).toMatchObject({ runId: run.id, payload: validPayload })
+    expect((await (await app.request(`/api/v1/collections/${collectionId}`)).json()).invoices)
+      .toMatchObject([{ latestAnalysis: { runId: run.id, classification: 'needs_review', payload: validPayload } }])
   })
 
-  it('serves run events and result only through the owning collection', async () => {
+  it('blocks a collection without context before probing or dispatching to Local-GPU', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    let probes = 0
+    const app = createLocalDaemon(
+      library,
+      () => {
+        probes += 1
+        return { ok: true }
+      },
+      () => successAdapter,
+    )
+    const connection = await app.request('/api/v1/connections', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ label: 'GPU', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'qwen' }),
+    })
+    const collection = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionId = (await collection.json() as { id: string }).id
+    const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }),
+    })
+    const response = await app.request('/api/v1/analysis', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        invoiceId: (await invoice.json() as { invoiceId: string }).invoiceId,
+        collectionId,
+        connectionId: (await connection.json() as { id: string }).id,
+      }),
+    })
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({ code: 'MISSING_COLLECTION_CONTEXT' })
+    expect(probes).toBe(0)
+    expect(library.listRuns()).toHaveLength(0)
+  })
+
+  it('logs the analysis lifecycle safely and persists a safe adapter failure cause', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const lines: string[] = []
+    const logger = createLocalDaemonLogger('debug', (line) => lines.push(line))
+    const app = createLocalDaemon(
+      library,
+      () => ({ ok: true }),
+      () => ({
+        probe: async () => ({ ok: true as const }),
+        analyze: async () => ({ ok: false as const, cause: 'http' as const, message: 'El servidor local respondió 503.' }),
+      }),
+      logger,
+    )
+    const connection = await app.request('/api/v1/connections', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ label: 'GPU local', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'modelo', makeDefault: true }),
+    })
+    const collection = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionId = (await collection.json() as { id: string }).id
+    await configurePersonalExpensesContext(app, collectionId)
+    const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }),
+    })
+    const analysis = await app.request('/api/v1/analysis', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ invoiceId: (await invoice.json() as { invoiceId: string }).invoiceId, collectionId, connectionId: (await connection.json() as { id: string }).id }),
+    })
+    const run = await analysis.json() as { id: string }
+    await Bun.sleep(0)
+
+    const events = (await (await app.request(`/api/v1/runs/${run.id}/events`)).json() as { items: Array<{ message: string }> }).items
+    expect(events.at(-1)?.message).toBe('El servidor local respondió 503.')
+    expect(lines.map((line) => JSON.parse(line).event)).toEqual(expect.arrayContaining(['analysis.request.received', 'analysis.request.validated', 'analysis.connection.probe-succeeded', 'analysis.run.queued', 'analysis.run.started', 'analysis.run.dispatching', 'analysis.run.failed']))
+    expect(JSON.parse(lines.find((line) => JSON.parse(line).event === 'analysis.run.failed')!).httpStatus).toBe(503)
+    expect(lines.join('\n')).not.toContain(validSriInvoice)
+    expect(lines.join('\n')).not.toContain('env:')
+  })
+
+  it('serves operational run events only through the owning collection', async () => {
     const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
     libraries.push(library)
     const app = createLocalDaemon(library)
@@ -285,15 +400,127 @@ describe('local daemon', () => {
 
     const ownDetail = await app.request(`/api/v1/collections/${collectionAId}/runs/${runA.id}`)
     expect(ownDetail.status).toBe(200)
-    const ownBody = await ownDetail.json() as { id: string; collectionId: string; result: null; events: Array<{ runId: string; status: string }> }
+    const ownBody = await ownDetail.json() as { id: string; collectionId: string; events: Array<{ runId: string; status: string }> }
     expect(ownBody.id).toBe(runA.id)
     expect(ownBody.collectionId).toBe(collectionAId)
-    expect(ownBody.result).toBeNull()
+    expect(ownBody).not.toHaveProperty('result')
     expect(ownBody.events[0]).toMatchObject({ runId: runA.id, status: 'queued' })
 
     const foreignDetail = await app.request(`/api/v1/collections/${collectionAId}/runs/${runB.id}`)
     expect(foreignDetail.status).toBe(404)
     expect(await foreignDetail.json()).toEqual({ code: 'RUN_NOT_FOUND' })
+  })
+
+  it('projects frozen run metadata without exposing snapshots and keeps collection ownership', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const app = createLocalDaemon(library)
+    const collectionAId = (await (await app.request('/api/v1/collections', { method: 'POST' })).json() as { id: string }).id
+    const collectionBId = (await (await app.request('/api/v1/collections', { method: 'POST' })).json() as { id: string }).id
+    const run = library.createRun({
+      invoiceId: crypto.randomUUID(), collectionId: collectionAId, connectionId: crypto.randomUUID(), rulesetId: 'ruleset-now',
+      snapshot: {
+        invoice: { xml: '<factura>privada</factura>', contentHash: 'no-publicar', objectPath: '/privado.xml' },
+        collectionContext: { id: 'frozen-context', revision: 4, purpose: 'personal_expenses', period: { startDate: '2026-01-01', endDate: '2026-01-31' } },
+        connection: { id: crypto.randomUUID(), label: 'GPU congelada', apiFlavor: 'openai-like', baseUrl: 'http://private-host/v1', model: 'qwen-frozen', secretRef: 'env:PRIVATE' },
+        ruleset: { id: 'ruleset-frozen', version: '2026.3', jurisdiction: 'EC' },
+      },
+    })
+    library.startRun(run.id)
+    library.failRun(run.id, 'La ejecución congelada falló en http://private-host/v1 env:PRIVATE /tmp/privado.')
+
+    const listed = await app.request(`/api/v1/collections/${collectionAId}/runs`)
+    expect(listed.status).toBe(200)
+    const body = await listed.json() as { items: Array<Record<string, unknown>> }
+    expect(body.items[0]).toMatchObject({ id: run.id, provider: 'GPU congelada', model: 'qwen-frozen', purpose: 'personal_expenses', contextRevision: 4 })
+    expect(JSON.stringify(body)).not.toContain('private-host')
+    expect(JSON.stringify(body)).not.toContain('PRIVATE')
+    expect(JSON.stringify(body)).not.toContain('no-publicar')
+    expect(JSON.stringify(body)).not.toContain('<factura>')
+    expect((await app.request(`/api/v1/collections/${collectionBId}/runs/${run.id}`)).status).toBe(404)
+    expect((await app.request('/api/v1/runs?status=failed&unread=true')).status).toBe(200)
+  })
+
+  it('makes run read and clear mutations idempotent without hiding active runs', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const app = createLocalDaemon(library)
+    const failed = library.createRun({ invoiceId: crypto.randomUUID(), connectionId: crypto.randomUUID(), rulesetId: 'local-ruleset' })
+    library.failRun(failed.id, 'Falló.')
+    const queued = library.createRun({ invoiceId: crypto.randomUUID(), connectionId: crypto.randomUUID(), rulesetId: 'local-ruleset' })
+
+    expect(await (await app.request(`/api/v1/runs/${failed.id}/read`, { method: 'PATCH' })).json()).toEqual({ changed: 1 })
+    expect(await (await app.request(`/api/v1/runs/${failed.id}/read`, { method: 'PATCH' })).json()).toEqual({ changed: 0 })
+    const clear = await app.request('/api/v1/runs/clear-eligible', { method: 'POST' })
+    expect(await clear.json()).toEqual({ changed: 0 })
+    const changed = await app.request('/api/v1/runs/read-all', { method: 'PATCH' })
+    expect(await changed.json()).toEqual({ changed: 1 })
+    const visible = await app.request('/api/v1/runs?status=queued')
+    expect((await visible.json() as { items: Array<{ id: string }> }).items).toMatchObject([{ id: queued.id }])
+    expect(await (await app.request(`/api/v1/runs/${failed.id}`)).json()).toMatchObject({ id: failed.id, status: 'failed' })
+  })
+
+  it('persists nullable collection descriptions and serves parsed invoice detail before analysis', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'bill-lm-local-'))
+    const first = new LocalLibrary(root)
+    const app = createLocalDaemon(first)
+    const created = await app.request('/api/v1/collections', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '2026 personal', year: 2026, description: null }),
+    })
+    const collectionId = (await created.json() as { id: string }).id
+    const patched = await app.request(`/api/v1/collections/${collectionId}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ description: 'Comprobantes personales' }),
+    })
+    expect(await patched.json()).toMatchObject({ description: 'Comprobantes personales' })
+    const imported = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }),
+    })
+    const invoiceId = (await imported.json() as { invoiceId: string }).invoiceId
+    const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/${invoiceId}`)
+    expect(await invoice.json()).toMatchObject({
+      fileName: 'factura.xml', seller: { name: 'Proveedor' }, buyer: { name: 'Comprador' },
+      totals: { subtotal: '10.00', tax: '0.00', total: '10.00', currency: 'DOLAR' },
+      taxes: [{ code: '2', rate: '0', taxableBase: '10.00', amount: '0.00' }], latestAnalysis: null,
+    })
+    first.close()
+    const restarted = new LocalLibrary(root)
+    libraries.push(restarted)
+    expect(restarted.getCollectionMetadata(collectionId)).toMatchObject({ description: 'Comprobantes personales' })
+  })
+
+  it('invalidates a stored probe after an execution-affecting connection edit', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const app = createLocalDaemon(library)
+    const connection = await app.request('/api/v1/connections', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ label: 'GPU', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'modelo', makeDefault: true }),
+    })
+    const id = (await connection.json() as { id: string }).id
+    library.recordProbe(id, { ok: true })
+    const changed = await app.request(`/api/v1/connections/${id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ model: 'modelo-nuevo' }),
+    })
+    expect(await changed.json()).toMatchObject({ lastProbedAt: null, lastProbeError: null })
+  })
+
+  it('does not persist a deferred probe after its connection is edited or deleted', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    let resolveProbe!: (value: { ok: boolean }) => void
+    const app = createLocalDaemon(library, () => new Promise((resolve) => { resolveProbe = resolve }))
+    const created = await app.request('/api/v1/connections', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ label: 'GPU', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'modelo', makeDefault: true }) })
+    const id = (await created.json() as { id: string }).id
+    const pending = app.request(`/api/v1/connections/${id}/probe`, { method: 'POST' })
+    await app.request(`/api/v1/connections/${id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ baseUrl: 'http://127.0.0.1:5678/v1', model: 'modelo-nuevo' }) })
+    resolveProbe({ ok: true })
+    expect((await pending).status).toBe(409)
+    expect(library.getConnection(id)).toMatchObject({ lastProbedAt: null, lastProbeError: null, baseUrl: 'http://127.0.0.1:5678/v1', model: 'modelo-nuevo' })
+    const deleted = await app.request(`/api/v1/connections/${id}`, { method: 'DELETE' })
+    expect(deleted.status).toBe(204)
+    expect(library.recordProbe(id, { ok: true })).toBeFalse()
   })
 
   it('uses distinct OpenAI-like and Claude-like wire contracts without leaking secrets', async () => {
@@ -304,24 +531,140 @@ describe('local daemon', () => {
     process.env.LOCAL_GPU_TEST_SECRET = 'fixture-secret'
     const requests: Array<{ url: URL; init?: RequestInit }> = []
     const fetchFixture = (async (input: URL | RequestInfo, init?: RequestInit) => {
-      requests.push({ url: new URL(String(input)), init })
-      const isClaude = String(input).includes('claude')
+      const url = new URL(input instanceof Request ? input.url : String(input))
+      requests.push({ url, init })
+      const isClaude = url.hostname === 'claude.test'
       const body = isClaude
         ? { content: [{ type: 'text', text: JSON.stringify(validPayload) }] }
-        : { choices: [{ message: { content: JSON.stringify(validPayload) } }] }
-      return new Response(JSON.stringify(String(input).endsWith('/models') ? { data: [] } : body), { status: 200 })
+        : { choices: [{ message: { content: JSON.stringify({ payload: validPayload }) } }] }
+      return new Response(JSON.stringify(url.pathname.endsWith('/models') ? { data: [] } : body), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
     }) as typeof fetch
     const openai = createLocalLlmAdapter({ ...connection, apiFlavor: 'openai-like' }, fetchFixture)
     await openai.probe({ ...connection, apiFlavor: 'openai-like' })
-    await openai.analyze({ connection: { ...connection, apiFlavor: 'openai-like' }, runId: crypto.randomUUID(), prompt: 'JSON', outputSchema: { type: 'object' } })
+    const openaiResult = await openai.analyze({ connection: { ...connection, apiFlavor: 'openai-like' }, runId: crypto.randomUUID(), prompt: 'JSON', outputSchema: { type: 'object' }, purpose: 'personal_expenses' })
     const claudeConnection = { ...connection, baseUrl: 'http://claude.test', apiFlavor: 'claude-like' as const }
     const claude = createLocalLlmAdapter(claudeConnection, fetchFixture)
     await claude.probe(claudeConnection)
-    await claude.analyze({ connection: claudeConnection, runId: crypto.randomUUID(), prompt: 'JSON', outputSchema: { type: 'object' } })
+    const claudeResult = await claude.analyze({ connection: claudeConnection, runId: crypto.randomUUID(), prompt: 'JSON', outputSchema: { type: 'object' } })
+    expect(openaiResult).toEqual({ ok: true, payload: validPayload })
+    expect(claudeResult).toEqual({ ok: true, payload: validPayload })
     expect(requests.map(({ url }) => url.pathname)).toEqual(['/v1/models', '/v1/chat/completions', '/v1/models', '/v1/messages'])
-    expect(requests[1].init?.headers).toMatchObject({ authorization: 'Bearer fixture-secret', 'content-type': 'application/json' })
+    expect(Object.fromEntries(new Headers(requests[1].init?.headers).entries())).toMatchObject({ authorization: 'Bearer fixture-secret', 'content-type': 'application/json' })
     expect(requests[3].init?.headers).toMatchObject({ 'x-api-key': 'fixture-secret', 'anthropic-version': '2023-06-01' })
+    expect(JSON.parse(String(requests[1].init?.body))).toMatchObject({
+      max_tokens: 2048,
+      metadata: { enable_thinking: 'false' },
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'local_tax_analysis_personal_expenses',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: { payload: expect.any(Object) },
+            required: ['payload'],
+            additionalProperties: false,
+          },
+        },
+      },
+    })
     expect(JSON.stringify(requests.map(({ init }) => init?.body))).not.toContain('fixture-secret')
+  })
+
+  it('rejects Markdown-wrapped output through the Agents structured-output boundary without logging it', async () => {
+    const connection = {
+      id: crypto.randomUUID(), label: 'GPU', baseUrl: 'http://gpu.test/v1', model: 'qwen', apiFlavor: 'openai-like' as const,
+      isDefault: false, lastProbedAt: null, lastProbeError: null, createdAt: new Date(), updatedAt: new Date(),
+    }
+    const adapter = createLocalLlmAdapter(connection, (async () => new Response(JSON.stringify({
+      choices: [{ message: { content: `El resultado estructurado es:\n\n\`\`\`json\n${JSON.stringify(validPayload)}\n\`\`\`` } }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } })) as unknown as typeof fetch)
+
+    const result = await adapter.analyze({ connection, runId: crypto.randomUUID(), prompt: 'No registrar este prompt.', outputSchema: { type: 'object' } })
+
+    expect(result).toEqual({
+      ok: false,
+      cause: 'invalid-output',
+      message: 'El modelo local devolvió una salida estructurada inválida.',
+    })
+  })
+
+  it('rejects a reasoning-only OpenAI-like response through the Agents structured-output boundary', async () => {
+    const connection = {
+      id: crypto.randomUUID(), label: 'GPU', baseUrl: 'http://gpu.test/v1', model: 'qwen', apiFlavor: 'openai-like' as const,
+      isDefault: false, lastProbedAt: null, lastProbeError: null, createdAt: new Date(), updatedAt: new Date(),
+    }
+    const adapter = createLocalLlmAdapter(connection, (async () => new Response(JSON.stringify({
+      choices: [{ message: { reasoning_content: 'No registrar este razonamiento.' } }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } })) as unknown as typeof fetch)
+
+    const result = await adapter.analyze({ connection, runId: crypto.randomUUID(), prompt: 'No registrar este prompt.', outputSchema: { type: 'object' } })
+
+    expect(result).toEqual({
+      ok: false,
+      cause: 'invalid-output',
+      message: 'El modelo local devolvió una salida estructurada inválida.',
+    })
+  })
+
+  it('reports a safe failure when Agents receives non-JSON output', async () => {
+    const connection = {
+      id: crypto.randomUUID(), label: 'GPU', baseUrl: 'http://gpu.test/v1', model: 'qwen', apiFlavor: 'openai-like' as const,
+      isDefault: false, lastProbedAt: null, lastProbeError: null, createdAt: new Date(), updatedAt: new Date(),
+    }
+    const adapter = createLocalLlmAdapter(connection, (async () => new Response(JSON.stringify({
+      choices: [{ finish_reason: 'stop', message: { content: 'No registrar este texto del modelo.' } }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } })) as unknown as typeof fetch)
+
+    const result = await adapter.analyze({ connection, runId: crypto.randomUUID(), prompt: 'No registrar este prompt.', outputSchema: { type: 'object' } })
+
+    expect(result).toEqual({
+      ok: false,
+      cause: 'invalid-output',
+      message: 'El modelo local devolvió una salida estructurada inválida.',
+    })
+    expect(JSON.stringify(result)).not.toContain('No registrar este texto del modelo.')
+  })
+
+  it('derives strict structured output from the local Zod contract without widening its limits', () => {
+    const properties = LocalTaxAnalysisOutputJsonSchema.properties as Record<string, Record<string, unknown>>
+    expect(LocalTaxAnalysisOutputJsonSchema).toMatchObject({
+      type: 'object',
+      additionalProperties: false,
+    })
+    expect(LocalTaxAnalysisOutputJsonSchema.required).toEqual(expect.arrayContaining([
+      'purpose', 'classification', 'reasoning', 'creditablePercentage',
+    ]))
+    expect(properties.purpose).toEqual({ type: 'string', enum: ['vat_credit', 'business_income_tax', 'personal_expenses'] })
+    expect(properties.creditablePercentage).toMatchObject({ type: ['number', 'null'], minimum: 0, maximum: 100 })
+    expect(properties.relatedActivityRevisionIds).toMatchObject({ type: ['array', 'null'], minItems: 1, maxItems: 20 })
+    expect(omitNullOutputFields({
+      purpose: 'personal_expenses',
+      potentialEligibleAmount: null,
+      missingEvidence: ['Falta respaldo'],
+    })).toEqual({ purpose: 'personal_expenses', missingEvidence: ['Falta respaldo'] })
+
+    const agentPayload = LocalTaxAnalysisAgentOutputType.schema.properties.payload as {
+      anyOf: Array<{ properties: Record<string, unknown>; required: string[]; additionalProperties: boolean }>
+    }
+    expect(LocalTaxAnalysisAgentOutputType).toMatchObject({
+      type: 'json_schema',
+      name: 'local_tax_analysis',
+      strict: true,
+      schema: { type: 'object', required: ['payload'], additionalProperties: false },
+    })
+    expect(agentPayload.anyOf).toHaveLength(3)
+    for (const variant of agentPayload.anyOf) {
+      expect(variant.additionalProperties).toBe(false)
+      expect(variant.required).toEqual(Object.keys(variant.properties))
+    }
+    const personalPayload = localTaxAnalysisAgentOutputTypeForPurpose('personal_expenses')
+      .schema.properties.payload as { anyOf: Array<{ properties: Record<string, unknown> }> }
+    expect(personalPayload.anyOf).toHaveLength(1)
+    expect(personalPayload.anyOf[0]?.properties).not.toHaveProperty('relatedActivityRevisionIds')
   })
 
   it('fails a created run with OAuth guidance and no persisted result when adapter output is invalid', async () => {
@@ -335,6 +678,7 @@ describe('local daemon', () => {
     expect(connection.status).toBe(201)
     const collection = await app.request('/api/v1/collections', { method: 'POST' })
     const collectionId = (await collection.json() as { id: string }).id
+    await configurePersonalExpensesContext(app, collectionId)
     const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
     const response = await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId: (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id }) })
     expect(response.status).toBe(202)
@@ -345,6 +689,45 @@ describe('local daemon', () => {
     expect(library.listRunEvents(body.id).at(-1)).toMatchObject({ status: 'failed' })
   })
 
+  it('logs only safe Zod rule metadata when structured model output is semantically invalid', async () => {
+    const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
+    libraries.push(library)
+    const logs: string[] = []
+    const app = createLocalDaemon(
+      library,
+      () => ({ ok: true }),
+      () => ({
+        probe: async () => ({ ok: true as const }),
+        analyze: async () => ({
+          ok: true as const,
+          payload: {
+            ...validPayload,
+            reasoning: '',
+            missingEvidence: ['No registrar este valor del modelo.'],
+          },
+        }),
+      }),
+      createLocalDaemonLogger('debug', (line) => logs.push(line)),
+    )
+    await app.request('/api/v1/connections', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ label: 'GPU', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'qwen', makeDefault: true }) })
+    const collection = await app.request('/api/v1/collections', { method: 'POST' })
+    const collectionId = (await collection.json() as { id: string }).id
+    await configurePersonalExpensesContext(app, collectionId)
+    const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
+    const connectionId = (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id
+    await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId }) })
+    await Bun.sleep(0)
+
+    const invalidOutput = logs.map((line) => JSON.parse(line) as Record<string, unknown>)
+      .find((entry) => entry.event === 'analysis.run.invalid-output')
+    expect(invalidOutput).toMatchObject({
+      issueCount: 1,
+      schemaIssuePaths: 'reasoning',
+      schemaIssueCodes: 'too_small',
+    })
+    expect(JSON.stringify(invalidOutput)).not.toContain('No registrar este valor del modelo.')
+  })
+
   it('returns a failed probe cause and OAuth guidance without creating a run', async () => {
     const library = new LocalLibrary(mkdtempSync(join(tmpdir(), 'bill-lm-local-')))
     libraries.push(library)
@@ -352,6 +735,7 @@ describe('local daemon', () => {
     await app.request('/api/v1/connections', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ label: 'GPU', apiFlavor: 'openai-like', baseUrl: 'http://127.0.0.1:1234/v1', model: 'qwen', makeDefault: true }) })
     const collection = await app.request('/api/v1/collections', { method: 'POST' })
     const collectionId = (await collection.json() as { id: string }).id
+    await configurePersonalExpensesContext(app, collectionId)
     const invoice = await app.request(`/api/v1/collections/${collectionId}/invoices/xml`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fileName: 'factura.xml', xml: validSriInvoice }) })
     const response = await app.request('/api/v1/analysis', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invoiceId: (await invoice.json()).invoiceId, collectionId, connectionId: (await (await app.request('/api/v1/connections')).json() as { items: Array<{ id: string }> }).items[0]!.id }) })
     expect(response.status).toBe(422)

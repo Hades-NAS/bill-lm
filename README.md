@@ -37,6 +37,10 @@ y qué no puede garantizar la aplicación.
 El visor local y el daemon ya se pueden ejecutar en tu equipo. Requieren
 [Bun](https://bun.sh/) y las dependencias del proyecto instaladas:
 
+La interfaz conserva historial por colección, ejecuciones locales individuales
+y detalles de factura seguros. Las comprobaciones automatizadas del visor usan
+datos sintéticos; no prueban un host GPU real, la cloud ni OAuth.
+
 ```bash
 bun install
 ```
@@ -92,6 +96,7 @@ bun run test:e2e:local
 La prueba inicia su propio daemon y visor con estado temporal; no reutiliza la
 biblioteca de uso diario. Es evidencia automatizada de la interfaz local, no
 una comparación cloud autenticada ni una prueba de GPU real, LAN u OAuth.
+Usa por defecto daemon `4418` y visor `4419`; el proxy normal conserva `4318`.
 
 ## Estructura de aplicaciones
 

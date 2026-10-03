@@ -16,8 +16,12 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { BookOpen } from 'lucide-react'
 import { useState } from 'react'
+import { SourceFragment } from '@bill-lm/ui'
 
 import { useTRPC } from '#/integrations/trpc/react'
+
+const reviewStatusLabel: Record<string, string> = { active: 'Activa', draft: 'Borrador', archived: 'Archivada', pending_review: 'Pendiente de revisión' }
+const displayReviewStatus = (value: string) => reviewStatusLabel[value] ?? 'Sin estado publicado'
 
 export const Route = createFileRoute('/(private)/official-sources')({
   component: OfficialSourcesPage,
@@ -60,7 +64,7 @@ function OfficialSourcesPage() {
                   color={source.reviewStatus === 'active' ? 'green' : 'violet'}
                   w="fit-content"
                 >
-                  {source.reviewStatus}
+                  {displayReviewStatus(source.reviewStatus)}
                 </Badge>
               </Stack>
               <Button
@@ -74,6 +78,7 @@ function OfficialSourcesPage() {
           </Card>
         ))}
         <Drawer
+          closeButtonProps={{ 'aria-label': 'Cerrar fuente oficial' }}
           opened={Boolean(selected)}
           position="right"
           scrollAreaComponent={ScrollArea.Autosize}
@@ -98,38 +103,14 @@ function OfficialSourcesPage() {
                   Hash: {selected.contentHash}
                 </Text>
                 <Title order={3}>Secciones publicadas</Title>
-                {selected.fragments.map((fragment) => (
-                  <Card withBorder key={fragment.id}>
-                    <Stack gap="xs">
-                      <Text fw={600}>{fragment.articleOrSection}</Text>
-                      <Text c="dimmed" size="xs">
-                        {fragment.effectiveFrom.toLocaleDateString()}{' '}
-                        {fragment.effectiveTo
-                          ? `— ${fragment.effectiveTo.toLocaleDateString()}`
-                          : ''}
-                      </Text>
-                      <Group gap="xs">
-                        {fragment.purposes.map((purpose) => (
-                          <Badge key={purpose} variant="light">
-                            {purpose}
-                          </Badge>
-                        ))}
-                      </Group>
-                      <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
-                        {fragment.contentMarkdown}
-                      </Text>
-                      <Text c="dimmed" size="xs">
-                        Rulesets:{' '}
-                        {fragment.ruleSets
-                          .map(
-                            (item) =>
-                              `v${item.ruleSet.version} (${item.ruleSet.reviewStatus})`,
-                          )
-                          .join(', ') || 'Sin asignar'}
-                      </Text>
-                    </Stack>
-                  </Card>
-                ))}
+                {selected.fragments.map((fragment) => <SourceFragment
+                  content={fragment.contentMarkdown}
+                  effectiveLabel={`${fragment.effectiveFrom.toLocaleDateString()}${fragment.effectiveTo ? ` — ${fragment.effectiveTo.toLocaleDateString()}` : ''}`}
+                  key={fragment.id}
+                  purposes={fragment.purposes}
+                  rulesets={fragment.ruleSets.map((item) => `v${item.ruleSet.version} (${displayReviewStatus(item.ruleSet.reviewStatus)})`).join(', ') || 'Sin asignar'}
+                  title={fragment.articleOrSection}
+                />)}
               </>
             )}
           </Stack>

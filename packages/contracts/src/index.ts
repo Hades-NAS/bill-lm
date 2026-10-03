@@ -1,5 +1,11 @@
 import z from 'zod'
-import { LocalAnalysisRunStatusSchema } from './local-analysis'
+import {
+  LocalAnalysisRunStatusSchema,
+  LocalRunSummarySchema,
+  LocalTaxAnalysisClassificationSchema,
+  LocalTaxAnalysisPurposeSchema,
+  ModelTaxAnalysisPayloadSchema,
+} from './local-analysis'
 
 export * from './local-analysis'
 export * from './local-execution'
@@ -28,6 +34,13 @@ export const LocalCollectionInvoiceSchema = z.object({
   id: IdSchema,
   fileName: z.string().min(1),
   createdAt: IsoDateTimeSchema,
+  latestAnalysis: z.object({
+    runId: IdSchema,
+    purpose: LocalTaxAnalysisPurposeSchema,
+    classification: LocalTaxAnalysisClassificationSchema,
+    payload: ModelTaxAnalysisPayloadSchema,
+    createdAt: IsoDateTimeSchema,
+  }).nullable(),
 })
 export type LocalCollectionInvoice = z.infer<
   typeof LocalCollectionInvoiceSchema
@@ -265,15 +278,33 @@ export const CreateLocalCollectionInputSchema = z.object({
     .int()
     .min(2000, 'Ingresa un año válido.')
     .max(2100, 'Ingresa un año válido.'),
+  description: z
+    .string()
+    .trim()
+    .max(4_000, 'La descripción no puede superar los 4.000 caracteres.')
+    .nullable()
+    .optional(),
 })
 export type CreateLocalCollectionInput = z.infer<
   typeof CreateLocalCollectionInputSchema
+>
+
+export const UpdateLocalCollectionInputSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  year: z.number().int().min(2000).max(2100).optional(),
+  description: z.string().trim().max(4_000).nullable().optional(),
+}).strict().refine((value) => Object.keys(value).length > 0, {
+  message: 'Envía al menos un campo para actualizar la colección.',
+})
+export type UpdateLocalCollectionInput = z.infer<
+  typeof UpdateLocalCollectionInputSchema
 >
 
 export const LocalCollectionSummarySchema =
   LocalCollectionContextResponseSchema.extend({
     name: z.string().min(1),
     year: z.number().int(),
+    description: z.string().nullable(),
     invoiceCount: z.number().int().nonnegative(),
   })
 export type LocalCollectionSummary = z.infer<
@@ -292,10 +323,32 @@ export type LocalCollectionRun = z.infer<typeof LocalCollectionRunSchema>
 
 export const LocalCollectionDetailSchema =
   LocalCollectionContextResponseSchema.extend({
+    name: z.string().min(1),
+    year: z.number().int(),
+    description: z.string().nullable(),
     invoices: z.array(LocalCollectionInvoiceSchema),
-    runs: z.array(LocalCollectionRunSchema),
+    runs: z.array(LocalRunSummarySchema),
   })
 export type LocalCollectionDetail = z.infer<typeof LocalCollectionDetailSchema>
+
+/** Parsed invoice data safe to display before a local analysis exists. */
+export const LocalInvoiceDetailSchema = z.object({
+  id: IdSchema,
+  fileName: z.string().min(1),
+  issueDate: z.string().nullable(),
+  seller: z.object({ name: z.string().nullable(), identifier: z.string().nullable(), tradeName: z.string().nullable(), address: z.string().nullable() }).strict(),
+  buyer: z.object({ name: z.string().nullable(), identifier: z.string().nullable() }).strict(),
+  totals: z.object({ subtotal: z.string().nullable(), discount: z.string().nullable(), tax: z.string().nullable(), total: z.string().nullable(), currency: z.string().nullable() }).strict(),
+  taxes: z.array(z.object({
+    code: z.string().nullable(), rate: z.string().nullable(), taxableBase: z.string().nullable(), amount: z.string().nullable(),
+  }).strict()),
+  lineItems: z.array(z.object({
+    code: z.string().nullable(), description: z.string().nullable(), quantity: z.string().nullable(),
+    unitPrice: z.string().nullable(), discount: z.string().nullable(), total: z.string().nullable(),
+  }).strict()),
+  latestAnalysis: LocalCollectionInvoiceSchema.shape.latestAnalysis,
+}).strict()
+export type LocalInvoiceDetail = z.infer<typeof LocalInvoiceDetailSchema>
 
 export const TaxpayerProfileContextSchema = z.object({
   hasRuc: z.boolean(),

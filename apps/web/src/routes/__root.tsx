@@ -1,7 +1,6 @@
 import {
   ColorSchemeScript,
   MantineProvider,
-  createTheme,
   mantineHtmlProps,
 } from '@mantine/core'
 import { ModalsProvider } from '@mantine/modals'
@@ -19,6 +18,7 @@ import { FirebaseAuthProvider } from '#/integrations/firebase/auth-provider'
 import TanStackQueryProvider from '#/integrations/tanstack-query/root-provider'
 
 import { useJobsSubscriptionManager } from '#/hooks/use-jobs-subscription-manager'
+import { billLmTheme } from '@bill-lm/ui'
 
 import appCss from '../styles.css?url'
 
@@ -165,17 +165,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
 })
 
-const theme = createTheme({
-  primaryColor: 'violet',
-  components: {
-    Button: {
-      defaultProps: {
-        loaderProps: { type: 'dots' },
-      },
-    },
-  },
-})
-
 /**
  * Initialize global job subscriptions
  * This component ensures the subscription manager hook runs at root level
@@ -195,7 +184,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(128,79,184,0.24)]">
         <TanStackQueryProvider>
-          <MantineProvider defaultColorScheme="auto" theme={theme}>
+          <MantineProvider defaultColorScheme="auto" theme={billLmTheme}>
             <ModalsProvider>
               <Notifications position="bottom-right" />
               <FirebaseAuthProvider>

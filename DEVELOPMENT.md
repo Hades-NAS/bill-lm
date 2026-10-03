@@ -64,6 +64,9 @@ La configuración Vite, el servidor de producción, las rutas, la interfaz y el
 artefacto `apps/web/dist` pertenecen a `apps/web`. La raíz solo delega los
 comandos de comodidad y conserva la orquestación compartida.
 
+La e2e local usa biblioteca temporal y puertos `4418`/`4419`; no toca el daemon
+normal en `4318`, no inicia GPU ni realiza llamadas LLM.
+
 ## Visor y daemon locales
 
 Este flujo es independiente de la aplicación web, PostgreSQL, Redis, MinIO y
@@ -94,6 +97,16 @@ visor, ejecuta `bun run --cwd apps/local-viewer typecheck`, `test` o `build`.
 
 ```bash
 BILL_LM_LOCAL_LIBRARY_DIR=/ruta/absoluta/a/mis-facturas bun run daemon:local
+```
+
+Para diagnosticar un análisis local, el daemon escribe JSON Lines seguros en su
+terminal. Incluyen IDs de ejecución, etapa, proveedor local, modelo, causa
+normalizada y duración; nunca el XML, prompt, payload ni secretos. Usa
+`BILL_LM_LOCAL_LOG_LEVEL=debug` para incluir las etapas de depuración (por
+defecto es `info`):
+
+```bash
+BILL_LM_LOCAL_LOG_LEVEL=debug bun run daemon:local
 ```
 
 Como verificación mínima, el daemon debe mostrar que escucha en
@@ -155,6 +168,10 @@ app las cifra en el servidor.
 | Migraciones autorizadas  | `bun run db:deploy`    |
 
 `health.sh` usa `.env.health` y no carga credenciales reales. Ejecuta
+
+Las pruebas locales del visor son headless y usan un daemon/biblioteca
+sintéticos. Un resultado verde no valida GPU, cloud, OAuth, red LAN ni una
+revisión manual en navegador.
 typecheck, build, Vitest y Playwright. Puedes omitir Playwright con:
 
 ```bash

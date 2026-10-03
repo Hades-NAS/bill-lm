@@ -4,25 +4,26 @@ test('recorre las secciones locales y crea una colección aislada', async ({ pag
   await page.goto('/#/collections')
 
   await expect(page.getByRole('heading', { name: 'Colecciones', exact: true })).toBeVisible()
-  await expect(page.getByText('No hay colecciones locales')).toBeVisible()
+  await expect(page.getByText('Colección Alfa')).toBeVisible()
 
   await page.getByRole('button', { name: 'Nueva colección' }).click()
-  await page.getByLabel('Nombre').fill('Evidencia navegador 2026')
-  await page.getByLabel('Año').fill('2026')
-  await page.getByRole('button', { name: 'Crear colección' }).click()
+  const createDialog = page.getByRole('dialog', { name: 'Nueva colección local' })
+  await createDialog.getByLabel('Nombre', { exact: true }).fill('Evidencia navegador 2026')
+  await createDialog.getByLabel('Año', { exact: true }).fill('2026')
+  await createDialog.getByRole('button', { name: 'Crear colección' }).click()
 
   await expect(page).toHaveURL(/#\/collections\/[0-9a-f-]{36}$/)
-  await expect(page.getByText('Detalle de colección local')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Evidencia navegador 2026' })).toBeVisible()
   await expect(page.getByText('Contexto pendiente')).toBeVisible()
 
   await page.locator('nav').getByText('Perfiles y actividades', { exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Perfiles y actividades', exact: true })).toBeVisible()
-  await expect(page.getByText('Aún no tienes actividades')).toBeVisible()
-  await expect(page.getByText('Aún no tienes perfiles')).toBeVisible()
+  await expect(page.getByText('Actividad sintética', { exact: true })).toBeVisible()
+  await expect(page.getByText('Perfil sintético · Sin RUC', { exact: true })).toBeVisible()
 
   await page.locator('nav').getByText('Configuración', { exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Configuración', exact: true })).toBeVisible()
-  await expect(page.getByText(/Esta sección no inicia análisis ni usa servicios cloud/)).toBeVisible()
+  await expect(page.getByText(/host OpenAI-like o Claude-like disponible en este equipo/)).toBeVisible()
 
   await page.locator('nav').getByText('Fuentes oficiales', { exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Fuentes oficiales', exact: true }).first()).toBeVisible()
@@ -30,8 +31,8 @@ test('recorre las secciones locales y crea una colección aislada', async ({ pag
 
   await page.locator('nav').getByText('Biblioteca local', { exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Biblioteca local', exact: true }).first()).toBeVisible()
-  await expect(page.getByText('Colecciones', { exact: true })).toBeVisible()
-  await expect(page.getByText('1', { exact: true })).toBeVisible()
+  await expect(page.getByRole('main').getByText('Colecciones', { exact: true })).toBeVisible()
+  await expect(page.getByRole('main').getByText('3', { exact: true })).toBeVisible()
 
   const screenshot = testInfo.outputPath('local-viewer-sections.png')
   await page.screenshot({ path: screenshot, fullPage: true })

@@ -1,7 +1,6 @@
 import {
   ActionIcon,
   Alert,
-  Badge,
   Box,
   Button,
   Container,
@@ -20,6 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { MoreHorizontal, Trash2 } from 'lucide-react'
 import React from 'react'
+import { ConnectionRow } from '@bill-lm/ui'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
@@ -81,9 +81,7 @@ function UserPage() {
     }),
   )
   const probeConnection = useMutation(
-    trpc.providerConnections.probe.mutationOptions({
-      onSuccess: invalidateConnections,
-    }),
+    trpc.providerConnections.probe.mutationOptions(),
   )
   const removeConnection = useMutation(
     trpc.providerConnections.remove.mutationOptions({
@@ -102,6 +100,26 @@ function UserPage() {
   const [createModalOpened, setCreateModalOpened] = React.useState(false)
   const [rotationId, setRotationId] = React.useState<string | null>(null)
   const [rotationKey, setRotationKey] = React.useState('')
+  const [probeFeedback, setProbeFeedback] = React.useState<Record<string, { status: 'idle' | 'pending' | 'success' | 'error'; message?: string }>>({})
+  const probeGeneration = React.useRef<Record<string, number>>({})
+  const connectionFingerprints = React.useRef<Record<string, string>>({})
+
+  React.useEffect(() => {
+    const next = Object.fromEntries((connections.data ?? []).map((connection) => [connection.id, `${connection.modelId}:${connection.secretLastFour}`]))
+    const ids = new Set([...Object.keys(connectionFingerprints.current), ...Object.keys(next)])
+    for (const id of ids) {
+      if (connectionFingerprints.current[id] !== undefined && connectionFingerprints.current[id] !== next[id]) {
+        probeGeneration.current[id] = (probeGeneration.current[id] ?? 0) + 1
+        setProbeFeedback((current) => ({ ...current, [id]: { status: 'idle' } }))
+      }
+    }
+    connectionFingerprints.current = next
+  }, [connections.data])
+
+  const invalidateProbe = (id: string) => {
+    probeGeneration.current[id] = (probeGeneration.current[id] ?? 0) + 1
+    setProbeFeedback((current) => ({ ...current, [id]: { status: 'idle' } }))
+  }
 
   const connectionError = [
     createConnection.error,
@@ -183,101 +201,39 @@ function UserPage() {
                 </Alert>
               )}
               {connections.data?.map((connection) => (
-                <Box
-                  bd="1px solid var(--mantine-color-default-border)"
-                  key={connection.id}
-                  p="sm"
-                  style={{ borderRadius: 'var(--mantine-radius-sm)' }}
-                >
-                  <Group justify="space-between">
-                    <div>
-                      <Text fw={600}>
-                        {connection.label}{' '}
-                        {connection.isDefault && (
-                          <Badge ml="xs">Predeterminada</Badge>
-                        )}
-                      </Text>
-                      <Text c="dimmed" size="sm">
-                        {connection.provider} · {connection.modelId} · termina
-                        en {connection.secretLastFour}
-                      </Text>
-                    </div>
-                    <Badge color={connection.isActive ? 'green' : 'gray'}>
-                      {connection.isActive ? 'Activa' : 'Inactiva'}
-                    </Badge>
-                  </Group>
-                  <Group mt="sm">
-                    <Button
-                      loading={probeConnection.isPending}
-                      size="xs"
-                      variant="light"
-                      onClick={() =>
-                        probeConnection.mutate({ id: connection.id })
-                      }
-                    >
-                      Probar
-                    </Button>
+                <ConnectionRow
+                  actions={
                     <Menu position="bottom-end" shadow="md" width={220}>
                       <Menu.Target>
-                        <ActionIcon
-                          aria-label={`Más acciones para ${connection.label}`}
-                          variant="light"
-                        >
-                          <MoreHorizontal size={18} />
-                        </ActionIcon>
+                        <ActionIcon aria-label={`Más acciones para ${connection.label}`} variant="light"><MoreHorizontal size={18} /></ActionIcon>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item
-                          disabled={
-                            connection.isDefault || updateConnection.isPending
-                          }
-                          onClick={() =>
-                            updateConnection.mutate({
-                              id: connection.id,
-                              isDefault: true,
-                            })
-                          }
-                        >
-                          Establecer como predeterminada
-                        </Menu.Item>
-                        <Menu.Item
-                          disabled={updateConnection.isPending}
-                          onClick={() =>
-                            updateConnection.mutate({
-                              id: connection.id,
-                              isActive: !connection.isActive,
-                            })
-                          }
-                        >
-                          {connection.isActive ? 'Desactivar' : 'Activar'}
-                        </Menu.Item>
-                        <Menu.Item onClick={() => setRotationId(connection.id)}>
-                          Rotar clave
-                        </Menu.Item>
+                        <Menu.Item disabled={connection.isDefault || updateConnection.isPending} onClick={() => updateConnection.mutate({ id: connection.id, isDefault: true })}>Establecer como predeterminada</Menu.Item>
+                        <Menu.Item disabled={updateConnection.isPending} onClick={() => updateConnection.mutate({ id: connection.id, isActive: !connection.isActive })}>{connection.isActive ? 'Desactivar' : 'Activar'}</Menu.Item>
+                        <Menu.Item onClick={() => { invalidateProbe(connection.id); setRotationId(connection.id) }}>Rotar clave</Menu.Item>
                         <Menu.Divider />
-                        <Menu.Item
-                          color="red"
-                          disabled={removeConnection.isPending}
-                          leftSection={<Trash2 size={16} />}
-                          onClick={() =>
-                            removeConnection.mutate({ id: connection.id })
-                          }
-                        >
-                          Eliminar conexión
-                        </Menu.Item>
+                        <Menu.Item color="red" disabled={removeConnection.isPending} leftSection={<Trash2 size={16} />} onClick={() => { invalidateProbe(connection.id); removeConnection.mutate({ id: connection.id }) }}>Eliminar conexión</Menu.Item>
                       </Menu.Dropdown>
                     </Menu>
-                  </Group>
-                  {connection.probedAt && (
-                    <Text
-                      c={connection.lastProbeError ? 'red' : 'green'}
-                      mt="xs"
-                      size="xs"
-                    >
-                      {connection.lastProbeError ?? 'Conexión validada'}.
-                    </Text>
-                  )}
-                </Box>
+                  }
+                  isActive={connection.isActive}
+                  isDefault={connection.isDefault}
+                  key={connection.id}
+                  label={connection.label}
+                  model={`${connection.modelId} · termina en ${connection.secretLastFour}`}
+                  probeMessage={probeFeedback[connection.id]?.message ?? connection.lastProbeError ?? (connection.probedAt ? 'Conexión validada' : null)}
+                  probeStatus={probeFeedback[connection.id]?.status ?? (connection.lastProbeError ? 'error' : connection.probedAt ? 'success' : 'idle')}
+                  provider={connection.provider}
+                  onProbe={() => {
+                    const generation = (probeGeneration.current[connection.id] ?? 0) + 1
+                    probeGeneration.current[connection.id] = generation
+                    setProbeFeedback((current) => ({ ...current, [connection.id]: { status: 'pending' } }))
+                    probeConnection.mutate({ id: connection.id }, {
+                      onSuccess: (result) => { if (probeGeneration.current[connection.id] === generation) setProbeFeedback((current) => ({ ...current, [connection.id]: result.lastProbeError ? { status: 'error', message: result.lastProbeError } : result.probedAt ? { status: 'success', message: 'Conexión validada' } : { status: 'idle' } })) },
+                      onError: (error) => { if (probeGeneration.current[connection.id] === generation) setProbeFeedback((current) => ({ ...current, [connection.id]: { status: 'error', message: error.message } })) },
+                    })
+                  }}
+                />
               ))}
               {!connections.isPending &&
                 !connections.isError &&
@@ -292,6 +248,7 @@ function UserPage() {
 
           <Modal
             centered
+            closeButtonProps={{ 'aria-label': 'Cerrar agregar conexión' }}
             opened={createModalOpened}
             title={
               <Group gap="xs">
@@ -383,6 +340,7 @@ function UserPage() {
           </Modal>
           <Modal
             centered
+            closeButtonProps={{ 'aria-label': 'Cerrar rotar API key' }}
             opened={rotationId !== null}
             title={
               <Group gap="xs">

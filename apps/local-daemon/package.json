@@ -16,7 +16,10 @@
     "@bill-lm/application": "workspace:*",
     "@bill-lm/contracts": "workspace:*",
     "@bill-lm/domain": "workspace:*",
+    "@openai/agents": "0.18.0",
+    "@openai/agents-openai": "0.18.0",
     "hono": "4.11.4",
-    "zod": "^4.3.6"
+    "openai": "7.27.0",
+    "zod": "4.3.6"
   }
 }

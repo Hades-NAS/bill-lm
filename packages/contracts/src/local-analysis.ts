@@ -54,16 +54,58 @@ export const LocalAnalysisRunSnapshotSchema = z.object({
 })
 export type LocalAnalysisRunSnapshot = z.infer<typeof LocalAnalysisRunSnapshotSchema>
 
-/** Detail is intentionally collection-scoped so one collection cannot read another's run. */
-export const LocalCollectionRunDetailSchema = z.object({
+/** Query input for the safe, operational local-run list. */
+export const LocalRunListFilterSchema = z.object({
+  collectionId: IdSchema.optional(),
+  status: LocalAnalysisRunStatusSchema.optional(),
+  unread: z.boolean().optional(),
+}).strict()
+export type LocalRunListFilter = z.infer<typeof LocalRunListFilterSchema>
+
+const LocalRunPeriodSchema = z.object({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+}).strict()
+
+const LocalRunTimingSchema = z.object({
+  createdAt: z.string().datetime(),
+  startedAt: z.string().datetime().nullable(),
+  terminalAt: z.string().datetime().nullable(),
+  durationMs: z.number().int().nonnegative().nullable(),
+}).strict()
+
+/**
+ * Browser-safe run projection. It deliberately excludes the execution snapshot,
+ * XML, object paths, hashes, connection URLs and secret references.
+ */
+export const LocalRunSummarySchema = z.object({
   id: IdSchema,
   invoiceId: IdSchema,
-  collectionId: IdSchema,
+  collectionId: IdSchema.nullable(),
+  collectionName: z.string().nullable(),
+  fileName: z.string().nullable(),
   status: LocalAnalysisRunStatusSchema,
-  createdAt: z.string().datetime(),
-  readAt: z.string().datetime().nullish().transform((value) => value ?? null),
-  snapshot: LocalAnalysisRunSnapshotSchema.nullish().transform((value) => value ?? null),
+  readAt: z.string().datetime().nullable(),
+  provider: z.string().nullable(),
+  apiFlavor: z.string().nullable(),
+  model: z.string().nullable(),
+  purpose: LocalTaxAnalysisPurposeSchema.nullable(),
+  period: LocalRunPeriodSchema.nullable(),
+  contextRevision: z.number().int().positive().nullable(),
+  ruleset: z.object({ id: z.string(), version: z.string() }).strict().nullable(),
+  timing: LocalRunTimingSchema,
+  error: z.string().nullable(),
+  progress: z.number().int().min(0).max(100).nullable(),
+  eventCount: z.number().int().nonnegative(),
+}).strict()
+export type LocalRunSummary = z.infer<typeof LocalRunSummarySchema>
+
+/** Safe, collection-owned operational detail; raw snapshots remain daemon-only. */
+export const LocalRunDetailSchema = LocalRunSummarySchema.extend({
   events: z.array(LocalAnalysisRunEventSchema),
-  result: LocalAnalysisRunResultSchema.nullable(),
-})
-export type LocalCollectionRunDetail = z.infer<typeof LocalCollectionRunDetailSchema>
+}).strict()
+export type LocalRunDetail = z.infer<typeof LocalRunDetailSchema>
+
+/** @deprecated Use LocalRunDetailSchema. The public detail never includes snapshots. */
+export const LocalCollectionRunDetailSchema = LocalRunDetailSchema
+export type LocalCollectionRunDetail = LocalRunDetail

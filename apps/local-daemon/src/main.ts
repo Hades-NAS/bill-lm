@@ -2,6 +2,7 @@ import { homedir } from 'node:os'
 import { isAbsolute, join } from 'node:path'
 
 import { LocalLibrary } from './library'
+import { createLocalDaemonLogger } from './logger'
 import { startLocalDaemon } from './server'
 
 const daemonHost = '127.0.0.1'
@@ -25,7 +26,8 @@ export function resolveLocalLibraryPath(
 
 export function runLocalDaemon() {
   const library = new LocalLibrary(resolveLocalLibraryPath())
-  const server = startLocalDaemon(library, daemonPort)
+  const logger = createLocalDaemonLogger()
+  const server = startLocalDaemon(library, daemonPort, logger)
   let shuttingDown = false
 
   const shutdown = () => {
@@ -38,7 +40,7 @@ export function runLocalDaemon() {
 
   process.once('SIGINT', shutdown)
   process.once('SIGTERM', shutdown)
-  console.info(`Bill-LM local daemon listening on http://${daemonHost}:${server.port}`)
+  logger.info('daemon.started', { host: daemonHost, port: server.port })
 }
 
 if (import.meta.main) runLocalDaemon()

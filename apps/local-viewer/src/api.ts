@@ -8,9 +8,13 @@ import {
   LocalCollectionInvoiceInputSchema,
   LocalCollectionInvoiceMembershipSchema,
   LocalCollectionRunDetailSchema,
+  LocalInvoiceDetailSchema,
+  LocalRunDetailSchema,
+  LocalRunSummarySchema,
   LocalCollectionDetailSchema,
   LocalCollectionSummarySchema,
   TaxpayerProfileRevisionInputSchema,
+  UpdateLocalCollectionInputSchema,
 } from '@bill-lm/contracts'
 
 import type {
@@ -24,7 +28,11 @@ import type {
   LocalCollectionSummary,
   LocalCollectionInvoiceMembership,
   LocalCollectionRunDetail,
+  LocalInvoiceDetail,
+  LocalRunDetail,
+  LocalRunSummary,
   TaxpayerProfileRevisionInput,
+  UpdateLocalCollectionInput,
 } from '@bill-lm/contracts'
 
 const apiPrefix = '/api/v1'
@@ -175,6 +183,13 @@ export class LocalDaemonClient {
     return (await response.json()) as NonNullable<LocalCollectionContext['latestRevision']>
   }
 
+  async updateCollection(id: string, input: UpdateLocalCollectionInput): Promise<LocalCollectionContext> {
+    const response = await this.request(`${apiPrefix}/collections/${id}`, {
+      method: 'PATCH', body: JSON.stringify(UpdateLocalCollectionInputSchema.parse(input)),
+    })
+    return LocalCollectionSummarySchema.parse(await response.json())
+  }
+
   async getCollectionDetail(id: string): Promise<LocalCollectionDetail> {
     const response = await this.request(`${apiPrefix}/collections/${id}`)
     return LocalCollectionDetailSchema.parse(await response.json())
@@ -184,6 +199,26 @@ export class LocalDaemonClient {
     const response = await this.request(`${apiPrefix}/collections/${collectionId}/runs/${runId}`)
     return LocalCollectionRunDetailSchema.parse(await response.json())
   }
+
+  async listCollectionRuns(collectionId: string, filter: { status?: string; unread?: boolean } = {}): Promise<Array<LocalRunSummary>> {
+    const query = new URLSearchParams()
+    if (filter.status) query.set('status', filter.status)
+    if (filter.unread !== undefined) query.set('unread', String(filter.unread))
+    const response = await this.request(`${apiPrefix}/collections/${collectionId}/runs${query.size ? `?${query}` : ''}`)
+    return ((await response.json()) as { items: Array<unknown> }).items.map((item) => LocalRunSummarySchema.parse(item))
+  }
+
+  async getRunDetail(runId: string): Promise<LocalRunDetail> {
+    return LocalRunDetailSchema.parse(await (await this.request(`${apiPrefix}/runs/${runId}`)).json())
+  }
+
+  async getCollectionInvoice(collectionId: string, invoiceId: string): Promise<LocalInvoiceDetail> {
+    return LocalInvoiceDetailSchema.parse(await (await this.request(`${apiPrefix}/collections/${collectionId}/invoices/${invoiceId}`)).json())
+  }
+
+  async markRunRead(runId: string) { return (await (await this.request(`${apiPrefix}/runs/${runId}/read`, { method: 'PATCH' })).json()) as { changed: number } }
+  async markAllRunsRead() { return (await (await this.request(`${apiPrefix}/runs/read-all`, { method: 'PATCH' })).json()) as { changed: number } }
+  async clearEligibleRuns() { return (await (await this.request(`${apiPrefix}/runs/clear-eligible`, { method: 'POST' })).json()) as { changed: number } }
 
   async importCollectionXml(collectionId: string, file: File) {
     const response = await this.request(`${apiPrefix}/collections/${collectionId}/invoices/xml`, {
@@ -284,9 +319,7 @@ export class LocalDaemonClient {
 
   async listRuns() {
     const response = await this.request(`${apiPrefix}/runs`)
-    return ((await response.json()) as {
-      items: Array<{ id: string; collectionId: string | null; invoiceId: string; status: 'queued' | 'running' | 'completed' | 'failed' | 'blocked'; createdAt: string; readAt: string | null }>
-    }).items
+    return ((await response.json()) as { items: Array<unknown> }).items.map((item) => LocalRunSummarySchema.parse(item))
   }
 
   async analyze(input: { collectionId: string; connectionId: string; invoiceId: string }) {
@@ -295,10 +328,6 @@ export class LocalDaemonClient {
       body: JSON.stringify(input),
     })
     return (await response.json()) as { id: string; status: string }
-  }
-
-  async markRunRead(id: string) {
-    await this.request(`${apiPrefix}/runs/${id}/read`, { method: 'PATCH' })
   }
 
   async listInvoices() {

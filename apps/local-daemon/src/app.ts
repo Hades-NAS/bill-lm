@@ -11,13 +11,17 @@ import {
   UpdateLocalConnectionSchema,
   EconomicActivityRevisionInputSchema,
   LocalCollectionDetailSchema,
-  LocalCollectionRunDetailSchema,
   LocalCollectionSummarySchema,
+  LocalInvoiceDetailSchema,
+  LocalRunDetailSchema,
+  LocalRunListFilterSchema,
+  LocalRunSummarySchema,
   LocalConnectionResponseSchema,
   ModelTaxAnalysisPayloadSchema,
   LocalCollectionAnalysisInputSchema,
   LocalCollectionInvoiceInputSchema,
   LocalCollectionInvoiceMembershipSchema,
+  UpdateLocalCollectionInputSchema,
   TaxpayerProfileRevisionInputSchema,
   resolveLocalAnalysisAvailability,
 } from '@bill-lm/contracts'
@@ -28,7 +32,13 @@ import { z } from 'zod'
 
 import { createLocalLlmAdapter } from './adapters'
 import type { LocalLlmAdapter } from './adapters'
+import {
+  LocalTaxAnalysisOutputJsonSchema,
+  omitNullOutputFields,
+} from './analysis-output-schema'
 import type { LocalLibrary } from './library'
+import { silentLocalDaemonLogger } from './logger'
+import type { LocalDaemonLogger } from './logger'
 
 const AnalyzeLocalInvoiceSchema = LocalCollectionAnalysisInputSchema
 
@@ -44,6 +54,58 @@ const unavailableProbe: LocalConnectionProbe = () => ({
 })
 
 const IdSchema = z.string().uuid()
+
+const modelOutputFields = new Set([
+  'purpose',
+  'classification',
+  'reasoning',
+  'uncertainties',
+  'missingEvidence',
+  'creditablePercentage',
+  'potentialEligibleAmount',
+  'relatedActivityRevisionIds',
+])
+
+const modelOutputIssueCodes = new Set([
+  'custom',
+  'invalid_element',
+  'invalid_format',
+  'invalid_key',
+  'invalid_type',
+  'invalid_union',
+  'invalid_value',
+  'not_multiple_of',
+  'too_big',
+  'too_small',
+  'unrecognized_keys',
+])
+
+/**
+ * Keeps model output out of logs while identifying the contract rule that
+ * rejected it. Paths are reduced to known top-level fields plus array depth.
+ */
+function safeModelOutputIssuePath(path: readonly PropertyKey[]) {
+  const root = path[0]
+  const field = typeof root === 'string' && modelOutputFields.has(root)
+    ? root
+    : '$root'
+  const nested = path.slice(1).map((segment) =>
+    typeof segment === 'number' ? '[]' : '.field',
+  ).join('')
+  return `${field}${nested}`
+}
+
+function safeModelOutputIssueCode(code: string) {
+  return modelOutputIssueCodes.has(code) ? code : 'other'
+}
+
+function modelOutputValidationDiagnostics(error: z.ZodError) {
+  const issues = error.issues.slice(0, 3)
+  return {
+    schemaIssuePaths: issues.map((issue) => safeModelOutputIssuePath(issue.path)).join('|'),
+    schemaIssueCodes: issues.map((issue) => safeModelOutputIssueCode(issue.code)).join('|'),
+  }
+}
 
 function mutationResponse<Value extends { readonly createdAt: string }>(
   context: Context,
@@ -80,10 +142,82 @@ function contractJson<Output>(
   return context.json(schema.parse(JSON.parse(JSON.stringify(value))), status)
 }
 
+function adapterHttpStatus(message: string, cause: string) {
+  if (cause !== 'http') return undefined
+  const status = /\b([1-5]\d\d)\b/.exec(message)?.[1]
+  return status ? Number(status) : undefined
+}
+
+function adapterProtocolReason(message: string, cause: string) {
+  if (cause !== 'protocol') return undefined
+  if (message.includes('OpenAI-like no incluye choices')) return 'openai-missing-choices'
+  if (message.includes('OpenAI-like no incluye contenido')) return 'openai-missing-content'
+  if (message.includes('Claude-like no incluye content')) return 'claude-missing-content-array'
+  if (message.includes('Claude-like no incluye contenido')) return 'claude-missing-text'
+  if (message.includes('no contiene JSON válido')) return 'model-json-invalid'
+  return 'protocol-response-invalid'
+}
+
+function localAnalysisContextBlock(executionContext: {
+  collectionContext: unknown
+  taxpayerProfile: unknown
+  activities: unknown[]
+}) {
+  const context = executionContext.collectionContext as {
+    purpose?: 'vat_credit' | 'business_income_tax' | 'personal_expenses'
+  } | null
+  if (!context)
+    return {
+      code: 'MISSING_COLLECTION_CONTEXT',
+      message: 'Configura el propósito, período y perfil de la colección antes de analizar.',
+    }
+
+  const profile = executionContext.taxpayerProfile as {
+    hasRuc?: boolean
+    taxRegime?: string
+    vatFilingFrequency?: string
+  } | null
+  if (!profile)
+    return {
+      code: 'MISSING_TAXPAYER_PROFILE',
+      message: 'Configura un perfil tributario válido para la colección antes de analizar.',
+    }
+
+  const requiresActivities =
+    context.purpose === 'vat_credit' || context.purpose === 'business_income_tax'
+  if (requiresActivities && !profile.hasRuc)
+    return {
+      code: 'MISSING_TAXPAYER_PROFILE',
+      message: 'Este propósito requiere un perfil con RUC.',
+    }
+  if (requiresActivities && executionContext.activities.length === 0)
+    return {
+      code: 'MISSING_ECONOMIC_ACTIVITY',
+      message: 'Selecciona al menos una actividad económica antes de analizar.',
+    }
+  if (context.purpose === 'personal_expenses' && executionContext.activities.length > 0)
+    return {
+      code: 'UNRESOLVED_ANALYSIS_CONFIGURATION',
+      message: 'Los gastos personales no usan actividades económicas.',
+    }
+  if (context.purpose === 'vat_credit' && profile.taxRegime === 'unknown')
+    return {
+      code: 'UNRESOLVED_TAX_REGIME',
+      message: 'Resuelve el régimen tributario antes de analizar IVA.',
+    }
+  if (context.purpose === 'vat_credit' && profile.vatFilingFrequency === 'unknown')
+    return {
+      code: 'UNRESOLVED_VAT_FREQUENCY',
+      message: 'Resuelve la periodicidad de IVA antes de analizar.',
+    }
+  return null
+}
+
 export function createLocalDaemon(
   library: LocalLibrary,
   probeConnection: LocalConnectionProbe = unavailableProbe,
   adapterFactory: (connection: LocalConnection) => LocalLlmAdapter = createLocalLlmAdapter,
+  logger: LocalDaemonLogger = silentLocalDaemonLogger,
 ) {
   const app = new Hono().basePath('/api/v1')
   const profileActivities = createProfileActivityUseCases({
@@ -203,10 +337,14 @@ export function createLocalDaemon(
     )
     if (!result.ok)
       return c.json({ code: 'COLLECTION_STORAGE_FAILURE' }, 500)
-    library.setCollectionMetadata(result.value.id, input.data)
+    library.setCollectionMetadata(result.value.id, {
+      ...input.data,
+      description: input.data.description ?? null,
+    })
     return contractJson(c, LocalCollectionSummarySchema, {
       ...result.value,
       ...input.data,
+      description: input.data.description ?? null,
       invoiceCount: 0,
     }, 201)
   })
@@ -247,11 +385,30 @@ export function createLocalDaemon(
         collection.error.code === 'resource.not_found' ? 404 : 500,
       )
     }
+    const metadata = library.getCollectionMetadata(collectionId.data)
+    if (!metadata) return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
     return contractJson(c, LocalCollectionDetailSchema, {
       ...collection.value,
+      ...metadata,
       invoices: library.listCollectionInvoices(collectionId.data),
-      runs: library.listRuns(collectionId.data),
+      runs: library.listRuns({ collectionId: collectionId.data }),
     })
+  })
+  app.patch('/collections/:id', async (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('id'))
+    const parsed = UpdateLocalCollectionInputSchema.safeParse(await requestJson(c))
+    if (!collectionId.success || !parsed.success)
+      return c.json({ code: 'INVALID_COLLECTION', ...(parsed.success ? {} : { issues: parsed.error.flatten() }) }, 400)
+    const updated = library.updateCollectionMetadata(collectionId.data, parsed.data)
+    if (!updated) return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
+    const collection = await library.collectionContexts().findCollectionContext(library.actorScope(), collectionId.data)
+    if (!collection.ok) return c.json({ code: 'COLLECTION_STORAGE_FAILURE' }, 500)
+    return contractJson(c, LocalCollectionSummarySchema, { ...updated, latestRevision: collection.value.latestRevision })
+  })
+  app.get('/collections/:id/runs', (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('id'))
+    if (!collectionId.success || !library.hasCollection(collectionId.data)) return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
+    return c.json({ items: library.listRuns({ collectionId: collectionId.data }) })
   })
   app.get('/collections/:collectionId/runs/:runId', (c) => {
     const collectionId = IdSchema.safeParse(c.req.param('collectionId'))
@@ -260,7 +417,7 @@ export function createLocalDaemon(
       return c.json({ code: 'RUN_NOT_FOUND' }, 404)
     const detail = library.getCollectionRunDetail(collectionId.data, runId.data)
     return detail
-      ? contractJson(c, LocalCollectionRunDetailSchema, detail)
+      ? contractJson(c, LocalRunDetailSchema, detail)
       : c.json({ code: 'RUN_NOT_FOUND' }, 404)
   })
   app.post('/collections/:id/invoices', async (c) => {
@@ -277,6 +434,13 @@ export function createLocalDaemon(
       result,
       result.kind === 'attached' ? 201 : 200,
     )
+  })
+  app.get('/collections/:collectionId/invoices/:invoiceId', (c) => {
+    const collectionId = IdSchema.safeParse(c.req.param('collectionId'))
+    const invoiceId = IdSchema.safeParse(c.req.param('invoiceId'))
+    if (!collectionId.success || !invoiceId.success) return c.json({ code: 'INVOICE_NOT_FOUND' }, 404)
+    const invoice = library.getCollectionInvoiceDetail(collectionId.data, invoiceId.data)
+    return invoice ? contractJson(c, LocalInvoiceDetailSchema, invoice) : c.json({ code: 'INVOICE_NOT_FOUND' }, 404)
   })
   app.delete('/collections/:id/invoices/:invoiceId', async (c) => {
     const collectionId = IdSchema.safeParse(c.req.param('id'))
@@ -353,7 +517,8 @@ export function createLocalDaemon(
     const connection = library.getConnection(c.req.param('id'))
     if (!connection) return c.json({ code: 'CONNECTION_NOT_FOUND' }, 404)
     const probe = await probeConnection(connection)
-    library.recordProbe(connection.id, probe)
+    if (!library.recordProbe(connection.id, probe, connection))
+      return c.json({ code: 'CONNECTION_CHANGED', message: 'La conexión cambió durante la prueba. Vuelve a intentarlo.' }, 409)
     return c.json(probe, probe.ok ? 200 : 422)
   })
   app.patch('/connections/:id', async (c) => {
@@ -396,28 +561,65 @@ export function createLocalDaemon(
   app.get('/invoices', (c) => c.json({ items: library.listInvoices() }))
   app.post('/analysis', async (c) => {
     const parsed = AnalyzeLocalInvoiceSchema.safeParse(await c.req.json())
-    if (!parsed.success)
+    if (!parsed.success) {
+      logger.warn('analysis.request.rejected', { reason: 'invalid-input' })
       return c.json(
         { code: 'INVALID_ANALYSIS', issues: parsed.error.flatten() },
         400,
       )
-    if (!library.hasInvoice(parsed.data.invoiceId))
+    }
+    logger.info('analysis.request.received', {
+      collectionId: parsed.data.collectionId,
+      invoiceId: parsed.data.invoiceId,
+      connectionId: parsed.data.connectionId,
+    })
+    logger.debug('analysis.request.validated', {
+      collectionId: parsed.data.collectionId,
+      invoiceId: parsed.data.invoiceId,
+      connectionId: parsed.data.connectionId,
+    })
+    if (!library.hasInvoice(parsed.data.invoiceId)) {
+      logger.warn('analysis.request.rejected', { reason: 'invoice-not-found', invoiceId: parsed.data.invoiceId })
       return c.json({ code: 'INVOICE_NOT_FOUND' }, 404)
-    if (!library.hasCollection(parsed.data.collectionId))
+    }
+    if (!library.hasCollection(parsed.data.collectionId)) {
+      logger.warn('analysis.request.rejected', { reason: 'collection-not-found', collectionId: parsed.data.collectionId })
       return c.json({ code: 'COLLECTION_NOT_FOUND' }, 404)
-    if (!library.hasCollectionInvoice(parsed.data.collectionId, parsed.data.invoiceId))
+    }
+    if (!library.hasCollectionInvoice(parsed.data.collectionId, parsed.data.invoiceId)) {
+      logger.warn('analysis.request.rejected', { reason: 'invoice-not-in-collection', collectionId: parsed.data.collectionId, invoiceId: parsed.data.invoiceId })
       return c.json({ code: 'INVOICE_NOT_IN_COLLECTION' }, 409)
+    }
+
+    const executionContext = library.getExecutionContext(parsed.data.collectionId)
+    const contextBlock = localAnalysisContextBlock(executionContext)
+    if (contextBlock) {
+      logger.warn('analysis.request.rejected', {
+        reason: contextBlock.code.toLowerCase(),
+        collectionId: parsed.data.collectionId,
+      })
+      return c.json(contextBlock, 409)
+    }
+    const analysisPurpose = (executionContext.collectionContext as {
+      purpose: 'vat_credit' | 'business_income_tax' | 'personal_expenses'
+    }).purpose
 
     const availability = resolveLocalAnalysisAvailability(
       library.listConnections(),
       parsed.data.connectionId,
     )
-    if (availability.kind === 'oauth-guidance') return c.json(availability, 409)
+    if (availability.kind === 'oauth-guidance') {
+      logger.warn('analysis.request.rejected', { reason: 'connection-unavailable', connectionId: parsed.data.connectionId })
+      return c.json(availability, 409)
+    }
 
     const connection = library.getConnection(availability.connectionId)!
+    logger.info('analysis.connection.probing', { connectionId: connection.id, apiFlavor: connection.apiFlavor, model: connection.model })
     const probe = await probeConnection(connection)
-    library.recordProbe(connection.id, probe)
-    if (!probe.ok)
+    if (!library.recordProbe(connection.id, probe, connection))
+      return c.json({ code: 'CONNECTION_CHANGED', message: 'La conexión cambió durante la prueba. Vuelve a intentarlo.' }, 409)
+    if (!probe.ok) {
+      logger.error('analysis.connection.probe-failed', { connectionId: connection.id, cause: probe.cause ?? 'protocol' })
       return c.json(
         {
           code: 'GPU_PROBE_FAILED',
@@ -427,11 +629,14 @@ export function createLocalDaemon(
         },
         422,
       )
+    }
+    logger.info('analysis.connection.probe-succeeded', { connectionId: connection.id, apiFlavor: connection.apiFlavor, model: connection.model })
 
     const ruleset = library.listRulesets()[0]
-    const executionContext = library.getExecutionContext(parsed.data.collectionId)
     const snapshot = {
       invoice: library.getInvoiceSnapshot(parsed.data.invoiceId),
+      fileName: library.getInvoiceFileName(parsed.data.invoiceId),
+      collectionName: library.getCollectionMetadata(parsed.data.collectionId)?.name ?? null,
       ...executionContext,
       connection: publicConnection(connection),
       ruleset: { id: ruleset.id, version: ruleset.version, jurisdiction: ruleset.jurisdiction },
@@ -443,20 +648,54 @@ export function createLocalDaemon(
       rulesetId: ruleset.id,
       snapshot,
     })
+    logger.info('analysis.run.queued', { runId: run.id, collectionId: parsed.data.collectionId, invoiceId: parsed.data.invoiceId, connectionId: connection.id, model: connection.model, rulesetId: ruleset.id })
     void (async () => {
+      const startedAt = Date.now()
       library.startRun(run.id)
+      logger.info('analysis.run.started', { runId: run.id, connectionId: connection.id, apiFlavor: connection.apiFlavor, model: connection.model })
       const adapter = adapterFactory(connection)
+      logger.debug('analysis.run.dispatching', { runId: run.id, connectionId: connection.id, apiFlavor: connection.apiFlavor, model: connection.model })
       const result = await adapter.analyze({
         connection,
         runId: run.id,
         prompt: `Analiza la factura ecuatoriana usando exclusivamente este snapshot local. Devuelve solamente JSON válido que cumpla el esquema tributario solicitado.\n${JSON.stringify(snapshot)}`,
-        outputSchema: { type: 'object' },
+        outputSchema: LocalTaxAnalysisOutputJsonSchema,
+        purpose: analysisPurpose,
       })
-      if (!result.ok) return library.failRun(run.id, 'El análisis local no pudo completarse.')
-      const payload = ModelTaxAnalysisPayloadSchema.safeParse(result.payload)
-      if (!payload.success) return library.failRun(run.id, 'El análisis local devolvió una salida inválida.')
+      if (!result.ok) {
+        logger.error('analysis.run.failed', {
+          runId: run.id,
+          cause: result.cause,
+          httpStatus: adapterHttpStatus(result.message, result.cause),
+          protocolReason: adapterProtocolReason(result.message, result.cause),
+          responseVariant: result.responseVariant,
+          contentKind: result.contentKind,
+          contentBytes: result.contentBytes,
+          jsonParseReason: result.jsonParseReason,
+          finishReason: result.finishReason,
+          durationMs: Date.now() - startedAt,
+        })
+        return library.failRun(run.id, result.message)
+      }
+      logger.debug('analysis.run.response-received', { runId: run.id, durationMs: Date.now() - startedAt })
+      const payload = ModelTaxAnalysisPayloadSchema.safeParse(
+        omitNullOutputFields(result.payload),
+      )
+      if (!payload.success) {
+        logger.error('analysis.run.invalid-output', {
+          runId: run.id,
+          issueCount: payload.error.issues.length,
+          ...modelOutputValidationDiagnostics(payload.error),
+          durationMs: Date.now() - startedAt,
+        })
+        return library.failRun(run.id, 'El análisis local devolvió una salida inválida.')
+      }
       library.completeRun({ runId: run.id, invoiceId: parsed.data.invoiceId, payload: payload.data })
-    })().catch(() => library.failRun(run.id, 'El análisis local terminó de forma inesperada.'))
+      logger.info('analysis.run.completed', { runId: run.id, durationMs: Date.now() - startedAt, classification: payload.data.classification, purpose: payload.data.purpose })
+    })().catch(() => {
+      logger.error('analysis.run.unexpected-failure', { runId: run.id })
+      library.failRun(run.id, 'El análisis local terminó de forma inesperada.')
+    })
     return c.json({ ...run, status: 'queued' }, 202)
   })
   app.get('/runs/:id/events', (c) =>
@@ -464,9 +703,25 @@ export function createLocalDaemon(
       items: library.listRunEvents(c.req.param('id'), c.req.query('after')),
     }),
   )
-  app.get('/runs', (c) => c.json({ items: library.listRuns() }))
-  app.patch('/runs/:id/read', (c) => library.markRunRead(c.req.param('id'))
-    ? c.json({ ok: true }) : c.json({ code: 'RUN_NOT_FOUND' }, 404))
+  app.get('/runs', (c) => {
+    const unread = c.req.query('unread')
+    const parsed = LocalRunListFilterSchema.safeParse({
+      collectionId: c.req.query('collectionId'), status: c.req.query('status'),
+      ...(unread === undefined ? {} : { unread: unread === 'true' ? true : unread === 'false' ? false : unread }),
+    })
+    if (!parsed.success) return c.json({ code: 'INVALID_RUN_FILTER', issues: parsed.error.flatten() }, 400)
+    return contractJson(c, z.object({ items: z.array(LocalRunSummarySchema) }), { items: library.listRuns(parsed.data) })
+  })
+  app.get('/runs/:id', (c) => {
+    const detail = library.getRunDetail(c.req.param('id'))
+    return detail ? contractJson(c, LocalRunDetailSchema, detail) : c.json({ code: 'RUN_NOT_FOUND' }, 404)
+  })
+  app.patch('/runs/:id/read', (c) => {
+    const result = library.markRunRead(c.req.param('id'))
+    return result.found ? c.json({ changed: result.changed }) : c.json({ code: 'RUN_NOT_FOUND' }, 404)
+  })
+  app.patch('/runs/read-all', (c) => c.json({ changed: library.markAllRunsRead() }))
+  app.post('/runs/clear-eligible', (c) => c.json({ changed: library.clearEligibleRuns() }))
   app.get('/runs/:id/result', (c) => {
     const result = library.getRunResult(c.req.param('id'))
     return result ? c.json(result) : c.json({ code: 'RESULT_NOT_FOUND' }, 404)

@@ -5,6 +5,10 @@ perfiles, las actividades, las colecciones, las revisiones, los runs y los
 resultados permanecen en una biblioteca local. El visor no usa una sesión ni
 la aplicación cloud para esas operaciones.
 
+Las capturas y pruebas automatizadas de este flujo usan datos sintéticos. Para
+validar una conexión Local-GPU debes probar el host configurado en tu propio
+equipo; la evidencia headless no certifica ese host ni servicios cloud.
+
 ## Qué se ejecuta localmente
 
 El visor React escucha en `http://127.0.0.1:4319` y reenvía sus solicitudes
@@ -52,6 +56,18 @@ modelo:
 
 ```bash
 curl http://127.0.0.1:4318/api/v1/rulesets
+```
+
+## Diagnosticar un análisis
+
+La terminal del daemon registra eventos JSON Lines seguros para cada análisis:
+recepción, prueba del host, encolado, inicio, finalización y fallo. El campo
+`runId` permite relacionarlos con el historial del visor. No se imprimen XML,
+prompts, respuestas del modelo, URLs privadas ni secretos. Para incluir las
+etapas de depuración, inicia el daemon con:
+
+```bash
+BILL_LM_LOCAL_LOG_LEVEL=debug bun run daemon:local
 ```
 
 La respuesta debe contener una lista `items`. Si no responde, revisa la

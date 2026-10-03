@@ -1,6 +1,8 @@
 import z from 'zod'
 
 import {
+  LocalTaxAnalysisClassificationSchema,
+  ModelTaxAnalysisPayloadSchema,
   RevenueVatTreatmentSchema,
   TaxPurposeSchema,
   TaxRegimeSchema,
@@ -11,6 +13,8 @@ import type {
   CollectionContextRevisionInput,
   TaxpayerProfileContext,
 } from '@bill-lm/contracts'
+
+export { ModelTaxAnalysisPayloadSchema }
 
 import { ParsedBillSchema } from '#/schema/bill-analysis'
 
@@ -279,11 +283,7 @@ export type GetAnalysisRunDetailRequest = z.infer<
   typeof GetAnalysisRunDetailRequestSchema
 >
 
-export const TaxAnalysisClassificationSchema = z.enum([
-  'eligible',
-  'ineligible',
-  'needs_review',
-])
+export const TaxAnalysisClassificationSchema = LocalTaxAnalysisClassificationSchema
 export type TaxAnalysisClassification = z.infer<
   typeof TaxAnalysisClassificationSchema
 >
@@ -344,49 +344,6 @@ export const TaxAnalysisResultSchema = z.discriminatedUnion('purpose', [
 ])
 export type TaxAnalysisResult = z.infer<typeof TaxAnalysisResultSchema>
 
-const ModelTaxAnalysisPayloadBaseSchema = z
-  .object({
-    purpose: TaxPurposeSchema,
-    classification: TaxAnalysisClassificationSchema,
-    reasoning: z.string().trim().min(1).max(10_000),
-    uncertainties: z.array(z.string().trim().min(1).max(1_000)).max(20),
-  })
-  .strict()
-
-/**
- * The fields an LLM is allowed to return for an analysis result.
- *
- * schemaVersion, runId, invoiceId, and createdAt are owned by the server and
- * are attached only when a final result is persisted.
- */
-export const ModelTaxAnalysisPayloadSchema = z.discriminatedUnion('purpose', [
-  ModelTaxAnalysisPayloadBaseSchema.extend({
-    purpose: z.literal('vat_credit'),
-    relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
-    invoiceVatAmount: z.number().nonnegative(),
-    potentialCreditableVatAmount: z.number().nonnegative().optional(),
-    creditablePercentage: z.number().min(0).max(100).optional(),
-    creditType: z.enum(['total', 'partial', 'none', 'undetermined']),
-    proportionalityRequired: z.boolean(),
-    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
-  }).strict(),
-  ModelTaxAnalysisPayloadBaseSchema.extend({
-    purpose: z.literal('business_income_tax'),
-    relatedActivityRevisionIds: z.array(IdSchema).min(1).max(20),
-    businessUsePercentage: z.number().min(0).max(100).optional(),
-    potentialExpenseAmount: z.number().nonnegative().optional(),
-    mixedUseDetected: z.boolean(),
-    substantiationIssues: z.array(z.string().trim().min(1).max(1_000)).max(20),
-    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
-  }).strict(),
-  ModelTaxAnalysisPayloadBaseSchema.extend({
-    purpose: z.literal('personal_expenses'),
-    personalExpenseCategory: z.string().trim().min(1).max(120).optional(),
-    potentialEligibleAmount: z.number().nonnegative().optional(),
-    beneficiaryRelationship: z.string().trim().min(1).max(500).optional(),
-    missingEvidence: z.array(z.string().trim().min(1).max(1_000)).max(20),
-  }).strict(),
-])
 export type ModelTaxAnalysisPayload = z.infer<
   typeof ModelTaxAnalysisPayloadSchema
 >

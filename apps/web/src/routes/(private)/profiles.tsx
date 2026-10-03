@@ -28,6 +28,8 @@ import {
   ContextGuideButton,
   EmptyState,
   FieldHelpLabel,
+  RevisionRow,
+  SectionDivider,
 } from '@bill-lm/ui'
 
 import {
@@ -201,7 +203,7 @@ function ProfilesPage() {
 
   return (
     <Box py={40}>
-      <Container size="lg">
+      <Container fluid>
         <Stack gap={28}>
           <div>
             <Title order={1}>Perfiles y actividades</Title>
@@ -296,6 +298,8 @@ function ProfilesPage() {
             )}
           </section>
 
+          <SectionDivider />
+
           <section>
             <Group justify="space-between" mb="md">
               <div>
@@ -327,33 +331,19 @@ function ProfilesPage() {
                   const revision = item.revisions[0]
                   if (!revision) return null
                   return (
-                    <Card withBorder key={item.id} padding="lg">
-                      <Group align="flex-start" justify="space-between">
-                        <div>
-                          <Group gap="xs">
-                            <Text fw={700}>{revision.displayName}</Text>
-                            <Badge variant="light">
-                              Rev. {revision.revision}
-                            </Badge>
-                          </Group>
-                          <Text c="dimmed" mt={4} size="sm">
-                            {revision.activities
-                              .map(
-                                ({ economicActivityRevision }) =>
-                                  economicActivityRevision.displayName,
-                              )
-                              .join(', ')}
-                          </Text>
-                        </div>
-                        <Button
+                    <RevisionRow
+                      action={<Button
                           size="xs"
                           variant="light"
                           onClick={() => setProfileId(item.id)}
                         >
                           Crear nueva revisión
-                        </Button>
-                      </Group>
-                    </Card>
+                        </Button>}
+                      description={revision.activities.map(({ economicActivityRevision }) => economicActivityRevision.displayName).join(', ')}
+                      key={item.id}
+                      revision={revision.revision}
+                      title={revision.displayName}
+                    />
                   )
                 })}
               </Stack>
@@ -472,6 +462,7 @@ function ActivityModal({
   return (
     <Modal
       centered
+      closeButtonProps={{ 'aria-label': 'Cerrar revisión de actividad' }}
       fullScreen={fullScreen}
       opened={opened}
       size="lg"
@@ -670,6 +661,7 @@ function ProfileModal({
   return (
     <Modal
       centered
+      closeButtonProps={{ 'aria-label': 'Cerrar revisión de perfil' }}
       fullScreen={fullScreen}
       opened={opened}
       size="md"

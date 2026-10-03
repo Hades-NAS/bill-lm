@@ -3,7 +3,7 @@ import { MantineProvider } from '@mantine/core'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 
-import { ContextGuideButton, EmptyState, FieldHelpLabel } from '../index'
+import { ContextGuideButton, EmptyState, FieldHelpLabel, InvoiceDetails } from '../index'
 
 describe('shared presentation components', () => {
   beforeAll(() => {
@@ -12,6 +12,7 @@ describe('shared presentation components', () => {
       matches: false,
       removeEventListener: vi.fn(),
     }))
+    vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} })
   })
 
   it('renders an empty state with its supplied action', () => {
@@ -47,5 +48,13 @@ describe('shared presentation components', () => {
     expect(
       screen.getByRole('button', { name: 'Ayuda sobre Nombre del perfil' }),
     ).toBeTruthy()
+  })
+
+  it('normalizes only known Ecuadorian currency aliases in invoice totals', () => {
+    const invoice = { fileName: 'factura.xml', typeLabel: 'Factura', buyer: { name: 'Comprador', identifierLabel: 'RUC', identifier: '1' }, seller: { name: 'Emisor', identifier: '2' }, totals: { subtotal: 100, taxes: 0, total: 100, currency: 'DOLAR' }, items: [] }
+    const { rerender } = render(<MantineProvider><InvoiceDetails analysis={<span>Análisis</span>} invoice={invoice} /></MantineProvider>)
+    expect(screen.getAllByText(/\$\s?100/).length).toBeGreaterThan(0)
+    rerender(<MantineProvider><InvoiceDetails analysis={<span>Análisis</span>} invoice={{ ...invoice, totals: { ...invoice.totals, currency: 'EURO' } }} /></MantineProvider>)
+    expect(screen.getAllByText(/€\s?100/).length).toBeGreaterThan(0)
   })
 })

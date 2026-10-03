@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
+import { ModelTaxAnalysisPayloadSchema as SharedModelTaxAnalysisPayloadSchema } from '@bill-lm/contracts'
+
 import {
   AnalysisBlockSchema,
   AnalysisExecutionEnvelopeSchema,
   CollectionContextRevisionInputSchema,
   collectionContextBlocks,
   EconomicActivityRevisionInputSchema,
+  ModelTaxAnalysisPayloadSchema,
   TAX_ANALYSIS_SCHEMA_VERSION,
   TaxAnalysisResultSchema,
   TaxpayerProfileRevisionInputSchema,
@@ -15,6 +18,10 @@ import {
 const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
 
 describe('tax analysis contracts', () => {
+  it('uses the exact shared model-output schema consumed by the local daemon', () => {
+    expect(ModelTaxAnalysisPayloadSchema).toBe(SharedModelTaxAnalysisPayloadSchema)
+  })
+
   it('accepts only executable purposes and an ordered civil period', () => {
     expect(
       CollectionContextRevisionInputSchema.safeParse({

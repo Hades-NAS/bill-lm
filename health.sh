@@ -5,6 +5,9 @@ set -euo pipefail
 HEALTH_ENV_FILE=".env.health"
 HEALTH_PLAYWRIGHT_PORT="${PLAYWRIGHT_PORT:-3000}"
 HEALTH_SKIP_E2E="${SKIP_E2E:-false}"
+# The web TypeScript program exceeds Node's automatic old-space limit on this
+# repository. Keep the health check deterministic while preserving env -i.
+HEALTH_NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=8192}"
 
 if [[ ! -f "$HEALTH_ENV_FILE" ]]; then
   printf 'Health fixture not found: %s\n' "$HEALTH_ENV_FILE" >&2
@@ -20,6 +23,7 @@ run_check() {
     PATH="$PATH" \
     HOME="${HOME:-}" \
     CI="${CI:-}" \
+    NODE_OPTIONS="$HEALTH_NODE_OPTIONS" \
     SKIP_E2E="$HEALTH_SKIP_E2E" \
     PLAYWRIGHT_PORT="$HEALTH_PLAYWRIGHT_PORT" \
     ./node_modules/.bin/dotenv -e "$HEALTH_ENV_FILE" -- "$@"

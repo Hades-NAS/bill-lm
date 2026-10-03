@@ -1,14 +1,11 @@
 import {
   ActionIcon,
-  Badge,
   Box,
   Divider,
   Group,
   Indicator,
   Modal,
-  Paper,
   Popover,
-  Progress,
   Stack,
   Text,
   Tooltip,
@@ -16,7 +13,7 @@ import {
 import { useDisclosure } from '@mantine/hooks'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { BrushCleaning, Clock } from 'lucide-react'
-import { DateTime } from 'luxon'
+import { RunListItem } from '@bill-lm/ui'
 
 import { useJobsStore } from '#/integrations/store/jobs.store'
 
@@ -36,136 +33,18 @@ interface JobCardProps {
 }
 
 function JobCard({ job, onCollectionClick }: JobCardProps) {
-  const isActive = job.status === 'pending' || job.status === 'in-progress'
-  const isCompleted = job.status === 'completed'
-  const isBlocked = job.status === 'blocked'
-
-  return (
-    <Paper
-      withBorder
-      bd={isActive ? '1px solid var(--mantine-color-blue-5)' : undefined}
-      key={job.jobId}
-      p="sm"
-    >
-      {/* Job header with status */}
-      <Group justify="space-between" mb="xs">
-        <Text size="xs">{getTypeJobLabel(job.data.type)}</Text>
-        <Badge
-          color={
-            isActive
-              ? job.status === 'pending'
-                ? 'gray'
-                : 'blue'
-              : isCompleted
-                ? 'green'
-                : isBlocked
-                  ? 'orange'
-                  : 'red'
-          }
-          size="sm"
-          variant="light"
-        >
-          {job.status === 'pending'
-            ? 'Pendiente'
-            : job.status === 'in-progress'
-              ? 'En progreso'
-              : job.status === 'completed'
-                ? 'Completado'
-                : job.status === 'blocked'
-                  ? 'Bloqueado'
-                  : 'Error'}
-        </Badge>
-      </Group>
-
-      {/* Collection link */}
-      <Box mb="sm">
-        <Text
-          c={getColorByStatus(job.status)}
-          component="button"
-          fw={500}
-          lineClamp={1}
-          size="sm"
-          style={{
-            cursor: 'pointer',
-            textDecoration: 'underline',
-          }}
-          onClick={() => onCollectionClick(job.data.collectionId)}
-        >
-          {job.data.collectionName}
-        </Text>
-
-        <Text c="dimmed" mt={2} size="xs">
-          {job.data.billIds.length} factura(s)
-        </Text>
-      </Box>
-
-      {/* Progress bar - only show for active jobs */}
-      {isActive && (
-        <>
-          <Group justify="space-between" mb="xs">
-            <Text c="dimmed" size="xs">
-              Progreso
-            </Text>
-            <Text fw={500} size="xs">
-              {Math.round(job.percentage)}%
-            </Text>
-          </Group>
-          <Progress
-            color="blue"
-            mb="xs"
-            radius="md"
-            size="sm"
-            value={job.percentage}
-          />
-        </>
-      )}
-
-      {/* Terminal error or prerequisite message */}
-      {(job.status === 'failed' || job.status === 'blocked') && (
-        <Text
-          c={job.status === 'blocked' ? 'orange.8' : 'red.8'}
-          mb="xs"
-          size="xs"
-        >
-          {job.status === 'blocked' ? 'Bloqueado: ' : 'Error: '}
-          {job.error}
-        </Text>
-      )}
-
-      {/* Timestamps */}
-      <Text c="dimmed" size="xs">
-        {DateTime.fromJSDate(
-          isActive ? job.createdAt : job.updatedAt,
-        ).toLocaleString(DateTime.DATETIME_SHORT)}
-      </Text>
-    </Paper>
-  )
-
-  function getColorByStatus(status: JobStatusItem['status']) {
-    if (status === 'pending') {
-      return 'gray'
-    } else if (status === 'in-progress') {
-      return 'blue.8'
-    } else if (status === 'completed') {
-      return 'green.8'
-    } else if (status === 'blocked') {
-      return 'orange.8'
-    } else {
-      return 'red.8'
-    }
-  }
-
-  function getTypeJobLabel(type: JobStatusItem['data']['type']) {
-    if (type === 'all') {
-      return 'Análisis completo'
-    } else if (type === 'missing') {
-      return 'Análisis de faltantes'
-    } else if (type === 'analyzed') {
-      return 'Re-análisis de analizados'
-    } else {
-      return 'Análisis específico'
-    }
-  }
+  const status = job.status === 'pending' ? 'queued' : job.status === 'in-progress' ? 'running' : job.status
+  const typeLabels: Record<JobStatusItem['data']['type'], string> = { all: 'Análisis completo', missing: 'Análisis de faltantes', analyzed: 'Re-análisis de analizados', specific: 'Análisis específico' }
+  return <RunListItem
+    error={job.error}
+    invoiceCount={job.data.billIds.length}
+    onOpen={() => onCollectionClick(job.data.collectionId)}
+    progress={job.status === 'pending' || job.status === 'in-progress' ? job.percentage : null}
+    runType={typeLabels[job.data.type]}
+    status={status}
+    timestamp={(job.status === 'pending' || job.status === 'in-progress' ? job.createdAt : job.updatedAt).toLocaleString('es-EC')}
+    title={job.data.collectionName}
+  />
 }
 
 export function NavbarJobsIndicator() {
@@ -195,6 +74,8 @@ export function NavbarJobsIndicator() {
   const completedJobs = activeJobs.filter(
     (j) => j.status === 'completed' || j.status === 'failed',
   )
+  const attentionJobs = activeJobs.filter((j) => j.status === 'blocked')
+  const indicatorCount = inProgressJobs.length + attentionJobs.length
 
   const markAsReadMutation = useMarkAsReadMutation({
     onSuccess: () => {
@@ -252,6 +133,20 @@ export function NavbarJobsIndicator() {
               </Stack>
             </Box>
             {completedJobs.length > 0 && <Divider />}
+          </>
+        )}
+
+        {attentionJobs.length > 0 && (
+          <>
+            {(inProgressJobs.length > 0 || completedJobs.length > 0) && <Divider />}
+            <Box>
+              <Text c="orange" fw={500} mb="xs" size="xs">
+                Requieren atención ({attentionJobs.length})
+              </Text>
+              <Stack gap="sm">
+                {attentionJobs.map((job) => <JobCard job={job} key={job.jobId} onCollectionClick={handleViewCollection} />)}
+              </Stack>
+            </Box>
           </>
         )}
 
@@ -317,23 +212,16 @@ export function NavbarJobsIndicator() {
             openDelay={1250}
             position="left"
           >
-            <ActionIcon
-              aria-label="Ver análisis"
-              radius="md"
-              size="lg"
-              variant="default"
-              onClick={toggle}
-            >
-              <Indicator
+            <Indicator
                 color="violet"
-                disabled={!inProgressJobs.length}
+                disabled={!indicatorCount}
+                label={indicatorCount > 99 ? '99+' : indicatorCount || undefined}
                 offset={0}
                 processing={hasActiveJobs}
-                size={10}
+                size={20}
               >
-                <Clock size={20} />
-              </Indicator>
-            </ActionIcon>
+              <ActionIcon aria-label={`Ver análisis${indicatorCount ? `: ${indicatorCount} requieren atención o están en progreso` : ''}`} radius="md" size="lg" variant="default" onClick={toggle}><Clock size={20} /></ActionIcon>
+            </Indicator>
           </Tooltip>
         </Popover.Target>
         <Popover.Dropdown>{content}</Popover.Dropdown>
@@ -355,27 +243,21 @@ export function NavbarJobsIndicator() {
         openDelay={1250}
         position="left"
       >
-        <ActionIcon
-          aria-label="Ver análisis"
-          radius="md"
-          size="lg"
-          variant="default"
-          onClick={toggle}
-        >
-          <Indicator
+        <Indicator
             color="violet"
-            disabled={!inProgressJobs.length}
+            disabled={!indicatorCount}
+            label={indicatorCount > 99 ? '99+' : indicatorCount || undefined}
             offset={10}
             processing={hasActiveJobs}
-            size={10}
+            size={20}
           >
-            <Clock size={20} />
-          </Indicator>
-        </ActionIcon>
+          <ActionIcon aria-label={`Ver análisis${indicatorCount ? `: ${indicatorCount} requieren atención o están en progreso` : ''}`} radius="md" size="lg" variant="default" onClick={toggle}><Clock size={20} /></ActionIcon>
+        </Indicator>
       </Tooltip>
 
       <Modal
         centered
+        closeButtonProps={{ 'aria-label': 'Cerrar análisis' }}
         opened={opened}
         size="md"
         title={

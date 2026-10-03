@@ -17,6 +17,7 @@ describe('LocalDaemonClient', () => {
           id: '00000000-0000-4000-8000-000000000001',
           name: 'Gastos personales',
           year: 2026,
+          description: null,
           invoiceCount: 0,
           latestRevision: null,
         })
@@ -62,9 +63,12 @@ describe('LocalDaemonClient', () => {
     const id = '00000000-0000-4000-8000-000000000001'
     globalThis.fetch = (async () => Response.json({
       id,
+      name: 'Gastos personales',
+      year: 2026,
+      description: null,
       latestRevision: null,
-      invoices: [{ id, fileName: 'factura.xml', createdAt: '2026-09-18T20:00:00.000Z' }],
-      runs: [{ id, invoiceId: id, collectionId: id, status: 'completed', createdAt: '2026-09-18T20:00:00.000Z' }],
+      invoices: [{ id, fileName: 'factura.xml', createdAt: '2026-09-18T20:00:00.000Z', latestAnalysis: null }],
+      runs: [{ id, invoiceId: id, collectionId: id, collectionName: 'Gastos personales', fileName: 'factura.xml', status: 'completed', readAt: null, provider: null, apiFlavor: null, model: null, purpose: null, period: null, contextRevision: null, ruleset: null, timing: { createdAt: '2026-09-18T20:00:00.000Z', startedAt: null, terminalAt: '2026-09-18T20:00:00.000Z', durationMs: null }, error: null, progress: null, eventCount: 0 }],
     })) as unknown as typeof fetch
 
     await expect(new LocalDaemonClient().getCollectionDetail(id)).resolves.toMatchObject({
@@ -81,11 +85,11 @@ describe('LocalDaemonClient', () => {
     globalThis.fetch = (async (input: URL | RequestInfo) => {
       requestedUrls.push(String(input))
       return Response.json({
-        id: runId, invoiceId: collectionId, collectionId, status: 'failed', createdAt: '2026-09-18T20:00:00.000Z', events: [], result: null,
+        id: runId, invoiceId: collectionId, collectionId, collectionName: 'Gastos personales', fileName: 'factura.xml', status: 'failed', readAt: null, provider: null, apiFlavor: null, model: null, purpose: null, period: null, contextRevision: null, ruleset: null, timing: { createdAt: '2026-09-18T20:00:00.000Z', startedAt: null, terminalAt: '2026-09-18T20:00:00.000Z', durationMs: null }, error: 'falló', progress: null, eventCount: 0, events: [],
       })
     }) as typeof fetch
 
-    await expect(new LocalDaemonClient('http://127.0.0.1:4318').getCollectionRunDetail(collectionId, runId)).resolves.toMatchObject({ id: runId, result: null })
+    await expect(new LocalDaemonClient('http://127.0.0.1:4318').getCollectionRunDetail(collectionId, runId)).resolves.toMatchObject({ id: runId })
     expect(requestedUrls).toEqual([`http://127.0.0.1:4318/api/v1/collections/${collectionId}/runs/${runId}`])
   })
 

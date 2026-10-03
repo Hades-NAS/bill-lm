@@ -1,22 +1,9 @@
-import {
-  Badge,
-  Fieldset,
-  Flex,
-  Modal,
-  Paper,
-  ScrollArea,
-  SimpleGrid,
-  Table,
-  Tabs,
-  Text,
-} from '@mantine/core'
-import { ShoppingBagIcon, Sparkles } from 'lucide-react'
-import { DateTime } from 'luxon'
+import { Flex, Modal, Paper, ScrollArea, Text } from '@mantine/core'
 import React from 'react'
+import { InvoiceDetails } from '@bill-lm/ui'
 
 import { TaxAnalysisResultSchema } from '#/schema/tax-analysis'
 
-import { getColorBillTargetType } from '#/utils/bill'
 import { useIsMobile } from '#/utils/mobile'
 import { isLoadingQuery } from '#/utils/query'
 
@@ -30,7 +17,6 @@ import {
 } from '#/components/shared/context-help'
 import { EmptyState } from '#/components/shared/empty-state'
 import { LoaderText } from '#/components/shared/loader-text'
-import { NumberDisplay } from '#/components/shared/number-display'
 
 import type { ModalPageProps } from '#/schema/page'
 
@@ -130,173 +116,27 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
     )
     const hasAnalysis = analysis !== null
 
-    return (
-      <Flex direction="column" gap="sm">
-        <Fieldset legend="Datos del archivo">
-          <Flex justify="space-between">
-            <Text size="sm">{data.name}</Text>
-            <Badge
-              color={getColorBillTargetType(data.billType)}
-              size="sm"
-              variant="filled"
-            >
-              {data.billType.toUpperCase()}
-            </Badge>
-          </Flex>
-
-          <Text c="dimmed" size="xs">
-            {DateTime.fromJSDate(data.createdAt).toLocaleString(
-              DateTime.DATETIME_MED,
-            )}
-          </Text>
-        </Fieldset>
-
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={16}>
-          <Fieldset legend="Datos del comprador">
-            <Text size="sm">{data.buyerName}</Text>
-            <Text c="dimmed" size="xs">
-              {data.billType === 'PERSONAL' ? 'Cédula' : 'RUC'}: {data.idBuyer}
-            </Text>
-          </Fieldset>
-
-          <Fieldset legend="Datos del emisor">
-            <Text size="sm">{data.socialName}</Text>
-            <Text c="dimmed" size="xs">
-              RUC: {data.idSeller}
-            </Text>
-            <Text c="dimmed" size="xs">
-              Nombre comercial: {data.comercialName}
-            </Text>
-            <Text c="dimmed" lineClamp={2} size="xs">
-              Dirección: {data.addressMatriz}
-            </Text>
-          </Fieldset>
-        </SimpleGrid>
-
-        <Paper withBorder p={0}>
-          <Table highlightOnHover striped m={0} p={0}>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Subtotal</Table.Th>
-                <Table.Th>Impuestos</Table.Th>
-                <Table.Th>Total</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              <Table.Tr>
-                <Table.Td>
-                  <NumberDisplay
-                    thousandSeparator
-                    prefix="$ "
-                    value={data.totalWithoutTaxes}
-                  />
-                </Table.Td>
-                <Table.Td>
-                  <NumberDisplay
-                    thousandSeparator
-                    prefix="$ "
-                    value={data.taxes}
-                  />
-                </Table.Td>
-                <Table.Td>
-                  <NumberDisplay
-                    thousandSeparator
-                    prefix="$ "
-                    value={data.totalAmount}
-                  />
-                </Table.Td>
-              </Table.Tr>
-            </Table.Tbody>
-          </Table>
-        </Paper>
-
-        <Tabs defaultValue="analyze" mt={12} variant="pills">
-          <Tabs.List>
-            <Tabs.Tab leftSection={<Sparkles size={14} />} value="analyze">
-              Análisis
-            </Tabs.Tab>
-            <Tabs.Tab
-              leftSection={<ShoppingBagIcon size={14} />}
-              value="details"
-            >
-              Detalles
-            </Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel value="analyze">
-            <Paper withBorder mt="md" p="md">
-              {hasAnalysis && (
-                <Flex direction="column" gap={8}>
-                  {analysis && (
-                    <>
-                      <Text size="sm">
-                        Clasificación: {analysis.classification}
-                      </Text>
-                      <Text size="sm">Razón: {analysis.reasoning}</Text>
-                      <Text c="dimmed" size="xs">
-                        {analysis.advisoryNotice}
-                      </Text>
-                    </>
-                  )}
-                </Flex>
-              )}
-              {!hasAnalysis && (
-                <EmptyState>
-                  <Text size="md">Sin análisis disponible</Text>
-                  <Text c="dimmed" size="sm">
-                    Esta factura aún no ha sido analizada. Por favor, regresa a
-                    la lista de facturas y selecciona "Analizar" para procesar
-                    esta factura.
-                  </Text>
-                </EmptyState>
-              )}
-            </Paper>
-          </Tabs.Panel>
-
-          <Tabs.Panel value="details">
-            <Paper withBorder mt="md" p={0}>
-              <Table.ScrollContainer maxHeight={210} minWidth={700}>
-                <Table highlightOnHover striped>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Nombre</Table.Th>
-                      <Table.Th>Precio unitario</Table.Th>
-                      <Table.Th>Cantidad</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {data.details.map((detail) => (
-                      <Table.Tr key={detail.id}>
-                        <Table.Td>{detail.description}</Table.Td>
-                        <Table.Td>
-                          <NumberDisplay
-                            thousandSeparator
-                            prefix="$ "
-                            value={detail.unitPrice}
-                          />
-                        </Table.Td>
-                        <Table.Td>
-                          <NumberDisplay
-                            thousandSeparator
-                            value={detail.quantity}
-                          />
-                        </Table.Td>
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-              </Table.ScrollContainer>
-            </Paper>
-          </Tabs.Panel>
-        </Tabs>
-      </Flex>
-    )
+    return <InvoiceDetails
+      invoice={{
+        fileName: data.name,
+        typeLabel: data.billType.toUpperCase(),
+        importedAt: data.createdAt.toLocaleString('es-EC'),
+        buyer: { name: data.buyerName, identifierLabel: data.billType === 'PERSONAL' ? 'Cédula' : 'RUC', identifier: data.idBuyer },
+        seller: { name: data.socialName, identifier: data.idSeller, tradeName: data.comercialName, address: data.addressMatriz },
+        totals: { subtotal: data.totalWithoutTaxes, taxes: data.taxes, total: data.totalAmount, currency: 'USD' },
+        items: data.details.map((detail) => ({ id: detail.id, description: detail.description, unitPrice: detail.unitPrice, quantity: detail.quantity })),
+      }}
+      analysis={<Paper withBorder p="md">
+        {hasAnalysis ? <Flex direction="column" gap={8}><Text size="sm">Clasificación: {analysis?.classification}</Text><Text size="sm">Razón: {analysis?.reasoning}</Text><Text c="dimmed" size="xs">{analysis?.advisoryNotice}</Text></Flex> : <EmptyState><Text size="md">Sin análisis disponible</Text><Text c="dimmed" size="sm">Esta factura aún no ha sido analizada. Regresa a la lista de facturas y selecciona Analizar para procesarla.</Text></EmptyState>}
+      </Paper>}
+    />
   }, [billDetailQuery.data, billDetailQuery.isError, isLoading])
 
   if (modal) {
     return (
       <Modal
         centered
+        closeButtonProps={{ 'aria-label': 'Cerrar detalle de factura' }}
         fullScreen={isMobile}
         opened={Boolean(opened)}
         scrollAreaComponent={ScrollArea.Autosize}

@@ -13,6 +13,7 @@ import {
 import { LMStudio } from '#/integrations/lm-studio'
 import { getServiceLogger } from '#/integrations/logger.server'
 import { createTelemetryService } from '#/integrations/services/telemetry.service'
+import { TaxAnalysisAgentOutputType } from '#/integrations/llm/structured-analysis-output'
 
 import type { LLMPreset } from '#/config/llm-config'
 import type { LLMProviderConfig } from '#/schema/llm-provider'
@@ -27,7 +28,7 @@ export class LMStudioProvider implements ILLMProvider {
   private circuitBreaker = new CircuitBreaker(5, 60_000)
   private telemetryService = createTelemetryService()
   private logger = getServiceLogger('LmStudioProvider')
-  private agent: Agent | null = null
+  private agents = new Map<LLMPreset, Agent<unknown, typeof TaxAnalysisAgentOutputType>>()
   private client: OpenAI
 
   constructor(private config: LLMProviderConfig) {
@@ -101,11 +102,8 @@ export class LMStudioProvider implements ILLMProvider {
           maxTurns: 6,
           stream: false,
         })
-        const output =
-          typeof result.finalOutput === 'string'
-            ? JSON.parse(result.finalOutput)
-            : result.finalOutput
-        const validated = ModelTaxAnalysisPayloadSchema.safeParse(output)
+        const output = result.finalOutput as { payload?: unknown } | undefined
+        const validated = ModelTaxAnalysisPayloadSchema.safeParse(output?.payload)
         if (!validated.success)
           throw new Error('LMStudioProvider final output validation failed')
         return { data: validated.data, usage: result.state.usage }
@@ -155,18 +153,22 @@ export class LMStudioProvider implements ILLMProvider {
     this.circuitBreaker.reset()
   }
 
-  private getAgent(preset: LLMPreset): Agent {
-    if (!this.agent)
-      this.agent = new Agent({
-        name: 'Bill Analysis Agent',
-        model: new OpenAIChatCompletionsModel(this.client, this.config.modelId),
-        instructions: this.config.agentInstructions,
-        modelSettings: {
-          temperature: this.getTemperatureForPreset(preset),
-          maxTokens: this.config.maxTokens,
-        },
-      })
-    return this.agent
+  private getAgent(preset: LLMPreset): Agent<unknown, typeof TaxAnalysisAgentOutputType> {
+    const cached = this.agents.get(preset)
+    if (cached) return cached
+
+    const agent = new Agent({
+      name: 'Bill Analysis Agent',
+      model: new OpenAIChatCompletionsModel(this.client, this.config.modelId),
+      instructions: this.config.agentInstructions,
+      outputType: TaxAnalysisAgentOutputType,
+      modelSettings: {
+        temperature: this.getTemperatureForPreset(preset),
+        maxTokens: this.config.maxTokens,
+      },
+    })
+    this.agents.set(preset, agent)
+    return agent
   }
 
   private async recordTelemetry(input: {

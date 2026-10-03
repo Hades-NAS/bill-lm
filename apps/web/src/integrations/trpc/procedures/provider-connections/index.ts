@@ -53,6 +53,34 @@ async function ownedConnection(userId: string, id: string) {
   return connection
 }
 
+async function persistProbeResult(connection: Awaited<ReturnType<typeof ownedConnection>>, success: boolean) {
+  const updated = await prisma.providerConnection.updateMany({
+    where: {
+      id: connection.id,
+      userId: connection.userId,
+      provider: connection.provider,
+      modelId: connection.modelId,
+      secretVersion: connection.secretVersion,
+      isActive: connection.isActive,
+      deletedAt: null,
+    },
+    data: {
+      probedAt: new Date(),
+      lastProbeError: success ? null : 'No se pudo validar la conexión.',
+    },
+  })
+  const current = await prisma.providerConnection.findFirst({
+    where: { id: connection.id, userId: connection.userId, deletedAt: null },
+    select: publicSelect,
+  })
+  if (!current)
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Conexión no encontrada' })
+  // A zero count is an optimistic-concurrency miss; return the current safe row,
+  // never the stale probe outcome.
+  if (updated.count === 0) return toPublic(current)
+  return toPublic(current)
+}
+
 export const providerConnectionsRouter = {
   list: privateProcedure.query(async ({ ctx }) =>
     (
@@ -177,6 +205,7 @@ export const providerConnectionsRouter = {
     .input(ConnectionIdInputSchema)
     .mutation(async ({ input, ctx }) => {
       const connection = await ownedConnection(ctx.principal.userId, input.id)
+      let healthy = false
       try {
         const apiKey = decryptProviderSecret(
           {
@@ -199,26 +228,11 @@ export const providerConnectionsRouter = {
           timeout: 10_000,
           agentInstructions: 'Health probe.',
         })
-        const healthy = await provider.isEngineHealthy()
+        healthy = await provider.isEngineHealthy()
         if (!healthy) throw new Error('Provider rejected connection')
-        return toPublic(
-          await prisma.providerConnection.update({
-            where: { id: connection.id },
-            data: { probedAt: new Date(), lastProbeError: null },
-            select: publicSelect,
-          }),
-        )
       } catch {
-        return toPublic(
-          await prisma.providerConnection.update({
-            where: { id: connection.id },
-            data: {
-              probedAt: new Date(),
-              lastProbeError: 'No se pudo validar la conexión.',
-            },
-            select: publicSelect,
-          }),
-        )
+        healthy = false
       }
+      return persistProbeResult(connection, healthy)
     }),
 } satisfies TRPCRouterRecord
