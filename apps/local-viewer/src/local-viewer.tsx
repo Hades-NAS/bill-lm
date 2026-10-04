@@ -8,7 +8,6 @@ import {
   Checkbox,
   Container,
   Drawer,
-  FileButton,
   Group,
   Indicator,
   Loader,
@@ -26,7 +25,7 @@ import {
 } from '@mantine/core'
 import { useMantineColorScheme } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { Bell, BookOpen, BriefcaseBusiness, History, LibraryBig, Menu, Moon, NotepadText, Plus, Settings, Sparkles, Sun, Upload } from 'lucide-react'
+import { Bell, BookOpen, BriefcaseBusiness, History, LibraryBig, Menu, Moon, NotepadText, Plus, Settings, Sparkles, Sun } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { CollectionCardPresentation, EmptyState, ExecutionStatusBadge, FieldHelpLabel, InvoiceDetails, RunListItem } from '@bill-lm/ui'
@@ -39,6 +38,7 @@ import { LocalDaemonClient } from './api'
 import { LocalGpuSettingsSection, LocalLibrarySection, OfficialSourcesSection } from './local-sections'
 import { LocalCollectionAnalysis } from './local-collection-analysis'
 import { LocalProfilesSection } from './local-profiles-section'
+import { LocalXmlUploadModal } from './local-xml-upload-modal'
 
 import type {
   CollectionContextRevisionInput,
@@ -125,7 +125,7 @@ export function LocalViewer() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
   const [route, setRoute] = useState<LocalRoute>(() => parseLocalRoute(window.location.hash))
   const [message, setMessage] = useState<string | null>(null)
-  const [importing, setImporting] = useState(false)
+  const [xmlUploadOpened, setXmlUploadOpened] = useState(false)
   const [rulesetLabel, setRulesetLabel] = useState('Cargando ruleset aprobado…')
   const [invoices, setInvoices] = useState<
     Array<{ id: string; fileName: string }>
@@ -522,38 +522,6 @@ export function LocalViewer() {
       .catch(() => setRulesetLabel('No se pudo consultar el ruleset local.'))
   }, [])
 
-  async function importInvoice(file: File | null) {
-    if (!file) return
-    if (!selectedCollectionId) {
-      setMessage('Crea o selecciona una colección antes de importar una factura XML.')
-      return
-    }
-    setImporting(true)
-    try {
-      const result = await client.importCollectionXml(selectedCollectionId, file)
-      const importedInvoiceId = result.invoiceId
-      if (importedInvoiceId)
-        setInvoices((current) => [
-          { id: importedInvoiceId, fileName: file.name },
-          ...current,
-        ])
-      await refreshCollectionDetail(selectedCollectionId)
-      setMessage(
-        result.kind === 'imported'
-          ? 'Factura XML importada y asociada a esta colección local.'
-          : result.kind === 'duplicate'
-            ? 'Esta factura ya existe en la biblioteca local.'
-            : (result.message ?? 'No se pudo importar el XML.'),
-      )
-    } catch {
-      setMessage(
-        'No se pudo conectar al daemon local. Ábrelo y vuelve a intentar.',
-      )
-    } finally {
-      setImporting(false)
-    }
-  }
-
   async function attachExistingInvoice() {
     if (!selectedCollectionId || !attachInvoiceId) return
     setSavingCollection(true)
@@ -680,22 +648,7 @@ export function LocalViewer() {
                 Crea o selecciona una colección antes de importar o asociar facturas.
               </Alert>
             ) : <>
-            <Group>
-              <FileButton
-                accept="application/xml,text/xml,.xml"
-                onChange={importInvoice}
-              >
-                {(props) => (
-                  <Button
-                    {...props}
-                    leftSection={<Upload size={16} />}
-                    loading={importing}
-                  >
-                    Subir facturas
-                  </Button>
-                )}
-              </FileButton>
-            </Group>
+            <Group><Button onClick={() => setXmlUploadOpened(true)}>Subir facturas</Button></Group>
             <Group align="end" wrap="wrap">
               <Select
                 flex="1 1 100%"
@@ -894,6 +847,17 @@ export function LocalViewer() {
             <Group justify="flex-end"><Button onClick={() => setMetadataOpened(false)} variant="default">Cancelar</Button><Button loading={savingCollection} onClick={() => { void saveMetadata().then((saved) => { if (saved) setMetadataOpened(false) }) }}>Guardar datos</Button></Group>
           </Stack>
         </Modal>
+        {selectedCollectionId && <LocalXmlUploadModal
+          client={client}
+          collectionId={selectedCollectionId}
+          onClose={() => setXmlUploadOpened(false)}
+          onCompleted={async () => {
+            await refreshCollectionDetail(selectedCollectionId)
+            const nextInvoices = await client.listInvoices()
+            setInvoices(nextInvoices.items)
+          }}
+          opened={xmlUploadOpened}
+        />}
         {route.section === 'profiles' && <LocalProfilesSection client={client} />}
         {route.section === 'official-sources' && <OfficialSourcesSection client={client} />}
         {route.section === 'library' && <LocalLibrarySection client={client} navigate={(section) => navigate(section)} />}

@@ -41,3 +41,17 @@ test('recorre las secciones locales y crea una colección aislada', async ({ pag
     path: screenshot,
   })
 })
+
+test('selecciona un XML desde el dropzone local y muestra su resultado por archivo', async ({ page }) => {
+  await page.goto('/#/collections/00000000-0000-4000-8000-000000000001')
+  await page.getByRole('button', { name: 'Subir facturas' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Subir facturas XML' })
+  await dialog.locator('input[type="file"]').setInputFiles({
+    name: 'no-es-factura.xml',
+    mimeType: 'application/xml',
+    buffer: Buffer.from('<factura/>'),
+  })
+  await expect(dialog.getByText('no-es-factura.xml')).toBeVisible()
+  await dialog.getByRole('button', { name: 'Importar 1 archivo' }).click()
+  await expect(dialog.getByText('El XML no contiene una factura autorizada y válida del SRI.')).toBeVisible()
+})

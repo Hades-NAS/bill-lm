@@ -107,6 +107,10 @@ export type LocalTaxpayerProfile = {
 
 export type LocalCollectionContext = LocalCollectionSummary
 
+export type LocalCollectionXmlImportResult =
+  | { kind: 'imported' | 'duplicate'; invoiceId?: string; membership?: LocalCollectionInvoiceMembership }
+  | { kind: 'invalid-xml'; message: string }
+
 export class LocalDaemonClient {
   constructor(private readonly baseUrl = '') {}
 
@@ -220,17 +224,26 @@ export class LocalDaemonClient {
   async markAllRunsRead() { return (await (await this.request(`${apiPrefix}/runs/read-all`, { method: 'PATCH' })).json()) as { changed: number } }
   async clearEligibleRuns() { return (await (await this.request(`${apiPrefix}/runs/clear-eligible`, { method: 'POST' })).json()) as { changed: number } }
 
-  async importCollectionXml(collectionId: string, file: File) {
-    const response = await this.request(`${apiPrefix}/collections/${collectionId}/invoices/xml`, {
+  async importCollectionXml(collectionId: string, file: File): Promise<LocalCollectionXmlImportResult> {
+    const response = await fetch(`${this.baseUrl}${apiPrefix}/collections/${collectionId}/invoices/xml`, {
       method: 'POST',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ fileName: file.name, xml: await file.text() }),
     })
-    return (await response.json()) as {
-      kind?: 'imported' | 'duplicate' | 'invalid-xml'
-      invoiceId?: string
-      membership?: LocalCollectionInvoiceMembership
-      code?: string
-      message?: string
+    const body = await response.json().catch(() => null) as {
+      kind?: unknown
+      invoiceId?: unknown
+      membership?: unknown
+      message?: unknown
+    }
+    if (response.status === 400 && body?.kind === 'invalid-xml')
+      return { kind: 'invalid-xml', message: typeof body.message === 'string' ? body.message : 'No se pudo leer el XML.' }
+    if (!response.ok) throw new Error(typeof body?.message === 'string' ? body.message : `HTTP ${response.status}`)
+    if (body?.kind !== 'imported' && body?.kind !== 'duplicate') throw new Error('Respuesta de importación local no reconocida.')
+    return {
+      kind: body.kind,
+      invoiceId: typeof body.invoiceId === 'string' ? body.invoiceId : undefined,
+      membership: body.membership ? LocalCollectionInvoiceMembershipSchema.parse(body.membership) : undefined,
     }
   }
 

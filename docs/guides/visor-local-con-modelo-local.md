@@ -156,9 +156,12 @@ no existe, el visor vuelve de forma segura a **Colecciones**.
 2. Crea una colección y guarda su contexto tributario, seleccionando el perfil
    y las actividades aplicables. Las revisiones quedan asociadas a esa
    colección local.
-3. Dentro del detalle de la colección, importa un comprobante XML. No se
-   aceptan PDF ni ZIP; el XML se guarda una sola vez en la biblioteca local y
-   queda asociado a esa colección. Quitar la factura de la colección no borra
+3. Dentro del detalle de la colección, usa **Subir facturas** para seleccionar
+   o arrastrar hasta 10 comprobantes XML de máximo 5 MB cada uno. No se aceptan
+   PDF ni ZIP. Cada XML se intenta importar por separado y muestra si se
+   importó, ya existía, es inválido o no se pudo contactar el daemon; el XML se
+   guarda una sola vez en la biblioteca local y queda asociado a esa colección.
+   Quitar la factura de la colección no borra
    su XML, resultados ni una posible asociación con otra colección.
 4. En **Conexión local-GPU** de esa colección, guarda la conexión OpenAI-like
    con la URL `/v1` y el ID literal del modelo. Pulsa **Probar conexión**;

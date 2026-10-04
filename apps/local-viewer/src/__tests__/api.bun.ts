@@ -98,6 +98,7 @@ describe('LocalDaemonClient', () => {
     const requests: Array<{ url: string; init?: RequestInit }> = []
     globalThis.fetch = (async (input: URL | RequestInfo, init?: RequestInit) => {
       requests.push({ url: String(input), init })
+      if (String(input).endsWith('/invoices/xml')) return Response.json({ kind: 'imported', invoiceId: id, membership: { kind: 'attached', invoiceId: id, collectionId: id } })
       return Response.json(init?.method === 'DELETE' ? { kind: 'detached' } : { kind: 'attached' })
     }) as typeof fetch
 
@@ -110,6 +111,14 @@ describe('LocalDaemonClient', () => {
       `POST http://127.0.0.1:4318/api/v1/collections/${id}/invoices`,
       `DELETE http://127.0.0.1:4318/api/v1/collections/${id}/invoices/${id}`,
     ])
+  })
+
+  it('returns daemon invalid XML as a typed file-level outcome', async () => {
+    const id = '00000000-0000-4000-8000-000000000001'
+    globalThis.fetch = (async () => Response.json({ kind: 'invalid-xml', message: 'XML no válido.' }, { status: 400 })) as unknown as typeof fetch
+
+    await expect(new LocalDaemonClient().importCollectionXml(id, new File(['no es xml'], 'invalido.xml', { type: 'application/xml' })))
+      .resolves.toEqual({ kind: 'invalid-xml', message: 'XML no válido.' })
   })
 
   it('uses only local Hono routes for official-source snapshots and Biblioteca summary', async () => {
