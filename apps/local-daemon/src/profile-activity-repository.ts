@@ -51,7 +51,9 @@ function profileRevision(
 
 function latestRows(
   database: Database,
-  table: 'local_economic_activity_revisions' | 'local_taxpayer_profile_revisions',
+  table:
+    | 'local_economic_activity_revisions'
+    | 'local_taxpayer_profile_revisions',
   scope: ActorScope,
 ): RevisionRow[] {
   return database
@@ -80,7 +82,10 @@ export function createLocalProfileActivityRepository(
       try {
         return ok(
           latestRows(database, 'local_economic_activity_revisions', scope).map(
-            (row) => ({ id: row.aggregate_id, latestRevision: activityRevision(row) }),
+            (row) => ({
+              id: row.aggregate_id,
+              latestRevision: activityRevision(row),
+            }),
           ),
         )
       } catch {
@@ -223,7 +228,9 @@ export function createLocalProfileActivityRepository(
     },
     async appendProfileRevision(scope, revision) {
       try {
-        storage.transaction(() => insertProfileRevision(database, scope, revision))
+        storage.transaction(() =>
+          insertProfileRevision(database, scope, revision),
+        )
         return ok(revision)
       } catch {
         return err(repositoryFailure())

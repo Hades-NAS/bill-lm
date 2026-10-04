@@ -70,6 +70,12 @@ etapas de depuración, inicia el daemon con:
 BILL_LM_LOCAL_LOG_LEVEL=debug bun run daemon:local
 ```
 
+Cuando el SDK de Agents rechaza la salida, `analysis.run.failed` puede incluir
+`agentsErrorKind` (`model-behavior`, `model-refusal`, `max-turns`,
+`model-timeout`, `system` u `other`) y, solo para un timeout válido,
+`agentsTimeoutMs`. Son categorías operativas: no contienen el mensaje, la
+respuesta, el rechazo ni la causa del modelo.
+
 La respuesta debe contener una lista `items`. Si no responde, revisa la
 terminal del daemon; el visor no puede sustituir ese proceso.
 

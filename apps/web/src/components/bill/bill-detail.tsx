@@ -116,20 +116,59 @@ const BillDetailPage = (props: ModalPageProps<string>) => {
     )
     const hasAnalysis = analysis !== null
 
-    return <InvoiceDetails
-      invoice={{
-        fileName: data.name,
-        typeLabel: data.billType.toUpperCase(),
-        importedAt: data.createdAt.toLocaleString('es-EC'),
-        buyer: { name: data.buyerName, identifierLabel: data.billType === 'PERSONAL' ? 'Cédula' : 'RUC', identifier: data.idBuyer },
-        seller: { name: data.socialName, identifier: data.idSeller, tradeName: data.comercialName, address: data.addressMatriz },
-        totals: { subtotal: data.totalWithoutTaxes, taxes: data.taxes, total: data.totalAmount, currency: 'USD' },
-        items: data.details.map((detail) => ({ id: detail.id, description: detail.description, unitPrice: detail.unitPrice, quantity: detail.quantity })),
-      }}
-      analysis={<Paper withBorder p="md">
-        {hasAnalysis ? <Flex direction="column" gap={8}><Text size="sm">Clasificación: {analysis?.classification}</Text><Text size="sm">Razón: {analysis?.reasoning}</Text><Text c="dimmed" size="xs">{analysis?.advisoryNotice}</Text></Flex> : <EmptyState><Text size="md">Sin análisis disponible</Text><Text c="dimmed" size="sm">Esta factura aún no ha sido analizada. Regresa a la lista de facturas y selecciona Analizar para procesarla.</Text></EmptyState>}
-      </Paper>}
-    />
+    return (
+      <InvoiceDetails
+        invoice={{
+          fileName: data.name,
+          typeLabel: data.billType.toUpperCase(),
+          importedAt: data.createdAt.toLocaleString('es-EC'),
+          buyer: {
+            name: data.buyerName,
+            identifierLabel: data.billType === 'PERSONAL' ? 'Cédula' : 'RUC',
+            identifier: data.idBuyer,
+          },
+          seller: {
+            name: data.socialName,
+            identifier: data.idSeller,
+            tradeName: data.comercialName,
+            address: data.addressMatriz,
+          },
+          totals: {
+            subtotal: data.totalWithoutTaxes,
+            taxes: data.taxes,
+            total: data.totalAmount,
+            currency: 'USD',
+          },
+          items: data.details.map((detail) => ({
+            id: detail.id,
+            description: detail.description,
+            unitPrice: detail.unitPrice,
+            quantity: detail.quantity,
+          })),
+        }}
+        analysis={
+          <Paper withBorder p="md">
+            {hasAnalysis ? (
+              <Flex direction="column" gap={8}>
+                <Text size="sm">Clasificación: {analysis?.classification}</Text>
+                <Text size="sm">Razón: {analysis?.reasoning}</Text>
+                <Text c="dimmed" size="xs">
+                  {analysis?.advisoryNotice}
+                </Text>
+              </Flex>
+            ) : (
+              <EmptyState>
+                <Text size="md">Sin análisis disponible</Text>
+                <Text c="dimmed" size="sm">
+                  Esta factura aún no ha sido analizada. Regresa a la lista de
+                  facturas y selecciona Analizar para procesarla.
+                </Text>
+              </EmptyState>
+            )}
+          </Paper>
+        }
+      />
+    )
   }, [billDetailQuery.data, billDetailQuery.isError, isLoading])
 
   if (modal) {

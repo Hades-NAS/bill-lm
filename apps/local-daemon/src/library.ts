@@ -1,3 +1,4 @@
+import { parseAndValidateInvoiceXML } from '@bill-lm/contracts'
 import { Database } from 'bun:sqlite'
 import { createHash } from 'node:crypto'
 import {
@@ -11,6 +12,14 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 
+import { createLocalCollectionContextRepository } from './local-collection-context-repository'
+import { createLocalProfileActivityRepository } from './profile-activity-repository'
+
+import type {
+  ActorScope,
+  CollectionContextRepository,
+  ProfileActivityRepository,
+} from '@bill-lm/application'
 import type {
   CreateLocalConnection,
   LocalConnection,
@@ -18,15 +27,6 @@ import type {
   UpdateLocalConnection,
   ModelTaxAnalysisPayload,
 } from '@bill-lm/contracts'
-import { parseAndValidateInvoiceXML } from '@bill-lm/contracts'
-import type {
-  ActorScope,
-  CollectionContextRepository,
-  ProfileActivityRepository,
-} from '@bill-lm/application'
-
-import { createLocalCollectionContextRepository } from './local-collection-context-repository'
-import { createLocalProfileActivityRepository } from './profile-activity-repository'
 
 export class LocalLibrary {
   readonly database: Database
@@ -62,7 +62,8 @@ export class LocalLibrary {
       id TEXT PRIMARY KEY, scope_id TEXT NOT NULL, created_at TEXT NOT NULL,
       FOREIGN KEY (scope_id) REFERENCES local_library_metadata(scope_id)
     )`)
-    this.database.run(`CREATE TABLE IF NOT EXISTS local_economic_activity_revisions (
+    this.database
+      .run(`CREATE TABLE IF NOT EXISTS local_economic_activity_revisions (
       id TEXT PRIMARY KEY, activity_id TEXT NOT NULL, scope_id TEXT NOT NULL,
       revision INTEGER NOT NULL, revision_json TEXT NOT NULL, created_at TEXT NOT NULL,
       UNIQUE (activity_id, revision),
@@ -73,14 +74,16 @@ export class LocalLibrary {
       id TEXT PRIMARY KEY, scope_id TEXT NOT NULL, created_at TEXT NOT NULL,
       FOREIGN KEY (scope_id) REFERENCES local_library_metadata(scope_id)
     )`)
-    this.database.run(`CREATE TABLE IF NOT EXISTS local_taxpayer_profile_revisions (
+    this.database
+      .run(`CREATE TABLE IF NOT EXISTS local_taxpayer_profile_revisions (
       id TEXT PRIMARY KEY, taxpayer_profile_id TEXT NOT NULL, scope_id TEXT NOT NULL,
       revision INTEGER NOT NULL, revision_json TEXT NOT NULL, created_at TEXT NOT NULL,
       UNIQUE (taxpayer_profile_id, revision),
       FOREIGN KEY (taxpayer_profile_id) REFERENCES local_taxpayer_profiles(id),
       FOREIGN KEY (scope_id) REFERENCES local_library_metadata(scope_id)
     )`)
-    this.database.run(`CREATE TABLE IF NOT EXISTS local_taxpayer_profile_activity_revisions (
+    this.database
+      .run(`CREATE TABLE IF NOT EXISTS local_taxpayer_profile_activity_revisions (
       taxpayer_profile_revision_id TEXT NOT NULL,
       economic_activity_revision_id TEXT NOT NULL,
       scope_id TEXT NOT NULL,
@@ -105,14 +108,16 @@ export class LocalLibrary {
         // The column is already present in libraries created by this daemon.
       }
     }
-    this.database.run(`CREATE TABLE IF NOT EXISTS local_collection_context_revisions (
+    this.database
+      .run(`CREATE TABLE IF NOT EXISTS local_collection_context_revisions (
       id TEXT PRIMARY KEY, collection_id TEXT NOT NULL, scope_id TEXT NOT NULL,
       revision INTEGER NOT NULL, revision_json TEXT NOT NULL, created_at TEXT NOT NULL,
       UNIQUE (collection_id, revision),
       FOREIGN KEY (collection_id) REFERENCES local_collections(id),
       FOREIGN KEY (scope_id) REFERENCES local_library_metadata(scope_id)
     )`)
-    this.database.run(`CREATE TABLE IF NOT EXISTS local_collection_context_activity_revisions (
+    this.database
+      .run(`CREATE TABLE IF NOT EXISTS local_collection_context_activity_revisions (
       collection_context_revision_id TEXT NOT NULL,
       economic_activity_revision_id TEXT NOT NULL,
       scope_id TEXT NOT NULL,
@@ -147,6 +152,7 @@ export class LocalLibrary {
     )`)
     this.database.run(`CREATE TABLE IF NOT EXISTS local_runs (
       id TEXT PRIMARY KEY, invoice_id TEXT NOT NULL, collection_id TEXT,
+      batch_id TEXT,
       connection_id TEXT NOT NULL,
       ruleset_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL,
       read_at TEXT, snapshot_json TEXT
@@ -155,7 +161,18 @@ export class LocalLibrary {
       'ALTER TABLE local_runs ADD COLUMN collection_id TEXT',
       'ALTER TABLE local_runs ADD COLUMN read_at TEXT',
       'ALTER TABLE local_runs ADD COLUMN snapshot_json TEXT',
-    ]) try { this.database.run(statement) } catch { /* Existing library. */ }
+      'ALTER TABLE local_runs ADD COLUMN batch_id TEXT',
+    ])
+      try {
+        this.database.run(statement)
+      } catch {
+        /* Existing library. */
+      }
+    this.database.run(`CREATE TABLE IF NOT EXISTS local_analysis_batches (
+      id TEXT PRIMARY KEY, collection_id TEXT NOT NULL, connection_id TEXT NOT NULL,
+      invoice_count INTEGER NOT NULL, finished_count INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL, created_at TEXT NOT NULL, completed_at TEXT
+    )`)
     this.database.run(`CREATE TABLE IF NOT EXISTS local_run_events (
       id TEXT PRIMARY KEY, run_id TEXT NOT NULL, status TEXT NOT NULL,
       message TEXT NOT NULL, created_at TEXT NOT NULL
@@ -226,46 +243,80 @@ export class LocalLibrary {
     return row ? this.toConnection(row as Record<string, unknown>) : null
   }
 
-  updateConnection(id: string, input: UpdateLocalConnection): LocalConnection | null {
+  updateConnection(
+    id: string,
+    input: UpdateLocalConnection,
+  ): LocalConnection | null {
     const current = this.getConnection(id)
     if (!current) return null
     const next = { ...current, ...input }
     const now = new Date().toISOString()
-    if (input.makeDefault) this.database.run('UPDATE local_connections SET is_default = 0')
-    const probeIsStale = next.apiFlavor !== current.apiFlavor
-      || next.baseUrl !== current.baseUrl || next.model !== current.model
-    this.database.query(`UPDATE local_connections SET label = ?, api_flavor = ?, base_url = ?, model = ?, is_default = ?, last_probed_at = ?, last_probe_error = ?, updated_at = ? WHERE id = ?`).run(
-      next.label, next.apiFlavor, next.baseUrl, next.model,
-      Number(input.makeDefault ?? current.isDefault),
-      probeIsStale ? null : current.lastProbedAt?.toISOString() ?? null,
-      probeIsStale ? null : current.lastProbeError ?? null,
-      now, id,
-    )
+    if (input.makeDefault)
+      this.database.run('UPDATE local_connections SET is_default = 0')
+    const probeIsStale =
+      next.apiFlavor !== current.apiFlavor ||
+      next.baseUrl !== current.baseUrl ||
+      next.model !== current.model
+    this.database
+      .query(
+        `UPDATE local_connections SET label = ?, api_flavor = ?, base_url = ?, model = ?, is_default = ?, last_probed_at = ?, last_probe_error = ?, updated_at = ? WHERE id = ?`,
+      )
+      .run(
+        next.label,
+        next.apiFlavor,
+        next.baseUrl,
+        next.model,
+        Number(input.makeDefault ?? current.isDefault),
+        probeIsStale ? null : (current.lastProbedAt?.toISOString() ?? null),
+        probeIsStale ? null : (current.lastProbeError ?? null),
+        now,
+        id,
+      )
     return this.getConnection(id)
   }
 
   deleteConnection(id: string) {
-    const activeRuns = Number((this.database.query(`SELECT COUNT(*) AS count FROM local_runs WHERE connection_id = ? AND status IN ('queued', 'running')`).get(id) as { count: number }).count)
+    const activeRuns = Number(
+      (
+        this.database
+          .query(
+            `SELECT COUNT(*) AS count FROM local_runs WHERE connection_id = ? AND status IN ('queued', 'running')`,
+          )
+          .get(id) as { count: number }
+      ).count,
+    )
     if (activeRuns > 0) return { kind: 'active-runs' as const }
-    return this.database.run('DELETE FROM local_connections WHERE id = ?', [id]).changes > 0
-      ? { kind: 'deleted' as const } : { kind: 'not-found' as const }
+    return this.database.run('DELETE FROM local_connections WHERE id = ?', [id])
+      .changes > 0
+      ? { kind: 'deleted' as const }
+      : { kind: 'not-found' as const }
   }
 
-  recordProbe(id: string, result: { ok: boolean; message?: string }, expected?: LocalConnection) {
+  recordProbe(
+    id: string,
+    result: { ok: boolean; message?: string },
+    expected?: LocalConnection,
+  ) {
     const now = new Date().toISOString()
-    const update = this.database
-      .query(
-        `UPDATE local_connections
+    const update = this.database.query(
+      `UPDATE local_connections
          SET last_probed_at = ?, last_probe_error = ?, updated_at = ?
          WHERE id = ?${expected ? ' AND api_flavor = ? AND base_url = ? AND model = ? AND secret_ref IS ?' : ''}`,
-      )
+    )
     const values = [
-        now,
-        result.ok ? null : (result.message ?? 'La prueba falló.'),
-        now,
-        id,
-        ...(expected ? [expected.apiFlavor, expected.baseUrl, expected.model, expected.secretRef ?? null] : []),
-      ]
+      now,
+      result.ok ? null : (result.message ?? 'La prueba falló.'),
+      now,
+      id,
+      ...(expected
+        ? [
+            expected.apiFlavor,
+            expected.baseUrl,
+            expected.model,
+            expected.secretRef ?? null,
+          ]
+        : []),
+    ]
     return update.run(...values).changes > 0
   }
 
@@ -283,16 +334,28 @@ export class LocalLibrary {
     )
   }
 
-  setCollectionMetadata(id: string, input: { name: string; year: number; description: string | null }) {
+  setCollectionMetadata(
+    id: string,
+    input: { name: string; year: number; description: string | null },
+  ) {
     this.database
       .query(
         `UPDATE local_collections SET name = ?, year = ?, description = ?
          WHERE id = ? AND scope_id = ?`,
       )
-      .run(input.name, input.year, input.description, id, this.localScope.userId)
+      .run(
+        input.name,
+        input.year,
+        input.description,
+        id,
+        this.localScope.userId,
+      )
   }
 
-  updateCollectionMetadata(id: string, input: { name?: string; year?: number; description?: string | null }) {
+  updateCollectionMetadata(
+    id: string,
+    input: { name?: string; year?: number; description?: string | null },
+  ) {
     const current = this.getCollectionMetadata(id)
     if (!current) return null
     const next = { ...current, ...input }
@@ -301,9 +364,11 @@ export class LocalLibrary {
   }
 
   getCollectionMetadata(id: string) {
-    const row = this.database.query(
-      `SELECT id, name, year, description FROM local_collections WHERE id = ? AND scope_id = ?`,
-    ).get(id, this.localScope.userId) as Record<string, unknown> | null
+    const row = this.database
+      .query(
+        `SELECT id, name, year, description FROM local_collections WHERE id = ? AND scope_id = ?`,
+      )
+      .get(id, this.localScope.userId) as Record<string, unknown> | null
     if (!row) return null
     return this.toCollectionMetadata(row)
   }
@@ -336,8 +401,10 @@ export class LocalLibrary {
   }
 
   attachInvoiceToCollection(collectionId: string, invoiceId: string) {
-    if (!this.hasCollection(collectionId)) return { kind: 'collection-not-found' as const }
-    if (!this.hasInvoice(invoiceId)) return { kind: 'invoice-not-found' as const }
+    if (!this.hasCollection(collectionId))
+      return { kind: 'collection-not-found' as const }
+    if (!this.hasInvoice(invoiceId))
+      return { kind: 'invoice-not-found' as const }
     if (this.hasCollectionInvoice(collectionId, invoiceId))
       return { kind: 'already-attached' as const }
     this.database
@@ -350,7 +417,8 @@ export class LocalLibrary {
   }
 
   detachInvoiceFromCollection(collectionId: string, invoiceId: string) {
-    if (!this.hasCollection(collectionId)) return { kind: 'collection-not-found' as const }
+    if (!this.hasCollection(collectionId))
+      return { kind: 'collection-not-found' as const }
     if (!this.hasCollectionInvoice(collectionId, invoiceId))
       return { kind: 'membership-not-found' as const }
     this.database
@@ -424,6 +492,7 @@ export class LocalLibrary {
   createRun(input: {
     invoiceId: string
     collectionId?: string
+    batchId?: string
     connectionId: string
     rulesetId: string
     snapshot?: unknown
@@ -433,13 +502,14 @@ export class LocalLibrary {
     this.database
       .query(
         `INSERT INTO local_runs
-         (id, invoice_id, collection_id, connection_id, ruleset_id, status, created_at, snapshot_json)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, invoice_id, collection_id, batch_id, connection_id, ruleset_id, status, created_at, snapshot_json)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         id,
         input.invoiceId,
         input.collectionId ?? null,
+        input.batchId ?? null,
         input.connectionId,
         input.rulesetId,
         'queued',
@@ -452,6 +522,72 @@ export class LocalLibrary {
       message: 'El análisis local está en cola.',
     })
     return { id, status: 'queued' as const, createdAt: new Date(createdAt) }
+  }
+
+  createAnalysisBatch(input: {
+    collectionId: string
+    connectionId: string
+    invoiceCount: number
+  }) {
+    const id = crypto.randomUUID()
+    const createdAt = new Date().toISOString()
+    this.database
+      .query(
+        `INSERT INTO local_analysis_batches
+         (id, collection_id, connection_id, invoice_count, finished_count, status, created_at)
+         VALUES (?, ?, ?, ?, 0, 'queued', ?)`,
+      )
+      .run(
+        id,
+        input.collectionId,
+        input.connectionId,
+        input.invoiceCount,
+        createdAt,
+      )
+    return { id, queuedAt: createdAt }
+  }
+
+  startAnalysisBatch(batchId: string) {
+    this.database.run(
+      "UPDATE local_analysis_batches SET status = 'running' WHERE id = ? AND status = 'queued'",
+      [batchId],
+    )
+  }
+
+  finishAnalysisBatchInvoice(batchId: string) {
+    this.database.transaction(() => {
+      this.database.run(
+        'UPDATE local_analysis_batches SET finished_count = MIN(finished_count + 1, invoice_count) WHERE id = ?',
+        [batchId],
+      )
+      this.database.run(
+        `UPDATE local_analysis_batches
+         SET status = 'completed', completed_at = ?
+         WHERE id = ? AND finished_count >= invoice_count`,
+        [new Date().toISOString(), batchId],
+      )
+    })()
+  }
+
+  getActiveAnalysisBatch(collectionId: string) {
+    const row = this.database
+      .query(
+        `SELECT id, collection_id, invoice_count, finished_count, status, created_at
+         FROM local_analysis_batches
+         WHERE collection_id = ? AND status IN ('queued', 'running')
+         ORDER BY created_at DESC LIMIT 1`,
+      )
+      .get(collectionId) as Record<string, unknown> | null
+    return row
+      ? {
+          id: String(row.id),
+          collectionId: String(row.collection_id),
+          invoiceCount: Number(row.invoice_count),
+          finishedCount: Number(row.finished_count),
+          status: row.status as 'queued' | 'running',
+          queuedAt: String(row.created_at),
+        }
+      : null
   }
 
   appendRunEvent(input: {
@@ -471,8 +607,14 @@ export class LocalLibrary {
   }
 
   startRun(runId: string) {
-    this.database.run("UPDATE local_runs SET status = 'running' WHERE id = ?", [runId])
-    this.appendRunEvent({ runId, status: 'running', message: 'El análisis local está en ejecución.' })
+    this.database.run("UPDATE local_runs SET status = 'running' WHERE id = ?", [
+      runId,
+    ])
+    this.appendRunEvent({
+      runId,
+      status: 'running',
+      message: 'El análisis local está en ejecución.',
+    })
   }
 
   completeRun(input: {
@@ -481,50 +623,87 @@ export class LocalLibrary {
     payload: ModelTaxAnalysisPayload
   }) {
     this.database.transaction(() => {
-      this.database.query(`INSERT INTO local_analysis_results VALUES (?, ?, ?, ?, ?, ?, ?)`).run(
-        crypto.randomUUID(), input.runId, input.invoiceId, input.payload.purpose,
-        input.payload.classification, JSON.stringify(input.payload), new Date().toISOString(),
+      this.database
+        .query(
+          `INSERT INTO local_analysis_results VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          crypto.randomUUID(),
+          input.runId,
+          input.invoiceId,
+          input.payload.purpose,
+          input.payload.classification,
+          JSON.stringify(input.payload),
+          new Date().toISOString(),
+        )
+      this.database.run(
+        "UPDATE local_runs SET status = 'completed' WHERE id = ?",
+        [input.runId],
       )
-      this.database.run("UPDATE local_runs SET status = 'completed' WHERE id = ?", [input.runId])
-      this.appendRunEvent({ runId: input.runId, status: 'completed', message: 'El análisis local terminó.' })
+      this.appendRunEvent({
+        runId: input.runId,
+        status: 'completed',
+        message: 'El análisis local terminó.',
+      })
     })()
   }
 
   failRun(runId: string, message: string) {
     this.database.transaction(() => {
-      this.database.run("UPDATE local_runs SET status = 'failed' WHERE id = ?", [runId])
+      this.database.run(
+        "UPDATE local_runs SET status = 'failed' WHERE id = ?",
+        [runId],
+      )
       this.appendRunEvent({ runId, status: 'failed', message })
     })()
   }
 
   getRunResult(runId: string) {
-    const row = this.database.query('SELECT * FROM local_analysis_results WHERE run_id = ?').get(runId) as Record<string, unknown> | null
+    const row = this.database
+      .query('SELECT * FROM local_analysis_results WHERE run_id = ?')
+      .get(runId) as Record<string, unknown> | null
     return row ? this.toRunResult(row) : null
   }
 
   getCollectionRunDetail(collectionId: string, runId: string) {
     const row = this.database
-      .query(`SELECT run.*, invoice.file_name, collection.name AS collection_name
+      .query(
+        `SELECT run.*, invoice.file_name, collection.name AS collection_name,
+                batch.id AS batch_id, batch.invoice_count AS batch_invoice_count,
+                batch.finished_count AS batch_finished_count, batch.status AS batch_status
               FROM local_runs run
               LEFT JOIN local_invoices invoice ON invoice.id = run.invoice_id
               LEFT JOIN local_collections collection ON collection.id = run.collection_id
-              WHERE run.id = ? AND run.collection_id = ?`)
+              LEFT JOIN local_analysis_batches batch ON batch.id = run.batch_id
+              WHERE run.id = ? AND run.collection_id = ?`,
+      )
       .get(runId, collectionId) as Record<string, unknown> | null
     if (!row) return null
     return { ...this.toRunSummary(row), events: this.listRunEvents(runId) }
   }
 
   getRunDetail(runId: string) {
-    const row = this.database.query(`SELECT run.*, invoice.file_name, collection.name AS collection_name
+    const row = this.database
+      .query(
+        `SELECT run.*, invoice.file_name, collection.name AS collection_name,
+                batch.id AS batch_id, batch.invoice_count AS batch_invoice_count,
+                batch.finished_count AS batch_finished_count, batch.status AS batch_status
       FROM local_runs run
       LEFT JOIN local_invoices invoice ON invoice.id = run.invoice_id
       LEFT JOIN local_collections collection ON collection.id = run.collection_id
-      WHERE run.id = ?`).get(runId) as Record<string, unknown> | null
-    return row ? { ...this.toRunSummary(row), events: this.listRunEvents(runId) } : null
+      LEFT JOIN local_analysis_batches batch ON batch.id = run.batch_id
+      WHERE run.id = ?`,
+      )
+      .get(runId) as Record<string, unknown> | null
+    return row
+      ? { ...this.toRunSummary(row), events: this.listRunEvents(runId) }
+      : null
   }
 
   listRunResults() {
-    return this.database.query('SELECT * FROM local_analysis_results ORDER BY created_at DESC').all()
+    return this.database
+      .query('SELECT * FROM local_analysis_results ORDER BY created_at DESC')
+      .all()
       .map((row) => this.toRunResult(row as Record<string, unknown>))
   }
 
@@ -550,16 +729,31 @@ export class LocalLibrary {
       })
   }
 
-  listRuns(filter: { collectionId?: string; status?: LocalAnalysisRunStatus; unread?: boolean } = {}) {
+  listRuns(
+    filter: {
+      collectionId?: string
+      status?: LocalAnalysisRunStatus
+      unread?: boolean
+    } = {},
+  ) {
     const clauses: string[] = []
     const parameters: string[] = []
-    if (filter.collectionId) { clauses.push('run.collection_id = ?'); parameters.push(filter.collectionId) }
-    if (filter.status) { clauses.push('run.status = ?'); parameters.push(filter.status) }
+    if (filter.collectionId) {
+      clauses.push('run.collection_id = ?')
+      parameters.push(filter.collectionId)
+    }
+    if (filter.status) {
+      clauses.push('run.status = ?')
+      parameters.push(filter.status)
+    }
     if (filter.unread) clauses.push('run.read_at IS NULL')
-    const query = `SELECT run.*, invoice.file_name, collection.name AS collection_name
+    const query = `SELECT run.*, invoice.file_name, collection.name AS collection_name,
+      batch.id AS batch_id, batch.invoice_count AS batch_invoice_count,
+      batch.finished_count AS batch_finished_count, batch.status AS batch_status
       FROM local_runs run
       LEFT JOIN local_invoices invoice ON invoice.id = run.invoice_id
       LEFT JOIN local_collections collection ON collection.id = run.collection_id
+      LEFT JOIN local_analysis_batches batch ON batch.id = run.batch_id
       ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''}
       ORDER BY run.created_at DESC`
     return this.database
@@ -569,63 +763,165 @@ export class LocalLibrary {
   }
 
   markRunRead(runId: string) {
-    const result = this.database.run('UPDATE local_runs SET read_at = ? WHERE id = ? AND read_at IS NULL', [new Date().toISOString(), runId])
+    const result = this.database.run(
+      'UPDATE local_runs SET read_at = ? WHERE id = ? AND read_at IS NULL',
+      [new Date().toISOString(), runId],
+    )
     if (result.changes > 0) return { found: true, changed: 1 }
-    return { found: this.database.query('SELECT 1 FROM local_runs WHERE id = ?').get(runId) !== null, changed: 0 }
+    return {
+      found:
+        this.database
+          .query('SELECT 1 FROM local_runs WHERE id = ?')
+          .get(runId) !== null,
+      changed: 0,
+    }
   }
 
   markAllRunsRead() {
-    return this.database.run('UPDATE local_runs SET read_at = ? WHERE read_at IS NULL', [new Date().toISOString()]).changes
+    return this.database.run(
+      'UPDATE local_runs SET read_at = ? WHERE read_at IS NULL',
+      [new Date().toISOString()],
+    ).changes
   }
 
   clearEligibleRuns() {
-    return this.database.run("UPDATE local_runs SET read_at = ? WHERE read_at IS NULL AND status IN ('completed', 'failed')", [new Date().toISOString()]).changes
+    return this.database.run(
+      "UPDATE local_runs SET read_at = ? WHERE read_at IS NULL AND status IN ('completed', 'failed')",
+      [new Date().toISOString()],
+    ).changes
   }
 
   getCollectionInvoiceDetail(collectionId: string, invoiceId: string) {
-    const row = this.database.query(
-      `SELECT invoice.id, invoice.file_name, invoice.normalized_json
+    const row = this.database
+      .query(
+        `SELECT invoice.id, invoice.file_name, invoice.normalized_json
        FROM local_collection_invoices membership
        JOIN local_invoices invoice ON invoice.id = membership.invoice_id
        WHERE membership.collection_id = ? AND membership.invoice_id = ?`,
-    ).get(collectionId, invoiceId) as Record<string, unknown> | null
+      )
+      .get(collectionId, invoiceId) as Record<string, unknown> | null
     if (!row) return null
-    const factura = (JSON.parse(String(row.normalized_json)) as { factura?: Record<string, unknown> }).factura ?? {}
+    const factura =
+      (
+        JSON.parse(String(row.normalized_json)) as {
+          factura?: Record<string, unknown>
+        }
+      ).factura ?? {}
     const tributaria = (factura.infoTributaria ?? {}) as Record<string, unknown>
     const info = (factura.infoFactura ?? {}) as Record<string, unknown>
-    const details = ((factura.detalles as { detalle?: unknown[] } | undefined)?.detalle ?? []) as Array<Record<string, unknown>>
-    const totalTaxes = ((info.totalConImpuestos as { totalImpuesto?: unknown[] } | undefined)?.totalImpuesto ?? []) as Array<Record<string, unknown>>
+    const details = ((factura.detalles as { detalle?: unknown[] } | undefined)
+      ?.detalle ?? []) as Array<Record<string, unknown>>
+    const totalTaxes = ((
+      info.totalConImpuestos as { totalImpuesto?: unknown[] } | undefined
+    )?.totalImpuesto ?? []) as Array<Record<string, unknown>>
     return {
-      id: String(row.id), fileName: String(row.file_name), issueDate: this.stringOrNull(info.fechaEmision),
-      seller: { name: this.stringOrNull(tributaria.razonSocial), identifier: this.stringOrNull(tributaria.ruc), tradeName: this.stringOrNull(tributaria.nombreComercial), address: this.stringOrNull(info.direccionMatriz ?? tributaria.dirMatriz ?? tributaria.direccionMatriz) },
-      buyer: { name: this.stringOrNull(info.razonSocialComprador), identifier: this.stringOrNull(info.identificacionComprador) },
-      totals: { subtotal: this.stringOrNull(info.totalSinImpuestos), discount: this.stringOrNull(info.totalDescuento), tax: this.sumTaxAmounts(totalTaxes), total: this.stringOrNull(info.importeTotal), currency: this.stringOrNull(info.moneda) },
-      taxes: totalTaxes.map((tax) => ({ code: this.stringOrNull(tax.codigo), rate: this.stringOrNull(tax.tarifa), taxableBase: this.stringOrNull(tax.baseImponible), amount: this.stringOrNull(tax.valor) })),
-      lineItems: details.map((item) => ({ code: this.stringOrNull(item.codigoPrincipal), description: this.stringOrNull(item.descripcion), quantity: this.stringOrNull(item.cantidad), unitPrice: this.stringOrNull(item.precioUnitario), discount: this.stringOrNull(item.descuento), total: this.stringOrNull(item.precioTotalSinImpuesto) })),
-      latestAnalysis: this.listCollectionInvoices(collectionId).find((invoice) => invoice.id === invoiceId)?.latestAnalysis ?? null,
+      id: String(row.id),
+      fileName: String(row.file_name),
+      issueDate: this.stringOrNull(info.fechaEmision),
+      seller: {
+        name: this.stringOrNull(tributaria.razonSocial),
+        identifier: this.stringOrNull(tributaria.ruc),
+        tradeName: this.stringOrNull(tributaria.nombreComercial),
+        address: this.stringOrNull(
+          info.direccionMatriz ??
+            tributaria.dirMatriz ??
+            tributaria.direccionMatriz,
+        ),
+      },
+      buyer: {
+        name: this.stringOrNull(info.razonSocialComprador),
+        identifier: this.stringOrNull(info.identificacionComprador),
+      },
+      totals: {
+        subtotal: this.stringOrNull(info.totalSinImpuestos),
+        discount: this.stringOrNull(info.totalDescuento),
+        tax: this.sumTaxAmounts(totalTaxes),
+        total: this.stringOrNull(info.importeTotal),
+        currency: this.stringOrNull(info.moneda),
+      },
+      taxes: totalTaxes.map((tax) => ({
+        code: this.stringOrNull(tax.codigo),
+        rate: this.stringOrNull(tax.tarifa),
+        taxableBase: this.stringOrNull(tax.baseImponible),
+        amount: this.stringOrNull(tax.valor),
+      })),
+      lineItems: details.map((item) => ({
+        code: this.stringOrNull(item.codigoPrincipal),
+        description: this.stringOrNull(item.descripcion),
+        quantity: this.stringOrNull(item.cantidad),
+        unitPrice: this.stringOrNull(item.precioUnitario),
+        discount: this.stringOrNull(item.descuento),
+        total: this.stringOrNull(item.precioTotalSinImpuesto),
+      })),
+      latestAnalysis:
+        this.listCollectionInvoices(collectionId).find(
+          (invoice) => invoice.id === invoiceId,
+        )?.latestAnalysis ?? null,
     }
   }
 
   getInvoiceSnapshot(id: string) {
-    const row = this.database.query('SELECT normalized_json FROM local_invoices WHERE id = ?').get(id) as { normalized_json: string } | null
+    const row = this.database
+      .query('SELECT normalized_json FROM local_invoices WHERE id = ?')
+      .get(id) as { normalized_json: string } | null
     return row ? JSON.parse(row.normalized_json) : null
   }
 
   getInvoiceFileName(id: string) {
-    const row = this.database.query('SELECT file_name FROM local_invoices WHERE id = ?').get(id) as { file_name: string } | null
+    const row = this.database
+      .query('SELECT file_name FROM local_invoices WHERE id = ?')
+      .get(id) as { file_name: string } | null
     return row?.file_name ?? null
   }
 
   getExecutionContext(collectionId: string) {
-    const contextRow = this.database.query(`SELECT revision_json FROM local_collection_context_revisions WHERE collection_id = ? AND scope_id = ? ORDER BY revision DESC LIMIT 1`).get(collectionId, this.localScope.userId) as { revision_json: string } | null
-    if (!contextRow) return { collectionContext: null, taxpayerProfile: null, activities: [] as unknown[] }
-    const collectionContext = JSON.parse(contextRow.revision_json) as { taxpayerProfileRevisionId?: string; activityRevisionIds?: string[] }
+    const contextRow = this.database
+      .query(
+        `SELECT revision_json FROM local_collection_context_revisions WHERE collection_id = ? AND scope_id = ? ORDER BY revision DESC LIMIT 1`,
+      )
+      .get(collectionId, this.localScope.userId) as {
+      revision_json: string
+    } | null
+    if (!contextRow)
+      return {
+        collectionContext: null,
+        taxpayerProfile: null,
+        activities: [] as unknown[],
+      }
+    const collectionContext = JSON.parse(contextRow.revision_json) as {
+      taxpayerProfileRevisionId?: string
+      activityRevisionIds?: string[]
+    }
     const taxpayerProfile = collectionContext.taxpayerProfileRevisionId
-      ? this.database.query('SELECT revision_json FROM local_taxpayer_profile_revisions WHERE id = ? AND scope_id = ?').get(collectionContext.taxpayerProfileRevisionId, this.localScope.userId) as { revision_json: string } | null
+      ? (this.database
+          .query(
+            'SELECT revision_json FROM local_taxpayer_profile_revisions WHERE id = ? AND scope_id = ?',
+          )
+          .get(
+            collectionContext.taxpayerProfileRevisionId,
+            this.localScope.userId,
+          ) as { revision_json: string } | null)
       : null
     const activityIds = collectionContext.activityRevisionIds ?? []
-    const activities = activityIds.map((id) => this.database.query('SELECT revision_json FROM local_economic_activity_revisions WHERE id = ? AND scope_id = ?').get(id, this.localScope.userId) as { revision_json: string } | null).flatMap((row) => row ? [JSON.parse(row.revision_json)] : [])
-    return { collectionContext, taxpayerProfile: taxpayerProfile ? JSON.parse(taxpayerProfile.revision_json) : null, activities }
+    const activities = activityIds
+      .map(
+        (id) =>
+          this.database
+            .query(
+              'SELECT revision_json FROM local_economic_activity_revisions WHERE id = ? AND scope_id = ?',
+            )
+            .get(id, this.localScope.userId) as {
+            revision_json: string
+          } | null,
+      )
+      .flatMap((row) => (row ? [JSON.parse(row.revision_json)] : []))
+    return {
+      collectionContext,
+      taxpayerProfile: taxpayerProfile
+        ? JSON.parse(taxpayerProfile.revision_json)
+        : null,
+      activities,
+    }
   }
 
   importXml(fileName: string, content: Uint8Array) {
@@ -722,27 +1018,43 @@ export class LocalLibrary {
       if (!manifest || typeof manifest !== 'object') return []
       const source = manifest as Record<string, unknown>
       if (typeof source.id !== 'string') return []
-      return [{
-        id: source.id,
-        title: String(source.title ?? source.id),
-        issuer: String(source.issuer ?? 'Sin emisor declarado'),
-        jurisdiction: String(source.jurisdiction ?? bundle.jurisdiction ?? ''),
-        sourceKind: String(source.sourceKind ?? 'other'),
-        officialUrl: typeof source.officialUrl === 'string' ? source.officialUrl : null,
-        resolvedUrl: typeof source.resolvedUrl === 'string' ? source.resolvedUrl : null,
-        contentHash: typeof source.contentHash === 'string' ? source.contentHash : null,
-        effectiveFrom: typeof source.effectiveFrom === 'string' ? source.effectiveFrom : null,
-        effectiveTo: typeof source.effectiveTo === 'string' ? source.effectiveTo : null,
-        reviewStatus: String(source.reviewStatus ?? 'local-snapshot'),
-        sectionCount: sections.filter(
-          (section) => section && typeof section === 'object' && (section as Record<string, unknown>).sourceId === source.id,
-        ).length,
-      }]
+      return [
+        {
+          id: source.id,
+          title: String(source.title ?? source.id),
+          issuer: String(source.issuer ?? 'Sin emisor declarado'),
+          jurisdiction: String(
+            source.jurisdiction ?? bundle.jurisdiction ?? '',
+          ),
+          sourceKind: String(source.sourceKind ?? 'other'),
+          officialUrl:
+            typeof source.officialUrl === 'string' ? source.officialUrl : null,
+          resolvedUrl:
+            typeof source.resolvedUrl === 'string' ? source.resolvedUrl : null,
+          contentHash:
+            typeof source.contentHash === 'string' ? source.contentHash : null,
+          effectiveFrom:
+            typeof source.effectiveFrom === 'string'
+              ? source.effectiveFrom
+              : null,
+          effectiveTo:
+            typeof source.effectiveTo === 'string' ? source.effectiveTo : null,
+          reviewStatus: String(source.reviewStatus ?? 'local-snapshot'),
+          sectionCount: sections.filter(
+            (section) =>
+              section &&
+              typeof section === 'object' &&
+              (section as Record<string, unknown>).sourceId === source.id,
+          ).length,
+        },
+      ]
     })
   }
 
   getOfficialSource(sourceId: string) {
-    const source = this.listOfficialSources().find((item) => item.id === sourceId)
+    const source = this.listOfficialSources().find(
+      (item) => item.id === sourceId,
+    )
     if (!source) return null
     const bundle = this.readRulesetBundle()
     const sections = Array.isArray(bundle.sections) ? bundle.sections : []
@@ -752,17 +1064,32 @@ export class LocalLibrary {
         if (!section || typeof section !== 'object') return []
         const item = section as Record<string, unknown>
         if (item.sourceId !== sourceId || typeof item.id !== 'string') return []
-        return [{
-          id: item.id,
-          articleOrSection: String(item.articleOrSection ?? item.id),
-          effectiveFrom: typeof item.effectiveFrom === 'string' ? item.effectiveFrom : null,
-          effectiveTo: typeof item.effectiveTo === 'string' ? item.effectiveTo : null,
-          purposes: Array.isArray(item.purposes) ? item.purposes.map(String) : [],
-          taxRegimes: Array.isArray(item.taxRegimes) ? item.taxRegimes.map(String) : [],
-          reviewStatus: String(item.reviewStatus ?? 'local-snapshot'),
-          contentMarkdown: typeof item.contentMarkdown === 'string' ? item.contentMarkdown : null,
-          sourcePages: Array.isArray(item.sourcePages) ? item.sourcePages.map(Number) : [],
-        }]
+        return [
+          {
+            id: item.id,
+            articleOrSection: String(item.articleOrSection ?? item.id),
+            effectiveFrom:
+              typeof item.effectiveFrom === 'string'
+                ? item.effectiveFrom
+                : null,
+            effectiveTo:
+              typeof item.effectiveTo === 'string' ? item.effectiveTo : null,
+            purposes: Array.isArray(item.purposes)
+              ? item.purposes.map(String)
+              : [],
+            taxRegimes: Array.isArray(item.taxRegimes)
+              ? item.taxRegimes.map(String)
+              : [],
+            reviewStatus: String(item.reviewStatus ?? 'local-snapshot'),
+            contentMarkdown:
+              typeof item.contentMarkdown === 'string'
+                ? item.contentMarkdown
+                : null,
+            sourcePages: Array.isArray(item.sourcePages)
+              ? item.sourcePages.map(Number)
+              : [],
+          },
+        ]
       }),
       ruleset: {
         id: String(bundle.rulesetId),
@@ -775,7 +1102,13 @@ export class LocalLibrary {
 
   getLibrarySummary() {
     const count = (table: string) =>
-      Number((this.database.query(`SELECT COUNT(*) AS count FROM ${table}`).get() as { count: number }).count)
+      Number(
+        (
+          this.database
+            .query(`SELECT COUNT(*) AS count FROM ${table}`)
+            .get() as { count: number }
+        ).count,
+      )
     const ruleset = this.listRulesets()[0] ?? null
     return {
       invoiceCount: count('local_invoices'),
@@ -819,7 +1152,10 @@ export class LocalLibrary {
   }
 
   private readRulesetBundle() {
-    return JSON.parse(readFileSync(this.rulesetBundlePath, 'utf-8')) as Record<string, unknown>
+    return JSON.parse(readFileSync(this.rulesetBundlePath, 'utf-8')) as Record<
+      string,
+      unknown
+    >
   }
 
   private toRunResult(row: Record<string, unknown>) {
@@ -829,7 +1165,9 @@ export class LocalLibrary {
       invoiceId: String(row.invoice_id),
       purpose: String(row.purpose),
       classification: String(row.classification),
-      payload: JSON.parse(String(row.result_snapshot)) as ModelTaxAnalysisPayload,
+      payload: JSON.parse(
+        String(row.result_snapshot),
+      ) as ModelTaxAnalysisPayload,
       createdAt: new Date(String(row.created_at)),
     }
   }
@@ -837,7 +1175,10 @@ export class LocalLibrary {
   private toCollectionMetadata(row: Record<string, unknown>) {
     return {
       id: String(row.id),
-      name: typeof row.name === 'string' && row.name.trim() ? row.name : 'Colección local sin nombre',
+      name:
+        typeof row.name === 'string' && row.name.trim()
+          ? row.name
+          : 'Colección local sin nombre',
       year: typeof row.year === 'number' ? row.year : new Date().getFullYear(),
       description: typeof row.description === 'string' ? row.description : null,
       invoiceCount: Number(row.invoice_count ?? 0),
@@ -850,8 +1191,17 @@ export class LocalLibrary {
     const context = this.objectOrEmpty(snapshot.collectionContext)
     const ruleset = this.objectOrEmpty(snapshot.ruleset)
     const events = this.listRunEvents(String(row.id))
-    const startedAt = events.find((event) => event.status === 'running')?.createdAt ?? null
-    const terminal = [...events].reverse().find((event) => event.status === 'completed' || event.status === 'failed' || event.status === 'blocked') ?? null
+    const startedAt =
+      events.find((event) => event.status === 'running')?.createdAt ?? null
+    const terminal =
+      [...events]
+        .reverse()
+        .find(
+          (event) =>
+            event.status === 'completed' ||
+            event.status === 'failed' ||
+            event.status === 'blocked',
+        ) ?? null
     const createdAt = new Date(String(row.created_at))
     const terminalAt = terminal?.createdAt ?? null
     const status = row.status as LocalAnalysisRunStatus
@@ -868,30 +1218,52 @@ export class LocalLibrary {
       model: this.stringOrNull(connection.model),
       purpose: this.isPurpose(context.purpose) ? context.purpose : null,
       period: this.isPeriod(context.period) ? context.period : null,
-      contextRevision: typeof context.revision === 'number' && Number.isInteger(context.revision) && context.revision > 0
-        ? context.revision : null,
-      ruleset: typeof ruleset.id === 'string' && typeof ruleset.version === 'string'
-        ? { id: ruleset.id, version: ruleset.version } : null,
+      contextRevision:
+        typeof context.revision === 'number' &&
+        Number.isInteger(context.revision) &&
+        context.revision > 0
+          ? context.revision
+          : null,
+      ruleset:
+        typeof ruleset.id === 'string' && typeof ruleset.version === 'string'
+          ? { id: ruleset.id, version: ruleset.version }
+          : null,
       timing: {
         createdAt,
         startedAt,
         terminalAt,
-        durationMs: startedAt && terminalAt ? Math.max(0, terminalAt.getTime() - startedAt.getTime()) : null,
+        durationMs:
+          startedAt && terminalAt
+            ? Math.max(0, terminalAt.getTime() - startedAt.getTime())
+            : null,
       },
-      error: status === 'failed' ? terminal?.message ?? null : null,
+      error: status === 'failed' ? (terminal?.message ?? null) : null,
       progress: null,
       eventCount: events.length,
+      batch: row.batch_id
+        ? {
+            id: String(row.batch_id),
+            invoiceCount: Number(row.batch_invoice_count),
+            finishedCount: Number(row.batch_finished_count),
+            status: row.batch_status as 'queued' | 'running' | 'completed',
+          }
+        : null,
     }
   }
 
   private safeSnapshot(value: unknown): Record<string, unknown> {
     if (typeof value !== 'string') return {}
-    try { return this.objectOrEmpty(JSON.parse(value)) } catch { return {} }
+    try {
+      return this.objectOrEmpty(JSON.parse(value))
+    } catch {
+      return {}
+    }
   }
 
   private objectOrEmpty(value: unknown): Record<string, unknown> {
     return value && typeof value === 'object' && !Array.isArray(value)
-      ? value as Record<string, unknown> : {}
+      ? (value as Record<string, unknown>)
+      : {}
   }
 
   private stringOrNull(value: unknown) {
@@ -905,18 +1277,32 @@ export class LocalLibrary {
       .replace(/(?:^|\s)\/(?:[^\s]+)/g, ' [ruta]')
   }
 
-  private isPeriod(value: unknown): value is { startDate: string; endDate: string } {
+  private isPeriod(
+    value: unknown,
+  ): value is { startDate: string; endDate: string } {
     const period = this.objectOrEmpty(value)
-    return typeof period.startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(period.startDate)
-      && typeof period.endDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(period.endDate)
+    return (
+      typeof period.startDate === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(period.startDate) &&
+      typeof period.endDate === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(period.endDate)
+    )
   }
 
-  private isPurpose(value: unknown): value is 'vat_credit' | 'business_income_tax' | 'personal_expenses' {
-    return value === 'vat_credit' || value === 'business_income_tax' || value === 'personal_expenses'
+  private isPurpose(
+    value: unknown,
+  ): value is 'vat_credit' | 'business_income_tax' | 'personal_expenses' {
+    return (
+      value === 'vat_credit' ||
+      value === 'business_income_tax' ||
+      value === 'personal_expenses'
+    )
   }
 
   private sumTaxAmounts(taxes: Array<Record<string, unknown>>) {
-    const amounts = taxes.map((tax) => Number(tax.valor)).filter((amount) => Number.isFinite(amount))
+    const amounts = taxes
+      .map((tax) => Number(tax.valor))
+      .filter((amount) => Number.isFinite(amount))
     return amounts.length === taxes.length
       ? amounts.reduce((total, amount) => total + amount, 0).toFixed(2)
       : null

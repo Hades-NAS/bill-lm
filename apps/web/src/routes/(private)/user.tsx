@@ -23,7 +23,6 @@ import { ConnectionRow } from '@bill-lm/ui'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
-
 import {
   ContextGuideButton,
   FieldHelpLabel,
@@ -100,17 +99,36 @@ function UserPage() {
   const [createModalOpened, setCreateModalOpened] = React.useState(false)
   const [rotationId, setRotationId] = React.useState<string | null>(null)
   const [rotationKey, setRotationKey] = React.useState('')
-  const [probeFeedback, setProbeFeedback] = React.useState<Record<string, { status: 'idle' | 'pending' | 'success' | 'error'; message?: string }>>({})
+  const [probeFeedback, setProbeFeedback] = React.useState<
+    Record<
+      string,
+      { status: 'idle' | 'pending' | 'success' | 'error'; message?: string }
+    >
+  >({})
   const probeGeneration = React.useRef<Record<string, number>>({})
   const connectionFingerprints = React.useRef<Record<string, string>>({})
 
   React.useEffect(() => {
-    const next = Object.fromEntries((connections.data ?? []).map((connection) => [connection.id, `${connection.modelId}:${connection.secretLastFour}`]))
-    const ids = new Set([...Object.keys(connectionFingerprints.current), ...Object.keys(next)])
+    const next = Object.fromEntries(
+      (connections.data ?? []).map((connection) => [
+        connection.id,
+        `${connection.modelId}:${connection.secretLastFour}`,
+      ]),
+    )
+    const ids = new Set([
+      ...Object.keys(connectionFingerprints.current),
+      ...Object.keys(next),
+    ])
     for (const id of ids) {
-      if (connectionFingerprints.current[id] !== undefined && connectionFingerprints.current[id] !== next[id]) {
+      if (
+        connectionFingerprints.current[id] !== undefined &&
+        connectionFingerprints.current[id] !== next[id]
+      ) {
         probeGeneration.current[id] = (probeGeneration.current[id] ?? 0) + 1
-        setProbeFeedback((current) => ({ ...current, [id]: { status: 'idle' } }))
+        setProbeFeedback((current) => ({
+          ...current,
+          [id]: { status: 'idle' },
+        }))
       }
     }
     connectionFingerprints.current = next
@@ -205,14 +223,58 @@ function UserPage() {
                   actions={
                     <Menu position="bottom-end" shadow="md" width={220}>
                       <Menu.Target>
-                        <ActionIcon aria-label={`Más acciones para ${connection.label}`} variant="light"><MoreHorizontal size={18} /></ActionIcon>
+                        <ActionIcon
+                          aria-label={`Más acciones para ${connection.label}`}
+                          variant="light"
+                        >
+                          <MoreHorizontal size={18} />
+                        </ActionIcon>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item disabled={connection.isDefault || updateConnection.isPending} onClick={() => updateConnection.mutate({ id: connection.id, isDefault: true })}>Establecer como predeterminada</Menu.Item>
-                        <Menu.Item disabled={updateConnection.isPending} onClick={() => updateConnection.mutate({ id: connection.id, isActive: !connection.isActive })}>{connection.isActive ? 'Desactivar' : 'Activar'}</Menu.Item>
-                        <Menu.Item onClick={() => { invalidateProbe(connection.id); setRotationId(connection.id) }}>Rotar clave</Menu.Item>
+                        <Menu.Item
+                          disabled={
+                            connection.isDefault || updateConnection.isPending
+                          }
+                          onClick={() =>
+                            updateConnection.mutate({
+                              id: connection.id,
+                              isDefault: true,
+                            })
+                          }
+                        >
+                          Establecer como predeterminada
+                        </Menu.Item>
+                        <Menu.Item
+                          disabled={updateConnection.isPending}
+                          onClick={() =>
+                            updateConnection.mutate({
+                              id: connection.id,
+                              isActive: !connection.isActive,
+                            })
+                          }
+                        >
+                          {connection.isActive ? 'Desactivar' : 'Activar'}
+                        </Menu.Item>
+                        <Menu.Item
+                          onClick={() => {
+                            invalidateProbe(connection.id)
+                            setRotationId(connection.id)
+                          }}
+                        >
+                          Rotar clave
+                        </Menu.Item>
                         <Menu.Divider />
-                        <Menu.Item color="red" disabled={removeConnection.isPending} leftSection={<Trash2 size={16} />} onClick={() => { invalidateProbe(connection.id); removeConnection.mutate({ id: connection.id }) }}>Eliminar conexión</Menu.Item>
+                        <Menu.Item
+                          color="red"
+                          disabled={removeConnection.isPending}
+                          leftSection={<Trash2 size={16} />}
+                          onClick={() => {
+                            invalidateProbe(connection.id)
+                            removeConnection.mutate({ id: connection.id })
+                          }}
+                        >
+                          Eliminar conexión
+                        </Menu.Item>
                       </Menu.Dropdown>
                     </Menu>
                   }
@@ -221,17 +283,66 @@ function UserPage() {
                   key={connection.id}
                   label={connection.label}
                   model={`${connection.modelId} · termina en ${connection.secretLastFour}`}
-                  probeMessage={probeFeedback[connection.id]?.message ?? connection.lastProbeError ?? (connection.probedAt ? 'Conexión validada' : null)}
-                  probeStatus={probeFeedback[connection.id]?.status ?? (connection.lastProbeError ? 'error' : connection.probedAt ? 'success' : 'idle')}
+                  probeMessage={
+                    probeFeedback[connection.id]?.message ??
+                    connection.lastProbeError ??
+                    (connection.probedAt ? 'Conexión validada' : null)
+                  }
+                  probeStatus={
+                    probeFeedback[connection.id]?.status ??
+                    (connection.lastProbeError
+                      ? 'error'
+                      : connection.probedAt
+                        ? 'success'
+                        : 'idle')
+                  }
                   provider={connection.provider}
                   onProbe={() => {
-                    const generation = (probeGeneration.current[connection.id] ?? 0) + 1
+                    const generation =
+                      (probeGeneration.current[connection.id] ?? 0) + 1
                     probeGeneration.current[connection.id] = generation
-                    setProbeFeedback((current) => ({ ...current, [connection.id]: { status: 'pending' } }))
-                    probeConnection.mutate({ id: connection.id }, {
-                      onSuccess: (result) => { if (probeGeneration.current[connection.id] === generation) setProbeFeedback((current) => ({ ...current, [connection.id]: result.lastProbeError ? { status: 'error', message: result.lastProbeError } : result.probedAt ? { status: 'success', message: 'Conexión validada' } : { status: 'idle' } })) },
-                      onError: (error) => { if (probeGeneration.current[connection.id] === generation) setProbeFeedback((current) => ({ ...current, [connection.id]: { status: 'error', message: error.message } })) },
-                    })
+                    setProbeFeedback((current) => ({
+                      ...current,
+                      [connection.id]: { status: 'pending' },
+                    }))
+                    probeConnection.mutate(
+                      { id: connection.id },
+                      {
+                        onSuccess: (result) => {
+                          if (
+                            probeGeneration.current[connection.id] ===
+                            generation
+                          )
+                            setProbeFeedback((current) => ({
+                              ...current,
+                              [connection.id]: result.lastProbeError
+                                ? {
+                                    status: 'error',
+                                    message: result.lastProbeError,
+                                  }
+                                : result.probedAt
+                                  ? {
+                                      status: 'success',
+                                      message: 'Conexión validada',
+                                    }
+                                  : { status: 'idle' },
+                            }))
+                        },
+                        onError: (error) => {
+                          if (
+                            probeGeneration.current[connection.id] ===
+                            generation
+                          )
+                            setProbeFeedback((current) => ({
+                              ...current,
+                              [connection.id]: {
+                                status: 'error',
+                                message: error.message,
+                              },
+                            }))
+                        },
+                      },
+                    )
                   }}
                 />
               ))}

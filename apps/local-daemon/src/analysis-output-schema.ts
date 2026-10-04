@@ -10,7 +10,8 @@ function isRecord(value: unknown): value is JsonSchema {
 }
 
 function nullable(schema: JsonSchema): JsonSchema {
-  if (typeof schema.type === 'string') return { ...schema, type: [schema.type, 'null'] }
+  if (typeof schema.type === 'string')
+    return { ...schema, type: [schema.type, 'null'] }
   return { anyOf: [schema, { type: 'null' }] }
 }
 
@@ -25,9 +26,16 @@ function strictLocalTaxAnalysisSchema(source: unknown): JsonSchema {
 
   const variants = source.oneOf.filter(isRecord)
   const propertyNames = new Set<string>()
-  const requiredByVariant = variants.map((variant) => new Set(
-    Array.isArray(variant.required) ? variant.required.filter((item): item is string => typeof item === 'string') : [],
-  ))
+  const requiredByVariant = variants.map(
+    (variant) =>
+      new Set(
+        Array.isArray(variant.required)
+          ? variant.required.filter(
+              (item): item is string => typeof item === 'string',
+            )
+          : [],
+      ),
+  )
   const propertiesByVariant = variants.map((variant) =>
     isRecord(variant.properties) ? variant.properties : {},
   )
@@ -42,10 +50,13 @@ function strictLocalTaxAnalysisSchema(source: unknown): JsonSchema {
     const constants = candidates
       .map((candidate) => candidate.const)
       .filter((value): value is string => typeof value === 'string')
-    const base = constants.length > 0
-      ? { type: 'string', enum: constants }
-      : candidates[0]!
-    const requiredEverywhere = requiredByVariant.every((required) => required.has(name))
+    const base =
+      constants.length > 0
+        ? { type: 'string', enum: constants }
+        : candidates[0]!
+    const requiredEverywhere = requiredByVariant.every((required) =>
+      required.has(name),
+    )
     properties[name] = requiredEverywhere ? base : nullable(base)
   }
 
@@ -71,7 +82,9 @@ function strictVariantSchema(source: JsonSchema): JsonSchema {
   const properties = isRecord(source.properties) ? source.properties : {}
   const required = new Set(
     Array.isArray(source.required)
-      ? source.required.filter((item): item is string => typeof item === 'string')
+      ? source.required.filter(
+          (item): item is string => typeof item === 'string',
+        )
       : [],
   )
   return {
@@ -92,12 +105,16 @@ function strictLocalTaxAnalysisAgentSchema(
   purpose?: ModelTaxAnalysisPayload['purpose'],
 ): JsonSchema {
   if (!isRecord(source) || !Array.isArray(source.oneOf))
-    throw new Error('El contrato tributario no pudo convertirse al esquema de Agents.')
+    throw new Error(
+      'El contrato tributario no pudo convertirse al esquema de Agents.',
+    )
 
   const variants = source.oneOf.filter(isRecord).filter((variant) => {
     if (!purpose) return true
     const properties = isRecord(variant.properties) ? variant.properties : {}
-    const purposeProperty = isRecord(properties.purpose) ? properties.purpose : {}
+    const purposeProperty = isRecord(properties.purpose)
+      ? properties.purpose
+      : {}
     return purposeProperty.const === purpose
   })
   if (variants.length === 0)

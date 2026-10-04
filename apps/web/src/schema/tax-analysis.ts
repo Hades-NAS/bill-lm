@@ -13,10 +13,9 @@ import type {
   CollectionContextRevisionInput,
   TaxpayerProfileContext,
 } from '@bill-lm/contracts'
+import { ParsedBillSchema } from '#/schema/bill-analysis'
 
 export { ModelTaxAnalysisPayloadSchema }
-
-import { ParsedBillSchema } from '#/schema/bill-analysis'
 
 export * from '@bill-lm/contracts'
 
@@ -159,69 +158,69 @@ export type AnalysisOfficialEvidence = z.infer<
 
 export const AnalysisExecutionEnvelopeSchema = z
   .object({
-  schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
-  envelopeVersion: z.literal('1'),
-  execution: z
-    .object({
-      mode: z.enum(['real', 'smoke']),
-    })
-    .default({ mode: 'real' }),
-  prompt: z.object({
-    templateId: z.literal('bill-analysis'),
-    templateVersion: z.literal('2'),
-    templateHash: SnapshotHashSchema,
-  }),
-  context: z.object({
-    collectionContextRevisionId: IdSchema,
-    revision: z.number().int().positive(),
-    purpose: TaxPurposeSchema,
-    period: TaxPeriodSchema,
-    notes: z.string().nullable(),
-  }),
-  taxpayerProfile: z.object({
-    revisionId: IdSchema,
-    revision: z.number().int().positive(),
-    hasRuc: z.boolean(),
-    hasEmploymentIncome: z.boolean(),
-    taxRegime: TaxRegimeSchema,
-    vatFilingFrequency: VatFilingFrequencySchema,
-    additionalFacts: z.string().nullable(),
-  }),
-  activities: z.array(
-    z.object({
+    schemaVersion: z.literal(TAX_ANALYSIS_SCHEMA_VERSION),
+    envelopeVersion: z.literal('1'),
+    execution: z
+      .object({
+        mode: z.enum(['real', 'smoke']),
+      })
+      .default({ mode: 'real' }),
+    prompt: z.object({
+      templateId: z.literal('bill-analysis'),
+      templateVersion: z.literal('2'),
+      templateHash: SnapshotHashSchema,
+    }),
+    context: z.object({
+      collectionContextRevisionId: IdSchema,
+      revision: z.number().int().positive(),
+      purpose: TaxPurposeSchema,
+      period: TaxPeriodSchema,
+      notes: z.string().nullable(),
+    }),
+    taxpayerProfile: z.object({
       revisionId: IdSchema,
       revision: z.number().int().positive(),
-      displayName: z.string().min(1),
-      registeredActivityCode: z.string().nullable(),
-      registeredActivityName: z.string().min(1),
-      activityDescription: z.string().min(1),
-      necessaryPurchases: z.string().nullable(),
-      revenueVatTreatment: RevenueVatTreatmentSchema,
+      hasRuc: z.boolean(),
+      hasEmploymentIncome: z.boolean(),
+      taxRegime: TaxRegimeSchema,
+      vatFilingFrequency: VatFilingFrequencySchema,
       additionalFacts: z.string().nullable(),
     }),
-  ),
-  provider: z.object({
-    id: IdSchema,
-    provider: z.enum(['OPENAI', 'CLAUDE']),
-    modelId: z.string().min(1).max(255),
-  }),
-  ruleset: z.object({
-    id: IdSchema,
-    version: z.number().int().positive(),
-    contentHash: z.string().min(1),
-    effectiveFrom: CivilDateSchema,
-    effectiveTo: CivilDateSchema.nullable(),
-  }),
-  officialEvidence: z.array(AnalysisOfficialEvidenceSchema).min(1),
-    invoices: z
-    .array(
+    activities: z.array(
       z.object({
-        billId: IdSchema,
-        contentHash: SnapshotHashSchema,
-        parserVersion: z.literal('xml-v1'),
-        normalized: ParsedBillSchema,
+        revisionId: IdSchema,
+        revision: z.number().int().positive(),
+        displayName: z.string().min(1),
+        registeredActivityCode: z.string().nullable(),
+        registeredActivityName: z.string().min(1),
+        activityDescription: z.string().min(1),
+        necessaryPurchases: z.string().nullable(),
+        revenueVatTreatment: RevenueVatTreatmentSchema,
+        additionalFacts: z.string().nullable(),
       }),
-    )
+    ),
+    provider: z.object({
+      id: IdSchema,
+      provider: z.enum(['OPENAI', 'CLAUDE']),
+      modelId: z.string().min(1).max(255),
+    }),
+    ruleset: z.object({
+      id: IdSchema,
+      version: z.number().int().positive(),
+      contentHash: z.string().min(1),
+      effectiveFrom: CivilDateSchema,
+      effectiveTo: CivilDateSchema.nullable(),
+    }),
+    officialEvidence: z.array(AnalysisOfficialEvidenceSchema).min(1),
+    invoices: z
+      .array(
+        z.object({
+          billId: IdSchema,
+          contentHash: SnapshotHashSchema,
+          parserVersion: z.literal('xml-v1'),
+          normalized: ParsedBillSchema,
+        }),
+      )
       .min(1),
   })
   .strict()
@@ -283,7 +282,8 @@ export type GetAnalysisRunDetailRequest = z.infer<
   typeof GetAnalysisRunDetailRequestSchema
 >
 
-export const TaxAnalysisClassificationSchema = LocalTaxAnalysisClassificationSchema
+export const TaxAnalysisClassificationSchema =
+  LocalTaxAnalysisClassificationSchema
 export type TaxAnalysisClassification = z.infer<
   typeof TaxAnalysisClassificationSchema
 >

@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
-export const LocalConnectionIdSchema = z.string().uuid('La conexión local no es válida.')
+export const LocalConnectionIdSchema = z
+  .string()
+  .uuid('La conexión local no es válida.')
 export type LocalConnectionId = z.infer<typeof LocalConnectionIdSchema>
 
 export const LocalApiFlavorSchema = z.enum(['openai-like', 'claude-like'])
@@ -11,26 +13,48 @@ export const LocalSecretReferenceSchema = z
   .trim()
   .min(1, 'La referencia del secreto no puede estar vacía.')
   .max(500, 'La referencia del secreto no puede superar los 500 caracteres.')
-  .regex(/^(keychain|env):/, 'Usa una referencia keychain: o env:, nunca el secreto directamente.')
+  .regex(
+    /^(keychain|env):/,
+    'Usa una referencia keychain: o env:, nunca el secreto directamente.',
+  )
 
 export const CreateLocalConnectionSchema = z.object({
-  label: z.string().trim().min(1, 'Ingresa un nombre para la conexión local.').max(100, 'El nombre no puede superar los 100 caracteres.'),
+  label: z
+    .string()
+    .trim()
+    .min(1, 'Ingresa un nombre para la conexión local.')
+    .max(100, 'El nombre no puede superar los 100 caracteres.'),
   apiFlavor: LocalApiFlavorSchema,
-  baseUrl: z.url('Ingresa una URL base válida.').refine((value) => value.startsWith('http://') || value.startsWith('https://'), 'La URL base debe usar HTTP o HTTPS.'),
-  model: z.string().trim().min(1, 'Ingresa el identificador del modelo.').max(255, 'El modelo no puede superar los 255 caracteres.'),
+  baseUrl: z
+    .url('Ingresa una URL base válida.')
+    .refine(
+      (value) => value.startsWith('http://') || value.startsWith('https://'),
+      'La URL base debe usar HTTP o HTTPS.',
+    ),
+  model: z
+    .string()
+    .trim()
+    .min(1, 'Ingresa el identificador del modelo.')
+    .max(255, 'El modelo no puede superar los 255 caracteres.'),
   secretRef: LocalSecretReferenceSchema.optional(),
   makeDefault: z.boolean().default(false),
 })
 export type CreateLocalConnection = z.infer<typeof CreateLocalConnectionSchema>
 
 /** Editable local-host settings. The daemon keeps secret references write-only. */
-export const UpdateLocalConnectionSchema = CreateLocalConnectionSchema
-  .omit({ secretRef: true })
+export const UpdateLocalConnectionSchema = CreateLocalConnectionSchema.omit({
+  secretRef: true,
+})
   .partial()
-  .refine((value) => Object.keys(value).length > 0, 'Incluye al menos un cambio.')
+  .refine(
+    (value) => Object.keys(value).length > 0,
+    'Incluye al menos un cambio.',
+  )
 export type UpdateLocalConnection = z.infer<typeof UpdateLocalConnectionSchema>
 
-export const LocalConnectionSchema = CreateLocalConnectionSchema.omit({ makeDefault: true }).extend({
+export const LocalConnectionSchema = CreateLocalConnectionSchema.omit({
+  makeDefault: true,
+}).extend({
   id: LocalConnectionIdSchema,
   isDefault: z.boolean(),
   lastProbedAt: z.date().nullable(),
@@ -41,14 +65,16 @@ export const LocalConnectionSchema = CreateLocalConnectionSchema.omit({ makeDefa
 export type LocalConnection = z.infer<typeof LocalConnectionSchema>
 
 /** Safe response shape returned by the local Hono API. Secret references stay daemon-only. */
-export const LocalConnectionResponseSchema = LocalConnectionSchema
-  .omit({ secretRef: true })
-  .extend({
-    lastProbedAt: z.string().datetime().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  })
-export type LocalConnectionResponse = z.infer<typeof LocalConnectionResponseSchema>
+export const LocalConnectionResponseSchema = LocalConnectionSchema.omit({
+  secretRef: true,
+}).extend({
+  lastProbedAt: z.string().datetime().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
+export type LocalConnectionResponse = z.infer<
+  typeof LocalConnectionResponseSchema
+>
 
 export const OauthGuidanceSchema = z.object({
   kind: z.literal('oauth-guidance'),
@@ -61,15 +87,23 @@ export const GpuAnalysisAvailabilitySchema = z.object({
   kind: z.literal('gpu-ready'),
   connectionId: LocalConnectionIdSchema,
 })
-export type GpuAnalysisAvailability = z.infer<typeof GpuAnalysisAvailabilitySchema>
+export type GpuAnalysisAvailability = z.infer<
+  typeof GpuAnalysisAvailabilitySchema
+>
 
-export const LocalAnalysisAvailabilitySchema = z.discriminatedUnion('kind', [OauthGuidanceSchema, GpuAnalysisAvailabilitySchema])
-export type LocalAnalysisAvailability = z.infer<typeof LocalAnalysisAvailabilitySchema>
+export const LocalAnalysisAvailabilitySchema = z.discriminatedUnion('kind', [
+  OauthGuidanceSchema,
+  GpuAnalysisAvailabilitySchema,
+])
+export type LocalAnalysisAvailability = z.infer<
+  typeof LocalAnalysisAvailabilitySchema
+>
 
 const noConnectionGuidance: OauthGuidance = {
   kind: 'oauth-guidance',
   title: 'Continúa con OAuth',
-  message: 'No hay una conexión local configurada. Próximamente podrás continuar este análisis con OAuth.',
+  message:
+    'No hay una conexión local configurada. Próximamente podrás continuar este análisis con OAuth.',
 }
 
 export function resolveLocalAnalysisAvailability(
@@ -79,5 +113,7 @@ export function resolveLocalAnalysisAvailability(
   const selected = selectedConnectionId
     ? connections.find((connection) => connection.id === selectedConnectionId)
     : (connections.find((connection) => connection.isDefault) ?? connections[0])
-  return selected ? { kind: 'gpu-ready', connectionId: selected.id } : noConnectionGuidance
+  return selected
+    ? { kind: 'gpu-ready', connectionId: selected.id }
+    : noConnectionGuidance
 }

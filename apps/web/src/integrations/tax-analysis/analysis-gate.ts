@@ -1,8 +1,4 @@
-import {
-  collectionContextBlocks
-  
-  
-} from '#/schema/tax-analysis'
+import { collectionContextBlocks } from '#/schema/tax-analysis'
 
 import {
   AnalysisExecutionEnvelopeBudgetError,
@@ -10,8 +6,10 @@ import {
   selectApplicableOfficialEvidence,
 } from './execution-envelope.server'
 
-import type {AnalysisBlockCode, AnalysisExecutionEnvelope} from '#/schema/tax-analysis';
-
+import type {
+  AnalysisBlockCode,
+  AnalysisExecutionEnvelope,
+} from '#/schema/tax-analysis'
 
 export class AnalysisPrerequisiteError extends Error {
   constructor(

@@ -15,7 +15,11 @@ it('preserves the three strict tax-purpose variants under an object root for Age
     type: 'json_schema',
     name: 'tax_analysis',
     strict: true,
-    schema: { type: 'object', required: ['payload'], additionalProperties: false },
+    schema: {
+      type: 'object',
+      required: ['payload'],
+      additionalProperties: false,
+    },
   })
   expect(payload.anyOf).toHaveLength(3)
   for (const variant of payload.anyOf) {

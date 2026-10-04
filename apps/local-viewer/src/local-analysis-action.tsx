@@ -23,7 +23,17 @@ export function LocalAnalysisAction({
   return (
     <>
       <Button onClick={analyze}>Analizar</Button>
-      <Modal centered opened={opened} title={availability.kind === 'oauth-guidance' ? availability.title : 'Continúa con OAuth'} transitionProps={{ duration: 0 }} onClose={close}>
+      <Modal
+        centered
+        opened={opened}
+        title={
+          availability.kind === 'oauth-guidance'
+            ? availability.title
+            : 'Continúa con OAuth'
+        }
+        transitionProps={{ duration: 0 }}
+        onClose={close}
+      >
         <Stack gap="sm">
           <Text>
             {availability.kind === 'oauth-guidance'

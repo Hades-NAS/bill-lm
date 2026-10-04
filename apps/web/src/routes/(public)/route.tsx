@@ -21,10 +21,7 @@ function RouteComponent() {
   const isMobile = useIsMobile()
 
   return (
-    <AppShell
-      header={{ height: isMobile ? 50 : 60 }}
-      padding="md"
-    >
+    <AppShell header={{ height: isMobile ? 50 : 60 }} padding="md">
       <AppShell.Header bd={0} bg={scroll.y < 80 ? 'transparent' : 'violet.6'}>
         <Group h="100%" justify="flex-end" px="md">
           <Transition duration={300} mounted={scroll.y > 80} transition="fade">

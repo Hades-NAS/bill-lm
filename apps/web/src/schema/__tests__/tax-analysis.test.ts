@@ -19,7 +19,9 @@ const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
 
 describe('tax analysis contracts', () => {
   it('uses the exact shared model-output schema consumed by the local daemon', () => {
-    expect(ModelTaxAnalysisPayloadSchema).toBe(SharedModelTaxAnalysisPayloadSchema)
+    expect(ModelTaxAnalysisPayloadSchema).toBe(
+      SharedModelTaxAnalysisPayloadSchema,
+    )
   })
 
   it('accepts only executable purposes and an ordered civil period', () => {

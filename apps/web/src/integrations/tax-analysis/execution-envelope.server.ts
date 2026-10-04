@@ -1,13 +1,12 @@
 import { createHash } from 'node:crypto'
 
-import {
-  AnalysisExecutionEnvelopeSchema
-  
-  
-  
-} from '#/schema/tax-analysis'
+import { AnalysisExecutionEnvelopeSchema } from '#/schema/tax-analysis'
 
-import type {AnalysisOfficialEvidence, AnalysisExecutionEnvelope, TaxRuleSetSelector} from '#/schema/tax-analysis';
+import type {
+  AnalysisOfficialEvidence,
+  AnalysisExecutionEnvelope,
+  TaxRuleSetSelector,
+} from '#/schema/tax-analysis'
 
 export const ANALYSIS_EVIDENCE_CHARACTER_BUDGET = 120_000
 

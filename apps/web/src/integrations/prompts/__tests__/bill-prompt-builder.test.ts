@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   AnalysisExecutionEnvelopeSchema,
-  ModelTaxAnalysisPayloadSchema
-  
+  ModelTaxAnalysisPayloadSchema,
 } from '#/schema/tax-analysis'
 
 import {
@@ -11,7 +10,7 @@ import {
   BillPromptBuilder,
 } from '../bill-prompt-builder'
 
-import type {TaxPurpose} from '#/schema/tax-analysis';
+import type { TaxPurpose } from '#/schema/tax-analysis'
 
 const id = '1ee4824c-8fc4-42cf-8d02-e963a78d16d8'
 
@@ -128,6 +127,9 @@ describe('BillPromptBuilder', () => {
 
       expect(prompt).toContain('Contexto fijado')
       expect(prompt).toContain(purposeInstruction)
+      expect(prompt).toContain(
+        'redacta en español todos los valores textuales visibles del JSON de salida',
+      )
       expect(prompt).toContain('"purpose": "' + purpose + '"')
       expect(prompt).toContain('Norma A')
       expect(prompt).not.toContain('Material autogestionado')

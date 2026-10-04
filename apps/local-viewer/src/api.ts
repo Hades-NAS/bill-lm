@@ -5,6 +5,9 @@ import {
   UpdateLocalConnectionSchema,
   EconomicActivityRevisionInputSchema,
   LocalConnectionResponseSchema,
+  LocalCollectionBatchAnalysisInputSchema,
+  LocalCollectionBatchAnalysisProgressSchema,
+  LocalCollectionBatchAnalysisResponseSchema,
   LocalCollectionInvoiceInputSchema,
   LocalCollectionInvoiceMembershipSchema,
   LocalCollectionRunDetailSchema,
@@ -73,7 +76,12 @@ export type LocalOfficialSourceDetail = LocalOfficialSource & {
     contentMarkdown: string | null
     sourcePages: Array<number>
   }>
-  ruleset: { id: string; version: string; jurisdiction: string; reviewStatus: 'local-snapshot' }
+  ruleset: {
+    id: string
+    version: string
+    jurisdiction: string
+    reviewStatus: 'local-snapshot'
+  }
 }
 
 export type LocalLibrarySummary = {
@@ -82,7 +90,10 @@ export type LocalLibrarySummary = {
   profileCount: number
   activityCount: number
   runCount: number
-  ruleset: Pick<LocalRuleset, 'id' | 'version' | 'effectiveFrom' | 'effectiveTo'> | null
+  ruleset: Pick<
+    LocalRuleset,
+    'id' | 'version' | 'effectiveFrom' | 'effectiveTo'
+  > | null
 }
 
 export type LocalEconomicActivity = {
@@ -108,7 +119,11 @@ export type LocalTaxpayerProfile = {
 export type LocalCollectionContext = LocalCollectionSummary
 
 export type LocalCollectionXmlImportResult =
-  | { kind: 'imported' | 'duplicate'; invoiceId?: string; membership?: LocalCollectionInvoiceMembership }
+  | {
+      kind: 'imported' | 'duplicate'
+      invoiceId?: string
+      membership?: LocalCollectionInvoiceMembership
+    }
   | { kind: 'invalid-xml'; message: string }
 
 export class LocalDaemonClient {
@@ -116,7 +131,8 @@ export class LocalDaemonClient {
 
   async listActivities(): Promise<Array<LocalEconomicActivity>> {
     const response = await this.request(`${apiPrefix}/activities`)
-    return ((await response.json()) as { items: Array<LocalEconomicActivity> }).items
+    return ((await response.json()) as { items: Array<LocalEconomicActivity> })
+      .items
   }
 
   async createActivity(input: EconomicActivityRevisionInput) {
@@ -128,16 +144,20 @@ export class LocalDaemonClient {
   }
 
   async reviseActivity(id: string, input: EconomicActivityRevisionInput) {
-    const response = await this.request(`${apiPrefix}/activities/${id}/revisions`, {
-      method: 'POST',
-      body: JSON.stringify(EconomicActivityRevisionInputSchema.parse(input)),
-    })
+    const response = await this.request(
+      `${apiPrefix}/activities/${id}/revisions`,
+      {
+        method: 'POST',
+        body: JSON.stringify(EconomicActivityRevisionInputSchema.parse(input)),
+      },
+    )
     return (await response.json()) as LocalEconomicActivity['latestRevision']
   }
 
   async listProfiles(): Promise<Array<LocalTaxpayerProfile>> {
     const response = await this.request(`${apiPrefix}/profiles`)
-    return ((await response.json()) as { items: Array<LocalTaxpayerProfile> }).items
+    return ((await response.json()) as { items: Array<LocalTaxpayerProfile> })
+      .items
   }
 
   async createProfile(input: TaxpayerProfileRevisionInput) {
@@ -149,10 +169,13 @@ export class LocalDaemonClient {
   }
 
   async reviseProfile(id: string, input: TaxpayerProfileRevisionInput) {
-    const response = await this.request(`${apiPrefix}/profiles/${id}/revisions`, {
-      method: 'POST',
-      body: JSON.stringify(TaxpayerProfileRevisionInputSchema.parse(input)),
-    })
+    const response = await this.request(
+      `${apiPrefix}/profiles/${id}/revisions`,
+      {
+        method: 'POST',
+        body: JSON.stringify(TaxpayerProfileRevisionInputSchema.parse(input)),
+      },
+    )
     return (await response.json()) as LocalTaxpayerProfile['latestRevision']
   }
 
@@ -171,7 +194,9 @@ export class LocalDaemonClient {
     })
   }
 
-  async createCollection(input: CreateLocalCollectionInput): Promise<LocalCollectionContext> {
+  async createCollection(
+    input: CreateLocalCollectionInput,
+  ): Promise<LocalCollectionContext> {
     const response = await this.request(`${apiPrefix}/collections`, {
       method: 'POST',
       body: JSON.stringify(CreateLocalCollectionInputSchema.parse(input)),
@@ -180,16 +205,25 @@ export class LocalDaemonClient {
   }
 
   async reviseCollection(id: string, input: CollectionContextRevisionInput) {
-    const response = await this.request(`${apiPrefix}/collections/${id}/revisions`, {
-      method: 'POST',
-      body: JSON.stringify(CollectionContextRevisionInputSchema.parse(input)),
-    })
-    return (await response.json()) as NonNullable<LocalCollectionContext['latestRevision']>
+    const response = await this.request(
+      `${apiPrefix}/collections/${id}/revisions`,
+      {
+        method: 'POST',
+        body: JSON.stringify(CollectionContextRevisionInputSchema.parse(input)),
+      },
+    )
+    return (await response.json()) as NonNullable<
+      LocalCollectionContext['latestRevision']
+    >
   }
 
-  async updateCollection(id: string, input: UpdateLocalCollectionInput): Promise<LocalCollectionContext> {
+  async updateCollection(
+    id: string,
+    input: UpdateLocalCollectionInput,
+  ): Promise<LocalCollectionContext> {
     const response = await this.request(`${apiPrefix}/collections/${id}`, {
-      method: 'PATCH', body: JSON.stringify(UpdateLocalCollectionInputSchema.parse(input)),
+      method: 'PATCH',
+      body: JSON.stringify(UpdateLocalCollectionInputSchema.parse(input)),
     })
     return LocalCollectionSummarySchema.parse(await response.json())
   }
@@ -199,66 +233,136 @@ export class LocalDaemonClient {
     return LocalCollectionDetailSchema.parse(await response.json())
   }
 
-  async getCollectionRunDetail(collectionId: string, runId: string): Promise<LocalCollectionRunDetail> {
-    const response = await this.request(`${apiPrefix}/collections/${collectionId}/runs/${runId}`)
+  async getCollectionRunDetail(
+    collectionId: string,
+    runId: string,
+  ): Promise<LocalCollectionRunDetail> {
+    const response = await this.request(
+      `${apiPrefix}/collections/${collectionId}/runs/${runId}`,
+    )
     return LocalCollectionRunDetailSchema.parse(await response.json())
   }
 
-  async listCollectionRuns(collectionId: string, filter: { status?: string; unread?: boolean } = {}): Promise<Array<LocalRunSummary>> {
+  async listCollectionRuns(
+    collectionId: string,
+    filter: { status?: string; unread?: boolean } = {},
+  ): Promise<Array<LocalRunSummary>> {
     const query = new URLSearchParams()
     if (filter.status) query.set('status', filter.status)
     if (filter.unread !== undefined) query.set('unread', String(filter.unread))
-    const response = await this.request(`${apiPrefix}/collections/${collectionId}/runs${query.size ? `?${query}` : ''}`)
-    return ((await response.json()) as { items: Array<unknown> }).items.map((item) => LocalRunSummarySchema.parse(item))
+    const response = await this.request(
+      `${apiPrefix}/collections/${collectionId}/runs${query.size ? `?${query}` : ''}`,
+    )
+    return ((await response.json()) as { items: Array<unknown> }).items.map(
+      (item) => LocalRunSummarySchema.parse(item),
+    )
   }
 
   async getRunDetail(runId: string): Promise<LocalRunDetail> {
-    return LocalRunDetailSchema.parse(await (await this.request(`${apiPrefix}/runs/${runId}`)).json())
+    return LocalRunDetailSchema.parse(
+      await (await this.request(`${apiPrefix}/runs/${runId}`)).json(),
+    )
   }
 
-  async getCollectionInvoice(collectionId: string, invoiceId: string): Promise<LocalInvoiceDetail> {
-    return LocalInvoiceDetailSchema.parse(await (await this.request(`${apiPrefix}/collections/${collectionId}/invoices/${invoiceId}`)).json())
+  async getCollectionInvoice(
+    collectionId: string,
+    invoiceId: string,
+  ): Promise<LocalInvoiceDetail> {
+    return LocalInvoiceDetailSchema.parse(
+      await (
+        await this.request(
+          `${apiPrefix}/collections/${collectionId}/invoices/${invoiceId}`,
+        )
+      ).json(),
+    )
   }
 
-  async markRunRead(runId: string) { return (await (await this.request(`${apiPrefix}/runs/${runId}/read`, { method: 'PATCH' })).json()) as { changed: number } }
-  async markAllRunsRead() { return (await (await this.request(`${apiPrefix}/runs/read-all`, { method: 'PATCH' })).json()) as { changed: number } }
-  async clearEligibleRuns() { return (await (await this.request(`${apiPrefix}/runs/clear-eligible`, { method: 'POST' })).json()) as { changed: number } }
+  async markRunRead(runId: string) {
+    return (await (
+      await this.request(`${apiPrefix}/runs/${runId}/read`, { method: 'PATCH' })
+    ).json()) as { changed: number }
+  }
+  async markAllRunsRead() {
+    return (await (
+      await this.request(`${apiPrefix}/runs/read-all`, { method: 'PATCH' })
+    ).json()) as { changed: number }
+  }
+  async clearEligibleRuns() {
+    return (await (
+      await this.request(`${apiPrefix}/runs/clear-eligible`, { method: 'POST' })
+    ).json()) as { changed: number }
+  }
 
-  async importCollectionXml(collectionId: string, file: File): Promise<LocalCollectionXmlImportResult> {
-    const response = await fetch(`${this.baseUrl}${apiPrefix}/collections/${collectionId}/invoices/xml`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ fileName: file.name, xml: await file.text() }),
-    })
-    const body = await response.json().catch(() => null) as {
+  async importCollectionXml(
+    collectionId: string,
+    file: File,
+  ): Promise<LocalCollectionXmlImportResult> {
+    const response = await fetch(
+      `${this.baseUrl}${apiPrefix}/collections/${collectionId}/invoices/xml`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ fileName: file.name, xml: await file.text() }),
+      },
+    )
+    const body = (await response.json().catch(() => null)) as {
       kind?: unknown
       invoiceId?: unknown
       membership?: unknown
       message?: unknown
     }
     if (response.status === 400 && body?.kind === 'invalid-xml')
-      return { kind: 'invalid-xml', message: typeof body.message === 'string' ? body.message : 'No se pudo leer el XML.' }
-    if (!response.ok) throw new Error(typeof body?.message === 'string' ? body.message : `HTTP ${response.status}`)
-    if (body?.kind !== 'imported' && body?.kind !== 'duplicate') throw new Error('Respuesta de importación local no reconocida.')
+      return {
+        kind: 'invalid-xml',
+        message:
+          typeof body.message === 'string'
+            ? body.message
+            : 'No se pudo leer el XML.',
+      }
+    if (!response.ok)
+      throw new Error(
+        typeof body?.message === 'string'
+          ? body.message
+          : `HTTP ${response.status}`,
+      )
+    if (body?.kind !== 'imported' && body?.kind !== 'duplicate')
+      throw new Error('Respuesta de importación local no reconocida.')
     return {
       kind: body.kind,
-      invoiceId: typeof body.invoiceId === 'string' ? body.invoiceId : undefined,
-      membership: body.membership ? LocalCollectionInvoiceMembershipSchema.parse(body.membership) : undefined,
+      invoiceId:
+        typeof body.invoiceId === 'string' ? body.invoiceId : undefined,
+      membership: body.membership
+        ? LocalCollectionInvoiceMembershipSchema.parse(body.membership)
+        : undefined,
     }
   }
 
-  async attachInvoice(collectionId: string, invoiceId: string): Promise<LocalCollectionInvoiceMembership> {
-    const response = await this.request(`${apiPrefix}/collections/${collectionId}/invoices`, {
-      method: 'POST',
-      body: JSON.stringify(LocalCollectionInvoiceInputSchema.parse({ invoiceId })),
-    })
+  async attachInvoice(
+    collectionId: string,
+    invoiceId: string,
+  ): Promise<LocalCollectionInvoiceMembership> {
+    const response = await this.request(
+      `${apiPrefix}/collections/${collectionId}/invoices`,
+      {
+        method: 'POST',
+        body: JSON.stringify(
+          LocalCollectionInvoiceInputSchema.parse({ invoiceId }),
+        ),
+      },
+    )
     return LocalCollectionInvoiceMembershipSchema.parse(await response.json())
   }
 
-  async detachInvoice(collectionId: string, invoiceId: string): Promise<LocalCollectionInvoiceMembership> {
-    const response = await this.request(`${apiPrefix}/collections/${collectionId}/invoices/${invoiceId}`, {
-      method: 'DELETE',
-    })
+  async detachInvoice(
+    collectionId: string,
+    invoiceId: string,
+  ): Promise<LocalCollectionInvoiceMembership> {
+    const response = await this.request(
+      `${apiPrefix}/collections/${collectionId}/invoices/${invoiceId}`,
+      {
+        method: 'DELETE',
+      },
+    )
     return LocalCollectionInvoiceMembershipSchema.parse(await response.json())
   }
 
@@ -278,7 +382,8 @@ export class LocalDaemonClient {
 
   async updateConnection(id: string, input: UpdateLocalConnection) {
     const response = await this.request(`${apiPrefix}/connections/${id}`, {
-      method: 'PATCH', body: JSON.stringify(UpdateLocalConnectionSchema.parse(input)),
+      method: 'PATCH',
+      body: JSON.stringify(UpdateLocalConnectionSchema.parse(input)),
     })
     return LocalConnectionResponseSchema.parse(await response.json())
   }
@@ -317,7 +422,8 @@ export class LocalDaemonClient {
 
   async listOfficialSources(): Promise<Array<LocalOfficialSource>> {
     const response = await this.request(`${apiPrefix}/official-sources`)
-    return ((await response.json()) as { items: Array<LocalOfficialSource> }).items
+    return ((await response.json()) as { items: Array<LocalOfficialSource> })
+      .items
   }
 
   async getOfficialSource(id: string): Promise<LocalOfficialSourceDetail> {
@@ -332,15 +438,47 @@ export class LocalDaemonClient {
 
   async listRuns() {
     const response = await this.request(`${apiPrefix}/runs`)
-    return ((await response.json()) as { items: Array<unknown> }).items.map((item) => LocalRunSummarySchema.parse(item))
+    return ((await response.json()) as { items: Array<unknown> }).items.map(
+      (item) => LocalRunSummarySchema.parse(item),
+    )
   }
 
-  async analyze(input: { collectionId: string; connectionId: string; invoiceId: string }) {
+  async analyze(input: {
+    collectionId: string
+    connectionId: string
+    invoiceId: string
+  }) {
     const response = await this.request(`${apiPrefix}/analysis`, {
       method: 'POST',
       body: JSON.stringify(input),
     })
     return (await response.json()) as { id: string; status: string }
+  }
+
+  async analyzeCollection(input: {
+    collectionId: string
+    connectionId: string
+  }) {
+    const parsed = LocalCollectionBatchAnalysisInputSchema.parse(input)
+    const response = await this.request(
+      `${apiPrefix}/collections/${parsed.collectionId}/analysis`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ connectionId: parsed.connectionId }),
+      },
+    )
+    return LocalCollectionBatchAnalysisResponseSchema.parse(
+      await response.json(),
+    )
+  }
+
+  async getCollectionAnalysisProgress(collectionId: string) {
+    const response = await this.request(
+      `${apiPrefix}/collections/${collectionId}/analysis`,
+    )
+    return LocalCollectionBatchAnalysisProgressSchema.nullable().parse(
+      await response.json(),
+    )
   }
 
   async listInvoices() {

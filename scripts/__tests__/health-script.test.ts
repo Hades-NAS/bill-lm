@@ -1,4 +1,4 @@
-import {  execFileSync, spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import {
   mkdirSync,
   mkdtempSync,
@@ -14,7 +14,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import type {ChildProcess} from 'node:child_process';
+import type { ChildProcess } from 'node:child_process'
 
 const healthScriptPath = fileURLToPath(
   new URL('../../health.sh', import.meta.url),
@@ -100,6 +100,7 @@ function closeViteServer(
   tempDirectory: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+    // eslint-disable-next-line prefer-const -- the close handlers must capture it before scheduling.
     let escalationTimeout: ReturnType<typeof setTimeout> | undefined
     let finalTimeout: ReturnType<typeof setTimeout> | undefined
     let processError: Error | undefined

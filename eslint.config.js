@@ -5,6 +5,13 @@ import reactPlugin from 'eslint-plugin-react'
 import importPlugin from 'eslint-plugin-import'
 import { tanstackConfig } from '@tanstack/eslint-config'
 
+const typescriptEslintPlugin = tanstackConfig
+  .map((config) => config.plugins?.['@typescript-eslint'])
+  .find(Boolean)
+const importEslintPlugin = tanstackConfig
+  .map((config) => config.plugins?.import)
+  .find(Boolean)
+
 export default [
   ...tanstackConfig,
   {
@@ -21,6 +28,10 @@ export default [
       // parser: tseslint.parser,
     },
     plugins: {
+      ...(typescriptEslintPlugin
+        ? { '@typescript-eslint': typescriptEslintPlugin }
+        : {}),
+      ...(importEslintPlugin ? { import: importEslintPlugin } : {}),
       react: reactPlugin,
       importPlugin: importPlugin,
       'jsx-a11y': jsxA11y,
@@ -29,8 +40,15 @@ export default [
       'import/no-cycle': 'off',
       'sort-imports': 'off',
       'import/order': 'off',
-      '#typescript-eslint/array-type': 'off',
-      '#typescript-eslint/require-await': 'off',
+      '@typescript-eslint/array-type': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/consistent-type-imports': 'warn',
+      '@typescript-eslint/method-signature-style': 'warn',
+      '@typescript-eslint/naming-convention': 'warn',
+      '@typescript-eslint/no-unnecessary-condition': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      'import/consistent-type-specifier-style': 'warn',
+      'import/no-duplicates': 'warn',
       'pnpm/json-enforce-catalog': 'off',
       'react/jsx-sort-props': [
         'warn',
@@ -140,6 +158,7 @@ export default [
       'prettier.config.js',
       'apps/web/prisma/seed.ts',
       '.claude',
+      '.agents',
       '.output',
       '.tanstack',
       'dist',

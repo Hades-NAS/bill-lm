@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useJobsStore  } from '../jobs.store'
+import { useJobsStore } from '../jobs.store'
 
-import type {JobStatusItem} from '../jobs.store';
+import type { JobStatusItem } from '../jobs.store'
 
 vi.mock('#/hooks/invalidate-utils', () => ({
   invalidateQueriesByKeys: vi.fn(),

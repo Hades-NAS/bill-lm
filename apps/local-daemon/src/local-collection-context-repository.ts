@@ -56,7 +56,10 @@ export function createLocalCollectionContextRepository(
         return ok(
           rows.map((row) => {
             const revision = latestRevision(scope, row.id)
-            return { id: row.id, latestRevision: revision ? readRevision(revision) : null }
+            return {
+              id: row.id,
+              latestRevision: revision ? readRevision(revision) : null,
+            }
           }),
         )
       } catch {
@@ -66,7 +69,9 @@ export function createLocalCollectionContextRepository(
     async findCollectionContext(scope, collectionId) {
       try {
         const collection = database
-          .query('SELECT id FROM local_collections WHERE scope_id = ? AND id = ?')
+          .query(
+            'SELECT id FROM local_collections WHERE scope_id = ? AND id = ?',
+          )
           .get(scope.userId, collectionId) as { id: string } | null
         if (!collection) return err(resourceNotFound())
         const revision = latestRevision(scope, collection.id)

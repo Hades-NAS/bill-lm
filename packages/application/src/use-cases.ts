@@ -1,6 +1,4 @@
-import {
-  CollectionContextRevisionInputSchema,
-} from '@bill-lm/contracts'
+import { CollectionContextRevisionInputSchema } from '@bill-lm/contracts'
 import {
   createCollectionContextRevision as createDomainCollectionContextRevision,
   createEconomicActivityRevision,
@@ -43,7 +41,8 @@ export type TaxpayerProfileDraft = Omit<
   'id' | 'taxpayerProfileId' | 'revision' | 'createdAt'
 >
 
-export type CollectionContextRevisionDraft = import('@bill-lm/contracts').CollectionContextRevisionInput
+export type CollectionContextRevisionDraft =
+  import('@bill-lm/contracts').CollectionContextRevisionInput
 
 export type UseCaseError = ApplicationError | ReturnType<typeof domainError>
 
@@ -61,11 +60,13 @@ function hasDuplicateIds(ids: readonly string[]): boolean {
   return new Set(ids).size !== ids.length
 }
 
-export function createProfileActivityUseCases(dependencies: Readonly<{
-  repository: ProfileActivityRepository
-  clock: Clock
-  ids: IdGenerator
-}>) {
+export function createProfileActivityUseCases(
+  dependencies: Readonly<{
+    repository: ProfileActivityRepository
+    clock: Clock
+    ids: IdGenerator
+  }>,
+) {
   const timestamp = () => dependencies.clock.now().toISOString()
 
   async function listActivities(
@@ -96,7 +97,10 @@ export function createProfileActivityUseCases(dependencies: Readonly<{
     activityId: string,
     draft: EconomicActivityDraft,
   ): Promise<Result<EconomicActivityRevision, UseCaseError>> {
-    const activity = await dependencies.repository.findActivity(scope, activityId)
+    const activity = await dependencies.repository.findActivity(
+      scope,
+      activityId,
+    )
     if (!activity.ok) return activity
     const candidate = mapDomain(
       createEconomicActivityRevision({
@@ -108,7 +112,10 @@ export function createProfileActivityUseCases(dependencies: Readonly<{
       }),
     )
     if (!candidate.ok) return candidate
-    return dependencies.repository.appendActivityRevision(scope, candidate.value)
+    return dependencies.repository.appendActivityRevision(
+      scope,
+      candidate.value,
+    )
   }
 
   async function listProfiles(
@@ -121,8 +128,12 @@ export function createProfileActivityUseCases(dependencies: Readonly<{
     scope: ActorScope,
     activityRevisionIds: readonly string[],
   ): Promise<Result<void, ApplicationError>> {
-    if (hasDuplicateIds(activityRevisionIds)) return err(duplicateActivityRevision())
-    return dependencies.repository.validateActivityRevisions(scope, activityRevisionIds)
+    if (hasDuplicateIds(activityRevisionIds))
+      return err(duplicateActivityRevision())
+    return dependencies.repository.validateActivityRevisions(
+      scope,
+      activityRevisionIds,
+    )
   }
 
   async function createProfile(
@@ -182,16 +193,20 @@ export function createProfileActivityUseCases(dependencies: Readonly<{
   })
 }
 
-export function createCollectionContextUseCases(dependencies: Readonly<{
-  repository: CollectionContextRepository
-  clock: Clock
-  ids: IdGenerator
-}>) {
+export function createCollectionContextUseCases(
+  dependencies: Readonly<{
+    repository: CollectionContextRepository
+    clock: Clock
+    ids: IdGenerator
+  }>,
+) {
   const timestamp = () => dependencies.clock.now().toISOString()
 
   async function listCollectionContexts(
     scope: ActorScope,
-  ): Promise<Result<readonly import('./ports').CollectionContext[], ApplicationError>> {
+  ): Promise<
+    Result<readonly import('./ports').CollectionContext[], ApplicationError>
+  > {
     return dependencies.repository.listCollectionContexts(scope)
   }
 

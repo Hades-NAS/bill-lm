@@ -4,30 +4,126 @@
   "legacyRootSourceFileCount": 0,
   "legacyRootSourceDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
   "legacyRootReferences": [
-    { "importer": ".github/workflows/deploy-build-push.yml", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": ".github/workflows/registry-retention.yml", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "docker/Dockerfile", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "e2e/__tests__/firebase-auth-pages.spec.ts", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "e2e/local-viewer/fixtures/server.ts", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "e2e/local-viewer/local-viewer-sections.spec.ts", "legacyRootSpecifiers": ["#/"], "configFields": [] },
-    { "importer": "e2e/local-viewer/parity.spec.ts", "legacyRootSpecifiers": ["#/"], "configFields": [] },
-    { "importer": "firebase.json", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "firestore.indexes.json", "legacyRootSpecifiers": [], "configFields": [] },
+    {
+      "importer": ".github/workflows/deploy-build-push.yml",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": ".github/workflows/registry-retention.yml",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "docker/Dockerfile",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "e2e/__tests__/firebase-auth-pages.spec.ts",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "e2e/local-viewer/fixtures/server.ts",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "e2e/local-viewer/local-viewer-sections.spec.ts",
+      "legacyRootSpecifiers": ["#/"],
+      "configFields": []
+    },
+    {
+      "importer": "e2e/local-viewer/parity.spec.ts",
+      "legacyRootSpecifiers": ["#/"],
+      "configFields": []
+    },
+    {
+      "importer": "firebase.json",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "firestore.indexes.json",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
     { "importer": "health.sh", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "opencode.json", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "package.json", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "playwright.config.ts", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/__tests__/check-package-boundaries.bun.ts", "legacyRootSpecifiers": ["../../../src/legacy.ts", "@/", "src/index.mjs"], "configFields": ["test.fixture"] },
-    { "importer": "scripts/__tests__/deploy-workflow.test.ts", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/__tests__/health-script.test.ts", "legacyRootSpecifiers": ["/src/main.ts", "src/main.ts"], "configFields": ["test.fixture"] },
-    { "importer": "scripts/__tests__/playwright-config.test.ts", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/__tests__/registry-retention.test.ts", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/__tests__/start-script.test.ts", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/check-package-boundaries.ts", "legacyRootSpecifiers": ["#/", "@/", "server.ts"], "configFields": ["guard.legacyReferenceMatcher"] },
-    { "importer": "scripts/deploy.sh", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/registry-retention.sh", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/start.sh", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "scripts/test-docker.sh", "legacyRootSpecifiers": [], "configFields": [] },
-    { "importer": "tsconfig.json", "legacyRootSpecifiers": [], "configFields": [] }
+    {
+      "importer": "opencode.json",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "package.json",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "playwright.config.ts",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/__tests__/check-package-boundaries.bun.ts",
+      "legacyRootSpecifiers": ["../../../src/legacy.ts", "@/", "src/index.mjs"],
+      "configFields": ["test.fixture"]
+    },
+    {
+      "importer": "scripts/__tests__/deploy-workflow.test.ts",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/__tests__/health-script.test.ts",
+      "legacyRootSpecifiers": ["/src/main.ts", "src/main.ts"],
+      "configFields": ["test.fixture"]
+    },
+    {
+      "importer": "scripts/__tests__/playwright-config.test.ts",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/__tests__/registry-retention.test.ts",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/__tests__/start-script.test.ts",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/check-package-boundaries.ts",
+      "legacyRootSpecifiers": ["#/", "@/", "server.ts"],
+      "configFields": ["guard.legacyReferenceMatcher"]
+    },
+    {
+      "importer": "scripts/deploy.sh",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/registry-retention.sh",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/start.sh",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "scripts/test-docker.sh",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    },
+    {
+      "importer": "tsconfig.json",
+      "legacyRootSpecifiers": [],
+      "configFields": []
+    }
   ]
 }

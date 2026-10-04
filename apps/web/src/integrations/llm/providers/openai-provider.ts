@@ -21,7 +21,10 @@ export class OpenAIProvider implements ILLMProvider {
   private circuitBreaker = new CircuitBreaker(5, 60_000)
   private telemetryService = createTelemetryService()
   private logger = getServiceLogger('OpenAiProvider')
-  private agents = new Map<LLMPreset, Agent<unknown, typeof TaxAnalysisAgentOutputType>>()
+  private agents = new Map<
+    LLMPreset,
+    Agent<unknown, typeof TaxAnalysisAgentOutputType>
+  >()
   private client: OpenAI
 
   constructor(private config: LLMProviderConfig) {
@@ -78,7 +81,9 @@ export class OpenAIProvider implements ILLMProvider {
           stream: false,
         })
         const output = result.finalOutput as { payload?: unknown } | undefined
-        const validated = ModelTaxAnalysisPayloadSchema.safeParse(output?.payload)
+        const validated = ModelTaxAnalysisPayloadSchema.safeParse(
+          output?.payload,
+        )
         if (!validated.success)
           throw new Error('OpenAIProvider final output validation failed')
         return { data: validated.data, usage: result.state.usage }
@@ -128,7 +133,9 @@ export class OpenAIProvider implements ILLMProvider {
     this.circuitBreaker.reset()
   }
 
-  private getAgent(preset: LLMPreset): Agent<unknown, typeof TaxAnalysisAgentOutputType> {
+  private getAgent(
+    preset: LLMPreset,
+  ): Agent<unknown, typeof TaxAnalysisAgentOutputType> {
     const cached = this.agents.get(preset)
     if (cached) return cached
 

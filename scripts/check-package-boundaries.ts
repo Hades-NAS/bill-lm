@@ -19,7 +19,12 @@ const SOURCE_EXTENSION = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|css)$/
  * trees and tool caches can contain arbitrary bundled specifiers (including
  * legacy aliases) that are not imports made by this repository.
  */
-const NON_SOURCE_DIRECTORIES = new Set(['.git', '.vite', 'dist', 'node_modules'])
+const NON_SOURCE_DIRECTORIES = new Set([
+  '.git',
+  '.vite',
+  'dist',
+  'node_modules',
+])
 const INTERNAL_SPECIFIER = /^@bill-lm\/([a-z-]+)(?:\/(.*))?$/
 const FORBIDDEN_PLATFORM_IMPORT =
   /^(?:bun(?::|$)|node:(?:fs|fs\/promises)(?:$|\/)|better-sqlite3(?:$|\/)|sqlite(?:$|\/)|sqlite3(?:$|\/)|@prisma\/(?:client|adapter-pg)(?:$|\/)|prisma(?:$|\/)|firebase(?:$|\/)|@trpc\/(?:client|server|tanstack-react-query)(?:$|\/)|@tanstack\/react-router(?:$|\/)|react(?:$|\/)|@mantine\/(?:core|dates|dropzone|hooks|modals|notifications|nprogress)(?:$|\/))/
@@ -69,14 +74,19 @@ function listSourceFiles(directory: string): string[] {
     .flatMap((entry) => {
       const entryPath = resolve(directory, entry.name)
       if (entry.isDirectory())
-        return NON_SOURCE_DIRECTORIES.has(entry.name) ? [] : listSourceFiles(entryPath)
+        return NON_SOURCE_DIRECTORIES.has(entry.name)
+          ? []
+          : listSourceFiles(entryPath)
       return entry.isFile() && SOURCE_EXTENSION.test(entry.name)
         ? [entryPath]
         : []
     })
 }
 
-function listFiles(directory: string, predicate: (file: string) => boolean): string[] {
+function listFiles(
+  directory: string,
+  predicate: (file: string) => boolean,
+): string[] {
   if (!existsSync(directory)) return []
 
   return readdirSync(directory, { withFileTypes: true })
@@ -92,13 +102,17 @@ function listFiles(directory: string, predicate: (file: string) => boolean): str
 }
 
 function listLegacyRootSources(root: string): string[] {
-  const sources = listFiles(resolve(root, 'src'), (file) => SOURCE_EXTENSION.test(file))
+  const sources = listFiles(resolve(root, 'src'), (file) =>
+    SOURCE_EXTENSION.test(file),
+  )
   sources.push(
-    ...listFiles(resolve(root, 'local-viewer'), (file) =>
-      SOURCE_EXTENSION.test(file) || file.endsWith('.html'),
+    ...listFiles(
+      resolve(root, 'local-viewer'),
+      (file) => SOURCE_EXTENSION.test(file) || file.endsWith('.html'),
     ),
   )
-  if (existsSync(resolve(root, 'server.ts'))) sources.push(resolve(root, 'server.ts'))
+  if (existsSync(resolve(root, 'server.ts')))
+    sources.push(resolve(root, 'server.ts'))
   return sources.map((file) => relative(root, file)).sort()
 }
 
@@ -121,7 +135,8 @@ const LEGACY_REFERENCE_ROOT_FILES = [
   'tsconfig.json',
   'vite.config.ts',
 ] as const
-const LEGACY_REFERENCE_FILE_EXTENSION = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|json|ya?ml|sh|html|prisma)$/
+const LEGACY_REFERENCE_FILE_EXTENSION =
+  /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|json|ya?ml|sh|html|prisma)$/
 
 function isLegacyReferenceFile(root: string, file: string): boolean {
   const fileName = relative(root, file)
@@ -130,12 +145,17 @@ function isLegacyReferenceFile(root: string, file: string): boolean {
     fileName === LEGACY_ROOT_MANIFEST
   )
     return false
-  return LEGACY_REFERENCE_FILE_EXTENSION.test(fileName) || fileName.endsWith('Dockerfile')
+  return (
+    LEGACY_REFERENCE_FILE_EXTENSION.test(fileName) ||
+    fileName.endsWith('Dockerfile')
+  )
 }
 
 function listLegacyReferenceFiles(root: string): string[] {
   const files = LEGACY_REFERENCE_DIRECTORIES.flatMap((directory) =>
-    listFiles(resolve(root, directory), (file) => isLegacyReferenceFile(root, file)),
+    listFiles(resolve(root, directory), (file) =>
+      isLegacyReferenceFile(root, file),
+    ),
   )
   for (const file of LEGACY_REFERENCE_ROOT_FILES) {
     const filePath = resolve(root, file)
@@ -145,7 +165,13 @@ function listLegacyReferenceFiles(root: string): string[] {
 }
 
 function referencesIn(content: string): string[] {
-  return [...new Set([...content.matchAll(LEGACY_ROOT_REFERENCE)].map((match) => match[0].trim().replace(/^["'`]/, '')))].sort()
+  return [
+    ...new Set(
+      [...content.matchAll(LEGACY_ROOT_REFERENCE)].map((match) =>
+        match[0].trim().replace(/^["'`]/, ''),
+      ),
+    ),
+  ].sort()
 }
 
 function sourceDigest(files: string[]): string {
@@ -153,7 +179,10 @@ function sourceDigest(files: string[]): string {
 }
 
 function sameStrings(left: string[], right: string[]): boolean {
-  return left.length === right.length && left.every((value, index) => value === right[index])
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  )
 }
 
 function readLegacyRootManifest(root: string): LegacyRootManifest | undefined {
@@ -162,7 +191,10 @@ function readLegacyRootManifest(root: string): LegacyRootManifest | undefined {
   return JSON.parse(readFileSync(manifestPath, 'utf8')) as LegacyRootManifest
 }
 
-function validateLegacyRootMigration(root: string, diagnostics: BoundaryDiagnostic[]) {
+function validateLegacyRootMigration(
+  root: string,
+  diagnostics: BoundaryDiagnostic[],
+) {
   const manifest = readLegacyRootManifest(root)
   if (!manifest) return
 
@@ -174,9 +206,18 @@ function validateLegacyRootMigration(root: string, diagnostics: BoundaryDiagnost
     : []
 
   if (manifest.version !== 1) {
-    diagnostics.push({ file: manifestFile, line: 1, message: 'legacy root source manifest must use version 1' })
+    diagnostics.push({
+      file: manifestFile,
+      line: 1,
+      message: 'legacy root source manifest must use version 1',
+    })
   }
-  if (typeof manifest.legacyRootSourceFileCount !== 'number' || typeof manifest.legacyRootSourceDigest !== 'string' || manifest.legacyRootSourceFileCount !== actualSources.length || sourceDigest(actualSources) !== manifest.legacyRootSourceDigest) {
+  if (
+    typeof manifest.legacyRootSourceFileCount !== 'number' ||
+    typeof manifest.legacyRootSourceDigest !== 'string' ||
+    manifest.legacyRootSourceFileCount !== actualSources.length ||
+    sourceDigest(actualSources) !== manifest.legacyRootSourceDigest
+  ) {
     diagnostics.push({
       file: manifestFile,
       line: 1,
@@ -184,26 +225,63 @@ function validateLegacyRootMigration(root: string, diagnostics: BoundaryDiagnost
     })
   }
   if (manifest.legacyRootSourceFileCount === 0 && !manifest.final) {
-    diagnostics.push({ file: manifestFile, line: 1, message: 'an empty legacy root source baseline requires final: true' })
+    diagnostics.push({
+      file: manifestFile,
+      line: 1,
+      message: 'an empty legacy root source baseline requires final: true',
+    })
   }
-  if (manifest.final && (actualSources.length > 0 || manifest.legacyRootSourceFileCount > 0)) {
-    diagnostics.push({ file: manifestFile, line: 1, message: 'a final legacy root source manifest requires no root application sources' })
+  if (
+    manifest.final &&
+    (actualSources.length > 0 || manifest.legacyRootSourceFileCount > 0)
+  ) {
+    diagnostics.push({
+      file: manifestFile,
+      line: 1,
+      message:
+        'a final legacy root source manifest requires no root application sources',
+    })
   }
 
   const expectedImporters = expectedReferences.map(({ importer }) => importer)
   if (!sameStrings([...expectedImporters].sort(), expectedImporters)) {
-    diagnostics.push({ file: manifestFile, line: 1, message: 'legacy root reference importers must be sorted and unique' })
+    diagnostics.push({
+      file: manifestFile,
+      line: 1,
+      message: 'legacy root reference importers must be sorted and unique',
+    })
   }
   if (!sameStrings(expectedImporters, actualReferenceFiles)) {
-    diagnostics.push({ file: manifestFile, line: 1, message: 'legacy root reference importer inventory differs from manifest' })
+    diagnostics.push({
+      file: manifestFile,
+      line: 1,
+      message: 'legacy root reference importer inventory differs from manifest',
+    })
   }
   for (const expected of expectedReferences) {
-    if (!Array.isArray(expected.legacyRootSpecifiers) || !sameStrings([...expected.legacyRootSpecifiers].sort(), expected.legacyRootSpecifiers)) {
-      diagnostics.push({ file: manifestFile, line: 1, message: `legacy root specifiers for ${expected.importer} must be sorted and unique` })
+    if (
+      !Array.isArray(expected.legacyRootSpecifiers) ||
+      !sameStrings(
+        [...expected.legacyRootSpecifiers].sort(),
+        expected.legacyRootSpecifiers,
+      )
+    ) {
+      diagnostics.push({
+        file: manifestFile,
+        line: 1,
+        message: `legacy root specifiers for ${expected.importer} must be sorted and unique`,
+      })
       continue
     }
-    if (!Array.isArray(expected.configFields) || !sameStrings([...expected.configFields].sort(), expected.configFields)) {
-      diagnostics.push({ file: manifestFile, line: 1, message: `legacy root config fields for ${expected.importer} must be sorted and unique` })
+    if (
+      !Array.isArray(expected.configFields) ||
+      !sameStrings([...expected.configFields].sort(), expected.configFields)
+    ) {
+      diagnostics.push({
+        file: manifestFile,
+        line: 1,
+        message: `legacy root config fields for ${expected.importer} must be sorted and unique`,
+      })
       continue
     }
     const filePath = resolve(root, expected.importer)
@@ -220,17 +298,22 @@ function validateLegacyRootMigration(root: string, diagnostics: BoundaryDiagnost
 
   for (const workspace of WORKSPACES.map(([workspacePath]) => workspacePath)) {
     for (const file of listSourceFiles(resolve(root, workspace))) {
-      const rootReferences = referencesIn(readFileSync(file, 'utf8'))
-        .filter((reference) => {
+      const rootReferences = referencesIn(readFileSync(file, 'utf8')).filter(
+        (reference) => {
           if (reference === '@/') return true
           if (reference === '#/') return workspace !== 'apps/web'
-          if (reference.startsWith('/src/') || reference.startsWith('/local-viewer/')) return true
+          if (
+            reference.startsWith('/src/') ||
+            reference.startsWith('/local-viewer/')
+          )
+            return true
           const target = resolve(file, '..', reference)
           return (
             !isOutside(target, resolve(root, 'src')) ||
             !isOutside(target, resolve(root, 'local-viewer'))
           )
-        })
+        },
+      )
       if (rootReferences.length > 0) {
         diagnostics.push({
           file: relative(root, file),
@@ -406,12 +489,7 @@ function validateImport(
     ) {
       return
     }
-    if (
-      isOutside(
-        target,
-        resolve(root, workspace.path, 'src'),
-      )
-    ) {
+    if (isOutside(target, resolve(root, workspace.path, 'src'))) {
       diagnostics.push({
         file: fileName,
         line,

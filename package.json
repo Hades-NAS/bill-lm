@@ -42,8 +42,9 @@
     "db:migrate": "bun run --cwd apps/web db:migrate",
     "db:studio": "bun run --cwd apps/web db:studio",
     "db:seed": "bun run --cwd apps/web db:seed",
-    "lint": "eslint",
+    "lint": "eslint apps packages scripts --ignore-pattern '**/__fixtures__/**'",
     "format": "prettier --check .",
+    "format:write": "prettier --write 'apps/local-daemon/src/**/*.{ts,tsx}' 'apps/local-viewer/src/**/*.{ts,tsx}' 'apps/web/src/**/*.{ts,tsx}' 'packages/*/{src,__tests__}/**/*.{ts,tsx}' 'scripts/**/*.{ts,tsx,json}' eslint.config.js package.json",
     "check": "prettier --write . && eslint --fix",
     "prepare": "husky"
   },

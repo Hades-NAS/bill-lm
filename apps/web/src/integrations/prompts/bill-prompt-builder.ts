@@ -11,12 +11,16 @@ import type {
 
 const logger = getServiceLogger('BillPromptBuilder')
 
+const OUTPUT_LANGUAGE_INSTRUCTION =
+  'Puedes realizar razonamiento interno en el idioma que prefieras. Sin embargo, redacta en español todos los valores textuales visibles del JSON de salida, incluidos reasoning, uncertainties, missingEvidence y cualquier categoría o descripción textual. Conserva sin traducir los identificadores técnicos, enums, UUID y valores numéricos.'
+
 const AGENT_INSTRUCTIONS = `
 Eres un asistente de análisis tributario orientativo para Ecuador. Usa únicamente
 el contexto fijado que recibe cada solicitud. Usa exclusivamente la evidencia
 oficial publicada. No inventes hechos, no incluyas texto
 fuera del JSON solicitado y no presentes el resultado como dictamen jurídico ni
 como una determinación del SRI.
+${OUTPUT_LANGUAGE_INSTRUCTION}
 `
 
 /**
@@ -100,6 +104,7 @@ export const BILL_ANALYSIS_PROMPT_METADATA = {
           'Do not invent facts or give legal advice.',
           'Use exclusively the official evidence included in the frozen context.',
           'Return only the declared JSON shape without extra fields.',
+          OUTPUT_LANGUAGE_INSTRUCTION,
         ],
       }),
     )
@@ -163,6 +168,7 @@ export class BillPromptBuilder {
       PURPOSE_INSTRUCTIONS[envelope.context.purpose],
       'Usa únicamente el contexto fijado a continuación. No completes hechos con suposiciones ni trates el resultado como dictamen jurídico.',
       'Usa exclusivamente la evidencia oficial publicada incluida en el contexto.',
+      OUTPUT_LANGUAGE_INSTRUCTION,
       'Devuelve exclusivamente un objeto JSON válido, sin Markdown ni campos extra, con esta forma:',
       JSON.stringify(OUTPUT_SHAPES[envelope.context.purpose], null, 2),
       'Contexto fijado:',

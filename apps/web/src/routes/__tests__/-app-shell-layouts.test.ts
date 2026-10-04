@@ -19,7 +19,9 @@ describe('AppShell route layouts', () => {
   })
 
   it('keeps the private desktop navbar visible', () => {
-    expect(privateRoute).toContain('collapsed: { mobile: true, desktop: false }')
+    expect(privateRoute).toContain(
+      'collapsed: { mobile: true, desktop: false }',
+    )
     expect(privateRoute).toContain('<AppShell.Navbar')
   })
 })

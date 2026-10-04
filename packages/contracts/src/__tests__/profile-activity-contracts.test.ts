@@ -97,21 +97,52 @@ describe('profile and activity contracts', () => {
   })
 
   it('defines serializable collection membership and aggregate detail responses', () => {
-    expect(LocalCollectionInvoiceMembershipSchema.parse({ kind: 'attached' }))
-      .toEqual({ kind: 'attached' })
-    expect(LocalCollectionDetailSchema.parse({
-      id,
-      latestRevision: null,
-      name: 'Colección local',
-      year: 2026,
-      description: null,
-      invoices: [{ id, fileName: 'factura.xml', createdAt: '2026-09-18T20:00:00.000Z', latestAnalysis: null }],
-      runs: [{
-        id, invoiceId: id, collectionId: id, collectionName: 'Colección local', fileName: 'factura.xml',
-        status: 'completed', readAt: null, provider: null, apiFlavor: null, model: null,
-        purpose: null, period: null, contextRevision: null, ruleset: null, error: null, progress: null, eventCount: 1,
-        timing: { createdAt: '2026-09-18T20:00:00.000Z', startedAt: null, terminalAt: null, durationMs: null },
-      }],
-    })).toMatchObject({ id, invoices: [{ id }], runs: [{ collectionId: id }] })
+    expect(
+      LocalCollectionInvoiceMembershipSchema.parse({ kind: 'attached' }),
+    ).toEqual({ kind: 'attached' })
+    expect(
+      LocalCollectionDetailSchema.parse({
+        id,
+        latestRevision: null,
+        name: 'Colección local',
+        year: 2026,
+        description: null,
+        invoices: [
+          {
+            id,
+            fileName: 'factura.xml',
+            createdAt: '2026-09-18T20:00:00.000Z',
+            latestAnalysis: null,
+          },
+        ],
+        runs: [
+          {
+            id,
+            invoiceId: id,
+            collectionId: id,
+            collectionName: 'Colección local',
+            fileName: 'factura.xml',
+            status: 'completed',
+            readAt: null,
+            provider: null,
+            apiFlavor: null,
+            model: null,
+            purpose: null,
+            period: null,
+            contextRevision: null,
+            ruleset: null,
+            error: null,
+            progress: null,
+            eventCount: 1,
+            timing: {
+              createdAt: '2026-09-18T20:00:00.000Z',
+              startedAt: null,
+              terminalAt: null,
+              durationMs: null,
+            },
+          },
+        ],
+      }),
+    ).toMatchObject({ id, invoices: [{ id }], runs: [{ collectionId: id }] })
   })
 })

@@ -53,7 +53,10 @@ async function ownedConnection(userId: string, id: string) {
   return connection
 }
 
-async function persistProbeResult(connection: Awaited<ReturnType<typeof ownedConnection>>, success: boolean) {
+async function persistProbeResult(
+  connection: Awaited<ReturnType<typeof ownedConnection>>,
+  success: boolean,
+) {
   const updated = await prisma.providerConnection.updateMany({
     where: {
       id: connection.id,
@@ -74,7 +77,10 @@ async function persistProbeResult(connection: Awaited<ReturnType<typeof ownedCon
     select: publicSelect,
   })
   if (!current)
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'Conexión no encontrada' })
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Conexión no encontrada',
+    })
   // A zero count is an optimistic-concurrency miss; return the current safe row,
   // never the stale probe outcome.
   if (updated.count === 0) return toPublic(current)

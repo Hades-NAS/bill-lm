@@ -57,8 +57,8 @@ class InMemoryRepository implements ProfileActivityRepository {
 
   async listActivities(scope: ActorScope) {
     return ok(
-      [...this.activities.values()].filter(
-        (activity) => activity.latestRevision.activityId.startsWith(`${scope.userId}:`),
+      [...this.activities.values()].filter((activity) =>
+        activity.latestRevision.activityId.startsWith(`${scope.userId}:`),
       ),
     )
   }
@@ -73,19 +73,37 @@ class InMemoryRepository implements ProfileActivityRepository {
   async createActivity(scope: ActorScope, revision: EconomicActivityRevision) {
     this.calls.createActivity += 1
     if (this.failWrites) return err(repositoryFailure())
-    const owned = { ...revision, activityId: `${scope.userId}:${revision.activityId}` }
-    this.activities.set(revision.activityId, { id: revision.activityId, latestRevision: owned })
+    const owned = {
+      ...revision,
+      activityId: `${scope.userId}:${revision.activityId}`,
+    }
+    this.activities.set(revision.activityId, {
+      id: revision.activityId,
+      latestRevision: owned,
+    })
     this.addValidRevision(scope, owned.id)
     return ok(owned)
   }
 
-  async appendActivityRevision(scope: ActorScope, revision: EconomicActivityRevision) {
+  async appendActivityRevision(
+    scope: ActorScope,
+    revision: EconomicActivityRevision,
+  ) {
     if (this.failWrites) return err(repositoryFailure())
     const existing = this.activities.get(revision.activityId)
-    if (!existing || !existing.latestRevision.activityId.startsWith(`${scope.userId}:`))
+    if (
+      !existing ||
+      !existing.latestRevision.activityId.startsWith(`${scope.userId}:`)
+    )
       return err(resourceNotFound())
-    const owned = { ...revision, activityId: `${scope.userId}:${revision.activityId}` }
-    this.activities.set(revision.activityId, { id: revision.activityId, latestRevision: owned })
+    const owned = {
+      ...revision,
+      activityId: `${scope.userId}:${revision.activityId}`,
+    }
+    this.activities.set(revision.activityId, {
+      id: revision.activityId,
+      latestRevision: owned,
+    })
     this.addValidRevision(scope, owned.id)
     return ok(owned)
   }
@@ -100,7 +118,9 @@ class InMemoryRepository implements ProfileActivityRepository {
 
   async findProfile(scope: ActorScope, profileId: string) {
     const profile = this.profiles.get(profileId)
-    return profile?.latestRevision.taxpayerProfileId.startsWith(`${scope.userId}:`)
+    return profile?.latestRevision.taxpayerProfileId.startsWith(
+      `${scope.userId}:`,
+    )
       ? ok(profile)
       : err(resourceNotFound())
   }
@@ -129,7 +149,10 @@ class InMemoryRepository implements ProfileActivityRepository {
     return ok(owned)
   }
 
-  async appendProfileRevision(scope: ActorScope, revision: TaxpayerProfileRevision) {
+  async appendProfileRevision(
+    scope: ActorScope,
+    revision: TaxpayerProfileRevision,
+  ) {
     if (this.failWrites) return err(repositoryFailure())
     const existing = this.profiles.get(revision.taxpayerProfileId)
     if (
@@ -233,7 +256,8 @@ class InMemoryCollectionContextRepository implements CollectionContextRepository
   ) {
     const profiles = this.validProfiles.get(scope.userId) ?? new Set()
     const activities = this.validActivities.get(scope.userId) ?? new Set()
-    return profiles.has(taxpayerProfileRevisionId) && activityRevisionIds.every((id) => activities.has(id))
+    return profiles.has(taxpayerProfileRevisionId) &&
+      activityRevisionIds.every((id) => activities.has(id))
       ? ok(undefined)
       : err(invalidCollectionContextReference())
   }
@@ -252,7 +276,9 @@ class InMemoryCollectionContextRepository implements CollectionContextRepository
   }
 }
 
-function makeCollectionSubject(repository = new InMemoryCollectionContextRepository()) {
+function makeCollectionSubject(
+  repository = new InMemoryCollectionContextRepository(),
+) {
   let identifier = 10
   return {
     repository,
@@ -270,7 +296,15 @@ describe('profile and activity application use cases', () => {
 
     const result = await useCases.createActivity(owner, activityDraft)
 
-    expect(result).toMatchObject({ ok: true, value: { id: 'id-1', activityId: 'owner:id-2', revision: 1, createdAt: '2026-09-13T12:00:00.000Z' } })
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        id: 'id-1',
+        activityId: 'owner:id-2',
+        revision: 1,
+        createdAt: '2026-09-13T12:00:00.000Z',
+      },
+    })
   })
 
   it('revises an owned activity without changing its previous revision', async () => {
@@ -305,13 +339,23 @@ describe('profile and activity application use cases', () => {
 
   it('does not expose missing or foreign activities through revision', async () => {
     const { useCases } = makeSubject()
-    const missing = await useCases.reviseActivity(owner, 'missing', activityDraft)
-    expect(missing).toEqual({ ok: false, error: { code: 'resource.not_found' } })
+    const missing = await useCases.reviseActivity(
+      owner,
+      'missing',
+      activityDraft,
+    )
+    expect(missing).toEqual({
+      ok: false,
+      error: { code: 'resource.not_found' },
+    })
 
     const created = await useCases.createActivity(other, activityDraft)
     if (!created.ok) throw new Error('expected activity creation')
     const foreign = await useCases.reviseActivity(owner, 'id-2', activityDraft)
-    expect(foreign).toEqual({ ok: false, error: { code: 'resource.not_found' } })
+    expect(foreign).toEqual({
+      ok: false,
+      error: { code: 'resource.not_found' },
+    })
   })
 
   it('rejects missing, foreign, and duplicate activity revision references', async () => {
@@ -319,16 +363,37 @@ describe('profile and activity application use cases', () => {
     repository.addValidRevision(owner, 'owned-revision')
     repository.addValidRevision(other, 'foreign-revision')
 
-    await expect(useCases.createProfile(owner, profileDraft(['missing']))).resolves.toEqual({ ok: false, error: { code: 'activity_revision.invalid' } })
-    await expect(useCases.createProfile(owner, profileDraft(['foreign-revision']))).resolves.toEqual({ ok: false, error: { code: 'activity_revision.invalid' } })
-    await expect(useCases.createProfile(owner, profileDraft(['owned-revision', 'owned-revision']))).resolves.toEqual({ ok: false, error: { code: 'activity_revision.duplicate' } })
+    await expect(
+      useCases.createProfile(owner, profileDraft(['missing'])),
+    ).resolves.toEqual({
+      ok: false,
+      error: { code: 'activity_revision.invalid' },
+    })
+    await expect(
+      useCases.createProfile(owner, profileDraft(['foreign-revision'])),
+    ).resolves.toEqual({
+      ok: false,
+      error: { code: 'activity_revision.invalid' },
+    })
+    await expect(
+      useCases.createProfile(
+        owner,
+        profileDraft(['owned-revision', 'owned-revision']),
+      ),
+    ).resolves.toEqual({
+      ok: false,
+      error: { code: 'activity_revision.duplicate' },
+    })
     expect(repository.calls.createProfile).toBe(0)
   })
 
   it('creates and revises an immutable profile at the next revision number', async () => {
     const { useCases, repository } = makeSubject()
     repository.addValidRevision(owner, 'activity-revision')
-    const created = await useCases.createProfile(owner, profileDraft(['activity-revision']))
+    const created = await useCases.createProfile(
+      owner,
+      profileDraft(['activity-revision']),
+    )
     if (!created.ok) throw new Error('expected profile creation')
 
     const revised = await useCases.reviseProfile(
@@ -346,7 +411,9 @@ describe('profile and activity application use cases', () => {
     repository.failWrites = true
     const { useCases } = makeSubject(repository)
 
-    await expect(useCases.createActivity(owner, activityDraft)).resolves.toEqual({
+    await expect(
+      useCases.createActivity(owner, activityDraft),
+    ).resolves.toEqual({
       ok: false,
       error: { code: 'repository.failure' },
     })
@@ -408,10 +475,18 @@ describe('collection context application use cases', () => {
     const { repository, useCases } = makeCollectionSubject()
 
     await expect(
-      useCases.createCollectionContextRevision(owner, 'missing', contextDraft()),
+      useCases.createCollectionContextRevision(
+        owner,
+        'missing',
+        contextDraft(),
+      ),
     ).resolves.toEqual({ ok: false, error: { code: 'resource.not_found' } })
     await expect(
-      useCases.createCollectionContextRevision(other, collectionId, contextDraft()),
+      useCases.createCollectionContextRevision(
+        other,
+        collectionId,
+        contextDraft(),
+      ),
     ).resolves.toEqual({ ok: false, error: { code: 'resource.not_found' } })
     expect(repository.appendCalls).toBe(0)
   })

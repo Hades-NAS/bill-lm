@@ -10,7 +10,8 @@ function isRecord(value: unknown): value is JsonSchema {
 }
 
 function nullable(schema: JsonSchema): JsonSchema {
-  if (typeof schema.type === 'string') return { ...schema, type: [schema.type, 'null'] }
+  if (typeof schema.type === 'string')
+    return { ...schema, type: [schema.type, 'null'] }
   return { anyOf: [schema, { type: 'null' }] }
 }
 
@@ -18,7 +19,9 @@ function strictVariantSchema(source: JsonSchema): JsonSchema {
   const properties = isRecord(source.properties) ? source.properties : {}
   const required = new Set(
     Array.isArray(source.required)
-      ? source.required.filter((field): field is string => typeof field === 'string')
+      ? source.required.filter(
+          (field): field is string => typeof field === 'string',
+        )
       : [],
   )
   return {
@@ -36,12 +39,16 @@ function strictVariantSchema(source: JsonSchema): JsonSchema {
 
 function strictAnalysisAgentSchema(source: unknown): JsonSchema {
   if (!isRecord(source) || !Array.isArray(source.oneOf))
-    throw new Error('El contrato tributario no pudo convertirse al esquema de Agents.')
+    throw new Error(
+      'El contrato tributario no pudo convertirse al esquema de Agents.',
+    )
 
   return {
     type: 'object',
     properties: {
-      payload: { anyOf: source.oneOf.filter(isRecord).map(strictVariantSchema) },
+      payload: {
+        anyOf: source.oneOf.filter(isRecord).map(strictVariantSchema),
+      },
     },
     required: ['payload'],
     additionalProperties: false,

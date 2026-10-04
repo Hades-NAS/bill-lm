@@ -30,7 +30,11 @@ run_check() {
 }
 
 run_check "Package boundaries" bun --no-env-file run boundaries:check
+run_check "Format" bun --no-env-file run format:write
+run_check "Lint" bun --no-env-file run lint
 run_check "Typecheck" bun --no-env-file run typecheck
+run_check "Local viewer typecheck" bun --no-env-file run --cwd apps/local-viewer typecheck
+run_check "Local daemon typecheck" bun --no-env-file run --cwd apps/local-daemon typecheck
 run_check "Build" bun --no-env-file run build
 run_check "Vitest" bun --no-env-file run test -- --passWithNoTests
 run_check "Local daemon" bun --no-env-file run --cwd apps/local-daemon test

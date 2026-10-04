@@ -30,7 +30,7 @@ function normalizeExtractedMarkdown(markdown: string) {
   const cleaned = markdown
     .replace(/^\uFEFF/, '')
     .replace(/\r\n?/g, '\n')
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+    .replace(/(?![\r\n\t])\p{Cc}/gu, '')
     .split('\n')
     .map((line) => line.replace(/[ \t]+$/g, ''))
     .join('\n')

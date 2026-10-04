@@ -1,10 +1,22 @@
 export type LocalDaemonLogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export type LocalDaemonLogger = {
-  debug: (event: string, context?: Record<string, string | number | boolean | undefined>) => void
-  info: (event: string, context?: Record<string, string | number | boolean | undefined>) => void
-  warn: (event: string, context?: Record<string, string | number | boolean | undefined>) => void
-  error: (event: string, context?: Record<string, string | number | boolean | undefined>) => void
+  debug: (
+    event: string,
+    context?: Record<string, string | number | boolean | undefined>,
+  ) => void
+  info: (
+    event: string,
+    context?: Record<string, string | number | boolean | undefined>,
+  ) => void
+  warn: (
+    event: string,
+    context?: Record<string, string | number | boolean | undefined>,
+  ) => void
+  error: (
+    event: string,
+    context?: Record<string, string | number | boolean | undefined>,
+  ) => void
 }
 
 const severity: Record<LocalDaemonLogLevel, number> = {
@@ -14,8 +26,12 @@ const severity: Record<LocalDaemonLogLevel, number> = {
   error: 40,
 }
 
-function configuredLevel(value = process.env.BILL_LM_LOCAL_LOG_LEVEL): LocalDaemonLogLevel {
-  return value === 'debug' || value === 'warn' || value === 'error' ? value : 'info'
+function configuredLevel(
+  value = process.env.BILL_LM_LOCAL_LOG_LEVEL,
+): LocalDaemonLogLevel {
+  return value === 'debug' || value === 'warn' || value === 'error'
+    ? value
+    : 'info'
 }
 
 /**
@@ -26,10 +42,24 @@ export function createLocalDaemonLogger(
   level = configuredLevel(),
   write: (line: string) => void = (line) => console.info(line),
 ): LocalDaemonLogger {
-  const log = (entryLevel: LocalDaemonLogLevel, event: string, context: Record<string, string | number | boolean | undefined> = {}) => {
+  const log = (
+    entryLevel: LocalDaemonLogLevel,
+    event: string,
+    context: Record<string, string | number | boolean | undefined> = {},
+  ) => {
     if (severity[entryLevel] < severity[level]) return
-    const fields = Object.fromEntries(Object.entries(context).filter(([, value]) => value !== undefined))
-    write(JSON.stringify({ time: new Date().toISOString(), level: entryLevel, service: 'bill-lm-local-daemon', event, ...fields }))
+    const fields = Object.fromEntries(
+      Object.entries(context).filter(([, value]) => value !== undefined),
+    )
+    write(
+      JSON.stringify({
+        time: new Date().toISOString(),
+        level: entryLevel,
+        service: 'bill-lm-local-daemon',
+        event,
+        ...fields,
+      }),
+    )
   }
 
   return {

@@ -32,24 +32,29 @@ export const CollectionCard = (props: Props) => {
         name={data.name}
         year={data.year}
         onArchive={handlers.open}
-        onOpen={() => navigate({ to: '/collections/$id', params: { id: data.id } })}
+        onOpen={() =>
+          navigate({ to: '/collections/$id', params: { id: data.id } })
+        }
       />
       <ConfModal
-              confirmColor="red"
-              confirmText="Archivar colección"
-              consequence="La colección dejará de mostrarse, pero se conservarán sus facturas, contexto y resultados."
-              loading={deleteCollectionMutation.isPending}
-              opened={confirmDelete}
-              title="Archivar colección"
-              variant="destructive"
-              onCancel={() => {
-                handlers.close()
-              }}
-              onConfirm={() => {
-                deleteCollectionMutation.mutate({ id: data.id })
-              }}
+        confirmColor="red"
+        confirmText="Archivar colección"
+        consequence="La colección dejará de mostrarse, pero se conservarán sus facturas, contexto y resultados."
+        loading={deleteCollectionMutation.isPending}
+        opened={confirmDelete}
+        title="Archivar colección"
+        variant="destructive"
+        onCancel={() => {
+          handlers.close()
+        }}
+        onConfirm={() => {
+          deleteCollectionMutation.mutate({ id: data.id })
+        }}
       >
-        <Text>Se archivará la colección <b>{data.name}</b>. Ya no aparecerá en tu lista, pero su historial quedará conservado.</Text>
+        <Text>
+          Se archivará la colección <b>{data.name}</b>. Ya no aparecerá en tu
+          lista, pero su historial quedará conservado.
+        </Text>
       </ConfModal>
     </>
   )

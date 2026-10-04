@@ -33,18 +33,37 @@ interface JobCardProps {
 }
 
 function JobCard({ job, onCollectionClick }: JobCardProps) {
-  const status = job.status === 'pending' ? 'queued' : job.status === 'in-progress' ? 'running' : job.status
-  const typeLabels: Record<JobStatusItem['data']['type'], string> = { all: 'Análisis completo', missing: 'Análisis de faltantes', analyzed: 'Re-análisis de analizados', specific: 'Análisis específico' }
-  return <RunListItem
-    error={job.error}
-    invoiceCount={job.data.billIds.length}
-    onOpen={() => onCollectionClick(job.data.collectionId)}
-    progress={job.status === 'pending' || job.status === 'in-progress' ? job.percentage : null}
-    runType={typeLabels[job.data.type]}
-    status={status}
-    timestamp={(job.status === 'pending' || job.status === 'in-progress' ? job.createdAt : job.updatedAt).toLocaleString('es-EC')}
-    title={job.data.collectionName}
-  />
+  const status =
+    job.status === 'pending'
+      ? 'queued'
+      : job.status === 'in-progress'
+        ? 'running'
+        : job.status
+  const typeLabels: Record<JobStatusItem['data']['type'], string> = {
+    all: 'Análisis completo',
+    missing: 'Análisis de faltantes',
+    analyzed: 'Re-análisis de analizados',
+    specific: 'Análisis específico',
+  }
+  return (
+    <RunListItem
+      error={job.error}
+      invoiceCount={job.data.billIds.length}
+      onOpen={() => onCollectionClick(job.data.collectionId)}
+      progress={
+        job.status === 'pending' || job.status === 'in-progress'
+          ? job.percentage
+          : null
+      }
+      runType={typeLabels[job.data.type]}
+      status={status}
+      timestamp={(job.status === 'pending' || job.status === 'in-progress'
+        ? job.createdAt
+        : job.updatedAt
+      ).toLocaleString('es-EC')}
+      title={job.data.collectionName}
+    />
+  )
 }
 
 export function NavbarJobsIndicator() {
@@ -138,13 +157,21 @@ export function NavbarJobsIndicator() {
 
         {attentionJobs.length > 0 && (
           <>
-            {(inProgressJobs.length > 0 || completedJobs.length > 0) && <Divider />}
+            {(inProgressJobs.length > 0 || completedJobs.length > 0) && (
+              <Divider />
+            )}
             <Box>
               <Text c="orange" fw={500} mb="xs" size="xs">
                 Requieren atención ({attentionJobs.length})
               </Text>
               <Stack gap="sm">
-                {attentionJobs.map((job) => <JobCard job={job} key={job.jobId} onCollectionClick={handleViewCollection} />)}
+                {attentionJobs.map((job) => (
+                  <JobCard
+                    job={job}
+                    key={job.jobId}
+                    onCollectionClick={handleViewCollection}
+                  />
+                ))}
               </Stack>
             </Box>
           </>
@@ -213,14 +240,22 @@ export function NavbarJobsIndicator() {
             position="left"
           >
             <Indicator
-                color="violet"
-                disabled={!indicatorCount}
-                label={indicatorCount > 99 ? '99+' : indicatorCount || undefined}
-                offset={0}
-                processing={hasActiveJobs}
-                size={20}
+              color="violet"
+              disabled={!indicatorCount}
+              label={indicatorCount > 99 ? '99+' : indicatorCount || undefined}
+              offset={0}
+              processing={hasActiveJobs}
+              size={20}
+            >
+              <ActionIcon
+                aria-label={`Ver análisis${indicatorCount ? `: ${indicatorCount} requieren atención o están en progreso` : ''}`}
+                radius="md"
+                size="lg"
+                variant="default"
+                onClick={toggle}
               >
-              <ActionIcon aria-label={`Ver análisis${indicatorCount ? `: ${indicatorCount} requieren atención o están en progreso` : ''}`} radius="md" size="lg" variant="default" onClick={toggle}><Clock size={20} /></ActionIcon>
+                <Clock size={20} />
+              </ActionIcon>
             </Indicator>
           </Tooltip>
         </Popover.Target>
@@ -244,14 +279,22 @@ export function NavbarJobsIndicator() {
         position="left"
       >
         <Indicator
-            color="violet"
-            disabled={!indicatorCount}
-            label={indicatorCount > 99 ? '99+' : indicatorCount || undefined}
-            offset={10}
-            processing={hasActiveJobs}
-            size={20}
+          color="violet"
+          disabled={!indicatorCount}
+          label={indicatorCount > 99 ? '99+' : indicatorCount || undefined}
+          offset={10}
+          processing={hasActiveJobs}
+          size={20}
+        >
+          <ActionIcon
+            aria-label={`Ver análisis${indicatorCount ? `: ${indicatorCount} requieren atención o están en progreso` : ''}`}
+            radius="md"
+            size="lg"
+            variant="default"
+            onClick={toggle}
           >
-          <ActionIcon aria-label={`Ver análisis${indicatorCount ? `: ${indicatorCount} requieren atención o están en progreso` : ''}`} radius="md" size="lg" variant="default" onClick={toggle}><Clock size={20} /></ActionIcon>
+            <Clock size={20} />
+          </ActionIcon>
         </Indicator>
       </Tooltip>
 

@@ -12,7 +12,9 @@ describe('LocalAnalysisAction', () => {
       matches: false,
       removeEventListener: vi.fn(),
     }))
-    expect(window.matchMedia('(prefers-color-scheme: dark)').matches).toBe(false)
+    expect(window.matchMedia('(prefers-color-scheme: dark)').matches).toBe(
+      false,
+    )
   })
 
   it('keeps Analyze visible and opens OAuth guidance without a GPU connection', () => {

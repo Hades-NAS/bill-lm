@@ -44,7 +44,8 @@ describe('local viewer development server', () => {
 
     const address = server.httpServer?.address()
     expect(address).toMatchObject({ port: expect.any(Number) })
-    if (!address || typeof address === 'string') throw new Error('Expected a TCP address')
+    if (!address || typeof address === 'string')
+      throw new Error('Expected a TCP address')
 
     const response = await fetch(`http://127.0.0.1:${address.port}/`)
 

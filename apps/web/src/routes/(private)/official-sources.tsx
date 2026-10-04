@@ -20,8 +20,14 @@ import { SourceFragment } from '@bill-lm/ui'
 
 import { useTRPC } from '#/integrations/trpc/react'
 
-const reviewStatusLabel: Record<string, string> = { active: 'Activa', draft: 'Borrador', archived: 'Archivada', pending_review: 'Pendiente de revisión' }
-const displayReviewStatus = (value: string) => reviewStatusLabel[value] ?? 'Sin estado publicado'
+const reviewStatusLabel: Record<string, string> = {
+  active: 'Activa',
+  draft: 'Borrador',
+  archived: 'Archivada',
+  pending_review: 'Pendiente de revisión',
+}
+const displayReviewStatus = (value: string) =>
+  reviewStatusLabel[value] ?? 'Sin estado publicado'
 
 export const Route = createFileRoute('/(private)/official-sources')({
   component: OfficialSourcesPage,
@@ -103,14 +109,23 @@ function OfficialSourcesPage() {
                   Hash: {selected.contentHash}
                 </Text>
                 <Title order={3}>Secciones publicadas</Title>
-                {selected.fragments.map((fragment) => <SourceFragment
-                  content={fragment.contentMarkdown}
-                  effectiveLabel={`${fragment.effectiveFrom.toLocaleDateString()}${fragment.effectiveTo ? ` — ${fragment.effectiveTo.toLocaleDateString()}` : ''}`}
-                  key={fragment.id}
-                  purposes={fragment.purposes}
-                  rulesets={fragment.ruleSets.map((item) => `v${item.ruleSet.version} (${displayReviewStatus(item.ruleSet.reviewStatus)})`).join(', ') || 'Sin asignar'}
-                  title={fragment.articleOrSection}
-                />)}
+                {selected.fragments.map((fragment) => (
+                  <SourceFragment
+                    content={fragment.contentMarkdown}
+                    effectiveLabel={`${fragment.effectiveFrom.toLocaleDateString()}${fragment.effectiveTo ? ` — ${fragment.effectiveTo.toLocaleDateString()}` : ''}`}
+                    key={fragment.id}
+                    purposes={fragment.purposes}
+                    rulesets={
+                      fragment.ruleSets
+                        .map(
+                          (item) =>
+                            `v${item.ruleSet.version} (${displayReviewStatus(item.ruleSet.reviewStatus)})`,
+                        )
+                        .join(', ') || 'Sin asignar'
+                    }
+                    title={fragment.articleOrSection}
+                  />
+                ))}
               </>
             )}
           </Stack>

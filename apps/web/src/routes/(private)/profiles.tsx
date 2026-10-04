@@ -332,14 +332,21 @@ function ProfilesPage() {
                   if (!revision) return null
                   return (
                     <RevisionRow
-                      action={<Button
+                      action={
+                        <Button
                           size="xs"
                           variant="light"
                           onClick={() => setProfileId(item.id)}
                         >
                           Crear nueva revisión
-                        </Button>}
-                      description={revision.activities.map(({ economicActivityRevision }) => economicActivityRevision.displayName).join(', ')}
+                        </Button>
+                      }
+                      description={revision.activities
+                        .map(
+                          ({ economicActivityRevision }) =>
+                            economicActivityRevision.displayName,
+                        )
+                        .join(', ')}
                       key={item.id}
                       revision={revision.revision}
                       title={revision.displayName}
